@@ -29,7 +29,7 @@ use sov_state::WorkingSet;
 pub struct ExampleModuleConfig {}
 
 #[derive(ModuleInfo)]
-pub struct IbcModule<C: sov_modules_api::Context> {
+pub struct Ibc<C: sov_modules_api::Context> {
     #[address]
     pub address: C::Address,
 
@@ -92,7 +92,7 @@ pub struct IbcModule<C: sov_modules_api::Context> {
     logs: sov_state::StateValue<Vec<String>>,
 }
 
-impl<C: sov_modules_api::Context> sov_modules_api::Module for IbcModule<C> {
+impl<C: sov_modules_api::Context> sov_modules_api::Module for Ibc<C> {
     type Context = C;
 
     type Config = ExampleModuleConfig;

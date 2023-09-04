@@ -23,10 +23,10 @@ use ibc::core::{ContextError, ExecutionContext, ValidationContext};
 use ibc::Height;
 use sov_state::WorkingSet;
 
-use crate::IbcModule;
+use crate::Ibc;
 
 pub struct IbcExecutionContext<'a, C: sov_modules_api::Context> {
-    pub ibc: &'a IbcModule<C>,
+    pub ibc: &'a Ibc<C>,
     pub working_set: Rc<RefCell<&'a mut WorkingSet<C::Storage>>>,
 }
 
@@ -176,8 +176,19 @@ where
         Ok(())
     }
 
+    // As modules presently lack direct access to their own prefixes, we
+    // truncate the prefix of a field (e.g. client_counter) in order to derive
+    // the module's prefix.
     fn commitment_prefix(&self) -> CommitmentPrefix {
-        CommitmentPrefix::try_from("ibc".to_string().into_bytes()).expect("infallible")
+        let client_counter_prefix = self.ibc.client_counter.prefix();
+
+        let client_counter_prefix_vec = client_counter_prefix.as_aligned_vec().as_ref();
+
+        let module_prefix_len = client_counter_prefix.len() - b"client_counter/".len();
+
+        let module_prefix = client_counter_prefix_vec[..module_prefix_len].to_vec();
+
+        CommitmentPrefix::try_from(module_prefix).expect("never fails as prefix is not empty")
     }
 
     fn connection_counter(&self) -> Result<u64, ContextError> {

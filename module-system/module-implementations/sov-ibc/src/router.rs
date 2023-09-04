@@ -7,7 +7,7 @@ use ibc::core::router::{self, ModuleId, Router};
 use sov_ibc_transfer::context::TransferContext;
 use sov_state::WorkingSet;
 
-use crate::IbcModule;
+use crate::Ibc;
 
 pub struct IbcRouter<'ws, 'c, C: sov_modules_api::Context> {
     pub transfer_ctx: TransferContext<'ws, 'c, C>,
@@ -18,7 +18,7 @@ where
     C: sov_modules_api::Context,
 {
     pub fn new(
-        ibc_mod: &'t IbcModule<C>,
+        ibc_mod: &'t Ibc<C>,
         sdk_context: &'c C,
         working_set: Rc<RefCell<&'ws mut WorkingSet<C::Storage>>>,
     ) -> IbcRouter<'ws, 'c, C> {
