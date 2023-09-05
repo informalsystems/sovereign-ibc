@@ -28,6 +28,12 @@ use sov_state::WorkingSet;
 
 pub struct ExampleModuleConfig {}
 
+/// the sov-ibc module that manages all IBC-related states
+///
+/// Note: this struct, named `Ibc`, as its name serves as the module name and is
+/// utilized to form prefixes for `state` fields. This naming adheres to the
+/// module naming convention used throughout the codebase, ensuring created
+/// prefixes by modules are in harmony.
 #[derive(ModuleInfo)]
 pub struct Ibc<C: sov_modules_api::Context> {
     #[address]
