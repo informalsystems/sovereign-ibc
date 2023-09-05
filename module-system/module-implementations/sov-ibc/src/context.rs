@@ -332,18 +332,22 @@ where
         self
     }
 
-    fn increase_client_counter(&mut self) {
+    fn increase_client_counter(&mut self) -> Result<(), ContextError> {
         let next_client_counter = self
             .ibc
             .client_counter
             .get(*self.working_set.borrow_mut())
-            .unwrap_or_default()
+            .ok_or(ClientError::Other {
+                description: "Client counter not found".to_string(),
+            })?
             .checked_add(1)
-            .expect("Client counter overflow");
+            .ok_or(ClientError::CounterOverflow)?;
 
         self.ibc
             .client_counter
             .set(&next_client_counter, *self.working_set.borrow_mut());
+
+        Ok(())
     }
 
     fn store_update_time(
@@ -409,18 +413,22 @@ where
         Ok(())
     }
 
-    fn increase_connection_counter(&mut self) {
+    fn increase_connection_counter(&mut self) -> Result<(), ContextError> {
         let next_connection_counter = self
             .ibc
             .connection_counter
             .get(*self.working_set.borrow_mut())
-            .unwrap_or_default()
+            .ok_or(ConnectionError::Other {
+                description: "Connection counter not found".to_string(),
+            })?
             .checked_add(1)
-            .expect("Connection counter overflow");
+            .ok_or(ConnectionError::CounterOverflow)?;
 
         self.ibc
             .connection_counter
             .set(&next_connection_counter, *self.working_set.borrow_mut());
+
+        Ok(())
     }
 
     fn store_packet_commitment(
@@ -521,18 +529,22 @@ where
         Ok(())
     }
 
-    fn increase_channel_counter(&mut self) {
+    fn increase_channel_counter(&mut self) -> Result<(), ContextError> {
         let next_channel_counter = self
             .ibc
             .channel_counter
             .get(*self.working_set.borrow_mut())
-            .unwrap_or_default()
+            .ok_or(ChannelError::Other {
+                description: "Channel counter not found".to_string(),
+            })?
             .checked_add(1)
-            .expect("Channel counter overflow");
+            .ok_or(ChannelError::CounterOverflow)?;
 
         self.ibc
             .channel_counter
             .set(&next_channel_counter, *self.working_set.borrow_mut());
+
+        Ok(())
     }
 
     fn emit_ibc_event(&mut self, event: IbcEvent) {
