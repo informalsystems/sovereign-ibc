@@ -10,7 +10,6 @@ mod router;
 
 use codec::ProtobufCodec;
 use context::clients::{AnyClientState, AnyConsensusState};
-use ibc::core::events::IbcEvent;
 use ibc::core::ics03_connection::connection::ConnectionEnd;
 use ibc::core::ics04_channel::channel::ChannelEnd;
 use ibc::core::ics04_channel::commitment::{AcknowledgementCommitment, PacketCommitment};
@@ -90,9 +89,6 @@ pub struct Ibc<C: sov_modules_api::Context> {
 
     #[state]
     packet_ack_map: sov_state::StateMap<AckPath, AcknowledgementCommitment>,
-
-    #[state]
-    events: sov_state::StateValue<Vec<IbcEvent>>,
 
     #[state]
     logs: sov_state::StateValue<Vec<String>>,
