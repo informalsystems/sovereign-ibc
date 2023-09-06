@@ -548,15 +548,21 @@ where
     }
 
     fn emit_ibc_event(&mut self, event: IbcEvent) {
-        let mut events = self
-            .ibc
-            .events
-            .get(*self.working_set.borrow_mut())
-            .unwrap_or_default();
+        // Note: as an interim solution, we transform IBC events into Tendermint
+        // events to simplify the conversion process, avoiding the need for
+        // converting individual IBC event types into a key-value pair of `&str`
+        let tm_event = tendermint::abci::Event::try_from(event)
+            .expect("failed to convert IBC event to Tendermint event");
 
-        events.push(event);
+        let event_attribute: Vec<String> = tm_event
+            .attributes
+            .into_iter()
+            .map(|attr| format!("{attr:?}"))
+            .collect();
 
-        self.ibc.events.set(&events, *self.working_set.borrow_mut());
+        self.working_set
+            .borrow_mut()
+            .add_event(tm_event.kind.as_str(), event_attribute.join(",").as_str());
     }
 
     fn log_message(&mut self, message: String) {
