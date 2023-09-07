@@ -3,8 +3,9 @@ use std::marker::PhantomData;
 use std::path::Path;
 use std::sync::Arc;
 
-use jmt::storage::TreeWriter;
+use jmt::storage::{NodeBatch, TreeWriter};
 use jmt::{JellyfishMerkleTree, KeyHash, RootHash, Version};
+use sov_db::native_db::NativeDB;
 use sov_db::state_db::StateDB;
 
 use crate::config::Config;
@@ -16,6 +17,7 @@ use crate::{MerkleProofSpec, Storage};
 
 pub struct ProverStorage<S: MerkleProofSpec> {
     db: StateDB,
+    native_db: NativeDB,
     _phantom_hasher: PhantomData<S::Hasher>,
 }
 
@@ -23,6 +25,7 @@ impl<S: MerkleProofSpec> Clone for ProverStorage<S> {
     fn clone(&self) -> Self {
         Self {
             db: self.db.clone(),
+            native_db: self.native_db.clone(),
             _phantom_hasher: Default::default(),
         }
     }
@@ -30,13 +33,12 @@ impl<S: MerkleProofSpec> Clone for ProverStorage<S> {
 
 impl<S: MerkleProofSpec> ProverStorage<S> {
     pub fn with_path(path: impl AsRef<Path>) -> Result<Self, anyhow::Error> {
-        let db = StateDB::with_path(&path)?;
-        Self::with_db(db)
-    }
+        let state_db = StateDB::with_path(&path)?;
+        let native_db = NativeDB::with_path(&path)?;
 
-    fn with_db(db: StateDB) -> Result<Self, anyhow::Error> {
         Ok(Self {
-            db,
+            db: state_db,
+            native_db,
             _phantom_hasher: Default::default(),
         })
     }
@@ -63,6 +65,7 @@ impl<S: MerkleProofSpec> Storage for ProverStorage<S> {
     type Witness = S::Witness;
     type RuntimeConfig = Config;
     type Proof = jmt::proof::SparseMerkleProof<S::Hasher>;
+    type StateUpdate = NodeBatch;
 
     fn with_config(config: Self::RuntimeConfig) -> Result<Self, anyhow::Error> {
         Self::with_path(config.path.as_path())
@@ -74,16 +77,24 @@ impl<S: MerkleProofSpec> Storage for ProverStorage<S> {
         val
     }
 
+    #[cfg(feature = "native")]
+    fn get_accessory(&self, key: &StorageKey) -> Option<StorageValue> {
+        self.native_db
+            .get_value_option(key.as_ref())
+            .unwrap()
+            .map(Into::into)
+    }
+
     fn get_state_root(&self, _witness: &Self::Witness) -> anyhow::Result<[u8; 32]> {
         self.get_root_hash(self.db.get_next_version() - 1)
             .map(|root| root.0)
     }
 
-    fn validate_and_commit(
+    fn compute_state_update(
         &self,
         state_accesses: OrderedReadsAndWrites,
         witness: &Self::Witness,
-    ) -> Result<[u8; 32], anyhow::Error> {
+    ) -> Result<([u8; 32], Self::StateUpdate), anyhow::Error> {
         let latest_version = self.db.get_next_version() - 1;
         witness.add_hint(latest_version);
 
@@ -139,11 +150,25 @@ impl<S: MerkleProofSpec> Storage for ProverStorage<S> {
             .put_value_set(batch, next_version)
             .expect("JMT update must succeed");
 
+        Ok((new_root.0, tree_update.node_batch))
+    }
+
+    fn commit(&self, node_batch: &Self::StateUpdate, accessory_writes: &OrderedReadsAndWrites) {
         self.db
-            .write_node_batch(&tree_update.node_batch)
+            .write_node_batch(node_batch)
             .expect("db write must succeed");
+
+        self.native_db
+            .set_values(
+                accessory_writes
+                    .ordered_writes
+                    .iter()
+                    .map(|(k, v_opt)| (k.key.to_vec(), v_opt.as_ref().map(|v| v.value.to_vec())))
+                    .collect(),
+            )
+            .expect("native db write must succeed");
+
         self.db.inc_next_version();
-        Ok(new_root.0)
     }
 
     // Based on assumption `validate_and_commit` increments version.
@@ -200,7 +225,7 @@ mod test {
     use jmt::Version;
 
     use super::*;
-    use crate::{DefaultStorageSpec, WorkingSet};
+    use crate::{DefaultStorageSpec, StateReaderAndWriter, WorkingSet};
 
     #[derive(Clone)]
     struct TestCase {
@@ -240,7 +265,7 @@ mod test {
                 let mut storage = WorkingSet::new(prover_storage.clone());
                 assert_eq!(prover_storage.db.get_next_version(), test.version);
 
-                storage.set(test.key.clone(), test.value.clone());
+                storage.set(&test.key, test.value.clone());
                 let (cache, witness) = storage.checkpoint().freeze();
                 prover_storage
                     .validate_and_commit(cache, &witness)
@@ -279,7 +304,7 @@ mod test {
             let prover_storage = ProverStorage::<DefaultStorageSpec>::with_path(path).unwrap();
             assert!(prover_storage.is_empty());
             let mut storage = WorkingSet::new(prover_storage.clone());
-            storage.set(key.clone(), value.clone());
+            storage.set(&key, value.clone());
             let (cache, witness) = storage.checkpoint().freeze();
             prover_storage
                 .validate_and_commit(cache, &witness)

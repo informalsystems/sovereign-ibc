@@ -95,7 +95,7 @@ fn nohash_serialize<T: Hash>(item: T) -> Vec<u8> {
     hasher.0
 }
 
-/// A serialized value suitable for storing. Internally uses an Arc<Vec<u8>> for cheap cloning.
+/// A serialized value suitable for storing. Internally uses an [`Arc<Vec<u8>>`] for cheap cloning.
 #[derive(
     Clone, Debug, PartialEq, Eq, BorshSerialize, BorshDeserialize, Serialize, Deserialize, Default,
 )]
@@ -169,21 +169,63 @@ pub trait Storage: Clone {
         + BorshSerialize
         + BorshDeserialize;
 
+    /// State update that will be committed to the database.
+    type StateUpdate;
+
     fn with_config(config: Self::RuntimeConfig) -> Result<Self, anyhow::Error>;
 
     /// Returns the value corresponding to the key or None if key is absent.
     fn get(&self, key: &StorageKey, witness: &Self::Witness) -> Option<StorageValue>;
 
+    /// Returns the value corresponding to the key or None if key is absent.
+    fn get_accessory(&self, _key: &StorageKey) -> Option<StorageValue> {
+        None
+    }
+
     /// Returns the latest state root hash from the storage.
     fn get_state_root(&self, witness: &Self::Witness) -> anyhow::Result<[u8; 32]>;
 
+    /// Calculates new state root but does not commit any changes to the database.
+    fn compute_state_update(
+        &self,
+        state_accesses: OrderedReadsAndWrites,
+        witness: &Self::Witness,
+    ) -> Result<([u8; 32], Self::StateUpdate), anyhow::Error>;
+
+    /// Commits state changes to the database.
+    fn commit(&self, node_batch: &Self::StateUpdate, accessory_update: &OrderedReadsAndWrites);
+
     /// Validate all of the storage accesses in a particular cache log,
-    /// returning the new state root after applying all writes
+    /// returning the new state root after applying all writes.
+    /// This function is equivalent to calling:
+    /// `self.compute_state_update & self.commit`
     fn validate_and_commit(
         &self,
         state_accesses: OrderedReadsAndWrites,
         witness: &Self::Witness,
-    ) -> Result<[u8; 32], anyhow::Error>;
+    ) -> Result<[u8; 32], anyhow::Error> {
+        Self::validate_and_commit_with_accessory_update(
+            self,
+            state_accesses,
+            witness,
+            &Default::default(),
+        )
+    }
+
+    /// A version of [`Storage::validate_and_commit`] that allows for
+    /// "accessory" non-JMT updates. See `sov_db::NativeDB` for more information
+    /// about accessory state.
+    fn validate_and_commit_with_accessory_update(
+        &self,
+        state_accesses: OrderedReadsAndWrites,
+        witness: &Self::Witness,
+        accessory_update: &OrderedReadsAndWrites,
+    ) -> Result<[u8; 32], anyhow::Error> {
+        let (root_hash, node_batch) = self.compute_state_update(state_accesses, witness)?;
+        self.commit(&node_batch, accessory_update);
+
+        Ok(root_hash)
+    }
 
     /// Opens a storage access proof and validates it against a state root.
     /// It returns a result with the opened leaf (key, value) pair in case of success.
@@ -241,7 +283,8 @@ impl From<&'static str> for StorageValue {
 
 pub trait NativeStorage: Storage {
     /// Returns the value corresponding to the key or None if key is absent and a proof to
-    /// get the value. Panics if [`get_with_proof_opt`] returns `None` in place of the proof.
+    /// get the value. Panics if [`get_with_proof_from_state_map`](NativeStorage::get_with_proof_from_state_map)
+    /// returns [`None`] in place of the proof.
     fn get_with_proof(&self, key: StorageKey, witness: &Self::Witness)
         -> StorageProof<Self::Proof>;
 
