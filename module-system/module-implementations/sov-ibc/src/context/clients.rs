@@ -262,7 +262,7 @@ where
         client_state_path: ClientStatePath,
         client_state: Self::AnyClientState,
     ) -> Result<(), ContextError> {
-        self.ibc.client_state_store.set(
+        self.ibc.client_state_map.set(
             &client_state_path.0,
             &client_state,
             &mut self.working_set.borrow_mut(),
@@ -276,7 +276,7 @@ where
         consensus_state_path: ClientConsensusStatePath,
         consensus_state: Self::AnyConsensusState,
     ) -> Result<(), ContextError> {
-        self.ibc.consensus_state_store.set(
+        self.ibc.consensus_state_map.set(
             &consensus_state_path,
             &consensus_state,
             &mut self.working_set.borrow_mut(),

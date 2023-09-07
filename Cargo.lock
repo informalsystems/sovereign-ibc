@@ -6945,6 +6945,7 @@ dependencies = [
  "sov-rollup-interface",
  "sov-state",
  "tempfile",
+ "tendermint 0.33.0",
  "tendermint-proto 0.32.2",
  "thiserror",
 ]
