@@ -52,8 +52,17 @@ where
     ) -> Result<sov_modules_api::CallResponse> {
         let msg_transfer: MsgTransfer = {
             let denom = {
-                // FIXME: Call the `Bank` method to get token name by address (currently doesn't exist)
-                let token_name = String::from("hi");
+                let token_name = self
+                    .bank
+                    .get_token_name(
+                        &sdk_token_transfer.token_address,
+                        &mut working_set.borrow_mut(),
+                    )
+                    .ok_or(anyhow::anyhow!(
+                        "Token with address {} doesn't exist",
+                        sdk_token_transfer.token_address
+                    ))?;
+
                 if self.is_unique_name_token(&token_name, &mut working_set.borrow_mut()) {
                     // Token name is unique, so it is safe to use it as denom
                     token_name
