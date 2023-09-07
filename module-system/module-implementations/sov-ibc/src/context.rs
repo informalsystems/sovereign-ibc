@@ -202,7 +202,7 @@ where
         self
     }
 
-    fn increase_client_counter(&mut self) {
+    fn increase_client_counter(&mut self) -> Result<(), ContextError> {
         todo!()
     }
 
@@ -240,7 +240,7 @@ where
         todo!()
     }
 
-    fn increase_connection_counter(&mut self) {
+    fn increase_connection_counter(&mut self) -> Result<(), ContextError> {
         todo!()
     }
 
@@ -311,15 +311,15 @@ where
         todo!()
     }
 
-    fn increase_channel_counter(&mut self) {
+    fn increase_channel_counter(&mut self) -> Result<(), ContextError> {
         todo!()
     }
 
-    fn emit_ibc_event(&mut self, event: IbcEvent) {
+    fn emit_ibc_event(&mut self, event: IbcEvent) -> Result<(), ContextError> {
         todo!()
     }
 
-    fn log_message(&mut self, message: String) {
+    fn log_message(&mut self, message: String) -> Result<(), ContextError> {
         todo!()
     }
 }
