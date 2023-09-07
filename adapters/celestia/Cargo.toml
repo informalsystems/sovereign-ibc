@@ -21,9 +21,9 @@ async-trait = { workspace = true }
 anyhow = { workspace = true }
 sha2 = { workspace = true }
 base64 = "0.21.2"
-hex = { version = "0.4.3", features = ["serde"] }
+hex = { workspace = true, features = ["serde"] }
 hex-literal = "0.4.1"
-jsonrpsee = { version = "0.16.2", features = ["http-client"], optional = true }
+jsonrpsee = { workspace = true, features = ["http-client"], optional = true }
 serde = { workspace = true }
 serde_json = { workspace = true, optional = true }
 tokio = { workspace = true, optional = true }
@@ -48,6 +48,6 @@ prost-build = { version = "0.11" }
 
 [features]
 default = []
-native = ["dep:tokio", "dep:jsonrpsee", "dep:serde_json", "tendermint/default"]
+native = ["dep:tokio", "dep:jsonrpsee", "dep:serde_json", "tendermint/default", "sov-rollup-interface/native"]
 bench = ["zk-cycle-macros/bench", "risc0-zkvm", "risc0-zkvm-platform"]
 verifier = []
