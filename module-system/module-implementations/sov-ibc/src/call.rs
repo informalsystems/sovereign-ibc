@@ -12,7 +12,7 @@ use thiserror::Error;
 
 use crate::context::IbcExecutionContext;
 use crate::router::IbcRouter;
-use crate::IbcModule;
+use crate::Ibc;
 
 // TODO: Uncomment following lines
 // #[cfg_attr(
@@ -31,7 +31,7 @@ pub enum CallMessage<C: sov_modules_api::Context> {
 #[derive(Debug, Error)]
 enum SetValueError {}
 
-impl<C: sov_modules_api::Context> IbcModule<C> {
+impl<C: sov_modules_api::Context> Ibc<C> {
     pub(crate) fn process_core_message(
         &self,
         msg: MsgEnvelope,
