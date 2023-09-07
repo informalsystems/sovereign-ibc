@@ -569,17 +569,9 @@ where
         Ok(())
     }
 
+    /// TODO: To implement this method there should be a way for IBC module to
+    /// to insert logs into the transaction receipts upon execution
     fn log_message(&mut self, message: String) -> Result<(), ContextError> {
-        let mut logs = self
-            .ibc
-            .logs
-            .get(*self.working_set.borrow_mut())
-            .unwrap_or_default();
-
-        logs.push(message);
-
-        self.ibc.logs.set(&logs, *self.working_set.borrow_mut());
-
         Ok(())
     }
 }

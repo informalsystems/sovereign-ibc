@@ -89,9 +89,6 @@ pub struct Ibc<C: sov_modules_api::Context> {
 
     #[state]
     packet_ack_map: sov_state::StateMap<AckPath, AcknowledgementCommitment>,
-
-    #[state]
-    logs: sov_state::StateValue<Vec<String>>,
 }
 
 impl<C: sov_modules_api::Context> sov_modules_api::Module for Ibc<C> {
