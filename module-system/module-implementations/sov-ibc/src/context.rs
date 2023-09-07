@@ -570,7 +570,7 @@ where
     }
 
     /// TODO: To implement this method there should be a way for IBC module to
-    /// to insert logs into the transaction receipts upon execution
+    /// insert logs into the transaction receipts upon execution
     fn log_message(&mut self, message: String) -> Result<(), ContextError> {
         Ok(())
     }
