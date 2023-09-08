@@ -5,7 +5,7 @@ use anyhow::Result;
 use ibc::applications::transfer::context::TokenTransferExecutionContext;
 use ibc::applications::transfer::msgs::transfer::MsgTransfer;
 use ibc::applications::transfer::packet::PacketData;
-use ibc::applications::transfer::{send_transfer, Memo};
+use ibc::applications::transfer::{send_transfer, Memo, PrefixedCoin};
 use ibc::core::ics04_channel::timeout::TimeoutHeight;
 use ibc::core::ics24_host::identifier::{ChannelId, PortId};
 use ibc::core::timestamp::Timestamp;
@@ -28,9 +28,10 @@ pub struct SDKTokenTransfer<C: sov_modules_api::Context> {
     /// Timeout timestamp relative to the current block timestamp.
     /// The timeout is disabled when set to 0.
     pub timeout_timestamp_on_b: Timestamp,
-
     /// The address of the token to be sent
     pub token_address: C::Address,
+    /// The amount of tokens sent
+    pub amount: sov_bank::Amount,
     /// The address of the token sender
     pub sender: Signer,
     /// The address of the token receiver on the counterparty chain
@@ -86,9 +87,12 @@ where
                 port_id_on_a: sdk_token_transfer.port_id_on_a,
                 chan_id_on_a: sdk_token_transfer.chan_id_on_a,
                 packet_data: PacketData {
-                    token: denom
-                        .parse()
-                        .map_err(|_err| anyhow::anyhow!("Failed to parse denom {denom}"))?,
+                    token: PrefixedCoin {
+                        denom: denom
+                            .parse()
+                            .map_err(|_err| anyhow::anyhow!("Failed to parse denom {denom}"))?,
+                        amount: sdk_token_transfer.amount.into(),
+                    },
                     sender: sdk_token_transfer.sender,
                     receiver: sdk_token_transfer.receiver,
                     memo: sdk_token_transfer.memo,
