@@ -63,14 +63,21 @@ where
                         sdk_token_transfer.token_address
                     ))?;
 
-                if self.is_unique_name_token(&token_name, &mut working_set.borrow_mut()) {
-                    // Token name is unique, so it is safe to use it as denom
+                if self.token_was_created_by_ibc(
+                    &token_name,
+                    &sdk_token_transfer.token_address,
+                    &mut working_set.borrow_mut(),
+                ) {
+                    // The token was created by the IBC module, and the ICS-20
+                    // denom was stored in the token name. Hence, we need to use
+                    // the token name as denom.
                     token_name
                 } else {
-                    // Token name is not guaranteed to be unique, so we need to
-                    // make up a unique denom for this token. We use the
-                    // stringified token address, as it is guaranteed to be
-                    // unique.
+                    // This applies to all other tokens created on this
+                    // sovereign SDK chain. The token name is not guaranteed to
+                    // be unique, and hence we must use the token address (which
+                    // is guaranteed to be unique) as the ICS-20 denom to ensure
+                    // uniqueness.
                     sdk_token_transfer.token_address.to_string()
                 }
             };
@@ -103,17 +110,18 @@ where
         todo!()
     }
 
-    /// This function returns true if the token's name is unique. This is not
-    /// true for all tokens native to the Sovereign SDK, as the SDK only uses a
-    /// token's address as a unique identifier. The only tokens that are
-    /// guaranteed to have a unique name are the ones that were minted by the
-    /// IBC module, as these take their name from the ICS-20 token denom, which
-    /// is guaranteed to be unique.
-    fn is_unique_name_token(
+    /// This function returns true if the token to be sent was created by IBC.
+    /// This only occurs for tokens that are native to and received from other
+    /// chains; i.e. for tokens for which this chain isn't the source.
+    fn token_was_created_by_ibc(
         &self,
         token_name: &str,
+        token_address: &C::Address,
         working_set: &mut WorkingSet<C::Storage>,
     ) -> bool {
-        self.minted_tokens.get(token_name, working_set).is_some()
+        match self.minted_tokens.get(token_name, working_set) {
+            Some(minted_token_address) => minted_token_address == *token_address,
+            None => false,
+        }
     }
 }
