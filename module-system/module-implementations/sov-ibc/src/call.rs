@@ -3,10 +3,9 @@ use std::fmt::Debug;
 use std::rc::Rc;
 
 use anyhow::{bail, Result};
-use ibc::applications::transfer::msgs::transfer::MsgTransfer;
-use ibc::applications::transfer::send_transfer;
 use ibc::core::{dispatch, MsgEnvelope};
-use sov_ibc_transfer::context::{EscrowExtraData, TransferContext};
+use sov_ibc_transfer::call::SDKTokenTransfer;
+use sov_ibc_transfer::context::TransferContext;
 use sov_modules_api::CallResponse;
 use sov_state::WorkingSet;
 use thiserror::Error;
@@ -15,14 +14,7 @@ use crate::context::IbcExecutionContext;
 use crate::router::IbcRouter;
 use crate::Ibc;
 
-#[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
-pub struct RawMsgCreateClient {
-    client_state: Vec<u8>,
-    consensus_state: Vec<u8>,
-    signer: String,
-}
-
-// TODO: Put back when we change `MsgCreateClient` with `Core(MsgEnvelope)`
+// TODO: Uncomment following lines
 // #[cfg_attr(
 //     feature = "native",
 //     derive(schemars::JsonSchema),
@@ -32,11 +24,7 @@ pub struct RawMsgCreateClient {
 pub enum CallMessage<C: sov_modules_api::Context> {
     Core(MsgEnvelope),
 
-    // TODO: add Transfer message, and remove from transfer module
-    Transfer {
-        msg_transfer: MsgTransfer,
-        token_address: C::Address,
-    },
+    Transfer(SDKTokenTransfer<C>),
 }
 
 /// Example of a custom error.
@@ -67,8 +55,7 @@ impl<C: sov_modules_api::Context> Ibc<C> {
 
     pub(crate) fn transfer(
         &self,
-        msg_transfer: MsgTransfer,
-        token_address: C::Address,
+        sdk_token_transfer: SDKTokenTransfer<C>,
         context: &C,
         working_set: &mut WorkingSet<C::Storage>,
     ) -> Result<sov_modules_api::CallResponse> {
@@ -79,14 +66,13 @@ impl<C: sov_modules_api::Context> Ibc<C> {
         };
 
         let mut token_ctx =
-            TransferContext::new(self.transfer.clone(), context, shared_working_set);
+            TransferContext::new(self.transfer.clone(), context, shared_working_set.clone());
 
-        send_transfer(
+        self.transfer.transfer(
+            sdk_token_transfer,
             &mut execution_context,
             &mut token_ctx,
-            msg_transfer,
-            &EscrowExtraData { token_address },
-        )?;
-        todo!()
+            shared_working_set,
+        )
     }
 }

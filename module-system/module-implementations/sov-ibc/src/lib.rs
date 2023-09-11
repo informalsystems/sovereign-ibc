@@ -118,10 +118,9 @@ impl<C: sov_modules_api::Context> sov_modules_api::Module for Ibc<C> {
             call::CallMessage::Core(msg_envelope) => {
                 Ok(self.process_core_message(msg_envelope, context, working_set)?)
             }
-            call::CallMessage::Transfer {
-                msg_transfer,
-                token_address,
-            } => Ok(self.transfer(msg_transfer, token_address, context, working_set)?),
+            call::CallMessage::Transfer(sdk_token_transfer) => {
+                Ok(self.transfer(sdk_token_transfer, context, working_set)?)
+            }
         }
     }
 }
