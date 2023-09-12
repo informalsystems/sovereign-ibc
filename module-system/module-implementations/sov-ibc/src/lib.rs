@@ -8,7 +8,7 @@ pub mod genesis;
 pub(crate) mod context;
 mod router;
 
-use codec::ProtobufCodec;
+use codec::{AcknowledgementCommitmentCodec, PacketCommitmentCodec, ProtobufCodec};
 use context::clients::{AnyClientState, AnyConsensusState};
 use ibc::core::ics03_connection::connection::ConnectionEnd;
 use ibc::core::ics04_channel::channel::ChannelEnd;
@@ -20,7 +20,9 @@ use ibc::core::ics24_host::path::{
     ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
 };
 use ibc::core::timestamp::Timestamp;
-use ibc::Height;
+use ibc::{Any, Height};
+use ibc_proto::ibc::core::channel::v1::Channel as RawChannelEnd;
+use ibc_proto::ibc::core::connection::v1::ConnectionEnd as RawConnectionEnd;
 use sov_modules_api::Error;
 use sov_modules_macros::ModuleInfo;
 use sov_state::WorkingSet;
@@ -57,20 +59,21 @@ pub struct Ibc<C: sov_modules_api::Context> {
     client_update_heights_map: sov_state::StateMap<(ClientId, Height), Height>,
 
     #[state]
-    client_state_map: sov_state::StateMap<ClientId, AnyClientState, ProtobufCodec>,
+    client_state_map: sov_state::StateMap<ClientId, AnyClientState, ProtobufCodec<Any>>,
 
     #[state]
     consensus_state_map:
-        sov_state::StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec>,
+        sov_state::StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec<Any>>,
 
     #[state]
-    connection_end_map: sov_state::StateMap<ConnectionPath, ConnectionEnd>,
+    connection_end_map:
+        sov_state::StateMap<ConnectionPath, ConnectionEnd, ProtobufCodec<RawConnectionEnd>>,
 
     #[state]
     connection_ids_map: sov_state::StateMap<ClientConnectionPath, Vec<ConnectionId>>,
 
     #[state]
-    channel_end_map: sov_state::StateMap<ChannelEndPath, ChannelEnd>,
+    channel_end_map: sov_state::StateMap<ChannelEndPath, ChannelEnd, ProtobufCodec<RawChannelEnd>>,
 
     #[state]
     send_sequence_map: sov_state::StateMap<SeqSendPath, Sequence>,
@@ -82,13 +85,15 @@ pub struct Ibc<C: sov_modules_api::Context> {
     ack_sequence_map: sov_state::StateMap<SeqAckPath, Sequence>,
 
     #[state]
-    packet_commitment_map: sov_state::StateMap<CommitmentPath, PacketCommitment>,
+    packet_commitment_map:
+        sov_state::StateMap<CommitmentPath, PacketCommitment, PacketCommitmentCodec>,
 
     #[state]
     packet_receipt_map: sov_state::StateMap<ReceiptPath, Receipt>,
 
     #[state]
-    packet_ack_map: sov_state::StateMap<AckPath, AcknowledgementCommitment>,
+    packet_ack_map:
+        sov_state::StateMap<AckPath, AcknowledgementCommitment, AcknowledgementCommitmentCodec>,
 }
 
 impl<C: sov_modules_api::Context> sov_modules_api::Module for Ibc<C> {

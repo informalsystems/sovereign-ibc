@@ -119,7 +119,7 @@ where
     /// chains; i.e. for tokens for which this chain isn't the source.
     fn token_was_created_by_ibc(
         &self,
-        token_name: &str,
+        token_name: &String,
         token_address: &C::Address,
         working_set: &mut WorkingSet<C::Storage>,
     ) -> bool {
