@@ -14,12 +14,11 @@ use crate::context::IbcExecutionContext;
 use crate::router::IbcRouter;
 use crate::Ibc;
 
-// TODO: Uncomment following lines
-// #[cfg_attr(
-//     feature = "native",
-//     derive(schemars::JsonSchema),
-//     schemars(bound = "C::Address: ::schemars::JsonSchema", rename = "CallMessage")
-// )]
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    schemars(bound = "C::Address: ::schemars::JsonSchema", rename = "CallMessage")
+)]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
 pub enum CallMessage<C: sov_modules_api::Context> {
     Core(MsgEnvelope),

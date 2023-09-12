@@ -16,6 +16,11 @@ use sov_state::WorkingSet;
 use crate::context::EscrowExtraData;
 use crate::Transfer;
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    schemars(bound = "C::Address: ::schemars::JsonSchema", rename = "CallMessage")
+)]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
 pub struct SDKTokenTransfer<C: sov_modules_api::Context> {
     /// the port on which the packet will be sent
