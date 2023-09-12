@@ -21,6 +21,9 @@ use crate::Ibc;
 )]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
 pub enum CallMessage<C: sov_modules_api::Context> {
+    // Q: Should this be `Core(Any)` instead, so that we don't expose our `MsgEnvelope` to the rpc interface?
+    // In that case though, the bytes in `Any` would probably be encoded with `hex`, which imposes big parsing
+    // costs to the node.
     Core(MsgEnvelope),
 
     Transfer(SDKTokenTransfer<C>),
