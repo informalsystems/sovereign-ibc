@@ -14,7 +14,7 @@ pub mod proofs;
 
 use proofs::*;
 #[cfg(all(target_os = "zkvm", feature = "bench"))]
-use zk_cycle_macros::cycle_tracker;
+use sov_zk_cycle_macros::cycle_tracker;
 
 use self::address::CelestiaAddress;
 use crate::share_commit::recreate_commitment;
@@ -89,7 +89,13 @@ impl AsRef<TmHash> for tendermint::Hash {
 
 impl BlockHash for TmHash {}
 
-#[derive(serde::Serialize, serde::Deserialize)]
+impl From<TmHash> for [u8; 32] {
+    fn from(val: TmHash) -> Self {
+        *val.inner()
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq)]
 pub struct CelestiaSpec;
 
 impl DaSpec for CelestiaSpec {

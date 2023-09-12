@@ -7,7 +7,7 @@ use risc0_zkvm::{
 };
 use sov_rollup_interface::zk::{Zkvm, ZkvmHost};
 #[cfg(feature = "bench")]
-use zk_cycle_utils::{cycle_count_callback, get_syscall_name, get_syscall_name_cycles};
+use sov_zk_cycle_utils::{cycle_count_callback, get_syscall_name, get_syscall_name_cycles};
 
 #[cfg(feature = "bench")]
 use crate::metrics::metrics_callback;
@@ -78,6 +78,17 @@ impl<'prover> Zkvm for Risc0Host<'prover> {
     ) -> Result<&'a [u8], Self::Error> {
         verify_from_slice(serialized_proof, code_commitment)
     }
+
+    fn verify_and_extract_output<
+        Add: sov_rollup_interface::RollupAddress,
+        Da: sov_rollup_interface::da::DaSpec,
+    >(
+        serialized_proof: &[u8],
+        code_commitment: &Self::CodeCommitment,
+    ) -> Result<sov_rollup_interface::zk::StateTransition<Da, Add>, Self::Error> {
+        let output = Self::verify(serialized_proof, code_commitment)?;
+        Ok(risc0_zkvm::serde::from_slice(output)?)
+    }
 }
 
 pub struct Risc0Verifier;
@@ -92,6 +103,17 @@ impl Zkvm for Risc0Verifier {
         code_commitment: &Self::CodeCommitment,
     ) -> Result<&'a [u8], Self::Error> {
         verify_from_slice(serialized_proof, code_commitment)
+    }
+
+    fn verify_and_extract_output<
+        Add: sov_rollup_interface::RollupAddress,
+        Da: sov_rollup_interface::da::DaSpec,
+    >(
+        serialized_proof: &[u8],
+        code_commitment: &Self::CodeCommitment,
+    ) -> Result<sov_rollup_interface::zk::StateTransition<Da, Add>, Self::Error> {
+        let output = Self::verify(serialized_proof, code_commitment)?;
+        Ok(risc0_zkvm::serde::from_slice(output)?)
     }
 }
 

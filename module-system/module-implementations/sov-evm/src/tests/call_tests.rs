@@ -1,4 +1,4 @@
-use reth_primitives::TransactionKind;
+use reth_primitives::{Address, TransactionKind};
 use revm::primitives::{SpecId, KECCAK_EMPTY, U256};
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::default_signature::private_key::DefaultPrivateKey;
@@ -6,16 +6,15 @@ use sov_modules_api::{Context, Module, PrivateKey, Spec};
 use sov_state::{ProverStorage, WorkingSet};
 
 use crate::call::CallMessage;
-use crate::evm::EthAddress;
 use crate::smart_contracts::SimpleStorageContract;
-use crate::tests::dev_signer::DevSigner;
+use crate::tests::dev_signer::TestSigner;
 use crate::{AccountData, Evm, EvmConfig};
 type C = DefaultContext;
 
 fn create_messages(
-    contract_addr: EthAddress,
+    contract_addr: Address,
     set_arg: u32,
-    dev_signer: DevSigner,
+    dev_signer: TestSigner,
 ) -> Vec<CallMessage> {
     let mut transactions = Vec::default();
     let contract = SimpleStorageContract::default();
@@ -33,7 +32,7 @@ fn create_messages(
     {
         let signed_tx = dev_signer
             .sign_default_transaction(
-                TransactionKind::Call(contract_addr.into()),
+                TransactionKind::Call(contract_addr),
                 hex::decode(hex::encode(&contract.set_call_data(set_arg))).unwrap(),
                 1,
             )
@@ -57,15 +56,15 @@ fn evm_test() {
     let sender_addr = sender.to_address::<<C as Spec>::Address>();
     let sender_context = C::new(sender_addr);
 
-    let dev_signer: DevSigner = DevSigner::new_random();
-    let caller = dev_signer.address;
+    let dev_signer: TestSigner = TestSigner::new_random();
+    let caller = dev_signer.address();
 
     let evm = Evm::<C>::default();
 
     let data = AccountData {
         address: caller,
-        balance: U256::from(1000000000).to_le_bytes(),
-        code_hash: KECCAK_EMPTY.to_fixed_bytes(),
+        balance: U256::from(1000000000),
+        code_hash: KECCAK_EMPTY,
         code: vec![],
         nonce: 0,
     };
@@ -78,10 +77,11 @@ fn evm_test() {
 
     evm.genesis(&config, working_set).unwrap();
 
-    let contract_addr = hex::decode("819c5497b157177315e1204f52e588b393771719")
-        .unwrap()
-        .try_into()
-        .unwrap();
+    let contract_addr: Address = Address::from_slice(
+        hex::decode("819c5497b157177315e1204f52e588b393771719")
+            .unwrap()
+            .as_slice(),
+    );
 
     let set_arg = 999;
 
@@ -90,8 +90,7 @@ fn evm_test() {
     }
 
     let db_account = evm.accounts.get(&contract_addr, working_set).unwrap();
-    let storage_key = &[0; 32];
-    let storage_value = db_account.storage.get(storage_key, working_set).unwrap();
+    let storage_value = db_account.storage.get(&U256::ZERO, working_set).unwrap();
 
-    assert_eq!(set_arg.to_le_bytes(), storage_value[0..4])
+    assert_eq!(U256::from(set_arg), storage_value)
 }
