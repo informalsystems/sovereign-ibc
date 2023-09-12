@@ -118,7 +118,6 @@ impl<C: sov_modules_api::Context> sov_modules_api::Module for Ibc<C> {
         context: &Self::Context,
         working_set: &mut WorkingSet<C::Storage>,
     ) -> Result<sov_modules_api::CallResponse, Error> {
-        // Note: Here, we would convert into a `MsgEnvelope`, and send to `dispatch()` (i.e. no match statement)
         match msg {
             call::CallMessage::Core(msg_envelope) => {
                 Ok(self.process_core_message(msg_envelope, context, working_set)?)
