@@ -1,5 +1,6 @@
 pub(crate) mod clients;
 
+use core::time::Duration;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -347,8 +348,11 @@ where
             )
     }
 
-    fn max_expected_time_per_block(&self) -> core::time::Duration {
-        todo!()
+    fn max_expected_time_per_block(&self) -> Duration {
+        // This effectively cancels the check on connection block delays. This
+        // is a workaround until there is a way for us to know the DA's block
+        // time.
+        Duration::ZERO 
     }
 
     fn validate_message_signer(&self, signer: &ibc::Signer) -> Result<(), ContextError> {
