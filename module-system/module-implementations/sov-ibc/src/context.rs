@@ -349,9 +349,10 @@ where
     }
 
     fn max_expected_time_per_block(&self) -> Duration {
-        // This effectively cancels the check on connection block delays. This
-        // is a workaround until there is a way for us to know the DA's block
-        // time.
+        // This effectively cancels the check on connection block delays. Not
+        // all DAs have predictable block times (such as Bitcoin and Avalanche),
+        // so we cannot support connection block delays as they are defined
+        // today.
         Duration::ZERO 
     }
 
