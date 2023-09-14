@@ -393,7 +393,7 @@ where
 
     /// This is called in a `send_transfer()` in the case where we are the token source
     fn escrow_coins_execute(
-        &self,
+        &mut self,
         port_id: &PortId,
         channel_id: &ChannelId,
         from_account: &Self::AccountId,
@@ -427,7 +427,7 @@ where
     ///
     /// For more details, see note in `unescrow_coins_validate()`.
     fn unescrow_coins_execute(
-        &self,
+        &mut self,
         port_id: &PortId,
         channel_id: &ChannelId,
         to_account: &Self::AccountId,
