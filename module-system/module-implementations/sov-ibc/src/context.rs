@@ -131,13 +131,35 @@ where
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        let slot_height = self.ibc.chain_state.get_slot_height(&mut self.working_set.borrow_mut());
+        let slot_height = self
+            .ibc
+            .chain_state
+            .get_slot_height(&mut self.working_set.borrow_mut());
 
         Ok(Height::new(HOST_REVISION_NUMBER, slot_height)?)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        todo!()
+        let chain_time = self
+            .ibc
+            .chain_state
+            .get_time(&mut self.working_set.borrow_mut());
+
+        if chain_time.secs() < 0 {
+            // FIXME: at least add a `ContextError::Host` enum variant, and use that here
+            return Err(ContextError::ClientError(ClientError::Other {
+                description: format!("Invalid host chain time: {}", chain_time.secs()),
+            }));
+        }
+
+        let time_in_nanos: u64 =
+            (chain_time.secs() as u64) * 10u64.pow(9) + chain_time.subsec_nanos() as u64;
+
+        // FIXME: at least add a `ContextError::Host` enum variant, and use that here
+        let timestamp = Timestamp::from_nanoseconds(time_in_nanos)
+            .map_err(PacketError::InvalidPacketTimestamp)?;
+
+        Ok(timestamp)
     }
 
     fn host_consensus_state(
