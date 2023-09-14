@@ -25,6 +25,9 @@ use sov_state::WorkingSet;
 
 use crate::Ibc;
 
+/// The SDK doesn't have a concept of a "revision number", so we default to 1
+const HOST_REVISION_NUMBER: u64 = 1;
+
 pub struct IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,
@@ -128,7 +131,9 @@ where
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        todo!()
+        let slot_height = self.ibc.chain_state.get_slot_height(&mut self.working_set.borrow_mut());
+
+        Ok(Height::new(HOST_REVISION_NUMBER, slot_height)?)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
