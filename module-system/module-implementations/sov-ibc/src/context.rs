@@ -352,7 +352,7 @@ where
     }
 
     fn validate_message_signer(&self, signer: &ibc::Signer) -> Result<(), ContextError> {
-        todo!()
+        Ok(())
     }
 }
 
