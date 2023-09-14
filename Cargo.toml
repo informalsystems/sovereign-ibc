@@ -96,9 +96,11 @@ tempfile = "3.5"
 tokio = { version = "1", features = ["full"] }
 ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "c126e7f", features = ["borsh", "schema", "serde"]}
 ibc-proto = { version = "0.34.1", default-features = false, features = ["borsh"] }
+lazy_static = "1.4.0"
 
 
 # EVM dependencies
+ethereum-types = "0.14.1"
 ethers = "=2.0.8"
 ethers-core = "=2.0.8"
 ethers-contract = "=2.0.8"
@@ -108,7 +110,6 @@ ethers-middleware = "=2.0.8"
 
 reth-primitives = { git = "https://github.com/paradigmxyz/reth", rev = "4ab924c5d361bbfdcdad9f997d16d67b4a1730b7" }
 reth-rpc-types = { git = "https://github.com/paradigmxyz/reth", rev = "4ab924c5d361bbfdcdad9f997d16d67b4a1730b7" }
-reth-rpc = { git = "https://github.com/paradigmxyz/reth", rev = "4ab924c5d361bbfdcdad9f997d16d67b4a1730b7" }
 reth-revm = { git = "https://github.com/paradigmxyz/reth", rev = "4ab924c5d361bbfdcdad9f997d16d67b4a1730b7" }
 
 revm = { git = "https://github.com/bluealloy/revm/", branch = "release/v25" }
