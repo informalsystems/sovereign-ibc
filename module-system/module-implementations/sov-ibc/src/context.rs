@@ -25,14 +25,19 @@ use sov_state::WorkingSet;
 
 use crate::Ibc;
 
-pub struct IbcExecutionContext<'a, C: sov_modules_api::Context> {
-    pub ibc: &'a Ibc<C>,
+pub struct IbcExecutionContext<'a, C, Da>
+where
+    C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
+{
+    pub ibc: &'a Ibc<C, Da>,
     pub working_set: Rc<RefCell<&'a mut WorkingSet<C::Storage>>>,
 }
 
-impl<'a, C> ValidationContext for IbcExecutionContext<'a, C>
+impl<'a, C, Da> ValidationContext for IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     type ClientValidationContext = Self;
     type E = Self;
@@ -324,9 +329,10 @@ where
     }
 }
 
-impl<'a, C> ExecutionContext for IbcExecutionContext<'a, C>
+impl<'a, C, Da> ExecutionContext for IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     fn get_client_execution_context(&mut self) -> &mut Self::E {
         self
