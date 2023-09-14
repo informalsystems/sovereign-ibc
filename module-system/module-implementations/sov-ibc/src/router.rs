@@ -19,13 +19,13 @@ where
     _da: PhantomData<Da>,
 }
 
-impl<'t, 'ws, 'c, C, Da> IbcRouter<'ws, 'c, C, Da>
+impl<'ws, 'c, C, Da> IbcRouter<'ws, 'c, C, Da>
 where
     C: sov_modules_api::Context,
     Da: sov_modules_api::DaSpec,
 {
     pub fn new(
-        ibc_mod: &'t Ibc<C, Da>,
+        ibc_mod: &Ibc<C, Da>,
         sdk_context: &'c C,
         working_set: Rc<RefCell<&'ws mut WorkingSet<C::Storage>>>,
     ) -> IbcRouter<'ws, 'c, C, Da> {
