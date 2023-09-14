@@ -46,7 +46,7 @@ impl<C: sov_modules_api::Context> Ibc<C> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         let mut execution_context = IbcExecutionContext {
-            ibc: self,
+            ibc: self.clone(),
             working_set: shared_working_set.clone(),
         };
 
@@ -66,7 +66,7 @@ impl<C: sov_modules_api::Context> Ibc<C> {
     ) -> Result<sov_modules_api::CallResponse> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
         let mut execution_context = IbcExecutionContext {
-            ibc: self,
+            ibc: self.clone(),
             working_set: shared_working_set.clone(),
         };
 

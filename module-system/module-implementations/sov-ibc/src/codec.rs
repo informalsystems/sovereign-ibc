@@ -6,7 +6,7 @@ use ibc_proto::protobuf::{Error, Protobuf};
 use prost::Message;
 use sov_state::codec::{BorshCodec, StateCodec, StateValueCodec};
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct ProtobufCodec<Raw> {
     borsh_codec: BorshCodec,
     _raw: PhantomData<Raw>,
@@ -43,7 +43,7 @@ impl<Raw> StateCodec for ProtobufCodec<Raw> {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct PacketCommitmentCodec {
     borsh_codec: BorshCodec,
 }
@@ -74,7 +74,7 @@ impl StateCodec for PacketCommitmentCodec {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct AcknowledgementCommitmentCodec {
     borsh_codec: BorshCodec,
 }

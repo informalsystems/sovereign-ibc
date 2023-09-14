@@ -14,7 +14,7 @@ resolver = "2"
 [dependencies]
 anyhow = { workspace = true }
 sov-bank = { path = "../sov-bank", default-features = false }
-sov-ibc-transfer = { path = "../sov-ibc-transfer", default-features = false }
+sov-ibc-transfer = { path = "../sov-ibc-transfer", default-features = false, features = ["native"] }
 sov-modules-api = { path = "../../sov-modules-api", default-features = false }
 sov-modules-macros = { path = "../../sov-modules-macros" }
 sov-state = { path = "../../sov-state", default-features = false }
@@ -34,10 +34,10 @@ derive_more = { version = "0.99", default-features = false, features = ["from", 
 
 
 [dev-dependencies]
-sov-modules-api = { path = "../../sov-modules-api" }
+tendermint-testgen = { version = "0.33", default-features = false }
 tempfile = { workspace = true }
 
 [features]
 default = ["native"]
 serde = ["dep:serde", "dep:serde_json"]
-native = ["serde", "sov-modules-api/native", "dep:schemars"]
+native = ["serde", "sov-modules-api/native", "schemars"]

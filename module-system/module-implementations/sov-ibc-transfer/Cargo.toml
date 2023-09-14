@@ -26,10 +26,9 @@ uint = "0.9"
 borsh = { workspace = true, features = ["rc"] }
 
 [dev-dependencies]
-sov-modules-api = { path = "../../sov-modules-api" }
 tempfile = { workspace = true }
 
 [features]
 default = ["native"]
 serde = ["dep:serde", "dep:serde_json"]
-native = ["serde", "sov-modules-api/native", "dep:schemars"]
+native = ["serde", "sov-modules-api/native", "schemars"]
