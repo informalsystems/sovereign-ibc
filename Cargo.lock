@@ -6614,6 +6614,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sov-bank",
+ "sov-chain-state",
  "sov-ibc-transfer",
  "sov-modules-api",
  "sov-modules-macros",

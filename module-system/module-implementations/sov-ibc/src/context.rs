@@ -1,5 +1,6 @@
 pub(crate) mod clients;
 
+use core::time::Duration;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -25,14 +26,22 @@ use sov_state::WorkingSet;
 
 use crate::Ibc;
 
-pub struct IbcExecutionContext<'a, C: sov_modules_api::Context> {
-    pub ibc: &'a Ibc<C>,
+/// The SDK doesn't have a concept of a "revision number", so we default to 1
+const HOST_REVISION_NUMBER: u64 = 1;
+
+pub struct IbcExecutionContext<'a, C, Da>
+where
+    C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
+{
+    pub ibc: &'a Ibc<C, Da>,
     pub working_set: Rc<RefCell<&'a mut WorkingSet<C::Storage>>>,
 }
 
-impl<'a, C> ValidationContext for IbcExecutionContext<'a, C>
+impl<'a, C, Da> ValidationContext for IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     type ClientValidationContext = Self;
     type E = Self;
@@ -123,11 +132,35 @@ where
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        todo!()
+        let slot_height = self
+            .ibc
+            .chain_state
+            .get_slot_height(&mut self.working_set.borrow_mut());
+
+        Ok(Height::new(HOST_REVISION_NUMBER, slot_height)?)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        todo!()
+        let chain_time = self
+            .ibc
+            .chain_state
+            .get_time(&mut self.working_set.borrow_mut());
+
+        if chain_time.secs() < 0 {
+            // FIXME: at least add a `ContextError::Host` enum variant, and use that here
+            return Err(ContextError::ClientError(ClientError::Other {
+                description: format!("Invalid host chain time: {}", chain_time.secs()),
+            }));
+        }
+
+        let time_in_nanos: u64 =
+            (chain_time.secs() as u64) * 10u64.pow(9) + chain_time.subsec_nanos() as u64;
+
+        // FIXME: at least add a `ContextError::Host` enum variant, and use that here
+        let timestamp = Timestamp::from_nanoseconds(time_in_nanos)
+            .map_err(PacketError::InvalidPacketTimestamp)?;
+
+        Ok(timestamp)
     }
 
     fn host_consensus_state(
@@ -315,18 +348,23 @@ where
             )
     }
 
-    fn max_expected_time_per_block(&self) -> core::time::Duration {
-        todo!()
+    fn max_expected_time_per_block(&self) -> Duration {
+        // This effectively cancels the check on connection block delays. Not
+        // all DAs have predictable block times (such as Bitcoin and Avalanche),
+        // so we cannot support connection block delays as they are defined
+        // today.
+        Duration::ZERO 
     }
 
     fn validate_message_signer(&self, signer: &ibc::Signer) -> Result<(), ContextError> {
-        todo!()
+        Ok(())
     }
 }
 
-impl<'a, C> ExecutionContext for IbcExecutionContext<'a, C>
+impl<'a, C, Da> ExecutionContext for IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     fn get_client_execution_context(&mut self) -> &mut Self::E {
         self
@@ -569,7 +607,7 @@ where
         Ok(())
     }
 
-    /// TODO: To implement this method there should be a way for IBC module to
+    /// FIXME: To implement this method there should be a way for IBC module to
     /// insert logs into the transaction receipts upon execution
     fn log_message(&mut self, message: String) -> Result<(), ContextError> {
         Ok(())

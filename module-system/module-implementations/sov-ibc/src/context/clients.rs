@@ -148,13 +148,14 @@ impl ClientStateCommon for AnyClientState {
     }
 }
 
-impl<'a, C> ClientStateExecution<IbcExecutionContext<'a, C>> for AnyClientState
+impl<'a, C, Da> ClientStateExecution<IbcExecutionContext<'a, C, Da>> for AnyClientState
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     fn initialise(
         &self,
-        ctx: &mut IbcExecutionContext<'a, C>,
+        ctx: &mut IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
         consensus_state: ibc::Any,
     ) -> Result<(), ClientError> {
@@ -165,7 +166,7 @@ where
 
     fn update_state(
         &self,
-        ctx: &mut IbcExecutionContext<'a, C>,
+        ctx: &mut IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
         header: ibc::Any,
     ) -> Result<Vec<ibc::Height>, ClientError> {
@@ -176,7 +177,7 @@ where
 
     fn update_state_on_misbehaviour(
         &self,
-        ctx: &mut IbcExecutionContext<'a, C>,
+        ctx: &mut IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
         client_message: ibc::Any,
         update_kind: &UpdateKind,
@@ -190,7 +191,7 @@ where
 
     fn update_state_on_upgrade(
         &self,
-        ctx: &mut IbcExecutionContext<'a, C>,
+        ctx: &mut IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
         upgraded_client_state: ibc::Any,
         upgraded_consensus_state: ibc::Any,
@@ -206,13 +207,14 @@ where
     }
 }
 
-impl<'a, C> ClientStateValidation<IbcExecutionContext<'a, C>> for AnyClientState
+impl<'a, C, Da> ClientStateValidation<IbcExecutionContext<'a, C, Da>> for AnyClientState
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     fn verify_client_message(
         &self,
-        ctx: &IbcExecutionContext<'a, C>,
+        ctx: &IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
         client_message: ibc::Any,
         update_kind: &UpdateKind,
@@ -226,7 +228,7 @@ where
 
     fn check_for_misbehaviour(
         &self,
-        ctx: &IbcExecutionContext<'a, C>,
+        ctx: &IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
         client_message: ibc::Any,
         update_kind: &UpdateKind,
@@ -240,7 +242,7 @@ where
 
     fn status(
         &self,
-        ctx: &IbcExecutionContext<'a, C>,
+        ctx: &IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
     ) -> Result<Status, ClientError> {
         match self {
@@ -249,9 +251,10 @@ where
     }
 }
 
-impl<'a, C> ClientExecutionContext for IbcExecutionContext<'a, C>
+impl<'a, C, Da> ClientExecutionContext for IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     type ClientValidationContext = <Self as ValidationContext>::ClientValidationContext;
     type AnyClientState = <Self as ValidationContext>::AnyClientState;
@@ -286,9 +289,10 @@ where
     }
 }
 
-impl<'a, C> TmCommonContext for IbcExecutionContext<'a, C>
+impl<'a, C, Da> TmCommonContext for IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     type ConversionError = &'static str;
     type AnyConsensusState = AnyConsensusState;
@@ -301,9 +305,10 @@ where
     }
 }
 
-impl<'a, C> TmValidationContext for IbcExecutionContext<'a, C>
+impl<'a, C, Da> TmValidationContext for IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         <Self as ValidationContext>::host_timestamp(self)

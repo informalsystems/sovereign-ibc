@@ -3,7 +3,11 @@ use sov_state::WorkingSet;
 
 use crate::Ibc;
 
-impl<C: sov_modules_api::Context> Ibc<C> {
+impl<C, Da> Ibc<C, Da>
+where
+    C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
+{
     pub(crate) fn init_module(
         &self,
         _config: &<Self as sov_modules_api::Module>::Config,

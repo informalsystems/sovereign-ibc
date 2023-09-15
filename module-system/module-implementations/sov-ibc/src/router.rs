@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::marker::PhantomData;
 use std::rc::Rc;
 
 use ibc::applications::transfer::{MODULE_ID_STR, PORT_ID_STR};
@@ -9,28 +10,36 @@ use sov_state::WorkingSet;
 
 use crate::Ibc;
 
-pub struct IbcRouter<'ws, 'c, C: sov_modules_api::Context> {
-    pub transfer_ctx: TransferContext<'ws, 'c, C>,
-}
-
-impl<'t, 'ws, 'c, C> IbcRouter<'ws, 'c, C>
+pub struct IbcRouter<'ws, 'c, C, Da>
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
+{
+    pub transfer_ctx: TransferContext<'ws, 'c, C>,
+    _da: PhantomData<Da>,
+}
+
+impl<'ws, 'c, C, Da> IbcRouter<'ws, 'c, C, Da>
+where
+    C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     pub fn new(
-        ibc_mod: &'t Ibc<C>,
+        ibc_mod: &Ibc<C, Da>,
         sdk_context: &'c C,
         working_set: Rc<RefCell<&'ws mut WorkingSet<C::Storage>>>,
-    ) -> IbcRouter<'ws, 'c, C> {
+    ) -> IbcRouter<'ws, 'c, C, Da> {
         IbcRouter {
             transfer_ctx: TransferContext::new(ibc_mod.transfer.clone(), sdk_context, working_set),
+            _da: PhantomData,
         }
     }
 }
 
-impl<'ws, 'c, C> Router for IbcRouter<'ws, 'c, C>
+impl<'ws, 'c, C, Da> Router for IbcRouter<'ws, 'c, C, Da>
 where
     C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
 {
     fn get_route(&self, module_id: &ModuleId) -> Option<&dyn router::Module> {
         if *module_id == ModuleId::new(MODULE_ID_STR.to_string()) {
