@@ -22,7 +22,7 @@ use ibc::core::ics24_host::path::{
 use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::Height;
 use sov_bank::Bank;
-use sov_modules_api::Context;
+use sov_modules_api::{Context, DaSpec};
 use sov_state::WorkingSet;
 use tendermint::{Hash, Time};
 
@@ -32,20 +32,26 @@ use crate::test_utils::cosmos::helpers::dummy_tm_client_state;
 use crate::Ibc;
 
 /// Defines test fixture structure to interact with the bank and ibc modules
-pub struct TestApp<'a, C: Context> {
+pub struct TestApp<'a, C, Da>
+where
+    C: Context,
+    Da: DaSpec,
+{
     chain_id: ChainId,
     sdk_ctx: C,
-    bank: Bank<C>,
-    ibc_ctx: IbcExecutionContext<'a, C>,
+    ibc_ctx: IbcExecutionContext<'a, C, Da>,
 }
 
-impl<'a, C: Context> TestApp<'a, C> {
+impl<'a, C, Da> TestApp<'a, C, Da>
+where
+    C: Context,
+    Da: DaSpec + Clone,
+{
     /// Initializes the test fixture
     pub fn new(
         chain_id: ChainId,
         sdk_ctx: C,
-        bank: Bank<C>,
-        ibc: Ibc<C>,
+        ibc: &'a Ibc<C, Da>,
         working_set: &'a mut WorkingSet<C::Storage>,
     ) -> Self {
         let shared_working_set = Rc::new(RefCell::new(working_set));
@@ -58,7 +64,6 @@ impl<'a, C: Context> TestApp<'a, C> {
         Self {
             chain_id,
             sdk_ctx,
-            bank,
             ibc_ctx: ibc_execution_ctx,
         }
     }
@@ -78,10 +83,10 @@ impl<'a, C: Context> TestApp<'a, C> {
 
     /// Returns access to the bank module
     pub fn bank(&self) -> &Bank<C> {
-        &self.bank
+        &self.transfer().bank
     }
 
-    pub fn ibc_ctx(&self) -> IbcExecutionContext<'a, C> {
+    pub fn ibc_ctx(&self) -> IbcExecutionContext<'a, C, Da> {
         self.ibc_ctx.clone()
     }
 

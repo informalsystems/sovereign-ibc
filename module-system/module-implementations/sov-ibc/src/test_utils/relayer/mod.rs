@@ -1,5 +1,6 @@
 use basecoin_store::impls::InMemoryStore;
 use sov_modules_api::default_context::DefaultContext;
+use sov_rollup_interface::mocks::MockDaSpec;
 
 use self::relay::MockRelayer;
 use super::cosmos::app::MockCosmosChain;
@@ -10,4 +11,5 @@ pub mod handle;
 pub mod relay;
 
 /// Concrete type for the relayer between a mock sovereign chain and a mock
-pub type Relayer<'a> = MockRelayer<TestApp<'a, DefaultContext>, MockCosmosChain<InMemoryStore>>;
+pub type Relayer<'a> =
+    MockRelayer<TestApp<'a, DefaultContext, MockDaSpec>, MockCosmosChain<InMemoryStore>>;

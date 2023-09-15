@@ -11,10 +11,13 @@ use super::cosmos::helpers::dummy_signer;
 use super::relayer::Relayer;
 use crate::test_utils::cosmos::builder::CosmosBuilder;
 use crate::test_utils::relayer::relay::MockRelayer;
-use crate::test_utils::sovereign::builder::Builder;
+use crate::test_utils::sovereign::builder::DefaultBuilder;
 
 /// Set ups a relayer between a mock sovereign chain and a mock cosmos chain
-pub async fn sovereign_cosmos_setup(sov_builder: &mut Builder, with_manual_tao: bool) -> Relayer {
+pub async fn sovereign_cosmos_setup(
+    sov_builder: &mut DefaultBuilder,
+    with_manual_tao: bool,
+) -> Relayer {
     let mut sov_chain = sov_builder.build();
 
     let sov_client_counter = sov_chain.ibc_ctx().client_counter().unwrap();

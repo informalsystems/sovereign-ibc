@@ -9,11 +9,11 @@ use tokio::time::sleep;
 use crate::test_utils::relayer::handle::Handle;
 use crate::test_utils::relayer::relay::build_msg_recv_packet_for_sov;
 use crate::test_utils::setup::sovereign_cosmos_setup;
-use crate::test_utils::sovereign::builder::Builder;
+use crate::test_utils::sovereign::builder::DefaultBuilder;
 
 #[tokio::test]
 async fn test_sdk_token_transfer() {
-    let mut src_builder = Builder::default();
+    let mut src_builder = DefaultBuilder::default();
 
     let token = src_builder.get_tokens().first().unwrap();
 
@@ -60,7 +60,7 @@ async fn test_sdk_token_transfer() {
 // cosmos chain
 #[tokio::test]
 async fn test_recv_packet() {
-    let mut src_builder = Builder::default();
+    let mut src_builder = DefaultBuilder::default();
 
     let rly = sovereign_cosmos_setup(&mut src_builder, true).await;
 

@@ -50,7 +50,7 @@ where
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         let mut execution_context = IbcExecutionContext {
-            ibc: self.clone(),
+            ibc: self,
             working_set: shared_working_set.clone(),
         };
 
@@ -70,7 +70,7 @@ where
     ) -> Result<sov_modules_api::CallResponse> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
         let mut execution_context = IbcExecutionContext {
-            ibc: self.clone(),
+            ibc: self,
             working_set: shared_working_set.clone(),
         };
 

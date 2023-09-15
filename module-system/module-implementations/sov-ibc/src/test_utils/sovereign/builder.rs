@@ -1,84 +1,72 @@
 use ibc::core::ics24_host::identifier::ChainId;
-use sov_bank::{Bank, BankConfig, TokenConfig};
+use sov_bank::TokenConfig;
 use sov_modules_api::default_context::DefaultContext;
-use sov_modules_api::{Context, Module};
+use sov_modules_api::Context;
+use sov_rollup_interface::mocks::MockDaSpec;
 use sov_state::{DefaultStorageSpec, ProverStorage, WorkingSet};
 
 use super::app::TestApp;
-use super::config::create_bank_config;
-use crate::{ExampleModuleConfig, Ibc};
+use super::config::TestConfig;
+use super::runtime::TestRuntime;
 
 /// Defines a test fixture builder with default configurations and specs
-pub struct Builder {
+pub struct DefaultBuilder {
     chain_id: ChainId,
-    bank_config: BankConfig<DefaultContext>,
-    ibc_config: ExampleModuleConfig,
+    config: TestConfig<DefaultContext>,
+    runtime: TestRuntime<DefaultContext, MockDaSpec>,
     working_set: WorkingSet<ProverStorage<DefaultStorageSpec>>,
 }
 
-impl Default for Builder {
+impl Default for DefaultBuilder {
     fn default() -> Self {
         let chain_id = ChainId::new("ibc", 0).unwrap();
 
-        let initial_balance = 1000;
-
-        let address_count = 3;
-
-        let bank_config = create_bank_config(address_count, initial_balance);
-
         let tmpdir = tempfile::tempdir().unwrap();
 
-        let working_set = WorkingSet::new(ProverStorage::with_path(tmpdir.path()).unwrap());
+        let mut working_set = WorkingSet::new(ProverStorage::with_path(tmpdir.path()).unwrap());
 
-        Self::new(chain_id, bank_config, ExampleModuleConfig {}, working_set)
+        let cfg = TestConfig::default();
+
+        let mut runtime = TestRuntime::default();
+
+        runtime.genesis(&cfg, &mut working_set);
+
+        Self::new(chain_id, cfg, runtime, working_set)
     }
 }
 
-impl Builder {
+impl DefaultBuilder {
     /// Creates a new test fixture builder with default storage spec
     pub fn new(
         chain_id: ChainId,
-        bank_config: BankConfig<DefaultContext>,
-        ibc_config: ExampleModuleConfig,
+        config: TestConfig<DefaultContext>,
+        runtime: TestRuntime<DefaultContext, MockDaSpec>,
         working_set: WorkingSet<ProverStorage<DefaultStorageSpec>>,
     ) -> Self {
         Self {
             chain_id,
+            config,
+            runtime,
             working_set,
-            bank_config,
-            ibc_config: ExampleModuleConfig {},
         }
     }
 
     /// Returns list of tokens in the bank configuration
     pub fn get_tokens(&self) -> &Vec<TokenConfig<DefaultContext>> {
-        &self.bank_config.tokens
+        &self.config.bank_config.tokens
     }
 
     /// Builds a test fixture with default configuration
-    pub fn build<'a>(&'a mut self) -> TestApp<'a, DefaultContext> {
-        // Initialize the bank module
-        let bank = Bank::<DefaultContext>::default();
-        bank.genesis(&self.bank_config, &mut self.working_set)
-            .unwrap();
-
-        // Initialize the ibc module
-        let ibc = Ibc::<DefaultContext>::default();
-        ibc.genesis(&self.ibc_config, &mut self.working_set)
-            .unwrap();
-
-        let relayer_address = self.bank_config.tokens[0]
+    pub fn build<'a>(&'a mut self) -> TestApp<'a, DefaultContext, MockDaSpec> {
+        let relayer_address = self.config.bank_config.tokens[0]
             .address_and_balances
             .last()
             .unwrap();
 
-        let sdk_ctx = DefaultContext::new(relayer_address.0);
-
-        TestApp::<'a, DefaultContext>::new(
+        TestApp::<'a, DefaultContext, MockDaSpec>::new(
             self.chain_id.clone(),
-            sdk_ctx,
-            bank,
-            ibc,
+            DefaultContext::new(relayer_address.0),
+            &self.runtime.ibc,
             &mut self.working_set,
         )
     }

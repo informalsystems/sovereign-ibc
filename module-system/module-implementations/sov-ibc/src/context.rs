@@ -29,6 +29,7 @@ use crate::Ibc;
 /// The SDK doesn't have a concept of a "revision number", so we default to 1
 const HOST_REVISION_NUMBER: u64 = 1;
 
+#[derive(Clone)]
 pub struct IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,

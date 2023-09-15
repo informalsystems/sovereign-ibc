@@ -6,11 +6,11 @@ use tokio::time::sleep;
 
 use crate::test_utils::relayer::handle::Handle;
 use crate::test_utils::setup::sovereign_cosmos_setup;
-use crate::test_utils::sovereign::builder::Builder;
+use crate::test_utils::sovereign::builder::DefaultBuilder;
 
 #[tokio::test]
 async fn test_create_client() {
-    let mut sovereign_builder = Builder::default();
+    let mut sovereign_builder = DefaultBuilder::default();
 
     let rly = sovereign_cosmos_setup(&mut sovereign_builder, false).await;
 
@@ -31,7 +31,7 @@ async fn test_create_client() {
 
 #[tokio::test]
 async fn test_update_client() {
-    let mut sovereign_builder = Builder::default();
+    let mut sovereign_builder = DefaultBuilder::default();
 
     let rly = sovereign_cosmos_setup(&mut sovereign_builder, false).await;
 

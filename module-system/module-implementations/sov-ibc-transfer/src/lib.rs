@@ -22,7 +22,7 @@ pub struct Transfer<C: sov_modules_api::Context> {
 
     /// Reference to the Bank module.
     #[module]
-    pub(crate) bank: sov_bank::Bank<C>,
+    pub bank: sov_bank::Bank<C>,
 
     /// Keeps track of the address of each token we minted by token denom.
     #[state]
