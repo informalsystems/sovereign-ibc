@@ -41,13 +41,16 @@ pub struct ExampleModuleConfig {}
 /// utilized to form prefixes for `state` fields. This naming adheres to the
 /// module naming convention used throughout the codebase, ensuring created
 /// prefixes by modules are in harmony.
-#[derive(ModuleInfo, Clone)]
-pub struct Ibc<C: sov_modules_api::Context> {
+#[derive(ModuleInfo)]
+pub struct Ibc<C: sov_modules_api::Context, Da: sov_modules_api::DaSpec> {
     #[address]
     pub address: C::Address,
 
     #[module]
     pub(crate) transfer: sov_ibc_transfer::Transfer<C>,
+
+    #[module]
+    pub(crate) chain_state: sov_chain_state::ChainState<C, Da>,
 
     #[state]
     client_counter: sov_state::StateValue<u64>,
@@ -102,7 +105,11 @@ pub struct Ibc<C: sov_modules_api::Context> {
         sov_state::StateMap<AckPath, AcknowledgementCommitment, AcknowledgementCommitmentCodec>,
 }
 
-impl<C: sov_modules_api::Context> sov_modules_api::Module for Ibc<C> {
+impl<C, Da> sov_modules_api::Module for Ibc<C, Da>
+where
+    C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
+{
     type Context = C;
 
     type Config = ExampleModuleConfig;

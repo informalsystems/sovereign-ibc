@@ -36,7 +36,11 @@ pub enum CallMessage<C: sov_modules_api::Context> {
 #[derive(Debug, Error)]
 enum SetValueError {}
 
-impl<C: sov_modules_api::Context> Ibc<C> {
+impl<C, Da> Ibc<C, Da>
+where
+    C: sov_modules_api::Context,
+    Da: sov_modules_api::DaSpec,
+{
     pub(crate) fn process_core_message(
         &self,
         msg: MsgEnvelope,
