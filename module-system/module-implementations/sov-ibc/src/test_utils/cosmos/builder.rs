@@ -38,16 +38,16 @@ impl CosmosBuilder {
         }
     }
 
-    pub fn build_chain<S>(&mut self, store: S) -> Arc<MockCosmosChain<S>>
+    pub fn build_chain<S>(&mut self, store: S) -> MockCosmosChain<S>
     where
         S: ProvableStore + Debug + Default,
     {
-        let chain = Arc::new(MockCosmosChain::new(
+        let chain = MockCosmosChain::new(
             self.runtime.clone(),
             self.chain_id.clone(),
             self.validators.clone(),
             store,
-        ));
+        );
 
         chain.run();
 

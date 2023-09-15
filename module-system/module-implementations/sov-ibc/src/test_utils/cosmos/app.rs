@@ -5,21 +5,38 @@ use std::time::Duration;
 use basecoin_app::modules::auth::Auth;
 use basecoin_app::modules::bank::Bank;
 use basecoin_app::modules::context::{prefix, Identifiable};
-use basecoin_app::modules::ibc::{Ibc, IbcContext};
+use basecoin_app::modules::ibc::{AnyConsensusState, Ibc, IbcContext};
 use basecoin_app::modules::types::IdentifiedModule;
 use basecoin_app::{BaseCoinApp, Builder};
 use basecoin_store::context::{ProvableStore, Store};
 use basecoin_store::impls::RevertibleStore;
 use basecoin_store::utils::SharedRwExt;
+use ibc::clients::ics07_tendermint::client_type as tm_client_type;
+use ibc::clients::ics07_tendermint::consensus_state::ConsensusState as TmConsensusState;
+use ibc::core::ics02_client::client_state::ClientStateCommon;
+use ibc::core::ics02_client::ClientExecutionContext;
+use ibc::core::ics03_connection::connection::{
+    ConnectionEnd, Counterparty as ConnCounterparty, State as ConnectionState,
+};
+use ibc::core::ics03_connection::version::Version as ConnectionVersion;
+use ibc::core::ics04_channel::channel::{
+    ChannelEnd, Counterparty as ChanCounterparty, Order, State as ChannelState,
+};
+use ibc::core::ics04_channel::packet::Sequence;
+use ibc::core::ics04_channel::Version as ChannelVersion;
 use ibc::core::ics23_commitment::commitment::CommitmentProofBytes;
-use ibc::core::ics24_host::identifier::ChainId;
-use ibc::core::ics24_host::path::Path;
+use ibc::core::ics24_host::identifier::{ChainId, ChannelId, ClientId, ConnectionId, PortId};
+use ibc::core::ics24_host::path::{
+    ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, Path, SeqAckPath,
+    SeqRecvPath, SeqSendPath,
+};
+use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::hosts::tendermint::IBC_QUERY_PATH;
 use ibc::Height;
 use tendermint::abci::request::{InitChain, Query};
 use tendermint::block::Height as TmHeight;
 use tendermint::v0_37::abci::{Request as AbciRequest, Response as AbciResponse};
-use tendermint::{AppHash, Time};
+use tendermint::{AppHash, Hash, Time};
 use tendermint_testgen::consensus::default_consensus_params;
 use tendermint_testgen::light_block::TmLightBlock;
 use tendermint_testgen::{Generator, Header, LightBlock, Validator};
@@ -27,7 +44,9 @@ use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tower::Service;
 
-use super::helpers::{convert_tm_to_ics_merkle_proof, genesis_app_state, MutexUtil};
+use super::helpers::{
+    convert_tm_to_ics_merkle_proof, dummy_tm_client_state, genesis_app_state, MutexUtil,
+};
 
 /// Defines a mock Cosmos chain that includes simplified store, application,
 /// consensus layers.
@@ -251,5 +270,128 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         let commitment_proof = merkle_proof.try_into().unwrap();
 
         (response.value.into(), commitment_proof)
+    }
+
+    /// Establishes a tendermint light client on the ibc module
+    pub fn setup_client(&mut self) -> ClientId {
+        let client_counter = self.ibc_ctx().client_counter().unwrap();
+
+        let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
+
+        let client_state_path = ClientStatePath::new(&client_id);
+
+        let client_state =
+            dummy_tm_client_state(self.chain_id.clone(), Height::new(0, 10).unwrap());
+
+        let latest_height = client_state.latest_height();
+
+        self.ibc_ctx()
+            .store_update_time(
+                client_id.clone(),
+                latest_height,
+                self.ibc_ctx().host_timestamp().unwrap(),
+            )
+            .unwrap();
+
+        self.ibc_ctx()
+            .store_update_height(
+                client_id.clone(),
+                latest_height,
+                self.ibc_ctx().host_height().unwrap(),
+            )
+            .unwrap();
+
+        self.ibc_ctx().increase_client_counter().unwrap();
+
+        self.ibc_ctx()
+            .store_client_state(client_state_path, client_state)
+            .unwrap();
+
+        let consensus_state_path =
+            ClientConsensusStatePath::new(&client_id, &Height::new(0, 10).unwrap());
+
+        let consensus_state = AnyConsensusState::Tendermint(TmConsensusState::new(
+            vec![].into(),
+            Time::now(),
+            Hash::None,
+        ));
+
+        self.ibc_ctx()
+            .store_consensus_state(consensus_state_path, consensus_state)
+            .unwrap();
+
+        client_id
+    }
+
+    /// Establishes a connection on the ibc module with `Open` state
+    pub fn setup_connection(&mut self, client_id: ClientId) -> ConnectionId {
+        let connection_id = ConnectionId::new(0);
+
+        let connection_path = ConnectionPath::new(&connection_id);
+
+        let prefix = self.ibc_ctx().commitment_prefix();
+
+        let connection_end = ConnectionEnd::new(
+            ConnectionState::Open,
+            client_id.clone(),
+            ConnCounterparty::new(client_id, Some(connection_id.clone()), prefix),
+            vec![ConnectionVersion::default()],
+            Default::default(),
+        )
+        .unwrap();
+
+        self.ibc_ctx()
+            .store_connection(&connection_path, connection_end)
+            .unwrap();
+
+        connection_id
+    }
+
+    /// Establishes a channel on the ibc module with `Open` state
+    pub fn setup_channel(&mut self, connection_id: ConnectionId) -> (PortId, ChannelId) {
+        let channel_id = ChannelId::new(0);
+
+        let port_id = PortId::transfer();
+
+        let channel_end_path = ChannelEndPath::new(&port_id, &channel_id);
+
+        let channel_end = ChannelEnd::new(
+            ChannelState::Open,
+            Order::default(),
+            ChanCounterparty::new(PortId::transfer(), Some(channel_id.clone())),
+            vec![connection_id],
+            ChannelVersion::default(),
+        )
+        .unwrap();
+
+        self.ibc_ctx()
+            .store_channel(&channel_end_path, channel_end)
+            .unwrap();
+
+        (port_id, channel_id)
+    }
+
+    pub fn with_send_sequence(&self, port_id: PortId, channel_id: ChannelId, seq_number: Sequence) {
+        let seq_send_path = SeqSendPath::new(&port_id, &channel_id);
+
+        self.ibc_ctx()
+            .store_next_sequence_send(&seq_send_path, seq_number)
+            .unwrap();
+    }
+
+    pub fn with_recv_sequence(&self, port_id: PortId, chan_id: ChannelId, seq_number: Sequence) {
+        let seq_recv_path = SeqRecvPath::new(&port_id, &chan_id);
+
+        self.ibc_ctx()
+            .store_next_sequence_recv(&seq_recv_path, seq_number)
+            .unwrap();
+    }
+
+    pub fn with_ack_sequence(&self, port_id: PortId, chan_id: ChannelId, seq_number: Sequence) {
+        let seq_ack_path = SeqAckPath::new(&port_id, &chan_id);
+
+        self.ibc_ctx()
+            .store_next_sequence_ack(&seq_ack_path, seq_number)
+            .unwrap();
     }
 }

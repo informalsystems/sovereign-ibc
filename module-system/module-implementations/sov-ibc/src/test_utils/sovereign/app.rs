@@ -16,7 +16,8 @@ use ibc::core::ics04_channel::packet::Sequence;
 use ibc::core::ics04_channel::Version as ChannelVersion;
 use ibc::core::ics24_host::identifier::{ChainId, ChannelId, ClientId, ConnectionId, PortId};
 use ibc::core::ics24_host::path::{
-    ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, SeqSendPath,
+    ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, SeqAckPath,
+    SeqRecvPath, SeqSendPath,
 };
 use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::Height;
@@ -108,7 +109,7 @@ impl<'a, C: Context> TestApp<'a, C> {
     }
 
     /// Establishes a tendermint light client on the ibc module
-    pub fn setup_client(&mut self) {
+    pub fn setup_client(&mut self) -> ClientId {
         let client_counter = self.ibc_ctx.client_counter().unwrap();
 
         let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
@@ -156,19 +157,12 @@ impl<'a, C: Context> TestApp<'a, C> {
         self.ibc_ctx
             .store_consensus_state(consensus_state_path, consensus_state)
             .unwrap();
+
+        client_id
     }
 
     /// Establishes a connection on the ibc module with `Open` state
-    pub fn setup_connection(&mut self) {
-        let client_counter = self
-            .ibc_ctx
-            .client_counter()
-            .unwrap()
-            .checked_sub(1)
-            .unwrap();
-
-        let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
-
+    pub fn setup_connection(&mut self, client_id: ClientId) -> ConnectionId {
         let connection_id = ConnectionId::new(0);
 
         let connection_path = ConnectionPath::new(&connection_id);
@@ -178,7 +172,7 @@ impl<'a, C: Context> TestApp<'a, C> {
         let connection_end = ConnectionEnd::new(
             ConnectionState::Open,
             client_id.clone(),
-            ConnCounterparty::new(client_id, Some(connection_id), prefix),
+            ConnCounterparty::new(client_id, Some(connection_id.clone()), prefix),
             vec![ConnectionVersion::default()],
             Default::default(),
         )
@@ -187,12 +181,12 @@ impl<'a, C: Context> TestApp<'a, C> {
         self.ibc_ctx
             .store_connection(&connection_path, connection_end)
             .unwrap();
+
+        connection_id
     }
 
     /// Establishes a channel on the ibc module with `Open` state
-    pub fn setup_channel(&mut self) {
-        let connection_id = ConnectionId::new(0);
-
+    pub fn setup_channel(&mut self, connection_id: ConnectionId) -> (PortId, ChannelId) {
         let channel_id = ChannelId::new(0);
 
         let port_id = PortId::transfer();
@@ -212,12 +206,30 @@ impl<'a, C: Context> TestApp<'a, C> {
             .store_channel(&channel_end_path, channel_end)
             .unwrap();
 
+        (port_id, channel_id)
+    }
+
+    pub fn with_send_sequence(&self, port_id: PortId, channel_id: ChannelId, seq_number: Sequence) {
         let seq_send_path = SeqSendPath::new(&port_id, &channel_id);
 
-        let initial_seq = Sequence::from(0);
+        self.ibc_ctx()
+            .store_next_sequence_send(&seq_send_path, seq_number)
+            .unwrap();
+    }
 
-        self.ibc_ctx
-            .store_next_sequence_send(&seq_send_path, initial_seq)
+    pub fn with_recv_sequence(&self, port_id: PortId, chan_id: ChannelId, seq_number: Sequence) {
+        let seq_recv_path = SeqRecvPath::new(&port_id, &chan_id);
+
+        self.ibc_ctx()
+            .store_next_sequence_recv(&seq_recv_path, seq_number)
+            .unwrap();
+    }
+
+    pub fn with_ack_sequence(&self, port_id: PortId, chan_id: ChannelId, seq_number: Sequence) {
+        let seq_ack_path = SeqAckPath::new(&port_id, &chan_id);
+
+        self.ibc_ctx()
+            .store_next_sequence_ack(&seq_ack_path, seq_number)
             .unwrap();
     }
 }

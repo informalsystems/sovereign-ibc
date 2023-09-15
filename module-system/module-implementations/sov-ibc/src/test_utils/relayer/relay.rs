@@ -145,7 +145,7 @@ pub async fn build_msg_recv_packet_for_sov(
     proof_height_on_a: Height,
 ) -> CallMessage<DefaultContext> {
     let packet = Packet {
-        seq_on_a: Sequence::from(0),
+        seq_on_a: Sequence::from(1),
         port_id_on_a: PortId::transfer(),
         chan_id_on_b: ChannelId::default(),
         port_id_on_b: PortId::transfer(),
