@@ -19,7 +19,6 @@ pub mod experimental {
     use reth_primitives::{
         Address as RethAddress, TransactionSignedNoHash as RethTransactionSignedNoHash,
     };
-    use reth_rpc::eth::error::EthApiError;
     use sov_evm::call::CallMessage;
     use sov_evm::evm::RlpEvmTransaction;
     use sov_modules_api::transaction::Transaction;
@@ -82,13 +81,12 @@ pub mod experimental {
             &self,
             raw_tx: RlpEvmTransaction,
         ) -> Result<(H256, Vec<u8>), jsonrpsee::core::Error> {
-            let signed_transaction: RethTransactionSignedNoHash =
-                raw_tx.clone().try_into().map_err(EthApiError::from)?;
+            let signed_transaction: RethTransactionSignedNoHash = raw_tx.clone().try_into()?;
 
             let tx_hash = signed_transaction.hash();
-            let sender = signed_transaction
-                .recover_signer()
-                .ok_or(EthApiError::InvalidTransactionSignature)?;
+            let sender = signed_transaction.recover_signer().ok_or(
+                sov_evm::evm::primitive_types::RawEvmTxConversionError::FailedToRecoverSigner,
+            )?;
 
             let mut nonces = self.nonces.lock().unwrap();
             let nonce = *nonces.entry(sender).and_modify(|n| *n += 1).or_insert(0);
@@ -176,17 +174,8 @@ pub mod experimental {
             },
         )?;
 
-        rpc.register_async_method("eth_accounts", |_parameters, _ethereum| async move {
-            #[allow(unreachable_code)]
-            Ok::<_, ErrorObjectOwned>(todo!())
-        })?;
-
-        rpc.register_async_method("eth_estimateGas", |parameters, _ethereum| async move {
-            let mut params = parameters.sequence();
-            let _data: reth_rpc_types::CallRequest = params.next()?;
-            let _block_number: Option<reth_primitives::BlockId> = params.optional_next()?;
-            #[allow(unreachable_code)]
-            Ok::<_, ErrorObjectOwned>(todo!())
+        rpc.register_async_method("eth_accounts", |_parameters, ethereum| async move {
+            Ok::<_, ErrorObjectOwned>(ethereum.eth_rpc_config.eth_signer.signers())
         })?;
 
         Ok(())
