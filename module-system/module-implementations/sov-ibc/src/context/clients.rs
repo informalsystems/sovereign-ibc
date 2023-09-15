@@ -314,7 +314,14 @@ where
         client_id: &ClientId,
         height: &ibc::Height,
     ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
-        todo!()
+        let client_cons_state_path = ClientConsensusStatePath::new(client_id, &height.increment());
+
+        let next_cons_state = self
+            .ibc
+            .consensus_state_map
+            .get(&client_cons_state_path, *self.working_set.borrow_mut());
+
+        Ok(next_cons_state)
     }
 
     fn prev_consensus_state(
@@ -322,6 +329,13 @@ where
         client_id: &ClientId,
         height: &ibc::Height,
     ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
-        todo!()
+        let client_cons_state_path = ClientConsensusStatePath::new(client_id, &height.decrement()?);
+
+        let next_cons_state = self
+            .ibc
+            .consensus_state_map
+            .get(&client_cons_state_path, *self.working_set.borrow_mut());
+
+        Ok(next_cons_state)
     }
 }

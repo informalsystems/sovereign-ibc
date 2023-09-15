@@ -1,13 +1,21 @@
+use std::time::Duration;
+
+use ibc::core::ics02_client::client_state::ClientStateCommon;
+use ibc::core::ValidationContext;
 use sov_bank::get_genesis_token_address;
 use sov_modules_api::default_context::DefaultContext;
+use tokio::time::sleep;
 
-use crate::test_utils::builder::Builder;
+use crate::test_utils::relayer::handle::Handle;
+use crate::test_utils::relayer::relay::build_msg_recv_packet_for_sov;
+use crate::test_utils::setup::sovereign_cosmos_setup;
+use crate::test_utils::sovereign::builder::Builder;
 
-#[test]
-fn test_sdk_token_transfer() {
-    let mut builder = Builder::new();
+#[tokio::test]
+async fn test_sdk_token_transfer() {
+    let mut src_builder = Builder::default();
 
-    let token = builder.get_tokens().first().unwrap();
+    let token = src_builder.get_tokens().first().unwrap();
 
     let token_address = get_genesis_token_address::<DefaultContext>(&token.token_name, token.salt);
 
@@ -19,60 +27,62 @@ fn test_sdk_token_transfer() {
 
     let expected_sender_balance = token.address_and_balances[0].1 - transfer_amount;
 
-    let mut app = builder.build();
+    let rly = sovereign_cosmos_setup(&mut src_builder, true).await;
 
-    app.setup_client();
-
-    app.setup_connection();
-
-    app.setup_channel();
-
-    let msg_sdk_token_transfer = app.build_sdk_transfer(
+    let msg_sdk_token_transfer = rly.src_chain_ctx().build_sdk_transfer(
         token_address,
         sender_address,
         receiver_address,
         transfer_amount,
     );
 
-    app.send_ibc_message(msg_sdk_token_transfer);
+    rly.src_chain_ctx().send_msg(vec![msg_sdk_token_transfer]);
 
     // Checks that the token has been transferred
-    let escrowed_token = app
-        .transfer()
-        .escrowed_tokens
-        .get(
-            &token_address.to_string(),
-            &mut app.working_set().borrow_mut(),
-        )
+    let escrowed_token = rly
+        .src_chain_ctx()
+        .querier()
+        .get_escrow_address(token_address)
         .unwrap();
 
     assert_eq!(escrowed_token, token_address);
 
-    // Checks that the sender and receiver balances have been updated
-    let sender_balance = app
-        .bank()
-        .get_balance_of(
-            sender_address,
-            token_address,
-            &mut app.working_set().borrow_mut(),
-        )
-        .unwrap();
+    // Checks that the sender balance have been updated
+    let sender_balance = rly
+        .src_chain_ctx()
+        .querier()
+        .get_balance_of(sender_address, token_address);
+
     assert_eq!(sender_balance, expected_sender_balance);
 }
 
-#[test]
-fn test_recv_packet() {
-    let mut builder = Builder::new();
+// FIXME: This test already fails as there must be a send packet on the mock
+// cosmos chain
+#[tokio::test]
+async fn test_recv_packet() {
+    let mut src_builder = Builder::default();
 
-    let mut app = builder.build();
+    let rly = sovereign_cosmos_setup(&mut src_builder, true).await;
 
-    app.setup_client();
+    let msg_create_client = rly.build_msg_create_client();
 
-    app.setup_connection();
+    rly.src_chain_ctx().send_msg(vec![msg_create_client]);
 
-    app.setup_channel();
+    sleep(Duration::from_secs(1)).await;
 
-    let msg_recv_packet = app.build_recv_packet();
+    let target_height = rly.dst_chain_ctx().query_ibc().host_height().unwrap();
 
-    app.send_ibc_message(msg_recv_packet);
+    let msg_update_client = rly.build_msg_update_client_for_sov(target_height);
+
+    rly.src_chain_ctx().send_msg(vec![msg_update_client]);
+
+    let cs = rly
+        .src_chain_ctx()
+        .query_ibc()
+        .client_state(rly.src_client_id())
+        .unwrap();
+
+    let msg_recv_packet = build_msg_recv_packet_for_sov(&rly, cs.latest_height()).await;
+
+    rly.src_chain_ctx().send_msg(vec![msg_recv_packet]);
 }

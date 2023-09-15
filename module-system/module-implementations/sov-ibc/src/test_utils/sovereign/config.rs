@@ -1,6 +1,9 @@
 use sov_bank::{BankConfig, TokenConfig};
+use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::utils::generate_address as gen_address_generic;
 use sov_modules_api::Context;
+
+pub type C = DefaultContext;
 
 /// Creates a bank configuration with the given number of addresses and initial balance
 pub fn create_bank_config<C: Context>(addresses_count: u64, initial_balance: u64) -> BankConfig<C> {

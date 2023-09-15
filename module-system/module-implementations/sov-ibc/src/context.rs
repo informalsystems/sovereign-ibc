@@ -26,6 +26,7 @@ use sov_state::WorkingSet;
 
 use crate::Ibc;
 
+#[derive(Clone)]
 pub struct IbcExecutionContext<'a, C: sov_modules_api::Context> {
     pub ibc: Ibc<C>,
     pub working_set: Rc<RefCell<&'a mut WorkingSet<C::Storage>>>,

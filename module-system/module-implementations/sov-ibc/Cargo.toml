@@ -34,7 +34,12 @@ derive_more = { version = "0.99", default-features = false, features = ["from", 
 
 
 [dev-dependencies]
+basecoin-app = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "91eeab8" }
+basecoin-store = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "91eeab8" }
 tendermint-testgen = { version = "0.33", default-features = false }
+tokio = { workspace = true }
+tower-abci = "0.9"
+tower = { version = "0.4", features = ["full"] }
 tempfile = { workspace = true }
 
 [features]
