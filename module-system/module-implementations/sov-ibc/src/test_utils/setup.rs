@@ -22,7 +22,7 @@ pub async fn sovereign_cosmos_setup(
 
     let sov_client_counter = sov_chain.ibc_ctx().client_counter().unwrap();
 
-    // TODO: this should be updated when there is a
+    // TODO: this should be updated when there is a light client for the sovereign chain
     let sov_client_id = ClientId::new(tm_client_type(), sov_client_counter).unwrap();
 
     let mut cos_builder = CosmosBuilder::default();
