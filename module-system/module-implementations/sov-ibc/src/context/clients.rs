@@ -319,14 +319,54 @@ where
         client_id: &ClientId,
         height: &ibc::Height,
     ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
-        let client_cons_state_path = ClientConsensusStatePath::new(client_id, &height.increment());
-
-        let next_cons_state = self
+        // Searches for the most recent height at which a client has been
+        // updated and a consensus state has been stored.
+        let latest_height = self
             .ibc
-            .consensus_state_map
-            .get(&client_cons_state_path, *self.working_set.borrow_mut());
+            .client_state_map
+            .get(client_id, *self.working_set.borrow_mut())
+            .map(|cs| cs.latest_height())
+            .ok_or(ClientError::ClientStateNotFound {
+                client_id: client_id.clone(),
+            })?;
 
-        Ok(next_cons_state)
+        if height.revision_number() != latest_height.revision_number() {
+            return Err(ClientError::Other {
+                description: "height revision number must match the chain's revision number"
+                    .to_string(),
+            })?;
+        }
+
+        // If the height is greater equal than the latest height, there is no
+        // next consensus state
+        if height >= &latest_height {
+            return Ok(None);
+        }
+
+        // Otherwise, we iterate over the heights between the given height and
+        // the latest height, and return the first consensus state we find
+        //
+        // NOTE: this is not the efficient way to do this, but no other way at
+        // the moment as we don't have access to an iterator over the map keys
+
+        let mut target_height = *height;
+
+        while height.revision_height() < latest_height.revision_height() {
+            target_height = target_height.increment();
+
+            let cons_state_path = ClientConsensusStatePath::new(client_id, &target_height);
+
+            let next_cons_state = self
+                .ibc
+                .consensus_state_map
+                .get(&cons_state_path, *self.working_set.borrow_mut());
+
+            if next_cons_state.is_some() {
+                return Ok(next_cons_state);
+            }
+        }
+
+        Ok(None)
     }
 
     fn prev_consensus_state(
@@ -334,13 +374,59 @@ where
         client_id: &ClientId,
         height: &ibc::Height,
     ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
-        let client_cons_state_path = ClientConsensusStatePath::new(client_id, &height.decrement()?);
-
-        let next_cons_state = self
+        // Searches for the most recent height at which a client has been
+        // updated and a consensus state has been stored.
+        let latest_height = self
             .ibc
-            .consensus_state_map
-            .get(&client_cons_state_path, *self.working_set.borrow_mut());
+            .client_state_map
+            .get(client_id, *self.working_set.borrow_mut())
+            .map(|cs| cs.latest_height())
+            .ok_or(ClientError::ClientStateNotFound {
+                client_id: client_id.clone(),
+            })?;
 
-        Ok(next_cons_state)
+        if height.revision_number() != latest_height.revision_number() {
+            return Err(ClientError::Other {
+                description: "height revision number must match the chain's revision number"
+                    .to_string(),
+            })?;
+        }
+
+        // If the height is greater equal than the latest height, the previous
+        // consensus state is the latest consensus state
+        if height >= &latest_height {
+            let cons_state_path = ClientConsensusStatePath::new(client_id, &latest_height);
+
+            let prev_cons_state = self
+                .ibc
+                .consensus_state_map
+                .get(&cons_state_path, *self.working_set.borrow_mut());
+
+            return Ok(prev_cons_state);
+        }
+
+        // Otherwise, we decrement the height until we reach the first consensus
+        // state we find
+        //
+        // NOTE: this is not the efficient way to do this, but no other way at
+        // the moment as we don't have access to an iterator over the map keys
+        let mut target_height = *height;
+
+        while target_height.revision_height() > 0 {
+            let cons_state_path = ClientConsensusStatePath::new(client_id, &target_height);
+
+            let prev_cons_state = self
+                .ibc
+                .consensus_state_map
+                .get(&cons_state_path, *self.working_set.borrow_mut());
+
+            if prev_cons_state.is_some() {
+                return Ok(prev_cons_state);
+            }
+
+            target_height = target_height.decrement()?;
+        }
+
+        Ok(None)
     }
 }
