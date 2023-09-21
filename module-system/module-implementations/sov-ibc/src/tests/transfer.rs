@@ -42,7 +42,7 @@ async fn test_sdk_token_transfer() {
     let escrowed_token = rly
         .src_chain_ctx()
         .querier()
-        .get_escrow_address(token_address)
+        .get_escrowed_token_address(token_address.to_string())
         .unwrap();
 
     assert_eq!(escrowed_token, token_address);

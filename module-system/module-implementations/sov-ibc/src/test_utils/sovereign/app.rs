@@ -105,12 +105,13 @@ where
             .unwrap()
     }
 
-    pub fn get_escrow_address(&self, token_address: C::Address) -> Option<C::Address> {
+    /// Searches the transfer module to retrieve the address of the token held
+    /// in escrow, based on its token denom.
+    pub fn get_escrowed_token_address(&self, token_denom: String) -> Option<C::Address> {
         // Checks that the token has been transferred
-        self.transfer().escrowed_tokens.get(
-            &token_address.to_string(),
-            &mut self.working_set().borrow_mut(),
-        )
+        self.transfer()
+            .escrowed_tokens
+            .get(&token_denom, &mut self.working_set().borrow_mut())
     }
 
     /// Establishes a tendermint light client on the ibc module
