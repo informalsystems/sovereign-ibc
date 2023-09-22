@@ -5,6 +5,12 @@ pub mod call;
 pub mod codec;
 pub mod genesis;
 
+#[cfg(test)]
+pub mod test_utils;
+
+#[cfg(test)]
+pub mod tests;
+
 pub(crate) mod context;
 mod router;
 
@@ -35,7 +41,7 @@ pub struct ExampleModuleConfig {}
 /// utilized to form prefixes for `state` fields. This naming adheres to the
 /// module naming convention used throughout the codebase, ensuring created
 /// prefixes by modules are in harmony.
-#[derive(ModuleInfo)]
+#[derive(ModuleInfo, Clone)]
 pub struct Ibc<C: sov_modules_api::Context, Da: sov_modules_api::DaSpec> {
     #[address]
     pub address: C::Address,

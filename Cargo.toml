@@ -121,3 +121,10 @@ secp256k1 = { version = "0.27.0", default-features = false, features = ["global-
 # See reth: https://github.com/paradigmxyz/reth/blob/main/Cargo.toml#L79
 revm = { git = "https://github.com/bluealloy/revm/", branch = "release/v25" }
 revm-primitives = { git = "https://github.com/bluealloy/revm/", branch = "release/v25" }
+
+# Patched to make `app_hash` accessible for the Tendermint Header generation.
+# See this issue for more info: https://github.com/informalsystems/tendermint-rs/pull/1344
+tendermint = { git = "https://github.com/informalsystems/tendermint-rs.git", branch = "farhad/testgen-app-hash" }
+tendermint-light-client-verifier = { git = "https://github.com/informalsystems/tendermint-rs.git", branch = "farhad/testgen-app-hash" }
+tendermint-proto = { git = "https://github.com/informalsystems/tendermint-rs.git", branch = "farhad/testgen-app-hash" }
+tendermint-testgen = { git = "https://github.com/informalsystems/tendermint-rs.git", branch = "farhad/testgen-app-hash" }

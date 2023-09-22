@@ -116,7 +116,7 @@ where
             },
         )?;
 
-        todo!()
+        Ok(sov_modules_api::CallResponse::default())
     }
 
     /// This function returns true if the token to be sent was created by IBC.

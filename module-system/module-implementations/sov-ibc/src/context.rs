@@ -1,4 +1,4 @@
-pub(crate) mod clients;
+pub mod clients;
 
 use core::time::Duration;
 use std::cell::RefCell;
@@ -29,6 +29,7 @@ use crate::Ibc;
 /// The SDK doesn't have a concept of a "revision number", so we default to 1
 const HOST_REVISION_NUMBER: u64 = 1;
 
+#[derive(Clone)]
 pub struct IbcExecutionContext<'a, C, Da>
 where
     C: sov_modules_api::Context,
@@ -353,7 +354,7 @@ where
         // all DAs have predictable block times (such as Bitcoin and Avalanche),
         // so we cannot support connection block delays as they are defined
         // today.
-        Duration::ZERO 
+        Duration::ZERO
     }
 
     fn validate_message_signer(&self, signer: &ibc::Signer) -> Result<(), ContextError> {

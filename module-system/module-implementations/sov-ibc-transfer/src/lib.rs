@@ -2,9 +2,6 @@ pub mod call;
 pub mod context;
 mod genesis;
 
-#[cfg(test)]
-mod tests;
-
 #[cfg(feature = "native")]
 mod query;
 
@@ -25,7 +22,7 @@ pub struct Transfer<C: sov_modules_api::Context> {
 
     /// Reference to the Bank module.
     #[module]
-    pub(crate) bank: sov_bank::Bank<C>,
+    pub bank: sov_bank::Bank<C>,
 
     /// Keeps track of the address of each token we minted by token denom.
     #[state]
@@ -42,7 +39,7 @@ pub struct Transfer<C: sov_modules_api::Context> {
     /// 1. when tokens are escrowed, save the mapping `denom -> token address`
     /// 2. when tokens are unescrowed, lookup the token address by `denom`
     #[state]
-    pub(crate) escrowed_tokens: sov_state::StateMap<String, C::Address>,
+    pub escrowed_tokens: sov_state::StateMap<String, C::Address>,
 }
 
 impl<C: sov_modules_api::Context> sov_modules_api::Module for Transfer<C> {
