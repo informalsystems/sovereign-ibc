@@ -1,17 +1,13 @@
 use anyhow::Result;
-use sov_state::WorkingSet;
+use sov_modules_api::{Context, DaSpec, Module, WorkingSet};
 
 use crate::Ibc;
 
-impl<C, Da> Ibc<C, Da>
-where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
-{
+impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub(crate) fn init_module(
         &self,
-        _config: &<Self as sov_modules_api::Module>::Config,
-        working_set: &mut WorkingSet<C::Storage>,
+        _config: &<Self as Module>::Config,
+        working_set: &mut WorkingSet<C>,
     ) -> Result<()> {
         self.client_counter.set(&0, working_set);
         self.connection_counter.set(&0, working_set);

@@ -18,8 +18,8 @@ use ibc::core::ics24_host::identifier::{ChannelId, ConnectionId, PortId};
 use ibc::core::router::ModuleExtras;
 use ibc::Signer;
 use sov_bank::Coins;
+use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::digest::Digest;
-use sov_state::WorkingSet;
 use uint::FromDecStrErr;
 
 use crate::Transfer;
@@ -28,20 +28,17 @@ use crate::Transfer;
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
 /// which must be passed to `TokenTransferValidationContext` methods through
 /// the `self` argument.
-pub struct TransferContext<'ws, 'c, C: sov_modules_api::Context> {
+pub struct TransferContext<'ws, 'c, C: Context> {
     pub transfer_mod: Transfer<C>,
     pub sdk_context: &'c C,
-    pub working_set: Rc<RefCell<&'ws mut WorkingSet<C::Storage>>>,
+    pub working_set: Rc<RefCell<&'ws mut WorkingSet<C>>>,
 }
 
-impl<'ws, 'c, C> TransferContext<'ws, 'c, C>
-where
-    C: sov_modules_api::Context,
-{
+impl<'ws, 'c, C: Context> TransferContext<'ws, 'c, C> {
     pub fn new(
         transfer_mod: Transfer<C>,
         sdk_context: &'c C,
-        working_set: Rc<RefCell<&'ws mut WorkingSet<C::Storage>>>,
+        working_set: Rc<RefCell<&'ws mut WorkingSet<C>>>,
     ) -> Self {
         Self {
             transfer_mod,
@@ -100,7 +97,7 @@ where
 
 impl<'ws, 'c, C> core::fmt::Debug for TransferContext<'ws, 'c, C>
 where
-    C: sov_modules_api::Context,
+    C: Context,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TransferContext")
@@ -117,7 +114,7 @@ pub struct EscrowExtraData<C: sov_modules_api::Context> {
 
 impl<'ws, 'c, C> TokenTransferValidationContext<EscrowExtraData<C>> for TransferContext<'ws, 'c, C>
 where
-    C: sov_modules_api::Context,
+    C: Context,
 {
     type AccountId = Address<C>;
 
@@ -280,7 +277,7 @@ where
 
 impl<'ws, 'c, C> TokenTransferExecutionContext<EscrowExtraData<C>> for TransferContext<'ws, 'c, C>
 where
-    C: sov_modules_api::Context,
+    C: Context,
 {
     fn mint_coins_execute(
         &mut self,
@@ -478,7 +475,7 @@ where
 
 impl<'ws, 'c, C> ibc::core::router::Module for TransferContext<'ws, 'c, C>
 where
-    C: sov_modules_api::Context,
+    C: Context,
 {
     fn on_chan_open_init_validate(
         &self,

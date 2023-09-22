@@ -6,8 +6,7 @@ use anyhow::{bail, Result};
 use ibc::core::{dispatch, MsgEnvelope};
 use sov_ibc_transfer::call::SDKTokenTransfer;
 use sov_ibc_transfer::context::TransferContext;
-use sov_modules_api::CallResponse;
-use sov_state::WorkingSet;
+use sov_modules_api::{CallResponse, Context, DaSpec, WorkingSet};
 use thiserror::Error;
 
 use crate::context::IbcExecutionContext;
@@ -36,16 +35,12 @@ pub enum CallMessage<C: sov_modules_api::Context> {
 #[derive(Debug, Error)]
 enum SetValueError {}
 
-impl<C, Da> Ibc<C, Da>
-where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
-{
+impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub(crate) fn process_core_message(
         &self,
         msg: MsgEnvelope,
         context: &C,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> Result<sov_modules_api::CallResponse> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
@@ -66,8 +61,8 @@ where
         &self,
         sdk_token_transfer: SDKTokenTransfer<C>,
         context: &C,
-        working_set: &mut WorkingSet<C::Storage>,
-    ) -> Result<sov_modules_api::CallResponse> {
+        working_set: &mut WorkingSet<C>,
+    ) -> Result<CallResponse> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
         let mut execution_context = IbcExecutionContext {
             ibc: self,

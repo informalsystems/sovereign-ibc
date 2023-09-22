@@ -11,7 +11,7 @@ use ibc::core::ics24_host::identifier::{ChannelId, PortId};
 use ibc::core::timestamp::Timestamp;
 use ibc::core::ExecutionContext;
 use ibc::Signer;
-use sov_state::WorkingSet;
+use sov_modules_api::{Context, WorkingSet};
 
 use crate::context::EscrowExtraData;
 use crate::Transfer;
@@ -22,7 +22,7 @@ use crate::Transfer;
     schemars(bound = "C::Address: ::schemars::JsonSchema", rename = "CallMessage")
 )]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
-pub struct SDKTokenTransfer<C: sov_modules_api::Context> {
+pub struct SDKTokenTransfer<C: Context> {
     /// the port on which the packet will be sent
     pub port_id_on_a: PortId,
     /// the channel by which the packet will be sent
@@ -45,16 +45,13 @@ pub struct SDKTokenTransfer<C: sov_modules_api::Context> {
     pub memo: Memo,
 }
 
-impl<C> Transfer<C>
-where
-    C: sov_modules_api::Context,
-{
+impl<C: Context> Transfer<C> {
     pub fn transfer(
         &self,
         sdk_token_transfer: SDKTokenTransfer<C>,
         execution_context: &mut impl ExecutionContext,
         token_ctx: &mut impl TokenTransferExecutionContext<EscrowExtraData<C>>,
-        working_set: Rc<RefCell<&mut WorkingSet<C::Storage>>>,
+        working_set: Rc<RefCell<&mut WorkingSet<C>>>,
     ) -> Result<sov_modules_api::CallResponse> {
         let msg_transfer: MsgTransfer = {
             let denom = {
@@ -126,7 +123,7 @@ where
         &self,
         token_name: &String,
         token_address: &C::Address,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> bool {
         match self.minted_tokens.get(token_name, working_set) {
             Some(minted_token_address) => minted_token_address == *token_address,

@@ -1,8 +1,8 @@
 use sov_bank::Bank;
 use sov_chain_state::ChainState;
-use sov_modules_api::hooks::SlotHooks;
-use sov_modules_api::{Context, DaSpec, Module};
-use sov_state::{AccessoryWorkingSet, WorkingSet};
+use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
+use sov_modules_api::{AccessoryWorkingSet, Context, DaSpec, Module, Spec, WorkingSet};
+use sov_state::Storage;
 
 use super::config::TestConfig;
 use crate::Ibc;
@@ -32,12 +32,8 @@ where
     }
 }
 
-impl<C, Da> TestRuntime<C, Da>
-where
-    C: Context,
-    Da: DaSpec,
-{
-    pub fn genesis(&mut self, cfg: &TestConfig<C>, working_set: &mut WorkingSet<C::Storage>) {
+impl<C: Context, Da: DaSpec> TestRuntime<C, Da> {
+    pub fn genesis(&mut self, cfg: &TestConfig<C>, working_set: &mut WorkingSet<C>) {
         self.chain_state
             .genesis(&cfg.chain_state_config, working_set)
             .unwrap();
@@ -48,31 +44,31 @@ where
     }
 }
 
-impl<C, Da> SlotHooks<Da> for TestRuntime<C, Da>
-where
-    C: Context,
-    Da: DaSpec,
-{
+impl<C: Context, Da: DaSpec> SlotHooks<Da> for TestRuntime<C, Da> {
     type Context = C;
 
     fn begin_slot_hook(
         &self,
         slot_header: &Da::BlockHeader,
         validity_condition: &Da::ValidityCondition,
-        working_set: &mut WorkingSet<C::Storage>,
+        pre_state_root: &<<Self::Context as Spec>::Storage as Storage>::Root,
+        working_set: &mut WorkingSet<Self::Context>,
     ) {
         unimplemented!()
     }
 
-    fn end_slot_hook(&self, working_set: &mut WorkingSet<C::Storage>) {
+    fn end_slot_hook(&self, working_set: &mut WorkingSet<C>) {
         unimplemented!()
     }
+}
+
+impl<C: Context, Da: DaSpec> FinalizeHook<Da> for TestRuntime<C, Da> {
+    type Context = C;
 
     fn finalize_slot_hook(
         &self,
-        root_hash: [u8; 32],
-        accesorry_working_set: &mut AccessoryWorkingSet<C::Storage>,
+        root_hash: &<<Self::Context as Spec>::Storage as Storage>::Root,
+        accesorry_working_set: &mut AccessoryWorkingSet<Self::Context>,
     ) {
-        unimplemented!()
     }
 }

@@ -1,9 +1,9 @@
 use ibc::core::ics24_host::identifier::ChainId;
 use sov_bank::TokenConfig;
 use sov_modules_api::default_context::DefaultContext;
-use sov_modules_api::Context;
+use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::mocks::MockDaSpec;
-use sov_state::{DefaultStorageSpec, ProverStorage, WorkingSet};
+use sov_state::ProverStorage;
 
 use super::app::TestApp;
 use super::config::TestConfig;
@@ -15,7 +15,7 @@ pub struct DefaultBuilder {
     chain_id: ChainId,
     config: TestConfig<DefaultContext>,
     runtime: TestRuntime<DefaultContext, MockDaSpec>,
-    working_set: WorkingSet<ProverStorage<DefaultStorageSpec>>,
+    working_set: WorkingSet<DefaultContext>,
 }
 
 impl Default for DefaultBuilder {
@@ -42,7 +42,7 @@ impl DefaultBuilder {
         chain_id: ChainId,
         config: TestConfig<DefaultContext>,
         runtime: TestRuntime<DefaultContext, MockDaSpec>,
-        working_set: WorkingSet<ProverStorage<DefaultStorageSpec>>,
+        working_set: WorkingSet<DefaultContext>,
     ) -> Self {
         Self {
             chain_id,

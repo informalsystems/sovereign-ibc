@@ -22,8 +22,7 @@ use ibc::core::ics24_host::path::{
 use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::Height;
 use sov_bank::Bank;
-use sov_modules_api::{Context, DaSpec};
-use sov_state::WorkingSet;
+use sov_modules_api::{Context, DaSpec, WorkingSet};
 use tendermint::{Hash, Time};
 
 use crate::context::clients::{AnyClientState, AnyConsensusState};
@@ -52,7 +51,7 @@ where
         chain_id: ChainId,
         sdk_ctx: C,
         ibc: &'a Ibc<C, Da>,
-        working_set: &'a mut WorkingSet<C::Storage>,
+        working_set: &'a mut WorkingSet<C>,
     ) -> Self {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
@@ -74,7 +73,7 @@ where
     }
 
     /// Returns access to the ibc module
-    pub fn working_set(&self) -> &Rc<RefCell<&'a mut WorkingSet<C::Storage>>> {
+    pub fn working_set(&self) -> &Rc<RefCell<&'a mut WorkingSet<C>>> {
         &self.ibc_ctx.working_set
     }
 

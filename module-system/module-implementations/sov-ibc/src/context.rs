@@ -22,7 +22,7 @@ use ibc::core::ics24_host::path::{
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ContextError, ExecutionContext, ValidationContext};
 use ibc::Height;
-use sov_state::WorkingSet;
+use sov_modules_api::WorkingSet;
 
 use crate::Ibc;
 
@@ -36,7 +36,7 @@ where
     Da: sov_modules_api::DaSpec,
 {
     pub ibc: &'a Ibc<C, Da>,
-    pub working_set: Rc<RefCell<&'a mut WorkingSet<C::Storage>>>,
+    pub working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
 }
 
 impl<'a, C, Da> ValidationContext for IbcExecutionContext<'a, C, Da>

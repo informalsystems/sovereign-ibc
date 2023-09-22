@@ -8,14 +8,13 @@ mod query;
 use anyhow::anyhow;
 #[cfg(feature = "native")]
 pub use query::Response;
-use sov_modules_api::{Error, ModuleInfo};
-use sov_state::WorkingSet;
+use sov_modules_api::{Context, Error, Module, ModuleInfo, StateMap, WorkingSet};
 
 pub struct TransferConfig {}
 
 #[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
 #[derive(ModuleInfo, Clone)]
-pub struct Transfer<C: sov_modules_api::Context> {
+pub struct Transfer<C: Context> {
     /// Address of the module.
     #[address]
     pub address: C::Address,
@@ -26,7 +25,7 @@ pub struct Transfer<C: sov_modules_api::Context> {
 
     /// Keeps track of the address of each token we minted by token denom.
     #[state]
-    pub(crate) minted_tokens: sov_state::StateMap<String, C::Address>,
+    pub(crate) minted_tokens: StateMap<String, C::Address>,
 
     /// Keeps track of the address of each token we escrowed as a function of
     /// the token denom. We need this map because we have the token address
@@ -39,21 +38,17 @@ pub struct Transfer<C: sov_modules_api::Context> {
     /// 1. when tokens are escrowed, save the mapping `denom -> token address`
     /// 2. when tokens are unescrowed, lookup the token address by `denom`
     #[state]
-    pub escrowed_tokens: sov_state::StateMap<String, C::Address>,
+    pub escrowed_tokens: StateMap<String, C::Address>,
 }
 
-impl<C: sov_modules_api::Context> sov_modules_api::Module for Transfer<C> {
+impl<C: Context> Module for Transfer<C> {
     type Context = C;
 
     type Config = TransferConfig;
 
     type CallMessage = ();
 
-    fn genesis(
-        &self,
-        config: &Self::Config,
-        working_set: &mut WorkingSet<C::Storage>,
-    ) -> Result<(), Error> {
+    fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<C>) -> Result<(), Error> {
         // The initialization logic
         Ok(self.init_module(config, working_set)?)
     }
@@ -62,7 +57,7 @@ impl<C: sov_modules_api::Context> sov_modules_api::Module for Transfer<C> {
         &self,
         _msg: Self::CallMessage,
         _context: &Self::Context,
-        _working_set: &mut WorkingSet<C::Storage>,
+        _working_set: &mut WorkingSet<C>,
     ) -> Result<sov_modules_api::CallResponse, Error> {
         Err(Error::ModuleError(anyhow!(
             "Cannot call sov-ibc-transfer; use sov-ibc instead"
@@ -70,10 +65,7 @@ impl<C: sov_modules_api::Context> sov_modules_api::Module for Transfer<C> {
     }
 }
 
-impl<C> core::fmt::Debug for Transfer<C>
-where
-    C: sov_modules_api::Context,
-{
+impl<C: Context> core::fmt::Debug for Transfer<C> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // FIXME: put real values here, or remove `Debug` requirement from router::Module
         f.debug_struct("Transfer")

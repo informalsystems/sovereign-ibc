@@ -29,9 +29,8 @@ use ibc::core::timestamp::Timestamp;
 use ibc::{Any, Height};
 use ibc_proto::ibc::core::channel::v1::Channel as RawChannelEnd;
 use ibc_proto::ibc::core::connection::v1::ConnectionEnd as RawConnectionEnd;
-use sov_modules_api::Error;
+use sov_modules_api::{Context, DaSpec, Error, StateMap, StateValue, WorkingSet};
 use sov_modules_macros::ModuleInfo;
-use sov_state::WorkingSet;
 
 pub struct ExampleModuleConfig {}
 
@@ -53,74 +52,62 @@ pub struct Ibc<C: sov_modules_api::Context, Da: sov_modules_api::DaSpec> {
     pub(crate) chain_state: sov_chain_state::ChainState<C, Da>,
 
     #[state]
-    client_counter: sov_state::StateValue<u64>,
+    client_counter: StateValue<u64>,
 
     #[state]
-    connection_counter: sov_state::StateValue<u64>,
+    connection_counter: StateValue<u64>,
 
     #[state]
-    channel_counter: sov_state::StateValue<u64>,
+    channel_counter: StateValue<u64>,
 
     #[state]
-    client_update_times_map: sov_state::StateMap<(ClientId, Height), Timestamp>,
+    client_update_times_map: StateMap<(ClientId, Height), Timestamp>,
 
     #[state]
-    client_update_heights_map: sov_state::StateMap<(ClientId, Height), Height>,
+    client_update_heights_map: StateMap<(ClientId, Height), Height>,
 
     #[state]
-    client_state_map: sov_state::StateMap<ClientId, AnyClientState, ProtobufCodec<Any>>,
+    client_state_map: StateMap<ClientId, AnyClientState, ProtobufCodec<Any>>,
 
     #[state]
-    consensus_state_map:
-        sov_state::StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec<Any>>,
+    consensus_state_map: StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec<Any>>,
 
     #[state]
-    connection_end_map:
-        sov_state::StateMap<ConnectionPath, ConnectionEnd, ProtobufCodec<RawConnectionEnd>>,
+    connection_end_map: StateMap<ConnectionPath, ConnectionEnd, ProtobufCodec<RawConnectionEnd>>,
 
     #[state]
-    connection_ids_map: sov_state::StateMap<ClientConnectionPath, Vec<ConnectionId>>,
+    connection_ids_map: StateMap<ClientConnectionPath, Vec<ConnectionId>>,
 
     #[state]
-    channel_end_map: sov_state::StateMap<ChannelEndPath, ChannelEnd, ProtobufCodec<RawChannelEnd>>,
+    channel_end_map: StateMap<ChannelEndPath, ChannelEnd, ProtobufCodec<RawChannelEnd>>,
 
     #[state]
-    send_sequence_map: sov_state::StateMap<SeqSendPath, Sequence>,
+    send_sequence_map: StateMap<SeqSendPath, Sequence>,
 
     #[state]
-    recv_sequence_map: sov_state::StateMap<SeqRecvPath, Sequence>,
+    recv_sequence_map: StateMap<SeqRecvPath, Sequence>,
 
     #[state]
-    ack_sequence_map: sov_state::StateMap<SeqAckPath, Sequence>,
+    ack_sequence_map: StateMap<SeqAckPath, Sequence>,
 
     #[state]
-    packet_commitment_map:
-        sov_state::StateMap<CommitmentPath, PacketCommitment, PacketCommitmentCodec>,
+    packet_commitment_map: StateMap<CommitmentPath, PacketCommitment, PacketCommitmentCodec>,
 
     #[state]
-    packet_receipt_map: sov_state::StateMap<ReceiptPath, Receipt>,
+    packet_receipt_map: StateMap<ReceiptPath, Receipt>,
 
     #[state]
-    packet_ack_map:
-        sov_state::StateMap<AckPath, AcknowledgementCommitment, AcknowledgementCommitmentCodec>,
+    packet_ack_map: StateMap<AckPath, AcknowledgementCommitment, AcknowledgementCommitmentCodec>,
 }
 
-impl<C, Da> sov_modules_api::Module for Ibc<C, Da>
-where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
-{
+impl<C: Context, Da: DaSpec> sov_modules_api::Module for Ibc<C, Da> {
     type Context = C;
 
     type Config = ExampleModuleConfig;
 
     type CallMessage = call::CallMessage<C>;
 
-    fn genesis(
-        &self,
-        config: &Self::Config,
-        working_set: &mut WorkingSet<C::Storage>,
-    ) -> Result<(), Error> {
+    fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<C>) -> Result<(), Error> {
         // The initialization logic
         Ok(self.init_module(config, working_set)?)
     }
@@ -129,7 +116,7 @@ where
         &self,
         msg: Self::CallMessage,
         context: &Self::Context,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> Result<sov_modules_api::CallResponse, Error> {
         match msg {
             call::CallMessage::Core(msg_envelope) => {
