@@ -1,6 +1,8 @@
+demo-rollup-readme.sh
 /target
 
 .idea/
+target-path
 
 target/
 fuzz/Cargo.lock

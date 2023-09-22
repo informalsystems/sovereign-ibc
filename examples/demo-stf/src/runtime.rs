@@ -1,35 +1,28 @@
 #[cfg(feature = "native")]
-use sov_accounts::query::{AccountsRpcImpl, AccountsRpcServer};
+use sov_accounts::{AccountsRpcImpl, AccountsRpcServer};
 #[cfg(feature = "native")]
-use sov_bank::query::{BankRpcImpl, BankRpcServer};
+use sov_bank::{BankRpcImpl, BankRpcServer};
 #[cfg(feature = "native")]
 use sov_blob_storage::{BlobStorageRpcImpl, BlobStorageRpcServer};
 #[cfg(feature = "native")]
 use sov_chain_state::{ChainStateRpcImpl, ChainStateRpcServer};
 #[cfg(feature = "native")]
 #[cfg(feature = "experimental")]
-use sov_evm::query::{EvmRpcImpl, EvmRpcServer};
+use sov_evm::{EvmRpcImpl, EvmRpcServer};
 use sov_modules_api::capabilities::{BlobRefOrOwned, BlobSelector};
 #[cfg(feature = "native")]
 pub use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::macros::DefaultRuntime;
 #[cfg(feature = "native")]
 use sov_modules_api::macros::{expose_rpc, CliWallet};
-use sov_modules_api::{Context, DispatchCall, Genesis, MessageCodec, Spec};
+use sov_modules_api::{Context, DispatchCall, Genesis, MessageCodec};
+#[cfg(feature = "native")]
+use sov_nft_module::{NonFungibleTokenRpcImpl, NonFungibleTokenRpcServer};
 use sov_rollup_interface::da::DaSpec;
 #[cfg(feature = "native")]
 use sov_sequencer_registry::{SequencerRegistryRpcImpl, SequencerRegistryRpcServer};
 #[cfg(feature = "native")]
-use sov_value_setter::query::{ValueSetterRpcImpl, ValueSetterRpcServer};
-
-#[cfg(feature = "native")]
-pub mod query {
-    pub use sov_accounts::query as accounts;
-    pub use sov_bank::query as bank;
-    pub use sov_chain_state::query as chain_state;
-    pub use sov_sequencer_registry::query as sequencer_registry;
-    pub use sov_value_setter::query as value_setter;
-}
+use sov_value_setter::{ValueSetterRpcImpl, ValueSetterRpcServer};
 
 /// The Rollup entrypoint.
 ///
@@ -76,13 +69,14 @@ pub mod query {
 )]
 pub struct Runtime<C: Context, Da: DaSpec> {
     pub bank: sov_bank::Bank<C>,
-    pub sequencer_registry: sov_sequencer_registry::SequencerRegistry<C>,
+    pub sequencer_registry: sov_sequencer_registry::SequencerRegistry<C, Da>,
     #[cfg_attr(feature = "native", cli_skip)]
     pub blob_storage: sov_blob_storage::BlobStorage<C, Da>,
     #[cfg_attr(feature = "native", cli_skip)]
     pub chain_state: sov_chain_state::ChainState<C, Da>,
     pub value_setter: sov_value_setter::ValueSetter<C>,
     pub accounts: sov_accounts::Accounts<C>,
+    pub nft: sov_nft_module::NonFungibleToken<C>,
 }
 
 #[cfg(feature = "experimental")]
@@ -95,7 +89,7 @@ pub struct Runtime<C: Context, Da: DaSpec> {
 )]
 pub struct Runtime<C: Context, Da: DaSpec> {
     pub bank: sov_bank::Bank<C>,
-    pub sequencer_registry: sov_sequencer_registry::SequencerRegistry<C>,
+    pub sequencer_registry: sov_sequencer_registry::SequencerRegistry<C, Da>,
     #[cfg_attr(feature = "native", cli_skip)]
     pub blob_storage: sov_blob_storage::BlobStorage<C, Da>,
     #[cfg_attr(feature = "native", cli_skip)]
@@ -104,6 +98,7 @@ pub struct Runtime<C: Context, Da: DaSpec> {
     pub accounts: sov_accounts::Accounts<C>,
     #[cfg_attr(feature = "native", cli_skip)]
     pub evm: sov_evm::Evm<C>,
+    pub nft: sov_nft_module::NonFungibleToken<C>,
 }
 
 impl<C, Da> sov_modules_stf_template::Runtime<C, Da> for Runtime<C, Da>
@@ -119,7 +114,7 @@ impl<C: Context, Da: DaSpec> BlobSelector<Da> for Runtime<C, Da> {
     fn get_blobs_for_this_slot<'a, I>(
         &self,
         current_blobs: I,
-        working_set: &mut sov_state::WorkingSet<<Self::Context as Spec>::Storage>,
+        working_set: &mut sov_modules_api::WorkingSet<C>,
     ) -> anyhow::Result<Vec<BlobRefOrOwned<'a, Da::BlobTransaction>>>
     where
         I: IntoIterator<Item = &'a mut Da::BlobTransaction>,

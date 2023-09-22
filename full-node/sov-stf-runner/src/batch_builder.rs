@@ -5,9 +5,8 @@ use anyhow::bail;
 use borsh::BorshDeserialize;
 use sov_modules_api::digest::Digest;
 use sov_modules_api::transaction::Transaction;
-use sov_modules_api::{Context, DispatchCall, PublicKey, Spec};
+use sov_modules_api::{Context, DispatchCall, PublicKey, Spec, WorkingSet};
 use sov_rollup_interface::services::batch_builder::BatchBuilder;
-use sov_state::WorkingSet;
 use tracing::{info, warn};
 
 /// BatchBuilder that creates batches of transactions in the order they were submitted
@@ -44,7 +43,7 @@ where
 {
     /// Transaction can only be declined only mempool is full
     fn accept_tx(&mut self, tx: Vec<u8>) -> anyhow::Result<()> {
-        if self.mempool.len() > self.mempool_max_txs_count {
+        if self.mempool.len() >= self.mempool_max_txs_count {
             bail!("Mempool is full")
         }
         self.mempool.push_back(tx);
@@ -262,10 +261,23 @@ mod tests {
             let tmpdir = tempfile::tempdir().unwrap();
             let (mut batch_builder, _) = create_batch_builder(10, &tmpdir);
 
-            for _ in 0..=MAX_TX_POOL_SIZE {
+            for _ in 0..MAX_TX_POOL_SIZE {
                 let tx = generate_random_valid_tx();
                 batch_builder.accept_tx(tx).unwrap();
             }
+
+            let tx = generate_random_valid_tx();
+            let accept_result = batch_builder.accept_tx(tx);
+
+            assert!(accept_result.is_err());
+            assert_eq!("Mempool is full", accept_result.unwrap_err().to_string());
+        }
+
+        #[test]
+        fn zero_sized_mempool_cant_accept_tx() {
+            let tmpdir = tempfile::tempdir().unwrap();
+            let (mut batch_builder, _) = create_batch_builder(10, &tmpdir);
+            batch_builder.mempool_max_txs_count = 0;
 
             let tx = generate_random_valid_tx();
             let accept_result = batch_builder.accept_tx(tx);

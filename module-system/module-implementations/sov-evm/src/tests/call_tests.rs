@@ -1,8 +1,10 @@
-use reth_primitives::{Address, TransactionKind};
+use reth_primitives::{Address, Bytes, TransactionKind};
 use revm::primitives::{SpecId, KECCAK_EMPTY, U256};
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::default_signature::private_key::DefaultPrivateKey;
-use sov_modules_api::{Context, Module, PrivateKey, PublicKey, Spec};
+use sov_modules_api::{Context, Module, Spec};
+#[cfg(test)]
+use sov_modules_api::{PrivateKey, PublicKey};
 
 use crate::call::CallMessage;
 use crate::evm::primitive_types::Receipt;
@@ -57,10 +59,12 @@ fn evm_test() {
             address: dev_signer.address(),
             balance: U256::from(1000000000),
             code_hash: KECCAK_EMPTY,
-            code: vec![],
+            code: Bytes::default(),
             nonce: 0,
         }],
-        spec: vec![(0, SpecId::LATEST)].into_iter().collect(),
+        // SHANGAI instead of LATEST
+        // https://github.com/Sovereign-Labs/sovereign-sdk/issues/912
+        spec: vec![(0, SpecId::SHANGHAI)].into_iter().collect(),
         ..Default::default()
     };
 
@@ -165,8 +169,8 @@ fn failed_transaction_test() {
             gas_used: 0,
             log_index_start: 0,
             error: Some(revm::primitives::EVMError::Transaction(
-                revm::primitives::InvalidTransaction::LackOfFundForGasLimit {
-                    gas_limit: U256::from(0xd59f80),
+                revm::primitives::InvalidTransaction::LackOfFundForMaxFee {
+                    fee: 1_000_000u64,
                     balance: U256::ZERO
                 }
             ))

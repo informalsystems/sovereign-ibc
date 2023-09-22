@@ -1,10 +1,11 @@
 use borsh::BorshSerialize;
 use sov_modules_api::default_context::DefaultContext;
+use sov_modules_api::WorkingSet;
 use sov_rollup_interface::mocks::{
     MockCodeCommitment, MockDaSpec, MockProof, MockValidityCond, MockValidityCondChecker,
 };
 use sov_rollup_interface::zk::StateTransition;
-use sov_state::{ProverStorage, WorkingSet};
+use sov_state::ProverStorage;
 
 use crate::call::{AttesterIncentiveErrors, SlashingReason};
 use crate::tests::helpers::{
@@ -20,7 +21,7 @@ fn test_valid_challenge() {
     let mut working_set = WorkingSet::new(storage.clone());
     let (module, token_address, attester_address, challenger_address) = setup(&mut working_set);
 
-    let working_set = commit_get_new_working_set(&storage, working_set);
+    let (_, working_set) = commit_get_new_working_set(&storage, working_set);
 
     // Simulate the execution of a chain, with the genesis hash and two transitions after.
     // Update the chain_state module and the optimistic module accordingly
@@ -63,7 +64,7 @@ fn test_valid_challenge() {
     };
 
     {
-        let transition = StateTransition::<MockDaSpec, _> {
+        let transition = StateTransition::<MockDaSpec, _, _> {
             initial_state_root: initial_transition.state_root,
             slot_hash: [1; 32].into(),
             final_state_root: transition_1.state_root,
@@ -143,7 +144,7 @@ fn invalid_proof_helper(
         MockDaSpec,
         MockValidityCondChecker<MockValidityCond>,
     >,
-    working_set: &mut WorkingSet<ProverStorage<sov_state::DefaultStorageSpec>>,
+    working_set: &mut WorkingSet<DefaultContext>,
 ) {
     // Let's bond the challenger and try to publish a false challenge
     module
@@ -174,7 +175,7 @@ fn test_invalid_challenge() {
     let mut working_set = WorkingSet::new(storage.clone());
     let (module, _token_address, attester_address, challenger_address) = setup(&mut working_set);
 
-    let working_set = commit_get_new_working_set(&storage, working_set);
+    let (_, working_set) = commit_get_new_working_set(&storage, working_set);
 
     // Simulate the execution of a chain, with the genesis hash and two transitions after.
     // Update the chain_state module and the optimistic module accordingly
@@ -195,7 +196,7 @@ fn test_invalid_challenge() {
         sender: challenger_address,
     };
 
-    let transition: StateTransition<MockDaSpec, _> = StateTransition {
+    let transition: StateTransition<MockDaSpec, _, _> = StateTransition {
         initial_state_root: initial_transition.state_root,
         slot_hash: [1; 32].into(),
         final_state_root: transition_1.state_root,
@@ -256,7 +257,7 @@ fn test_invalid_challenge() {
         );
 
         // Bad slot hash
-        let bad_transition = StateTransition::<MockDaSpec, _> {
+        let bad_transition = StateTransition::<MockDaSpec, _, _> {
             initial_state_root: initial_transition.state_root,
             slot_hash: [2; 32].into(),
             final_state_root: transition_1.state_root,
@@ -284,7 +285,7 @@ fn test_invalid_challenge() {
         );
 
         // Bad validity condition
-        let bad_transition = StateTransition::<MockDaSpec, _> {
+        let bad_transition = StateTransition::<MockDaSpec, _, _> {
             initial_state_root: initial_transition.state_root,
             slot_hash: [1; 32].into(),
             final_state_root: transition_1.state_root,
@@ -312,7 +313,7 @@ fn test_invalid_challenge() {
         );
 
         // Bad initial root
-        let bad_transition = StateTransition::<MockDaSpec, _> {
+        let bad_transition = StateTransition::<MockDaSpec, _, _> {
             initial_state_root: transition_1.state_root,
             slot_hash: [1; 32].into(),
             final_state_root: transition_1.state_root,

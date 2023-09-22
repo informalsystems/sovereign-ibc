@@ -2,8 +2,7 @@ use anyhow::Result;
 use reth_primitives::TransactionSignedEcRecovered;
 use reth_revm::into_reth_log;
 use revm::primitives::{CfgEnv, EVMError, SpecId};
-use sov_modules_api::CallResponse;
-use sov_state::WorkingSet;
+use sov_modules_api::{CallResponse, WorkingSet};
 
 use crate::evm::db::EvmDb;
 use crate::evm::executor::{self};
@@ -27,7 +26,7 @@ impl<C: sov_modules_api::Context> Evm<C> {
         &self,
         tx: RlpEvmTransaction,
         _context: &C,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> Result<CallResponse> {
         let evm_tx_recovered: TransactionSignedEcRecovered = tx.try_into()?;
         let block_env = self
@@ -73,11 +72,12 @@ impl<C: sov_modules_api::Context> Evm<C> {
                     logs: vec![],
                 },
                 // TODO: Do we want failed transactions to use all gas?
+                // https://github.com/Sovereign-Labs/sovereign-sdk/issues/505
                 gas_used: 0,
                 log_index_start,
                 error: Some(match err {
                     EVMError::Transaction(err) => EVMError::Transaction(err),
-                    EVMError::PrevrandaoNotSet => EVMError::PrevrandaoNotSet,
+                    EVMError::Header(e) => EVMError::Header(e),
                     EVMError::Database(_) => EVMError::Database(0u8),
                 }),
             },
@@ -107,13 +107,11 @@ pub(crate) fn get_cfg_env(
     cfg: EvmChainConfig,
     template_cfg: Option<CfgEnv>,
 ) -> CfgEnv {
-    CfgEnv {
-        chain_id: revm::primitives::U256::from(cfg.chain_id),
-        limit_contract_code_size: cfg.limit_contract_code_size,
-        spec_id: get_spec_id(cfg.spec, block_env.number),
-        // disable_gas_refund: !cfg.gas_refunds, // option disabled for now, we could add if needed
-        ..template_cfg.unwrap_or_default()
-    }
+    let mut cfg_env = template_cfg.unwrap_or(CfgEnv::default());
+    cfg_env.chain_id = cfg.chain_id;
+    cfg_env.spec_id = get_spec_id(cfg.spec, block_env.number);
+    cfg_env.limit_contract_code_size = cfg.limit_contract_code_size;
+    cfg_env
 }
 
 /// Get spec id for a given block number

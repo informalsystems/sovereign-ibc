@@ -1,7 +1,8 @@
-use reth_primitives::{Address, H256, U256};
+use reth_primitives::{Address, BaseFeeParams, H256, U256};
 use revm::primitives::specification::SpecId;
 use serde::{Deserialize, Serialize};
-use sov_state::{Prefix, StateMap};
+use sov_modules_api::StateMap;
+use sov_state::Prefix;
 
 pub(crate) mod conversions;
 pub(crate) mod db;
@@ -21,9 +22,6 @@ use sov_state::codec::BcsCodec;
 pub(crate) struct AccountInfo {
     pub(crate) balance: U256,
     pub(crate) code_hash: H256,
-    // TODO: `code` can be a huge chunk of data. We can use `StateValue` and lazy load it only when needed.
-    // https://github.com/Sovereign-Labs/sovereign-sdk/issues/425
-    pub(crate) code: Vec<u8>,
     pub(crate) nonce: u64,
 }
 
@@ -43,7 +41,11 @@ impl DbAccount {
         }
     }
 
-    fn new_with_info(parent_prefix: &Prefix, address: Address, info: AccountInfo) -> Self {
+    pub(crate) fn new_with_info(
+        parent_prefix: &Prefix,
+        address: Address,
+        info: AccountInfo,
+    ) -> Self {
         let prefix = Self::create_storage_prefix(parent_prefix, address);
         Self {
             info,
@@ -80,6 +82,8 @@ pub struct EvmChainConfig {
 
     /// Delta to add to parent block timestamp
     pub block_timestamp_delta: u64,
+
+    pub base_fee_params: BaseFeeParams,
 }
 
 impl Default for EvmChainConfig {
@@ -87,10 +91,11 @@ impl Default for EvmChainConfig {
         EvmChainConfig {
             chain_id: 1,
             limit_contract_code_size: None,
-            spec: vec![(0, SpecId::LATEST)],
+            spec: vec![(0, SpecId::SHANGHAI)],
             coinbase: Address::zero(),
             block_gas_limit: reth_primitives::constants::ETHEREUM_BLOCK_GAS_LIMIT,
             block_timestamp_delta: 1,
+            base_fee_params: BaseFeeParams::ethereum(),
         }
     }
 }

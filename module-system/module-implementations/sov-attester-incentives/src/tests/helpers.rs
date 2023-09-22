@@ -3,13 +3,13 @@ use sov_bank::{BankConfig, TokenConfig};
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::hooks::SlotHooks;
 use sov_modules_api::utils::generate_address;
-use sov_modules_api::{Address, Genesis, Spec, ValidityConditionChecker};
+use sov_modules_api::{Address, Genesis, Spec, ValidityConditionChecker, WorkingSet};
 use sov_rollup_interface::mocks::{
     MockBlock, MockBlockHeader, MockCodeCommitment, MockDaSpec, MockValidityCond,
     MockValidityCondChecker, MockZkvm,
 };
 use sov_state::storage::StorageProof;
-use sov_state::{DefaultStorageSpec, ProverStorage, Storage, WorkingSet};
+use sov_state::{DefaultStorageSpec, ProverStorage, Storage};
 
 use crate::AttesterIncentives;
 
@@ -26,15 +26,15 @@ pub const INIT_HEIGHT: u64 = 0;
 /// `storage` must be the underlying storage defined on the working set for this method to work.
 pub(crate) fn commit_get_new_working_set(
     storage: &ProverStorage<DefaultStorageSpec>,
-    working_set: WorkingSet<<C as Spec>::Storage>,
-) -> WorkingSet<<C as Spec>::Storage> {
+    working_set: WorkingSet<C>,
+) -> (jmt::RootHash, WorkingSet<C>) {
     let (reads_writes, witness) = working_set.checkpoint().freeze();
 
-    storage
+    let prev_root = storage
         .validate_and_commit(reads_writes, &witness)
         .expect("Should be able to commit");
 
-    WorkingSet::new(storage.clone())
+    (prev_root, WorkingSet::new(storage.clone()))
 }
 
 pub(crate) fn create_bank_config_with_token(
@@ -72,7 +72,7 @@ pub(crate) fn create_bank_config_with_token(
 /// Creates a bank config with a token, and a prover incentives module.
 /// Returns the prover incentives module and the attester and challenger's addresses.
 pub(crate) fn setup(
-    working_set: &mut WorkingSet<<C as Spec>::Storage>,
+    working_set: &mut WorkingSet<C>,
 ) -> (
     AttesterIncentives<C, MockZkvm, MockDaSpec, MockValidityCondChecker<MockValidityCond>>,
     Address,
@@ -132,7 +132,7 @@ pub(crate) fn setup(
 }
 
 pub(crate) struct ExecutionSimulationVars {
-    pub state_root: [u8; 32],
+    pub state_root: jmt::RootHash,
     pub state_proof: StorageProof<SparseMerkleProof<<C as Spec>::Hasher>>,
 }
 
@@ -143,20 +143,21 @@ pub(crate) fn execution_simulation<Checker: ValidityConditionChecker<MockValidit
     module: &AttesterIncentives<C, MockZkvm, MockDaSpec, Checker>,
     storage: &ProverStorage<DefaultStorageSpec>,
     attester_address: <C as Spec>::Address,
-    mut working_set: WorkingSet<<C as Spec>::Storage>,
+    mut working_set: WorkingSet<C>,
 ) -> (
     // Vector of the successive state roots with associated bonding proofs
     Vec<ExecutionSimulationVars>,
-    WorkingSet<<C as Spec>::Storage>,
+    WorkingSet<C>,
 ) {
     let mut ret_exec_vars = Vec::<ExecutionSimulationVars>::new();
 
     for i in 0..rounds {
         // Commit the working set
-        working_set = commit_get_new_working_set(storage, working_set);
+        let (root_hash, w_set) = commit_get_new_working_set(storage, working_set);
+        working_set = w_set;
 
         ret_exec_vars.push(ExecutionSimulationVars {
-            state_root: storage.get_state_root(&Default::default()).unwrap(),
+            state_root: root_hash,
             state_proof: module.get_bond_proof(
                 attester_address,
                 &Default::default(),
@@ -177,6 +178,7 @@ pub(crate) fn execution_simulation<Checker: ValidityConditionChecker<MockValidit
         module.chain_state.begin_slot_hook(
             &slot_data.header,
             &slot_data.validity_cond,
+            &root_hash,
             &mut working_set,
         );
     }

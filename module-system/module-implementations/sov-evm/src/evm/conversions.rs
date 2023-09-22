@@ -1,11 +1,11 @@
 use bytes::Bytes;
 use reth_primitives::{
-    Bytes as RethBytes, TransactionSigned, TransactionSignedEcRecovered, TransactionSignedNoHash,
+    AccessList, Bytes as RethBytes, TransactionSigned, TransactionSignedEcRecovered,
+    TransactionSignedNoHash,
 };
 use reth_rpc_types::CallRequest;
 use revm::primitives::{
-    AccountInfo as ReVmAccountInfo, BlockEnv as ReVmBlockEnv, Bytecode, CreateScheme, TransactTo,
-    TxEnv, U256,
+    AccountInfo as ReVmAccountInfo, BlockEnv as ReVmBlockEnv, CreateScheme, TransactTo, TxEnv, U256,
 };
 
 use super::primitive_types::{
@@ -18,7 +18,7 @@ impl From<AccountInfo> for ReVmAccountInfo {
         Self {
             nonce: info.nonce,
             balance: info.balance,
-            code: Some(Bytecode::new_raw(Bytes::from(info.code))),
+            code: None,
             code_hash: info.code_hash,
         }
     }
@@ -29,7 +29,6 @@ impl From<ReVmAccountInfo> for AccountInfo {
         Self {
             balance: info.balance,
             code_hash: info.code_hash,
-            code: info.code.unwrap_or_default().bytes().to_vec(),
             nonce: info.nonce,
         }
     }
@@ -45,6 +44,9 @@ impl From<&BlockEnv> for ReVmBlockEnv {
             prevrandao: Some(block_env.prevrandao),
             basefee: U256::from(block_env.basefee),
             gas_limit: U256::from(block_env.gas_limit),
+            // EIP-4844 related field
+            // https://github.com/Sovereign-Labs/sovereign-sdk/issues/912
+            blob_excess_gas_and_price: None,
         }
     }
 }
@@ -67,6 +69,10 @@ pub(crate) fn create_tx_env(tx: &TransactionSignedEcRecovered) -> TxEnv {
         nonce: Some(tx.nonce()),
         // TODO handle access list
         access_list: vec![],
+        // EIP-4844 related fields
+        // https://github.com/Sovereign-Labs/sovereign-sdk/issues/912
+        blob_hashes: vec![],
+        max_fee_per_blob_gas: None,
     }
 }
 
@@ -130,7 +136,13 @@ pub fn prepare_call_env(request: CallRequest) -> TxEnv {
             .unwrap_or_default(),
         chain_id: request.chain_id.map(|c| c.as_u64()),
         nonce: request.nonce.map(|n| TryInto::<u64>::try_into(n).unwrap()),
-        // TODO handle access list
-        access_list: Default::default(),
+        access_list: request
+            .access_list
+            .map(AccessList::flattened)
+            .unwrap_or_default(),
+        // EIP-4844 related fields
+        // https://github.com/Sovereign-Labs/sovereign-sdk/issues/912
+        blob_hashes: request.blob_versioned_hashes,
+        max_fee_per_blob_gas: request.max_fee_per_blob_gas,
     }
 }

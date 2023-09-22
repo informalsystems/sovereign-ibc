@@ -1,39 +1,53 @@
 use core::result::Result::Ok;
 use std::fmt::Debug;
 
+use anyhow::ensure;
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use sov_bank::{Amount, Coins};
 use sov_chain_state::TransitionHeight;
 use sov_modules_api::optimistic::Attestation;
-use sov_modules_api::{CallResponse, DaSpec, Spec, StateTransition, ValidityConditionChecker};
-use sov_state::storage::StorageProof;
-use sov_state::{Storage, WorkingSet};
+use sov_modules_api::{
+    CallResponse, DaSpec, Spec, StateTransition, ValidityConditionChecker, WorkingSet,
+};
+use sov_state::storage::{Storage, StorageKey, StorageProof, StorageValue};
 use thiserror::Error;
 
 use crate::{AttesterIncentives, UnbondingInfo};
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 /// A wrapper for attestations which implements `borsh` serialization. This is necessary since
 /// Attestations are treated as `CallMessage`s, and we only support borsh encoding for transactions.
-pub struct WrappedAttestation<Da: DaSpec, StorageProof> {
+pub struct WrappedAttestation<Da: DaSpec, StorageProof, Root> {
     #[serde(
-        bound = "Da::SlotHash: Serialize + DeserializeOwned, StorageProof: Serialize + DeserializeOwned"
+        bound = "Da::SlotHash: Serialize + DeserializeOwned, StorageProof: Serialize + DeserializeOwned, Root: Serialize + DeserializeOwned"
     )]
     /// The inner attestation
-    pub inner: Attestation<Da, StorageProof>,
+    pub inner: Attestation<Da, StorageProof, Root>,
 }
 
-impl<Da: DaSpec, StorageProof> From<Attestation<Da, StorageProof>>
-    for WrappedAttestation<Da, StorageProof>
+impl<Da: DaSpec, StorageProof: Debug, Root: Debug> Debug
+    for WrappedAttestation<Da, StorageProof, Root>
 {
-    fn from(value: Attestation<Da, StorageProof>) -> Self {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WrappedAttestation")
+            .field("inner", &self.inner)
+            .finish()
+    }
+}
+
+impl<Da: DaSpec, StorageProof, Root> From<Attestation<Da, StorageProof, Root>>
+    for WrappedAttestation<Da, StorageProof, Root>
+{
+    fn from(value: Attestation<Da, StorageProof, Root>) -> Self {
         Self { inner: value }
     }
 }
 
-impl<Da: DaSpec, StorageProof: Serialize> BorshSerialize for WrappedAttestation<Da, StorageProof> {
+impl<Da: DaSpec, StorageProof: Serialize, Root: Serialize> BorshSerialize
+    for WrappedAttestation<Da, StorageProof, Root>
+{
     fn serialize<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
         // TODO: Implement bcs `to_writer`
         let value = bcs::to_bytes(&self.inner).map_err(|_| {
@@ -44,8 +58,11 @@ impl<Da: DaSpec, StorageProof: Serialize> BorshSerialize for WrappedAttestation<
     }
 }
 
-impl<Da: DaSpec, StorageProof: Serialize + DeserializeOwned> BorshDeserialize
-    for WrappedAttestation<Da, StorageProof>
+impl<
+        Da: DaSpec,
+        StorageProof: Serialize + DeserializeOwned,
+        Root: Serialize + DeserializeOwned,
+    > BorshDeserialize for WrappedAttestation<Da, StorageProof, Root>
 {
     fn deserialize_reader<R: std::io::Read>(reader: &mut R) -> std::io::Result<Self> {
         bcs::from_reader(reader)
@@ -59,7 +76,7 @@ impl<Da: DaSpec, StorageProof: Serialize + DeserializeOwned> BorshDeserialize
 }
 
 /// This enumeration represents the available call messages for interacting with the `AttesterIncentives` module.
-#[derive(BorshDeserialize, BorshSerialize, Debug)]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub enum CallMessage<C: sov_modules_api::Context, Da: DaSpec> {
     /// Bonds an attester, the parameter is the bond amount
     BondAttester(Amount),
@@ -73,10 +90,36 @@ pub enum CallMessage<C: sov_modules_api::Context, Da: DaSpec> {
     UnbondChallenger,
     /// Processes an attestation.
     ProcessAttestation(
-        WrappedAttestation<Da, StorageProof<<<C as Spec>::Storage as Storage>::Proof>>,
+        #[allow(clippy::type_complexity)]
+        WrappedAttestation<
+            Da,
+            StorageProof<<<C as Spec>::Storage as Storage>::Proof>,
+            <C::Storage as Storage>::Root,
+        >,
     ),
     /// Processes a challenge. The challenge is encoded as a [`Vec<u8>`]. The second parameter is the transition number
     ProcessChallenge(Vec<u8>, TransitionHeight),
+}
+
+// Manually implement Debug to remove spurious Debug bound on C::Storage
+impl<C: sov_modules_api::Context, Da: DaSpec> Debug for CallMessage<C, Da> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::BondAttester(arg0) => f.debug_tuple("BondAttester").field(arg0).finish(),
+            Self::BeginUnbondingAttester => write!(f, "BeginUnbondingAttester"),
+            Self::EndUnbondingAttester => write!(f, "EndUnbondingAttester"),
+            Self::BondChallenger(arg0) => f.debug_tuple("BondChallenger").field(arg0).finish(),
+            Self::UnbondChallenger => write!(f, "UnbondChallenger"),
+            Self::ProcessAttestation(arg0) => {
+                f.debug_tuple("ProcessAttestation").field(arg0).finish()
+            }
+            Self::ProcessChallenge(arg0, arg1) => f
+                .debug_tuple("ProcessChallenge")
+                .field(arg0)
+                .field(arg1)
+                .finish(),
+        }
+    }
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -168,22 +211,36 @@ where
     Checker: ValidityConditionChecker<Da::ValidityCondition>,
 {
     /// This returns the address of the reward token supply
-    pub fn get_reward_token_supply_address(
-        &self,
-        working_set: &mut WorkingSet<C::Storage>,
-    ) -> C::Address {
+    pub fn get_reward_token_supply_address(&self, working_set: &mut WorkingSet<C>) -> C::Address {
         self.reward_token_supply_address
             .get(working_set)
             .expect("The reward token supply address should be set at genesis")
     }
 
-    /// A helper function that simply slashes an attester and returns a reward value
-    fn slash_user(
+    /// Verifies the provided proof, returning its underlying storage value, if present.
+    pub fn verify_proof(
         &self,
-        user: &C::Address,
-        role: Role,
-        working_set: &mut WorkingSet<C::Storage>,
-    ) -> u64 {
+        state_root: <C::Storage as Storage>::Root,
+        proof: StorageProof<<C::Storage as Storage>::Proof>,
+        expected_key: &C::Address,
+        working_set: &mut WorkingSet<C>,
+    ) -> Result<Option<StorageValue>, anyhow::Error> {
+        let storage = working_set.backing();
+        let (storage_key, storage_value) = storage.open_proof(state_root, proof)?;
+        let prefix = self.bonded_attesters.prefix();
+        let codec = self.bonded_attesters.codec();
+
+        // We have to check that the storage key is the same as the external key
+        ensure!(
+            storage_key == StorageKey::new(prefix, expected_key, codec),
+            "The storage key from the proof doesn't match the expected storage key."
+        );
+
+        Ok(storage_value)
+    }
+
+    /// A helper function that simply slashes an attester and returns a reward value
+    fn slash_user(&self, user: &C::Address, role: Role, working_set: &mut WorkingSet<C>) -> u64 {
         let bonded_set = match role {
             Role::Attester => {
                 // We have to remove the attester from the unbonding set
@@ -211,7 +268,7 @@ where
         user: &C::Address,
         role: Role,
         reason: SlashingReason,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> AttesterIncentiveErrors {
         self.slash_user(user, role, working_set);
         AttesterIncentiveErrors::UserSlashed(reason)
@@ -223,7 +280,7 @@ where
         attester: &C::Address,
         height: TransitionHeight,
         reason: SlashingReason,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> AttesterIncentiveErrors {
         let reward = self.slash_user(attester, Role::Attester, working_set);
 
@@ -242,7 +299,7 @@ where
         &self,
         context: &C,
         amount: u64,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> Result<CallResponse, AttesterIncentiveErrors> {
         let reward_address = self
             .reward_token_supply_address
@@ -277,7 +334,7 @@ where
         bond_amount: u64,
         user_address: &C::Address,
         role: Role,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> Result<CallResponse, AttesterIncentiveErrors> {
         // If the user is an attester, we have to check that he's not trying to unbond
         if role == Role::Attester
@@ -327,7 +384,7 @@ where
     pub(crate) fn unbond_challenger(
         &self,
         context: &C,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> anyhow::Result<CallResponse> {
         // Get the user's old balance.
         if let Some(old_balance) = self.bonded_challengers.get(context.sender(), working_set) {
@@ -352,7 +409,7 @@ where
     pub(crate) fn begin_unbond_attester(
         &self,
         context: &C,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> anyhow::Result<CallResponse, AttesterIncentiveErrors> {
         // First get the bonded attester
         if let Some(bond) = self.bonded_attesters.get(context.sender(), working_set) {
@@ -381,7 +438,7 @@ where
     pub(crate) fn end_unbond_attester(
         &self,
         context: &C,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> anyhow::Result<CallResponse, AttesterIncentiveErrors> {
         // We have to ensure that the attester is unbonding, and that the unbonding transaction
         // occurred at least `finality_period` blocks ago to let the attester unbond
@@ -428,11 +485,16 @@ where
     /// The bonding proof is now a proof that an attester was bonded during the last `finality_period` range.
     /// The proof must refer to a valid state of the rollup. The initial root hash must represent a state between
     /// the bonding proof one and the current state.
+    #[allow(clippy::type_complexity)]
     fn check_bonding_proof(
         &self,
         context: &C,
-        attestation: &Attestation<Da, StorageProof<<C::Storage as Storage>::Proof>>,
-        working_set: &mut WorkingSet<C::Storage>,
+        attestation: &Attestation<
+            Da,
+            StorageProof<<C::Storage as Storage>::Proof>,
+            <C::Storage as Storage>::Root,
+        >,
+        working_set: &mut WorkingSet<C>,
     ) -> anyhow::Result<(), AttesterIncentiveErrors> {
         let bonding_root = {
             // If we cannot get the transition before the current one, it means that we are trying
@@ -448,7 +510,7 @@ where
                 .chain_state
                 .get_historical_transitions(transition_height, working_set)
             {
-                transition.post_state_root()
+                transition.post_state_root().clone()
             } else {
                 self.chain_state
                     .get_genesis_hash(working_set)
@@ -457,13 +519,12 @@ where
         };
 
         // This proof checks that the attester was bonded at the given transition num
-        let bond_opt = working_set
-            .backing()
+        let bond_opt = self
             .verify_proof(
                 bonding_root,
                 attestation.proof_of_bond.proof.clone(),
                 context.sender(),
-                &self.bonded_attesters,
+                working_set,
             )
             .map_err(|_err| AttesterIncentiveErrors::InvalidBondingProof)?;
 
@@ -484,12 +545,17 @@ where
         Ok(())
     }
 
+    #[allow(clippy::type_complexity)]
     fn check_transition(
         &self,
         claimed_transition_height: TransitionHeight,
         attester: &C::Address,
-        attestation: &Attestation<Da, StorageProof<<C::Storage as Storage>::Proof>>,
-        working_set: &mut WorkingSet<C::Storage>,
+        attestation: &Attestation<
+            Da,
+            StorageProof<<C::Storage as Storage>::Proof>,
+            <C::Storage as Storage>::Root,
+        >,
+        working_set: &mut WorkingSet<C>,
     ) -> anyhow::Result<CallResponse, AttesterIncentiveErrors> {
         if let Some(curr_tx) = self
             .chain_state
@@ -519,19 +585,24 @@ where
         }
     }
 
+    #[allow(clippy::type_complexity)]
     fn check_initial_hash(
         &self,
         claimed_transition_height: TransitionHeight,
         attester: &C::Address,
-        attestation: &Attestation<Da, StorageProof<<C::Storage as Storage>::Proof>>,
-        working_set: &mut WorkingSet<C::Storage>,
+        attestation: &Attestation<
+            Da,
+            StorageProof<<C::Storage as Storage>::Proof>,
+            <C::Storage as Storage>::Root,
+        >,
+        working_set: &mut WorkingSet<C>,
     ) -> anyhow::Result<CallResponse, AttesterIncentiveErrors> {
         // Normal state
         if let Some(transition) = self
             .chain_state
             .get_historical_transitions(claimed_transition_height.saturating_sub(1), working_set)
         {
-            if transition.post_state_root() != attestation.initial_state_root {
+            if transition.post_state_root() != &attestation.initial_state_root {
                 // The initial root hashes don't match, just slash the attester
                 return Err(self.slash_burn_reward(
                     attester,
@@ -585,11 +656,16 @@ where
     }
 
     /// Try to process an attestation if the attester is bonded
+    #[allow(clippy::type_complexity)]
     pub(crate) fn process_attestation(
         &self,
         context: &C,
-        attestation: WrappedAttestation<Da, StorageProof<<C::Storage as Storage>::Proof>>,
-        working_set: &mut WorkingSet<C::Storage>,
+        attestation: WrappedAttestation<
+            Da,
+            StorageProof<<C::Storage as Storage>::Proof>,
+            <C::Storage as Storage>::Root,
+        >,
+        working_set: &mut WorkingSet<C>,
     ) -> anyhow::Result<CallResponse, AttesterIncentiveErrors> {
         let attestation = attestation.inner;
         // We first need to check that the attester is still in the bonding set
@@ -685,10 +761,10 @@ where
 
     fn check_challenge_outputs_against_transition(
         &self,
-        public_outputs: StateTransition<Da, C::Address>,
+        public_outputs: StateTransition<Da, C::Address, <C::Storage as Storage>::Root>,
         height: &TransitionHeight,
         condition_checker: &mut impl ValidityConditionChecker<Da::ValidityCondition>,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> anyhow::Result<(), SlashingReason> {
         let transition = self
             .chain_state
@@ -700,7 +776,7 @@ where
                 .chain_state
                 .get_historical_transitions(height.saturating_sub(1), working_set)
             {
-                prev_transition.post_state_root()
+                prev_transition.post_state_root().clone()
             } else {
                 self.chain_state
                     .get_genesis_hash(working_set)
@@ -734,7 +810,7 @@ where
         context: &C,
         proof: &[u8],
         transition_num: &TransitionHeight,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> anyhow::Result<CallResponse, AttesterIncentiveErrors> {
         // Get the challenger's old balance.
         // Revert if they aren't bonded
@@ -771,9 +847,13 @@ where
                 )
             })?;
 
-        let public_outputs_opt: anyhow::Result<StateTransition<Da, C::Address>> =
-            Vm::verify_and_extract_output::<C::Address, Da>(proof, &code_commitment)
-                .map_err(|e| anyhow::format_err!("{:?}", e));
+        let public_outputs_opt: anyhow::Result<
+            StateTransition<Da, C::Address, <C::Storage as Storage>::Root>,
+        > = Vm::verify_and_extract_output::<C::Address, Da, <C::Storage as Storage>::Root>(
+            proof,
+            &code_commitment,
+        )
+        .map_err(|e| anyhow::format_err!("{:?}", e));
 
         // Don't return an error for invalid proofs - those are expected and shouldn't cause reverts.
         match public_outputs_opt {

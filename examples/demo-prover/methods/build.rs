@@ -1,8 +1,17 @@
 use std::collections::HashMap;
 
 fn main() {
-    let guest_pkg_to_options = get_guest_options();
-    risc0_build::embed_methods_with_options(guest_pkg_to_options);
+    if std::env::var("CI_SKIP_GUEST_BUILD").is_ok() {
+        println!("Skipping guest build for CI run");
+        let out_dir = std::env::var_os("OUT_DIR").unwrap();
+        let out_dir = std::path::Path::new(&out_dir);
+        let methods_path = out_dir.join("methods.rs");
+        std::fs::write(methods_path, "pub const ROLLUP_ELF: &[u8] = &[];")
+            .expect("Failed to write mock rollup elf");
+    } else {
+        let guest_pkg_to_options = get_guest_options();
+        risc0_build::embed_methods_with_options(guest_pkg_to_options);
+    }
 }
 
 #[cfg(not(feature = "bench"))]
@@ -17,7 +26,6 @@ fn get_guest_options() -> HashMap<&'static str, risc0_build::GuestOptions> {
         "sov-demo-prover-guest",
         risc0_build::GuestOptions {
             features: vec!["bench".to_string()],
-            std: true,
         },
     );
     guest_pkg_to_options

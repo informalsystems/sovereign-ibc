@@ -3,9 +3,10 @@ use std::convert::Infallible;
 use reth_primitives::TransactionKind;
 use revm::db::CacheDB;
 use revm::precompile::B160;
-use revm::primitives::{CfgEnv, ExecutionResult, Output, KECCAK_EMPTY, U256};
+use revm::primitives::{CfgEnv, ExecutionResult, Output, SpecId, KECCAK_EMPTY, U256};
 use revm::{Database, DatabaseCommit};
-use sov_state::{ProverStorage, WorkingSet};
+use sov_modules_api::WorkingSet;
+use sov_state::ProverStorage;
 
 use super::db::EvmDb;
 use super::db_init::InitEvmDb;
@@ -30,7 +31,7 @@ pub(crate) fn output(result: ExecutionResult) -> bytes::Bytes {
 #[test]
 fn simple_contract_execution_sov_state() {
     let tmpdir = tempfile::tempdir().unwrap();
-    let mut working_set: WorkingSet<<C as sov_modules_api::Spec>::Storage> =
+    let mut working_set: WorkingSet<C> =
         WorkingSet::new(ProverStorage::with_path(tmpdir.path()).unwrap());
 
     let evm = Evm::<C>::default();
@@ -55,12 +56,16 @@ fn simple_contract_execution<DB: Database<Error = Infallible> + DatabaseCommit +
         AccountInfo {
             balance: U256::from(1000000000),
             code_hash: KECCAK_EMPTY,
-            code: vec![],
             nonce: 1,
         },
     );
 
     let contract = SimpleStorageContract::default();
+
+    // We are not supporting CANCUN yet
+    // https://github.com/Sovereign-Labs/sovereign-sdk/issues/912
+    let mut cfg_env = CfgEnv::default();
+    cfg_env.spec_id = SpecId::SHANGHAI;
 
     let contract_address: B160 = {
         let tx = dev_signer
@@ -72,7 +77,8 @@ fn simple_contract_execution<DB: Database<Error = Infallible> + DatabaseCommit +
             gas_limit: reth_primitives::constants::ETHEREUM_BLOCK_GAS_LIMIT,
             ..Default::default()
         };
-        let result = executor::execute_tx(&mut evm_db, &block_env, tx, CfgEnv::default()).unwrap();
+
+        let result = executor::execute_tx(&mut evm_db, &block_env, tx, cfg_env.clone()).unwrap();
         contract_address(&result).expect("Expected successful contract creation")
     };
 
@@ -90,7 +96,7 @@ fn simple_contract_execution<DB: Database<Error = Infallible> + DatabaseCommit +
             .unwrap();
 
         let tx = &tx.try_into().unwrap();
-        executor::execute_tx(&mut evm_db, &BlockEnv::default(), tx, CfgEnv::default()).unwrap();
+        executor::execute_tx(&mut evm_db, &BlockEnv::default(), tx, cfg_env.clone()).unwrap();
     }
 
     let get_res = {
@@ -106,7 +112,7 @@ fn simple_contract_execution<DB: Database<Error = Infallible> + DatabaseCommit +
 
         let tx = &tx.try_into().unwrap();
         let result =
-            executor::execute_tx(&mut evm_db, &BlockEnv::default(), tx, CfgEnv::default()).unwrap();
+            executor::execute_tx(&mut evm_db, &BlockEnv::default(), tx, cfg_env.clone()).unwrap();
 
         let out = output(result);
         ethereum_types::U256::from(out.as_ref())

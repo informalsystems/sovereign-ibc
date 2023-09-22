@@ -2,7 +2,7 @@ use anyhow::Result;
 use reth_primitives::constants::{EMPTY_RECEIPTS, EMPTY_TRANSACTIONS};
 use reth_primitives::{Bloom, Bytes, EMPTY_OMMER_ROOT, H256, KECCAK_EMPTY, U256};
 use revm::primitives::SpecId;
-use sov_state::WorkingSet;
+use sov_modules_api::WorkingSet;
 
 use crate::evm::db_init::InitEvmDb;
 use crate::evm::primitive_types::Block;
@@ -13,7 +13,7 @@ impl<C: sov_modules_api::Context> Evm<C> {
     pub(crate) fn init_module(
         &self,
         config: &<Self as sov_modules_api::Module>::Config,
-        working_set: &mut WorkingSet<C::Storage>,
+        working_set: &mut WorkingSet<C>,
     ) -> Result<()> {
         let mut evm_db = self.get_db(working_set);
 
@@ -23,22 +23,32 @@ impl<C: sov_modules_api::Context> Evm<C> {
                 AccountInfo {
                     balance: acc.balance,
                     code_hash: acc.code_hash,
-                    code: acc.code.clone(),
                     nonce: acc.nonce,
                 },
-            )
+            );
+
+            if acc.code.len() > 0 {
+                evm_db.insert_code(acc.code_hash, acc.code.clone());
+            }
         }
 
         let mut spec = config
             .spec
             .iter()
-            .map(|(k, v)| (*k, *v))
+            .map(|(k, v)| {
+                // https://github.com/Sovereign-Labs/sovereign-sdk/issues/912
+                if *v == SpecId::CANCUN {
+                    panic!("Cancun is not supported");
+                }
+
+                (*k, *v)
+            })
             .collect::<Vec<_>>();
 
         spec.sort_by(|a, b| a.0.cmp(&b.0));
 
         if spec.is_empty() {
-            spec.push((0, SpecId::LATEST));
+            spec.push((0, SpecId::SHANGHAI));
         } else if spec[0].0 != 0u64 {
             panic!("EVM spec must start from block 0");
         }
@@ -50,17 +60,17 @@ impl<C: sov_modules_api::Context> Evm<C> {
             coinbase: config.coinbase,
             block_gas_limit: config.block_gas_limit,
             block_timestamp_delta: config.block_timestamp_delta,
+            base_fee_params: config.base_fee_params,
         };
 
         self.cfg.set(&chain_cfg, working_set);
-
-        let genesis_block_number = 0u64;
 
         let header = reth_primitives::Header {
             parent_hash: H256::default(),
             ommers_hash: EMPTY_OMMER_ROOT,
             beneficiary: config.coinbase,
-            state_root: KECCAK_EMPTY, // TODO: Can we get state from working set now?
+            // This will be set in finalize_slot_hook or in the next begin_slot_hook
+            state_root: KECCAK_EMPTY,
             transactions_root: EMPTY_TRANSACTIONS,
             receipts_root: EMPTY_RECEIPTS,
             withdrawals_root: None,
@@ -74,6 +84,13 @@ impl<C: sov_modules_api::Context> Evm<C> {
             nonce: 0,
             base_fee_per_gas: Some(config.starting_base_fee),
             extra_data: Bytes::default(),
+            // EIP-4844 related fields
+            // https://github.com/Sovereign-Labs/sovereign-sdk/issues/912
+            blob_gas_used: None,
+            excess_blob_gas: None,
+            // EIP-4788 related field
+            // unrelated for rollups
+            parent_beacon_block_root: None,
         };
 
         let block = Block {
@@ -82,17 +99,8 @@ impl<C: sov_modules_api::Context> Evm<C> {
         };
 
         self.head.set(&block, working_set);
-
-        let sealead_block = block.seal();
-
-        let mut accessory_state = working_set.accessory_state();
-
-        self.block_hashes.set(
-            &sealead_block.header.hash,
-            &genesis_block_number,
-            &mut accessory_state,
-        );
-        self.blocks.push(&sealead_block, &mut accessory_state);
+        self.pending_head
+            .set(&block, &mut working_set.accessory_state());
 
         Ok(())
     }

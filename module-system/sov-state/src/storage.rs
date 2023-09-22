@@ -1,20 +1,20 @@
 use std::fmt::Display;
 use std::sync::Arc;
 
-use anyhow::ensure;
 use borsh::{BorshDeserialize, BorshSerialize};
 use hex;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use sov_first_read_last_write_cache::{CacheKey, CacheValue};
 
-use crate::codec::{EncodeKeyLike, StateKeyCodec, StateValueCodec};
+use crate::codec::{EncodeKeyLike, StateValueCodec};
 use crate::internal_cache::OrderedReadsAndWrites;
 use crate::utils::AlignedVec;
 use crate::witness::Witness;
-use crate::{Prefix, StateMap};
+use crate::Prefix;
 
-// `Key` type for the `Storage`
+/// The key type suitable for use in [`Storage::get`] and other getter methods of
+/// [`Storage`]. Cheaply-clonable.
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct StorageKey {
     key: Arc<Vec<u8>>,
@@ -27,16 +27,19 @@ impl From<CacheKey> for StorageKey {
 }
 
 impl StorageKey {
+    /// Returns a new [`Arc`] reference to the bytes of this key.
     pub fn key(&self) -> Arc<Vec<u8>> {
         self.key.clone()
     }
 
+    /// Converts this key into a [`CacheKey`] via cloning.
     pub fn to_cache_key(&self) -> CacheKey {
         CacheKey {
             key: self.key.clone(),
         }
     }
 
+    /// Converts this key into a [`CacheKey`].
     pub fn into_cache_key(self) -> CacheKey {
         CacheKey { key: self.key }
     }
@@ -55,7 +58,7 @@ impl Display for StorageKey {
 }
 
 impl StorageKey {
-    /// Creates a new StorageKey that combines a prefix and a key.
+    /// Creates a new [`StorageKey`] that combines a prefix and a key.
     pub fn new<K, Q, KC>(prefix: &Prefix, key: &Q, codec: &KC) -> Self
     where
         KC: EncodeKeyLike<Q, K>,
@@ -74,7 +77,7 @@ impl StorageKey {
         }
     }
 
-    /// Creates a new StorageKey that combines a prefix and a key.
+    /// Creates a new [`StorageKey`] that combines a prefix and a key.
     pub fn singleton(prefix: &Prefix) -> Self {
         Self {
             key: Arc::new(prefix.as_aligned_vec().clone().into_inner()),
@@ -82,7 +85,8 @@ impl StorageKey {
     }
 }
 
-/// A serialized value suitable for storing. Internally uses an [`Arc<Vec<u8>>`] for cheap cloning.
+/// A serialized value suitable for storing. Internally uses an [`Arc<Vec<u8>>`]
+/// for cheap cloning.
 #[derive(
     Clone, Debug, PartialEq, Eq, BorshSerialize, BorshDeserialize, Serialize, Deserialize, Default,
 )]
@@ -156,28 +160,44 @@ pub trait Storage: Clone {
         + BorshSerialize
         + BorshDeserialize;
 
+    /// A cryptographic commitment to the contents of this storage
+    type Root: Serialize
+        + DeserializeOwned
+        + core::fmt::Debug
+        + Clone
+        + BorshSerialize
+        + BorshDeserialize
+        + Eq
+        + Into<[u8; 32]>; // Require a one-way conversion from the state root to a 32-byte array. This can always be
+                          // implemented by hashing the state root even if the root itself is not 32 bytes.
+
     /// State update that will be committed to the database.
     type StateUpdate;
 
+    /// Creates a new instance of this [`Storage`] type, with some configuration
+    /// options.
     fn with_config(config: Self::RuntimeConfig) -> Result<Self, anyhow::Error>;
 
     /// Returns the value corresponding to the key or None if key is absent.
     fn get(&self, key: &StorageKey, witness: &Self::Witness) -> Option<StorageValue>;
 
     /// Returns the value corresponding to the key or None if key is absent.
+    ///
+    /// # About accessory state
+    /// This method is blanket-implemented to return [`None`]. **Only native
+    /// execution environments** (i.e. outside of the zmVM) **SHOULD** override
+    /// this method to return a value. This is because accessory state **MUST
+    /// NOT** be readable from within the zmVM.
     fn get_accessory(&self, _key: &StorageKey) -> Option<StorageValue> {
         None
     }
-
-    /// Returns the latest state root hash from the storage.
-    fn get_state_root(&self, witness: &Self::Witness) -> anyhow::Result<[u8; 32]>;
 
     /// Calculates new state root but does not commit any changes to the database.
     fn compute_state_update(
         &self,
         state_accesses: OrderedReadsAndWrites,
         witness: &Self::Witness,
-    ) -> Result<([u8; 32], Self::StateUpdate), anyhow::Error>;
+    ) -> Result<(Self::Root, Self::StateUpdate), anyhow::Error>;
 
     /// Commits state changes to the database.
     fn commit(&self, node_batch: &Self::StateUpdate, accessory_update: &OrderedReadsAndWrites);
@@ -190,7 +210,7 @@ pub trait Storage: Clone {
         &self,
         state_accesses: OrderedReadsAndWrites,
         witness: &Self::Witness,
-    ) -> Result<[u8; 32], anyhow::Error> {
+    ) -> Result<Self::Root, anyhow::Error> {
         Self::validate_and_commit_with_accessory_update(
             self,
             state_accesses,
@@ -207,7 +227,7 @@ pub trait Storage: Clone {
         state_accesses: OrderedReadsAndWrites,
         witness: &Self::Witness,
         accessory_update: &OrderedReadsAndWrites,
-    ) -> Result<[u8; 32], anyhow::Error> {
+    ) -> Result<Self::Root, anyhow::Error> {
         let (root_hash, node_batch) = self.compute_state_update(state_accesses, witness)?;
         self.commit(&node_batch, accessory_update);
 
@@ -218,40 +238,18 @@ pub trait Storage: Clone {
     /// It returns a result with the opened leaf (key, value) pair in case of success.
     fn open_proof(
         &self,
-        state_root: [u8; 32],
+        state_root: Self::Root,
         proof: StorageProof<Self::Proof>,
     ) -> Result<(StorageKey, Option<StorageValue>), anyhow::Error>;
 
-    fn verify_proof<K, V, Codec>(
-        &self,
-        state_root: [u8; 32],
-        proof: StorageProof<Self::Proof>,
-        expected_key: &K,
-        storage_map: &StateMap<K, V, Codec>,
-    ) -> Result<Option<StorageValue>, anyhow::Error>
-    where
-        Codec: StateKeyCodec<K>,
-    {
-        let (storage_key, storage_value) = self.open_proof(state_root, proof)?;
-
-        // We have to check that the storage key is the same as the external key
-        ensure!(
-            storage_key == StorageKey::new(storage_map.prefix(), expected_key, storage_map.codec()),
-            "The storage key from the proof doesn't match the expected storage key."
-        );
-
-        Ok(storage_value)
-    }
-
     /// Indicates if storage is empty or not.
-    /// Useful during initialization
+    /// Useful during initialization.
     fn is_empty(&self) -> bool;
 }
 
 // Used only in tests.
-#[cfg(test)]
-impl From<&'static str> for StorageKey {
-    fn from(key: &'static str) -> Self {
+impl From<&str> for StorageKey {
+    fn from(key: &str) -> Self {
         Self {
             key: Arc::new(key.as_bytes().to_vec()),
         }
@@ -259,34 +257,19 @@ impl From<&'static str> for StorageKey {
 }
 
 // Used only in tests.
-#[cfg(test)]
-impl From<&'static str> for StorageValue {
-    fn from(value: &'static str) -> Self {
+impl From<&str> for StorageValue {
+    fn from(value: &str) -> Self {
         Self {
             value: Arc::new(value.as_bytes().to_vec()),
         }
     }
 }
 
+/// A [`Storage`] that is suitable for use in native execution environments
+/// (outside of the zkVM).
 pub trait NativeStorage: Storage {
     /// Returns the value corresponding to the key or None if key is absent and a proof to
-    /// get the value. Panics if [`get_with_proof_from_state_map`](NativeStorage::get_with_proof_from_state_map)
-    /// returns [`None`] in place of the proof.
+    /// get the value.
     fn get_with_proof(&self, key: StorageKey, witness: &Self::Witness)
         -> StorageProof<Self::Proof>;
-
-    fn get_with_proof_from_state_map<Q, K, V, Codec>(
-        &self,
-        key: &Q,
-        state_map: &StateMap<K, V, Codec>,
-        witness: &Self::Witness,
-    ) -> StorageProof<Self::Proof>
-    where
-        Codec: EncodeKeyLike<Q, K>,
-    {
-        self.get_with_proof(
-            StorageKey::new(state_map.prefix(), key, state_map.codec()),
-            witness,
-        )
-    }
 }

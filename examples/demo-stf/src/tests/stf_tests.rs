@@ -5,37 +5,41 @@ pub mod test {
     use sov_data_generators::{has_tx_events, new_test_blob_from_batch};
     use sov_modules_api::default_context::DefaultContext;
     use sov_modules_api::default_signature::private_key::DefaultPrivateKey;
-    use sov_modules_api::PrivateKey;
+    use sov_modules_api::{PrivateKey, WorkingSet};
     use sov_modules_stf_template::{Batch, SequencerOutcome};
     use sov_rollup_interface::mocks::{MockBlock, MockDaSpec};
     use sov_rollup_interface::stf::StateTransitionFunction;
-    use sov_state::{ProverStorage, WorkingSet};
+    use sov_state::ProverStorage;
 
-    use crate::genesis_config::{create_demo_config, DEMO_SEQUENCER_DA_ADDRESS, LOCKED_AMOUNT};
+    use crate::genesis_config::read_private_key;
     use crate::runtime::Runtime;
     use crate::tests::da_simulation::simulate_da;
-    use crate::tests::{create_new_demo, C};
+    use crate::tests::{
+        create_new_app_template_for_tests, get_genesis_config_for_tests, C,
+        TEST_SEQUENCER_DA_ADDRESS,
+    };
 
     #[test]
     fn test_demo_values_in_db() {
         let tempdir = tempfile::tempdir().unwrap();
         let path = tempdir.path();
-        let value_setter_admin_private_key = DefaultPrivateKey::generate();
 
-        let config = create_demo_config(LOCKED_AMOUNT + 1, &value_setter_admin_private_key);
+        let config = get_genesis_config_for_tests();
         {
-            let mut demo = create_new_demo(path);
+            let mut demo = create_new_app_template_for_tests(path);
 
-            demo.init_chain(config);
+            let genesis_root = demo.init_chain(config);
 
-            let txs = simulate_da(value_setter_admin_private_key);
-            let blob = new_test_blob_from_batch(Batch { txs }, &DEMO_SEQUENCER_DA_ADDRESS, [0; 32]);
+            let priv_key = read_private_key::<DefaultContext>().private_key;
+            let txs = simulate_da(priv_key);
+            let blob = new_test_blob_from_batch(Batch { txs }, &TEST_SEQUENCER_DA_ADDRESS, [0; 32]);
 
             let mut blobs = [blob];
 
             let data = MockBlock::default();
 
             let result = demo.apply_slot(
+                &genesis_root,
                 Default::default(),
                 &data.header,
                 &data.validity_cond,
@@ -65,14 +69,11 @@ pub mod test {
                 .bank
                 .supply_of(get_default_token_address(), &mut working_set)
                 .unwrap();
-            assert_eq!(
-                resp,
-                sov_bank::query::TotalSupplyResponse { amount: Some(1000) }
-            );
+            assert_eq!(resp, sov_bank::TotalSupplyResponse { amount: Some(1000) });
 
             let resp = runtime.value_setter.query_value(&mut working_set).unwrap();
 
-            assert_eq!(resp, sov_value_setter::query::Response { value: Some(33) });
+            assert_eq!(resp, sov_value_setter::Response { value: Some(33) });
         }
     }
 
@@ -80,21 +81,21 @@ pub mod test {
     fn test_demo_values_in_cache() {
         let tempdir = tempfile::tempdir().unwrap();
         let path = tempdir.path();
-        let mut demo = create_new_demo(path);
+        let mut demo = create_new_app_template_for_tests(path);
 
-        let value_setter_admin_private_key = DefaultPrivateKey::generate();
+        let config = get_genesis_config_for_tests();
 
-        let config = create_demo_config(LOCKED_AMOUNT + 1, &value_setter_admin_private_key);
+        let genesis_root = demo.init_chain(config);
 
-        demo.init_chain(config);
+        let private_key = read_private_key::<DefaultContext>().private_key;
+        let txs = simulate_da(private_key);
 
-        let txs = simulate_da(value_setter_admin_private_key);
-
-        let blob = new_test_blob_from_batch(Batch { txs }, &DEMO_SEQUENCER_DA_ADDRESS, [0; 32]);
+        let blob = new_test_blob_from_batch(Batch { txs }, &TEST_SEQUENCER_DA_ADDRESS, [0; 32]);
         let mut blobs = [blob];
         let data = MockBlock::default();
 
         let apply_block_result = demo.apply_slot(
+            &genesis_root,
             Default::default(),
             &data.header,
             &data.validity_cond,
@@ -119,14 +120,11 @@ pub mod test {
             .bank
             .supply_of(get_default_token_address(), &mut working_set)
             .unwrap();
-        assert_eq!(
-            resp,
-            sov_bank::query::TotalSupplyResponse { amount: Some(1000) }
-        );
+        assert_eq!(resp, sov_bank::TotalSupplyResponse { amount: Some(1000) });
 
         let resp = runtime.value_setter.query_value(&mut working_set).unwrap();
 
-        assert_eq!(resp, sov_value_setter::query::Response { value: Some(33) });
+        assert_eq!(resp, sov_value_setter::Response { value: Some(33) });
     }
 
     #[test]
@@ -137,17 +135,18 @@ pub mod test {
 
         let value_setter_admin_private_key = DefaultPrivateKey::generate();
 
-        let config = create_demo_config(LOCKED_AMOUNT + 1, &value_setter_admin_private_key);
+        let config = get_genesis_config_for_tests();
         {
-            let mut demo = create_new_demo(path);
-            demo.init_chain(config);
+            let mut demo = create_new_app_template_for_tests(path);
+            let genesis_root = demo.init_chain(config);
 
             let txs = simulate_da(value_setter_admin_private_key);
-            let blob = new_test_blob_from_batch(Batch { txs }, &DEMO_SEQUENCER_DA_ADDRESS, [0; 32]);
+            let blob = new_test_blob_from_batch(Batch { txs }, &TEST_SEQUENCER_DA_ADDRESS, [0; 32]);
             let mut blobs = [blob];
             let data = MockBlock::default();
 
             let apply_block_result = demo.apply_slot(
+                &genesis_root,
                 Default::default(),
                 &data.header,
                 &data.validity_cond,
@@ -174,14 +173,11 @@ pub mod test {
                 .bank
                 .supply_of(get_default_token_address(), &mut working_set)
                 .unwrap();
-            assert_eq!(
-                resp,
-                sov_bank::query::TotalSupplyResponse { amount: Some(1000) }
-            );
+            assert_eq!(resp, sov_bank::TotalSupplyResponse { amount: Some(1000) });
 
             let resp = runtime.value_setter.query_value(&mut working_set).unwrap();
 
-            assert_eq!(resp, sov_value_setter::query::Response { value: None });
+            assert_eq!(resp, sov_value_setter::Response { value: None });
         }
     }
 
@@ -190,21 +186,22 @@ pub mod test {
         let tempdir = tempfile::tempdir().unwrap();
         let path = tempdir.path();
 
-        let value_setter_admin_private_key = DefaultPrivateKey::generate();
-
-        let mut config = create_demo_config(LOCKED_AMOUNT + 1, &value_setter_admin_private_key);
+        let mut config = get_genesis_config_for_tests();
         config.sequencer_registry.is_preferred_sequencer = false;
 
-        let mut demo = create_new_demo(path);
-        demo.init_chain(config);
+        let mut demo = create_new_app_template_for_tests(path);
+        let genesis_root = demo.init_chain(config);
 
         let some_sequencer: [u8; 32] = [121; 32];
-        let txs = simulate_da(value_setter_admin_private_key);
+
+        let private_key = read_private_key::<DefaultContext>().private_key;
+        let txs = simulate_da(private_key);
         let blob = new_test_blob_from_batch(Batch { txs }, &some_sequencer, [0; 32]);
         let mut blobs = [blob];
         let data = MockBlock::default();
 
         let apply_block_result = demo.apply_slot(
+            &genesis_root,
             Default::default(),
             &data.header,
             &data.validity_cond,

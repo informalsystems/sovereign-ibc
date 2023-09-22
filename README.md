@@ -4,12 +4,13 @@
   <a href="https://github.com/Sovereign-Labs/sovereign-sdk/blob/stable/LICENSE">
     <img alt="License: Apache-2.0" src="https://img.shields.io/github/license/Sovereign-Labs/sovereign-sdk.svg" />
   </a>
-  <a href="https://codecov.io/gh/Sovereign-Labs/sovereign-sdk" > 
-      <img alt="Coverage" src="https://codecov.io/gh/Sovereign-Labs/sovereign-sdk/branch/stable/graph/badge.svg"/> 
-  </a>
-   <a href="https://discord.gg/kbykCcPrcA" > 
+  <a href="https://discord.gg/kbykCcPrcA" > 
       <img alt="Discord" src="https://img.shields.io/discord/1050059327626555462?label=discord"/> 
   </a>
+  <a href="https://codecov.io/gh/Sovereign-Labs/sovereign-sdk" > 
+      <img alt="Coverage" src="https://codecov.io/gh/Sovereign-Labs/sovereign-sdk/branch/nightly/graph/badge.svg"/> 
+  </a>
+  <img alt="GitHub Workflow Status (with event)" src="https://img.shields.io/github/actions/workflow/status/sovereign-labs/sovereign-sdk/prerelease_checks.yml?label=Pre-release%20checks">
 </div>
 
 ## What is the Sovereign SDK?
@@ -66,7 +67,7 @@ and a bunch of helpful utilities for working with stateful transactions. Finally
 blockchain functionality like `Accounts`, and fungible `Tokens`.
 
 For more information on the Module System, see its [README](./module-system/README.md). You can also find a tutorial on
-implementing and deploying a custom module [here](./examples/demo-nft-module/README.md).
+implementing and deploying a custom module [here](./examples/simple-nft-module/README.md).
 
 ### The Full Node
 
@@ -89,7 +90,7 @@ Experience how a simple rollup works by exploring our [`demo-rollup`](./examples
 - #### Using the Module System
 This is the most straightforward way to create a rollup.
 
-To construct a single module, follow our [module building tutorial](./examples/demo-nft-module/README.md).
+To construct a single module, follow our [module building tutorial](./examples/simple-nft-module/README.md).
 To combine multiple modules into a State Transition Function (STF), see the [`demo-stf`](./examples/demo-stf/README.md) guide.
 - #### By building a custom State Transition Function
 If you want even more control over your rollup's functionality, you can implement a completely custom State Transition Function without using the Module System. Our dedicated tutorial for this approach can be found [here](./examples/demo-simple-stf/README.md).
