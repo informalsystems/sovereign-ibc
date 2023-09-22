@@ -9,6 +9,7 @@ use tokio::runtime::Runtime;
 
 use super::app::MockCosmosChain;
 
+/// Defines a builder structure for instantiating a mock Cosmos chain
 pub struct CosmosBuilder {
     pub runtime: Arc<Runtime>,
     pub chain_id: ChainId,

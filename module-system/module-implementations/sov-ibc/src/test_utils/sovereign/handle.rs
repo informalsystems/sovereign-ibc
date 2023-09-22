@@ -36,6 +36,7 @@ where
         self.chain_id()
     }
 
+    // TODO: Can implement this when we have enough information about the header of SDK chains
     fn query_header(&self, target_height: &Height, trusted_height: &Height) -> Header {
         unimplemented!()
     }

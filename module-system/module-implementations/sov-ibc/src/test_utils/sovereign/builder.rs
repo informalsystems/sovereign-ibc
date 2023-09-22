@@ -9,7 +9,8 @@ use super::app::TestApp;
 use super::config::TestConfig;
 use super::runtime::TestRuntime;
 
-/// Defines a test fixture builder with default configurations and specs
+/// Defines a builder structure with default configurations and specs for
+/// instantiating a mock Sovereign SDK application
 pub struct DefaultBuilder {
     chain_id: ChainId,
     config: TestConfig<DefaultContext>,

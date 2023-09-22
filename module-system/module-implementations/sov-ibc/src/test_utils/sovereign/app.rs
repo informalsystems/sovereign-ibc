@@ -31,7 +31,7 @@ use crate::context::IbcExecutionContext;
 use crate::test_utils::cosmos::helpers::dummy_tm_client_state;
 use crate::Ibc;
 
-/// Defines test fixture structure to interact with the bank and ibc modules
+/// Defines a mock Sovereign SDK application with access to the ibc module
 pub struct TestApp<'a, C, Da>
 where
     C: Context,
@@ -68,6 +68,7 @@ where
         }
     }
 
+    /// Returns the chain id
     pub fn chain_id(&self) -> &ChainId {
         &self.chain_id
     }
@@ -86,6 +87,7 @@ where
         &self.transfer().bank
     }
 
+    /// Returns access to the context of the ibc module
     pub fn ibc_ctx(&self) -> IbcExecutionContext<'a, C, Da> {
         self.ibc_ctx.clone()
     }
@@ -95,6 +97,7 @@ where
         &self.ibc_ctx.ibc.transfer
     }
 
+    /// Returns the balance of a user for a given token
     pub fn get_balance_of(&self, user_address: C::Address, token_address: C::Address) -> u64 {
         self.bank()
             .get_balance_of(
@@ -167,7 +170,7 @@ where
         client_id
     }
 
-    /// Establishes a connection on the ibc module with `Open` state
+    /// Establishes a connection on the ibc module with the `Open` state
     pub fn setup_connection(&mut self, client_id: ClientId) -> ConnectionId {
         let connection_id = ConnectionId::new(0);
 
@@ -191,7 +194,7 @@ where
         connection_id
     }
 
-    /// Establishes a channel on the ibc module with `Open` state
+    /// Establishes a channel on the ibc module with the `Open` state
     pub fn setup_channel(&mut self, connection_id: ConnectionId) -> (PortId, ChannelId) {
         let channel_id = ChannelId::new(0);
 
@@ -215,6 +218,7 @@ where
         (port_id, channel_id)
     }
 
+    /// Sets the send sequence number for a given channel and port ids
     pub fn with_send_sequence(&self, port_id: PortId, channel_id: ChannelId, seq_number: Sequence) {
         let seq_send_path = SeqSendPath::new(&port_id, &channel_id);
 
@@ -223,6 +227,7 @@ where
             .unwrap();
     }
 
+    /// Sets the recv sequence number for a given channel and port ids
     pub fn with_recv_sequence(&self, port_id: PortId, chan_id: ChannelId, seq_number: Sequence) {
         let seq_recv_path = SeqRecvPath::new(&port_id, &chan_id);
 
@@ -231,6 +236,7 @@ where
             .unwrap();
     }
 
+    /// Sets the ack sequence number for a given channel and port ids
     pub fn with_ack_sequence(&self, port_id: PortId, chan_id: ChannelId, seq_number: Sequence) {
         let seq_ack_path = SeqAckPath::new(&port_id, &chan_id);
 

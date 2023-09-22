@@ -131,6 +131,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         self.blocks.acquire_mutex().clone()
     }
 
+    /// Generates a new light block for the chain with the given parameters.
     pub fn generate_block(
         chain_id: &ChainId,
         height: u64,
@@ -150,6 +151,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             .expect("failed to generate light block")
     }
 
+    /// Grows the chain by one block.
     pub fn grow_blocks(&self) {
         let root_hash = self.app.store.root_hash();
 
@@ -190,6 +192,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             .expect("failed to initialize chain");
     }
 
+    /// Begins a new block on the chain.
     async fn begin_block(&self) {
         self.grow_blocks();
 
@@ -225,6 +228,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         state.commit().expect("failed to commit to state");
     }
 
+    /// Runs the chain in a separate thread.
     pub fn run(&self) -> JoinHandle<()> {
         let chain = self.clone();
 
@@ -241,6 +245,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         })
     }
 
+    /// Queries the chain for a given path and height.
     pub async fn query(
         &self,
         path: impl Into<Path> + Send,
@@ -371,6 +376,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         (port_id, channel_id)
     }
 
+    /// Sets the send sequence number for a given channel and port ids
     pub fn with_send_sequence(&self, port_id: PortId, channel_id: ChannelId, seq_number: Sequence) {
         let seq_send_path = SeqSendPath::new(&port_id, &channel_id);
 
@@ -379,6 +385,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             .unwrap();
     }
 
+    /// Sets the receive sequence number for a given channel and port ids
     pub fn with_recv_sequence(&self, port_id: PortId, chan_id: ChannelId, seq_number: Sequence) {
         let seq_recv_path = SeqRecvPath::new(&port_id, &chan_id);
 
@@ -387,6 +394,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             .unwrap();
     }
 
+    /// Sets the ack sequence number for a given channel and port ids
     pub fn with_ack_sequence(&self, port_id: PortId, chan_id: ChannelId, seq_number: Sequence) {
         let seq_ack_path = SeqAckPath::new(&port_id, &chan_id);
 
