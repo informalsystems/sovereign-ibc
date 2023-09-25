@@ -1,7 +1,9 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 
+pub mod applications;
 pub mod call;
+pub mod clients;
 pub mod codec;
 pub mod genesis;
 
@@ -14,8 +16,9 @@ pub mod tests;
 pub(crate) mod context;
 mod router;
 
+use applications::transfer::Transfer;
+use clients::{AnyClientState, AnyConsensusState};
 use codec::{AcknowledgementCommitmentCodec, PacketCommitmentCodec, ProtobufCodec};
-use context::clients::{AnyClientState, AnyConsensusState};
 use ibc::core::ics03_connection::connection::ConnectionEnd;
 use ibc::core::ics04_channel::channel::ChannelEnd;
 use ibc::core::ics04_channel::commitment::{AcknowledgementCommitment, PacketCommitment};
@@ -46,7 +49,7 @@ pub struct Ibc<C: sov_modules_api::Context, Da: sov_modules_api::DaSpec> {
     pub address: C::Address,
 
     #[module]
-    pub(crate) transfer: sov_ibc_transfer::Transfer<C>,
+    pub(crate) transfer: Transfer<C>,
 
     #[module]
     pub(crate) chain_state: sov_chain_state::ChainState<C, Da>,

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use sov_modules_api::{Context, Module, WorkingSet};
 
-use crate::Transfer;
+use super::Transfer;
 
 impl<C: Context> Transfer<C> {
     pub(crate) fn init_module(

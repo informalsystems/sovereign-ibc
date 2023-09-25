@@ -25,7 +25,8 @@ use sov_bank::Bank;
 use sov_modules_api::{Context, DaSpec, WorkingSet};
 use tendermint::{Hash, Time};
 
-use crate::context::clients::{AnyClientState, AnyConsensusState};
+use crate::applications::transfer::Transfer;
+use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::context::IbcExecutionContext;
 use crate::test_utils::cosmos::helpers::dummy_tm_client_state;
 use crate::Ibc;
@@ -92,7 +93,7 @@ where
     }
 
     /// Returns access to the transfer module
-    pub fn transfer(&self) -> &sov_ibc_transfer::Transfer<C> {
+    pub fn transfer(&self) -> &Transfer<C> {
         &self.ibc_ctx.ibc.transfer
     }
 

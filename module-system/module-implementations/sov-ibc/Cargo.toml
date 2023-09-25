@@ -13,9 +13,10 @@ resolver = "2"
 
 [dependencies]
 anyhow = { workspace = true }
+borsh = { workspace = true, features = ["rc"] }
+derive_more = { version = "0.99", default-features = false, features = ["from", "try_into"] }
 sov-bank = { path = "../sov-bank", default-features = false }
 sov-chain-state = { path = "../sov-chain-state", default-features = false }
-sov-ibc-transfer = { path = "../sov-ibc-transfer", default-features = false, features = ["native"]}
 sov-modules-api = { path = "../../sov-modules-api", default-features = false }
 sov-modules-macros = { path = "../../sov-modules-macros" }
 sov-state = { path = "../../sov-state", default-features = false }
@@ -24,14 +25,13 @@ schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 thiserror = { workspace = true }
-borsh = { workspace = true, features = ["rc"] }
+uint = "0.9"
 
 ibc = { workspace = true }
 ibc-proto = { workspace = true }
 prost = { version = "0.11", default-features = false }
 tendermint = { version = "0.33", default-features = false }
 tendermint-proto = {version = "0.33", default-features = false}
-derive_more = { version = "0.99", default-features = false, features = ["from", "try_into"] }
 
 
 [dev-dependencies]

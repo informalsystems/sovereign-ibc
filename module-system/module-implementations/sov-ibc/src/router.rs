@@ -5,9 +5,9 @@ use std::rc::Rc;
 use ibc::applications::transfer::{MODULE_ID_STR, PORT_ID_STR};
 use ibc::core::ics24_host::identifier::PortId;
 use ibc::core::router::{self, ModuleId, Router};
-use sov_ibc_transfer::context::TransferContext;
 use sov_modules_api::{Context, DaSpec, WorkingSet};
 
+use crate::applications::transfer::context::TransferContext;
 use crate::Ibc;
 
 pub struct IbcRouter<'ws, 'c, C: Context, Da: DaSpec> {

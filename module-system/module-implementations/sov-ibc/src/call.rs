@@ -4,11 +4,11 @@ use std::rc::Rc;
 
 use anyhow::{bail, Result};
 use ibc::core::{dispatch, MsgEnvelope};
-use sov_ibc_transfer::call::SDKTokenTransfer;
-use sov_ibc_transfer::context::TransferContext;
 use sov_modules_api::{CallResponse, Context, DaSpec, WorkingSet};
 use thiserror::Error;
 
+use crate::applications::transfer::call::SDKTokenTransfer;
+use crate::applications::transfer::context::TransferContext;
 use crate::context::IbcExecutionContext;
 use crate::router::IbcRouter;
 use crate::Ibc;

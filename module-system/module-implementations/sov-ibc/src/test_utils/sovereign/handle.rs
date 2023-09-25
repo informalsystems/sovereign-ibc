@@ -7,14 +7,14 @@ use ibc::core::ics04_channel::timeout::TimeoutHeight;
 use ibc::core::ics24_host::identifier::{ChainId, ChannelId, PortId};
 use ibc::core::timestamp::Timestamp;
 use ibc::{Any, Height, Signer};
-use sov_ibc_transfer::call::SDKTokenTransfer;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, DaSpec, Module, Spec};
 use sov_rollup_interface::mocks::MockDaSpec;
 
 use super::app::TestApp;
+use crate::applications::transfer::call::SDKTokenTransfer;
 use crate::call::CallMessage;
-use crate::context::clients::AnyConsensusState;
+use crate::clients::AnyConsensusState;
 use crate::context::IbcExecutionContext;
 use crate::test_utils::relayer::context::ChainContext;
 use crate::test_utils::relayer::handle::Handle;

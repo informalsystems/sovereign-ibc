@@ -1,5 +1,3 @@
-pub mod clients;
-
 use core::time::Duration;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -24,6 +22,7 @@ use ibc::core::{ContextError, ExecutionContext, ValidationContext};
 use ibc::Height;
 use sov_modules_api::WorkingSet;
 
+use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::Ibc;
 
 /// The SDK doesn't have a concept of a "revision number", so we default to 1
@@ -46,8 +45,8 @@ where
 {
     type ClientValidationContext = Self;
     type E = Self;
-    type AnyConsensusState = clients::AnyConsensusState;
-    type AnyClientState = clients::AnyClientState;
+    type AnyConsensusState = AnyConsensusState;
+    type AnyClientState = AnyClientState;
 
     fn get_client_validation_context(&self) -> &Self::ClientValidationContext {
         self

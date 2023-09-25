@@ -7830,7 +7830,6 @@ dependencies = [
  "serde_json",
  "sov-bank",
  "sov-chain-state",
- "sov-ibc-transfer",
  "sov-modules-api",
  "sov-modules-macros",
  "sov-rollup-interface",
@@ -7843,24 +7842,6 @@ dependencies = [
  "tokio",
  "tower",
  "tower-abci",
-]
-
-[[package]]
-name = "sov-ibc-transfer"
-version = "0.2.0"
-dependencies = [
- "anyhow",
- "borsh",
- "ibc",
- "schemars",
- "serde",
- "serde_json",
- "sov-bank",
- "sov-modules-api",
- "sov-rollup-interface",
- "sov-state",
- "tempfile",
- "thiserror",
  "uint",
 ]
 

@@ -1,6 +1,3 @@
-use derive_more::{From, TryInto};
-use ibc::clients::ics07_tendermint::client_state::ClientState as TmClientState;
-use ibc::clients::ics07_tendermint::consensus_state::ConsensusState as TmConsensusState;
 use ibc::clients::ics07_tendermint::{
     CommonContext as TmCommonContext, ValidationContext as TmValidationContext,
 };
@@ -8,7 +5,6 @@ use ibc::core::ics02_client::client_state::{
     ClientStateCommon, ClientStateExecution, ClientStateValidation, Status, UpdateKind,
 };
 use ibc::core::ics02_client::client_type::ClientType;
-use ibc::core::ics02_client::consensus_state::ConsensusState;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::ics02_client::ClientExecutionContext;
 use ibc::core::ics23_commitment::commitment::{
@@ -18,60 +14,9 @@ use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::ics24_host::path::{ClientConsensusStatePath, ClientStatePath, Path};
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ContextError, ValidationContext};
-use ibc::Any;
-use ibc_proto::protobuf::Protobuf;
 
-use super::IbcExecutionContext;
-
-#[derive(Clone, From, TryInto, ConsensusState)]
-pub enum AnyConsensusState {
-    Tendermint(TmConsensusState),
-}
-
-impl TryFrom<Any> for AnyConsensusState {
-    type Error = ClientError;
-
-    fn try_from(value: Any) -> Result<Self, Self::Error> {
-        let tm_cs: TmConsensusState = value.try_into()?;
-
-        Ok(Self::Tendermint(tm_cs))
-    }
-}
-
-impl From<AnyConsensusState> for Any {
-    fn from(any_cs: AnyConsensusState) -> Self {
-        match any_cs {
-            AnyConsensusState::Tendermint(tm_cs) => tm_cs.into(),
-        }
-    }
-}
-
-impl Protobuf<Any> for AnyConsensusState {}
-
-#[derive(Clone, From, TryInto)]
-pub enum AnyClientState {
-    Tendermint(TmClientState),
-}
-
-impl TryFrom<Any> for AnyClientState {
-    type Error = ClientError;
-
-    fn try_from(value: Any) -> Result<Self, Self::Error> {
-        let tm_cs: TmClientState = value.try_into()?;
-
-        Ok(Self::Tendermint(tm_cs))
-    }
-}
-
-impl From<AnyClientState> for Any {
-    fn from(any_cs: AnyClientState) -> Self {
-        match any_cs {
-            AnyClientState::Tendermint(tm_cs) => tm_cs.into(),
-        }
-    }
-}
-
-impl Protobuf<Any> for AnyClientState {}
+use super::{AnyClientState, AnyConsensusState};
+use crate::context::IbcExecutionContext;
 
 // Next 3 trait impls are boilerplate
 // We have a `ClientState` macro, but unfortunately it doesn't currently support

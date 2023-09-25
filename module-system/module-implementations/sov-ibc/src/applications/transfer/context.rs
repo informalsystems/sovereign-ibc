@@ -22,7 +22,7 @@ use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::digest::Digest;
 use uint::FromDecStrErr;
 
-use crate::Transfer;
+use super::Transfer;
 
 /// We need to create a wrapper around the `Transfer` module and `WorkingSet`,
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
@@ -258,7 +258,7 @@ where
                 )
                 .ok_or(TokenTransferError::Other(format!(
                     "No escrow account for token {}",
-                    coin.to_string()
+                    coin
                 )))?;
 
             escrow_balance.into()

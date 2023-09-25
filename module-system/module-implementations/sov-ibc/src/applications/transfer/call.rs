@@ -13,8 +13,8 @@ use ibc::core::ExecutionContext;
 use ibc::Signer;
 use sov_modules_api::{Context, WorkingSet};
 
-use crate::context::EscrowExtraData;
-use crate::Transfer;
+use super::context::EscrowExtraData;
+use super::Transfer;
 
 #[cfg_attr(
     feature = "native",
