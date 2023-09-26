@@ -298,7 +298,11 @@ where
                 // Create a new token
                 None => {
                     let token_name = coin.denom.to_string();
-                    let salt = 0u64; // FIXME: proper salt to use?
+                    // Using a different salt will result in a different token
+                    // address. Since ICS-20 tokens coming from other chains are
+                    // guaranteed to have unique names, we don't need to use
+                    // different salt values.
+                    let salt = 0u64;
                     let initial_balance = 0;
                     // Note: unused since initial_balance = 0
                     let minter_address = account.address.clone();
