@@ -1,12 +1,22 @@
-# Description
+<!-- < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < ☺
+v                    ✰  Thanks for creating a PR! ✰
+v    Before smashing the submit button please review the checkboxes.
+v    If a checkbox is n/a - please still include it but + a little note why
+☺ > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >  -->
 
+Closes: #XXX
 
-## Linked Issues
-- Fixes # (issue, if applicable)
-- Related to # (issue) 
+## Description
 
-## Testing
-Describe how these changes were tested. If you've added new features, have you added unit tests?
+<!-- Add a description of the changes that this PR introduces and the files that
+are the most critical to review.
+-->
 
-## Docs
-Describe where this code is documented. If it changes a documented interface, have the docs been updated?
+______
+
+### PR author checklist
+
+- [ ] Linked to GitHub issue.
+- [ ] Added tests.
+- [ ] Updated code comments and documentation (e.g., `docs/`).
+- [ ] Tagged *one* reviewer who will be the one responsible for shepherding this PR.

@@ -1,127 +1,50 @@
 [workspace]
 resolver = "2"
 members = [
-    "rollup-interface",
-    "adapters/risc0",
-    "adapters/celestia",
-    "examples/const-rollup-config",
-    "examples/demo-stf",
-    "examples/demo-simple-stf",
-    "examples/demo-rollup",
-    "examples/simple-nft-module",
-    "examples/demo-prover",
-
-    "full-node/db/sov-db",
-    "full-node/sov-sequencer",
-    "full-node/sov-ethereum",
-    "full-node/sov-stf-runner",
-
-    "utils/zk-cycle-macros",
-    "utils/zk-cycle-utils",
-    "utils/bashtestmd",
-
-    "module-system/sov-cli",
-    "module-system/sov-modules-stf-template",
-    "module-system/sov-modules-macros",
-    "module-system/sov-state",
-    "module-system/sov-modules-api",
-    "module-system/module-schemas",
-    "module-system/utils/sov-first-read-last-write-cache",
-    "module-system/utils/sov-data-generators",
-    "module-system/module-implementations/sov-accounts",
-    "module-system/module-implementations/sov-bank",
-    "module-system/module-implementations/sov-nft-module",
-    "module-system/module-implementations/sov-chain-state",
-    "module-system/module-implementations/sov-blob-storage",
-    "module-system/module-implementations/sov-evm",
-    "module-system/module-implementations/sov-ibc",
-    "module-system/module-implementations/sov-prover-incentives",
-    "module-system/module-implementations/sov-attester-incentives",
-    "module-system/module-implementations/sov-sequencer-registry",
-    "module-system/module-implementations/module-template",
-    "module-system/module-implementations/examples/sov-value-setter",
-    "module-system/module-implementations/examples/sov-vec-setter",
-    "module-system/module-implementations/examples/sov-accessory-state",
-    "module-system/module-implementations/integration-tests",
+    "crates/sov-ibc",
 ]
 
 [workspace.package]
-version = "0.2.0"
+version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-authors = ["Sovereign Labs <info@sovereign.xyz>"]
-homepage = "https://www.sovereign.xyz"
+authors = ["Informal Systems <hello@informal.systems>"]
 publish = false
-repository = "https://github.com/sovereign-labs/sovereign-sdk"
+repository = "https://github.com/informalsystems/sovereign-ibc"
 rust-version = "1.66"
 
 [workspace.dependencies]
-# Dependencies maintained by Sovereign
-jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "199ae1c185e74ee2133db773efacff56706085aa" }
 
 # External dependencies
-async-trait = "0.1.71"
 anyhow = "1.0.68"
-arbitrary = { version = "1.3.0", features = ["derive"] }
 borsh = { version = "0.10.3", features = ["rc", "bytes"] }
-# TODO: Consider replacing this serialization format
-#     https://github.com/Sovereign-Labs/sovereign-sdk/issues/283
-bincode = "1.3.3"
-bcs = "0.1.5"
-byteorder = "1.4.3"
 bytes = "1.2.1"
-futures = "0.3"
 hex = "0.4.3"
-once_cell = "1.10.0"
-prometheus = { version = "0.13.3", default-features = false }
-proptest = "1.0.0"
-proptest-derive = "0.3.0"
-rand = "0.8"
-rayon = "1.5.2"
-rocksdb = { version = "0.21.0", features = ["lz4"] }
 serde = { version = "1.0.188", features = ["derive", "rc"] }
 serde_json = { version = "1.0" }
-sha2 = "0.10.6"
 digest = "0.10.6"
 thiserror = "1.0.38"
-tiny-keccak = "2.0.2"
-tracing = "0.1.37"
-bech32 = "0.9.1"
-derive_more = "0.99.11"
-clap = { version = "4.2.7", features = ["derive"] }
-toml = "0.8.0"
-jsonrpsee = { version = "0.18.2", features = ["jsonrpsee-types"] }
+derive_more = { version = "0.99.11", features = ["from", "try_into"] }
 schemars = { version = "0.8.12", features = ["derive"] }
 tempfile = "3.5"
 tokio = { version = "1", features = ["full"] }
-ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "8041a87", features = ["borsh", "schema", "serde"]}
+
+# Ibc depedenencies
+ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "8041a87", features = ["borsh", "schema", "serde", "mocks"]}
 ibc-proto = { version = "0.35", default-features = false, features = ["borsh"] }
-lazy_static = "1.4.0"
-risc0-zkvm = { version = "0.18", default-features = false }
-risc0-zkvm-platform = { version = "0.18" }
-risc0-zkp = "0.18"
-risc0-circuit-rv32im = "0.18"
-risc0-build = "0.18"
 
-# EVM dependencies
-ethereum-types = "0.14.1"
-ethers = "=2.0.10"
-ethers-core = { version = "=2.0.10", default-features = false }
-ethers-contract = "=2.0.10"
-ethers-providers = { version = "=2.0.10", default-features = false }
-ethers-signers = { version = "=2.0.10", default-features = false }
-ethers-middleware = { version = "=2.0.10", default-features = false }
+# Tendermint dependencies
+tendermint = { version = "0.33", default-features = false }
+tendermint-proto = {version = "0.33", default-features = false}
+tendermint-testgen = { version = "0.33", default-features = false }
 
-reth-primitives = { git = "https://github.com/paradigmxyz/reth", rev = "e83d3aa" }
-reth-rpc-types = { git = "https://github.com/paradigmxyz/reth", rev = "e83d3aa" }
-reth-rpc-types-compat = { git = "https://github.com/paradigmxyz/reth", rev = "e83d3aa" }
-reth-revm = { git = "https://github.com/paradigmxyz/reth", rev = "e83d3aa" }
+# Sovereign dependencies
+sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", default-features = false}
+sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", default-features = false }
+sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", default-features = false }
+sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git" }
+sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", default-features = false }
+sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git" }
 
-revm = { git = "https://github.com/bluealloy/revm", rev = "516f62cc" }
-revm-primitives = { git = "https://github.com/bluealloy/revm", rev = "516f62cc" }
-
-secp256k1 = { version = "0.27.0", default-features = false, features = [
-    "global-context",
-    "rand-std",
-    "recovery",
-] }
+# Dependencies maintained by Sovereign
+jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "199ae1c185e74ee2133db773efacff56706085aa" }
