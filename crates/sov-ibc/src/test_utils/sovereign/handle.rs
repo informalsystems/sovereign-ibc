@@ -67,8 +67,8 @@ impl ChainContext<TestApp<'_, DefaultContext, MockDaSpec>> {
     pub fn build_sdk_transfer(
         &self,
         token: <DefaultContext as Spec>::Address,
-        sender: <DefaultContext as Spec>::Address,
-        receiver: <DefaultContext as Spec>::Address,
+        sender: Signer,
+        receiver: Signer,
         amount: u64,
     ) -> CallMessage<DefaultContext> {
         let msg_transfer = SDKTokenTransfer {
@@ -78,8 +78,8 @@ impl ChainContext<TestApp<'_, DefaultContext, MockDaSpec>> {
             timeout_timestamp_on_b: Timestamp::none(),
             token_address: token,
             amount,
-            sender: Signer::from(sender.to_string()),
-            receiver: Signer::from(receiver.to_string()),
+            sender,
+            receiver,
             memo: Memo::from_str("").unwrap(),
         };
 

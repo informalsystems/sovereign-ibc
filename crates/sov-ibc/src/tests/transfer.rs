@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use ibc::core::ics02_client::client_state::ClientStateCommon;
 use ibc::core::ValidationContext;
+use ibc::test_utils::get_dummy_account_id;
+use ibc::Signer;
 use sov_bank::get_genesis_token_address;
 use sov_modules_api::default_context::DefaultContext;
 use tokio::time::sleep;
@@ -13,26 +15,26 @@ use crate::test_utils::sovereign::builder::DefaultBuilder;
 
 #[tokio::test]
 async fn test_sdk_token_transfer() {
-    let mut src_builder = DefaultBuilder::default();
+    let mut sov_builder = DefaultBuilder::default();
 
-    let token = src_builder.get_tokens().first().unwrap();
+    let token = sov_builder.get_tokens().first().unwrap();
 
     let token_address = get_genesis_token_address::<DefaultContext>(&token.token_name, token.salt);
 
-    let sender_address = token.address_and_balances[0].0;
+    let sender_on_sov = token.address_and_balances[0].0;
 
-    let receiver_address = token.address_and_balances[1].0;
+    let receiver_on_cos = get_dummy_account_id();
 
     let transfer_amount = 100;
 
     let expected_sender_balance = token.address_and_balances[0].1 - transfer_amount;
 
-    let rly = sovereign_cosmos_setup(&mut src_builder, true).await;
+    let rly = sovereign_cosmos_setup(&mut sov_builder, true).await;
 
     let msg_sdk_token_transfer = rly.src_chain_ctx().build_sdk_transfer(
         token_address,
-        sender_address,
-        receiver_address,
+        Signer::from(sender_on_sov.to_string()),
+        receiver_on_cos,
         transfer_amount,
     );
 
@@ -51,7 +53,7 @@ async fn test_sdk_token_transfer() {
     let sender_balance = rly
         .src_chain_ctx()
         .querier()
-        .get_balance_of(sender_address, token_address);
+        .get_balance_of(sender_on_sov, token_address);
 
     assert_eq!(sender_balance, expected_sender_balance);
 }
@@ -60,9 +62,9 @@ async fn test_sdk_token_transfer() {
 // cosmos chain
 #[tokio::test]
 async fn test_recv_packet() {
-    let mut src_builder = DefaultBuilder::default();
+    let mut sov_builder = DefaultBuilder::default();
 
-    let rly = sovereign_cosmos_setup(&mut src_builder, true).await;
+    let rly = sovereign_cosmos_setup(&mut sov_builder, true).await;
 
     let msg_create_client = rly.build_msg_create_client();
 
