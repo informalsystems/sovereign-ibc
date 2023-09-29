@@ -7,4 +7,4 @@ updates:
           day: monday
           time: "15:00"
           timezone: "Europe/Warsaw"
-      open-pull-requests-limit: 10
+      open-pull-requests-limit: 0
