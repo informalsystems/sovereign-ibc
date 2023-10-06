@@ -7,13 +7,18 @@ pub mod clients;
 pub mod codec;
 pub mod genesis;
 
-#[cfg(test)]
+#[cfg(feature = "native")]
+mod query;
+#[cfg(feature = "native")]
+pub use query::*;
+
+#[cfg(any(test, feature = "test_utils"))]
 pub mod test_utils;
 
 #[cfg(test)]
 pub mod tests;
 
-pub(crate) mod context;
+pub mod context;
 mod router;
 
 use applications::transfer::Transfer;
@@ -29,12 +34,15 @@ use ibc::core::ics24_host::path::{
     ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
 };
 use ibc::core::timestamp::Timestamp;
-use ibc::{Any, Height};
-use ibc_proto::ibc::core::channel::v1::Channel as RawChannelEnd;
-use ibc_proto::ibc::core::connection::v1::ConnectionEnd as RawConnectionEnd;
+use ibc::proto::core::channel::v1::Channel as RawChannelEnd;
+use ibc::proto::core::connection::v1::ConnectionEnd as RawConnectionEnd;
+use ibc::proto::Any;
+use ibc::Height;
+use serde::{Deserialize, Serialize};
 use sov_modules_api::{Context, DaSpec, Error, StateMap, StateValue, WorkingSet};
 use sov_modules_macros::ModuleInfo;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExampleModuleConfig {}
 
 /// the sov-ibc module that manages all IBC-related states
@@ -44,7 +52,8 @@ pub struct ExampleModuleConfig {}
 /// module naming convention used throughout the codebase, ensuring created
 /// prefixes by modules are in harmony.
 #[derive(ModuleInfo, Clone)]
-pub struct Ibc<C: sov_modules_api::Context, Da: sov_modules_api::DaSpec> {
+#[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
+pub struct Ibc<C: Context, Da: DaSpec> {
     #[address]
     pub address: C::Address,
 

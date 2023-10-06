@@ -5,8 +5,8 @@ use ibc::clients::ics07_tendermint::client_state::ClientState as TmClientState;
 use ibc::clients::ics07_tendermint::consensus_state::ConsensusState as TmConsensusState;
 use ibc::core::ics02_client::consensus_state::ConsensusState;
 use ibc::core::ics02_client::error::ClientError;
-use ibc::Any;
-use ibc_proto::protobuf::Protobuf;
+use ibc::proto::protobuf::Protobuf;
+use ibc::proto::Any;
 
 #[derive(Clone, From, TryInto, ConsensusState)]
 pub enum AnyConsensusState {

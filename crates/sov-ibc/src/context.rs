@@ -19,8 +19,9 @@ use ibc::core::ics24_host::path::{
 };
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ContextError, ExecutionContext, ValidationContext};
+use ibc::proto::Any;
 use ibc::Height;
-use sov_modules_api::WorkingSet;
+use sov_modules_api::{Context, DaSpec, WorkingSet};
 
 use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::Ibc;
@@ -31,8 +32,8 @@ const HOST_REVISION_NUMBER: u64 = 1;
 #[derive(Clone)]
 pub struct IbcExecutionContext<'a, C, Da>
 where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
+    C: Context,
+    Da: DaSpec,
 {
     pub ibc: &'a Ibc<C, Da>,
     pub working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
@@ -40,8 +41,8 @@ where
 
 impl<'a, C, Da> ValidationContext for IbcExecutionContext<'a, C, Da>
 where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
+    C: Context,
+    Da: DaSpec,
 {
     type ClientValidationContext = Self;
     type E = Self;
@@ -64,10 +65,7 @@ where
             )
     }
 
-    fn decode_client_state(
-        &self,
-        client_state: ibc::Any,
-    ) -> Result<Self::AnyClientState, ContextError> {
+    fn decode_client_state(&self, client_state: Any) -> Result<Self::AnyClientState, ContextError> {
         let tm_client_state: TmClientState = client_state.try_into()?;
 
         Ok(tm_client_state.into())
@@ -87,7 +85,9 @@ where
                         client_cons_state_path.epoch,
                         client_cons_state_path.height,
                     )
-                    .map_err(|_| ClientError::InvalidHeight)?,
+                    .map_err(|_| ClientError::Other {
+                        description: "Height cannot be zero".to_string(),
+                    })?,
                 }
                 .into(),
             )
@@ -201,7 +201,7 @@ where
 
     fn validate_self_client(
         &self,
-        client_state_of_host_on_counterparty: ibc::Any,
+        client_state_of_host_on_counterparty: Any,
     ) -> Result<(), ContextError> {
         // Note: We can optionally implement this.
         // It would require having a Protobuf definition of the chain's `ClientState` that other chains would use.

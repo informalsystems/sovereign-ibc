@@ -18,6 +18,8 @@ use super::Transfer;
 
 #[cfg_attr(
     feature = "native",
+    derive(serde::Serialize),
+    derive(serde::Deserialize),
     derive(schemars::JsonSchema),
     schemars(bound = "C::Address: ::schemars::JsonSchema", rename = "CallMessage")
 )]

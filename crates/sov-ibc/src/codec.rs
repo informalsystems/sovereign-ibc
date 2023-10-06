@@ -2,7 +2,7 @@ use core::fmt::Display;
 use std::marker::PhantomData;
 
 use ibc::core::ics04_channel::commitment::{AcknowledgementCommitment, PacketCommitment};
-use ibc_proto::protobuf::{Error, Protobuf};
+use ibc::proto::protobuf::{Error, Protobuf};
 use prost::Message;
 use sov_state::codec::{BorshCodec, StateCodec, StateValueCodec};
 

@@ -210,7 +210,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=7eaf3a7#7eaf3a747a57f3d9460ae1cd11c8e6193e67eba7"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=5f39639#5f39639b077f936518af38b55f6e8b967507590e"
 dependencies = [
  "base64 0.21.4",
  "basecoin-store",
@@ -220,6 +220,7 @@ dependencies = [
  "displaydoc",
  "ibc",
  "ibc-proto",
+ "ibc-query",
  "ics23",
  "primitive-types",
  "prost",
@@ -243,7 +244,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=7eaf3a7#7eaf3a747a57f3d9460ae1cd11c8e6193e67eba7"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=5f39639#5f39639b077f936518af38b55f6e8b967507590e"
 dependencies = [
  "base64 0.21.4",
  "derive_more",
@@ -1447,7 +1448,7 @@ dependencies = [
 [[package]]
 name = "ibc"
 version = "0.45.0"
-source = "git+https://github.com/cosmos/ibc-rs?rev=8041a87#8041a87c5acd969056999bf7ed4fae8f946b433d"
+source = "git+https://github.com/cosmos/ibc-rs?rev=bc09e28#bc09e286147a29ae95511d4e04d13d85129420b9"
 dependencies = [
  "borsh",
  "bytes",
@@ -1460,7 +1461,6 @@ dependencies = [
  "parking_lot",
  "primitive-types",
  "prost",
- "safe-regex",
  "schemars",
  "serde",
  "serde_derive",
@@ -1472,7 +1472,6 @@ dependencies = [
  "tendermint-proto 0.33.2",
  "tendermint-testgen",
  "time",
- "tonic",
  "tracing",
  "uint",
 ]
@@ -1480,7 +1479,7 @@ dependencies = [
 [[package]]
 name = "ibc-derive"
 version = "0.3.0"
-source = "git+https://github.com/cosmos/ibc-rs?rev=8041a87#8041a87c5acd969056999bf7ed4fae8f946b433d"
+source = "git+https://github.com/cosmos/ibc-rs?rev=bc09e28#bc09e286147a29ae95511d4e04d13d85129420b9"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -1503,6 +1502,17 @@ dependencies = [
  "serde",
  "subtle-encoding",
  "tendermint-proto 0.33.2",
+ "tonic",
+]
+
+[[package]]
+name = "ibc-query"
+version = "0.45.0"
+source = "git+https://github.com/cosmos/ibc-rs?rev=bc09e28#bc09e286147a29ae95511d4e04d13d85129420b9"
+dependencies = [
+ "displaydoc",
+ "ibc",
+ "ibc-proto",
  "tonic",
 ]
 
@@ -1586,9 +1596,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.0.1"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad227c3af19d4914570ad36d30409928b75967c298feb9ea1969db3a610bb14e"
+checksum = "8adf3ddd720272c6ea8bf59463c04e0f93d0bbf7c5439b691bca2987e0270897"
 dependencies = [
  "equivalent",
  "hashbrown 0.14.1",
@@ -1667,10 +1677,12 @@ dependencies = [
  "jsonrpsee-client-transport",
  "jsonrpsee-core",
  "jsonrpsee-http-client",
+ "jsonrpsee-proc-macros",
  "jsonrpsee-server",
  "jsonrpsee-types",
  "jsonrpsee-wasm-client",
  "jsonrpsee-ws-client",
+ "tracing",
 ]
 
 [[package]]
@@ -1740,6 +1752,19 @@ dependencies = [
  "tokio",
  "tower",
  "tracing",
+]
+
+[[package]]
+name = "jsonrpsee-proc-macros"
+version = "0.18.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6027ac0b197ce9543097d02a290f550ce1d9432bf301524b013053c0b75cc94"
+dependencies = [
+ "heck",
+ "proc-macro-crate 1.3.1",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -1879,9 +1904,9 @@ dependencies = [
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a9bad9f94746442c783ca431b22403b519cd7fbeed0533fdd6328b2f2212128"
+checksum = "3852614a3bd9ca9804678ba6be5e3b8ce76dfc902cae004e3e0c44051b6e88db"
 
 [[package]]
 name = "lock_api"
@@ -2358,9 +2383,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.9.5"
+version = "1.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "697061221ea1b4a94a624f67d0ae2bfe4e22b8a17b6a192afb11046542cc8c47"
+checksum = "ebee201405406dbf528b8b672104ae6d6d63e6d118cb10e4d51abbc7b58044ff"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -2370,9 +2395,9 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.3.8"
+version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2f401f4955220693b56f8ec66ee9c78abffd8d1c4f23dc41a23839eb88f0795"
+checksum = "59b23e92ee4318893fa3fe3e6fb365258efbfe6ac6ab30f090cdcbb7aa37efa9"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -2458,9 +2483,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.14"
+version = "0.38.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "747c788e9ce8e92b12cd485c49ddf90723550b654b32508f979b71a7b1ecda4f"
+checksum = "d2f9da0cbd88f9f09e7814e388301c8414c51c62aa6ce1e4b5c551d49d96e531"
 dependencies = [
  "bitflags 2.4.0",
  "errno",
@@ -2558,53 +2583,6 @@ name = "ryu"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ad4cc8da4ef723ed60bced201181d83791ad433213d8c24efffda1eec85d741"
-
-[[package]]
-name = "safe-proc-macro2"
-version = "1.0.67"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7fd85be67db87168aa3c13fd0da99f48f2ab005dccad5af5626138dc1df20eb6"
-dependencies = [
- "unicode-ident",
-]
-
-[[package]]
-name = "safe-quote"
-version = "1.0.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77e530f7831f3feafcd5f1aae406ac205dd998436b4007c8e80f03eca78a88f7"
-dependencies = [
- "safe-proc-macro2",
-]
-
-[[package]]
-name = "safe-regex"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a15289bf322e0673d52756a18194167f2378ec1a15fe884af6e2d2cb934822b0"
-dependencies = [
- "safe-regex-macro",
-]
-
-[[package]]
-name = "safe-regex-compiler"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fba76fae590a2aa665279deb1f57b5098cbace01a0c5e60e262fcf55f7c51542"
-dependencies = [
- "safe-proc-macro2",
- "safe-quote",
-]
-
-[[package]]
-name = "safe-regex-macro"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96c2e96b5c03f158d1b16ba79af515137795f4ad4e8de3f790518aae91f1d127"
-dependencies = [
- "safe-proc-macro2",
- "safe-regex-compiler",
-]
 
 [[package]]
 name = "same-file"
@@ -2946,10 +2924,15 @@ dependencies = [
 [[package]]
 name = "sov-bank"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "anyhow",
  "borsh",
+ "clap",
+ "jsonrpsee",
+ "schemars",
+ "serde",
+ "serde_json",
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
@@ -2959,11 +2942,13 @@ dependencies = [
 [[package]]
 name = "sov-chain-state"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "anyhow",
  "borsh",
+ "jsonrpsee",
  "serde",
+ "serde_json",
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
@@ -2972,7 +2957,7 @@ dependencies = [
 [[package]]
 name = "sov-db"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2989,7 +2974,7 @@ dependencies = [
 [[package]]
 name = "sov-first-read-last-write-cache"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "thiserror",
 ]
@@ -3004,7 +2989,8 @@ dependencies = [
  "borsh",
  "derive_more",
  "ibc",
- "ibc-proto",
+ "ibc-query",
+ "jsonrpsee",
  "prost",
  "schemars",
  "serde",
@@ -3029,7 +3015,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-api"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "anyhow",
  "bech32",
@@ -3056,7 +3042,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-macros"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "anyhow",
  "borsh",
@@ -3064,14 +3050,14 @@ dependencies = [
  "proc-macro2",
  "quote",
  "schemars",
+ "serde_json",
  "syn 1.0.109",
- "toml 0.8.1",
 ]
 
 [[package]]
 name = "sov-rollup-interface"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3089,7 +3075,7 @@ dependencies = [
 [[package]]
 name = "sov-schema-db"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "anyhow",
  "once_cell",
@@ -3102,7 +3088,7 @@ dependencies = [
 [[package]]
 name = "sov-sequencer"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "anyhow",
  "borsh",
@@ -3116,7 +3102,7 @@ dependencies = [
 [[package]]
 name = "sov-state"
 version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git#763177210c414609722f629767821203d59a24e1"
+source = "git+https://github.com/informalsystems/sovereign-sdk.git#5664adc3443125ddb7e210a532dee1035359df58"
 dependencies = [
  "anyhow",
  "bcs",
@@ -3621,7 +3607,7 @@ version = "0.19.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
 dependencies = [
- "indexmap 2.0.1",
+ "indexmap 2.0.2",
  "toml_datetime",
  "winnow",
 ]
@@ -3632,7 +3618,7 @@ version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca676d9ba1a322c1b64eb8045a5ec5c0cfb0c9d08e15e9ff622589ad5221c8fe"
 dependencies = [
- "indexmap 2.0.1",
+ "indexmap 2.0.2",
  "serde",
  "serde_spanned",
  "toml_datetime",
