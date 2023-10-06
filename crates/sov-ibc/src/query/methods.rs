@@ -421,7 +421,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
 }
 
 /// Creates an jsonrpsee error object
-pub fn to_jsonrpsee_error(err: impl ToString) -> ErrorObjectOwned {
+fn to_jsonrpsee_error(err: impl ToString) -> ErrorObjectOwned {
     ErrorObjectOwned::owned(
         jsonrpsee::types::error::UNKNOWN_ERROR_CODE,
         err.to_string(),
