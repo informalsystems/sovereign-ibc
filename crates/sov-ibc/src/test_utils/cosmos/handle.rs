@@ -6,7 +6,8 @@ use basecoin_store::impls::RevertibleStore;
 use ibc::clients::ics07_tendermint::header::Header;
 use ibc::core::events::IbcEvent;
 use ibc::core::ics24_host::identifier::ChainId;
-use ibc::{Any, Height};
+use ibc::proto::Any;
+use ibc::Height;
 
 use super::app::MockCosmosChain;
 use crate::test_utils::relayer::handle::Handle;

@@ -32,7 +32,6 @@ tokio = { version = "1", features = ["full"] }
 # Ibc depedenencies
 ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "bc09e28", features = ["borsh", "schema", "serde", "mocks"]}
 ibc-query = { git = "https://github.com/cosmos/ibc-rs", rev = "bc09e28" }
-ibc-proto = { version = "0.35", default-features = false, features = ["borsh"] }
 
 # Tendermint dependencies
 tendermint = { version = "0.33", default-features = false }

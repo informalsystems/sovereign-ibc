@@ -1,5 +1,5 @@
 use ibc::core::ics23_commitment::merkle::MerkleProof;
-use ibc_proto::ibc::core::commitment::v1::MerkleProof as RawMerkleProof;
+use ibc::proto::core::commitment::v1::MerkleProof as RawMerkleProof;
 use ibc_proto::ics23::CommitmentProof;
 use tendermint::merkle::proof::ProofOps;
 
