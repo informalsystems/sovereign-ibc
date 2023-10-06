@@ -38,7 +38,6 @@ sov-rollup-interface = { workspace = true }
 [dev-dependencies]
 basecoin-app = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "5f39639" }
 basecoin-store = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "5f39639" }
-
 tendermint-testgen = { workspace = true }
 tokio = { workspace = true }
 tower-abci = "0.10"
@@ -48,4 +47,4 @@ tempfile = { workspace = true }
 [features]
 default = ["native"]
 serde = ["dep:serde", "dep:serde_json"]
-native = ["serde", "sov-bank/native", "sov-chain-state/native", "sov-modules-api/native", "sov-state/native", "schemars", "jsonrpsee"]
+native = ["serde", "sov-chain-state/native", "sov-modules-api/native", "sov-state/native", "schemars", "jsonrpsee"]

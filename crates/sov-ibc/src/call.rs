@@ -23,12 +23,6 @@ use crate::Ibc;
 )]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
 pub enum CallMessage<C: sov_modules_api::Context> {
-    // Q: Should this be `Core(Any)` instead, so that we don't expose our `MsgEnvelope` to the rpc interface?
-    // In that case though, the bytes in `Any` would probably be encoded with `hex`, which imposes big parsing
-    // costs to the node.
-    //
-    // Or maybe we use a type local to this module that is very similar to `MsgEnvelope` and use that,
-    // to enable ibc-rs to change `MsgEnvelope` in the future?
     #[cfg_attr(feature = "native", schemars(with = "ibc::utils::schema::AnySchema"))]
     Core(Any),
 

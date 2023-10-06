@@ -32,6 +32,7 @@ tokio = { version = "1", features = ["full"] }
 # Ibc depedenencies
 ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "bc09e28", features = ["borsh", "schema", "serde", "mocks"]}
 ibc-query = { git = "https://github.com/cosmos/ibc-rs", rev = "bc09e28" }
+ibc-proto = { version = "0.35", default-features = false, features = ["borsh"] }
 
 # Tendermint dependencies
 tendermint = { version = "0.33", default-features = false }
@@ -39,12 +40,12 @@ tendermint-proto = {version = "0.33", default-features = false}
 tendermint-testgen = { version = "0.33", default-features = false }
 
 # Sovereign dependencies
-sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", default-features = false}
-sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", default-features = false }
-sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", default-features = false }
-sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git" }
-sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", default-features = false }
-sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git" }
+sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration" }
+sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration", default-features = false }
+sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration", default-features = false }
+sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration" }
+sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration", default-features = false }
+sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration" }
 
 # Dependencies maintained by Sovereign
 jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "199ae1c185e74ee2133db773efacff56706085aa" }
