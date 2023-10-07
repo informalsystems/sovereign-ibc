@@ -2,14 +2,16 @@ pub mod call;
 pub mod context;
 mod genesis;
 
-#[cfg(feature = "native")]
-mod query;
-
 use anyhow::anyhow;
-#[cfg(feature = "native")]
-pub use query::Response;
+use serde::{Deserialize, Serialize};
 use sov_modules_api::{Context, Error, Module, ModuleInfo, StateMap, WorkingSet};
 
+#[cfg(feature = "native")]
+mod query;
+#[cfg(feature = "native")]
+pub use query::*;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransferConfig {}
 
 #[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]

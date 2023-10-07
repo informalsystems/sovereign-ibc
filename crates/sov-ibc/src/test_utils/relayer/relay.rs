@@ -4,14 +4,13 @@ use ibc::clients::ics07_tendermint::client_type as tm_client_type;
 use ibc::core::ics02_client::client_state::ClientStateCommon;
 use ibc::core::ics02_client::msgs::create_client::MsgCreateClient;
 use ibc::core::ics02_client::msgs::update_client::MsgUpdateClient;
-use ibc::core::ics02_client::msgs::ClientMsg;
-use ibc::core::ics04_channel::msgs::{MsgRecvPacket, PacketMsg};
+use ibc::core::ics04_channel::msgs::MsgRecvPacket;
 use ibc::core::ics04_channel::packet::{Packet, Sequence};
 use ibc::core::ics04_channel::timeout::TimeoutHeight;
 use ibc::core::ics24_host::identifier::{ChannelId, ClientId, PortId};
 use ibc::core::ics24_host::path::ReceiptPath;
 use ibc::core::timestamp::Timestamp;
-use ibc::core::{MsgEnvelope, ValidationContext};
+use ibc::core::{Msg, ValidationContext};
 use ibc::{Height, Signer};
 use sov_modules_api::default_context::DefaultContext;
 
@@ -99,9 +98,7 @@ where
             signer: self.src_chain_ctx().signer().clone(),
         };
 
-        CallMessage::Core(MsgEnvelope::Client(ClientMsg::CreateClient(
-            msg_create_client,
-        )))
+        CallMessage::Core(msg_create_client.to_any())
     }
 
     pub fn build_msg_update_client_for_sov(
@@ -134,9 +131,7 @@ where
             signer: self.src_chain_ctx().signer().clone(),
         };
 
-        CallMessage::Core(MsgEnvelope::Client(ClientMsg::UpdateClient(
-            msg_update_client,
-        )))
+        CallMessage::Core(msg_update_client.to_any())
     }
 }
 
@@ -171,5 +166,5 @@ pub async fn build_msg_recv_packet_for_sov(
         signer: rly.src_chain_ctx().signer().clone(),
     };
 
-    CallMessage::Core(MsgEnvelope::Packet(PacketMsg::Recv(msg_recv_packet)))
+    CallMessage::Core(msg_recv_packet.to_any())
 }

@@ -4,6 +4,7 @@ use std::rc::Rc;
 
 use anyhow::{bail, Result};
 use ibc::core::{dispatch, MsgEnvelope};
+use ibc::proto::Any;
 use sov_modules_api::{CallResponse, Context, DaSpec, WorkingSet};
 use thiserror::Error;
 
@@ -15,18 +16,15 @@ use crate::Ibc;
 
 #[cfg_attr(
     feature = "native",
+    derive(serde::Serialize),
+    derive(serde::Deserialize),
     derive(schemars::JsonSchema),
     schemars(bound = "C::Address: ::schemars::JsonSchema", rename = "CallMessage")
 )]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
 pub enum CallMessage<C: sov_modules_api::Context> {
-    // Q: Should this be `Core(Any)` instead, so that we don't expose our `MsgEnvelope` to the rpc interface?
-    // In that case though, the bytes in `Any` would probably be encoded with `hex`, which imposes big parsing
-    // costs to the node.
-    //
-    // Or maybe we use a type local to this module that is very similar to `MsgEnvelope` and use that,
-    // to enable ibc-rs to change `MsgEnvelope` in the future?
-    Core(MsgEnvelope),
+    #[cfg_attr(feature = "native", schemars(with = "ibc::utils::schema::AnySchema"))]
+    Core(Any),
 
     Transfer(SDKTokenTransfer<C>),
 }
@@ -38,7 +36,7 @@ enum SetValueError {}
 impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub(crate) fn process_core_message(
         &self,
-        msg: MsgEnvelope,
+        msg: Any,
         context: &C,
         working_set: &mut WorkingSet<C>,
     ) -> Result<sov_modules_api::CallResponse> {
@@ -51,7 +49,9 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
 
         let mut router = IbcRouter::new(self, context, shared_working_set);
 
-        match dispatch(&mut execution_context, &mut router, msg) {
+        let msg_envelope = MsgEnvelope::try_from(msg).unwrap();
+
+        match dispatch(&mut execution_context, &mut router, msg_envelope) {
             Ok(_) => Ok(CallResponse::default()),
             Err(e) => bail!(e.to_string()),
         }

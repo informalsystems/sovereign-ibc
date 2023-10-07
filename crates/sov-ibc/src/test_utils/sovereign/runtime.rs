@@ -54,21 +54,28 @@ impl<C: Context, Da: DaSpec> SlotHooks<Da> for TestRuntime<C, Da> {
         pre_state_root: &<<Self::Context as Spec>::Storage as Storage>::Root,
         working_set: &mut WorkingSet<Self::Context>,
     ) {
-        unimplemented!()
+        self.chain_state.begin_slot_hook(
+            slot_header,
+            validity_condition,
+            pre_state_root,
+            working_set,
+        );
     }
 
     fn end_slot_hook(&self, working_set: &mut WorkingSet<C>) {
-        unimplemented!()
+        self.chain_state.end_slot_hook(working_set);
     }
 }
 
 impl<C: Context, Da: DaSpec> FinalizeHook<Da> for TestRuntime<C, Da> {
     type Context = C;
 
-    fn finalize_slot_hook(
+    fn finalize_hook(
         &self,
         root_hash: &<<Self::Context as Spec>::Storage as Storage>::Root,
         accesorry_working_set: &mut AccessoryWorkingSet<Self::Context>,
     ) {
+        self.chain_state
+            .finalize_hook(root_hash, accesorry_working_set);
     }
 }

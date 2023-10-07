@@ -15,6 +15,7 @@ anyhow = { workspace = true }
 borsh = { workspace = true }
 derive_more = { workspace = true }
 prost = { version = "0.11", default-features = false }
+jsonrpsee = { version = "0.18.2", features = ["jsonrpsee-types", "macros", "client-core", "server"], optional = true }
 schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
@@ -22,7 +23,7 @@ thiserror = { workspace = true }
 uint = "0.9"
 
 ibc = { workspace = true }
-ibc-proto = { workspace = true }
+ibc-query = { workspace = true }
 
 tendermint = { workspace = true }
 tendermint-proto = { workspace = true }
@@ -35,8 +36,9 @@ sov-state = { workspace = true }
 sov-rollup-interface = { workspace = true }
 
 [dev-dependencies]
-basecoin-app = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "7eaf3a7" }
-basecoin-store = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "7eaf3a7" }
+ibc-proto = { version = "0.35", default-features = false, features = ["borsh"] }
+basecoin-app = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "5f39639" }
+basecoin-store = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "5f39639" }
 tendermint-testgen = { workspace = true }
 tokio = { workspace = true }
 tower-abci = "0.10"
@@ -46,4 +48,4 @@ tempfile = { workspace = true }
 [features]
 default = ["native"]
 serde = ["dep:serde", "dep:serde_json"]
-native = ["serde", "sov-modules-api/native", "schemars"]
+native = ["serde", "sov-chain-state/native", "sov-bank/native", "sov-modules-api/native", "sov-state/native", "schemars", "jsonrpsee"]

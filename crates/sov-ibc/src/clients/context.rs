@@ -14,6 +14,7 @@ use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::ics24_host::path::{ClientConsensusStatePath, ClientStatePath, Path};
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ContextError, ValidationContext};
+use ibc::proto::Any;
 
 use super::{AnyClientState, AnyConsensusState};
 use crate::context::IbcExecutionContext;
@@ -22,7 +23,7 @@ use crate::context::IbcExecutionContext;
 // We have a `ClientState` macro, but unfortunately it doesn't currently support
 // the context (`IbcExecutionContext` in this case) to be generic
 impl ClientStateCommon for AnyClientState {
-    fn verify_consensus_state(&self, consensus_state: ibc::Any) -> Result<(), ClientError> {
+    fn verify_consensus_state(&self, consensus_state: Any) -> Result<(), ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => cs.verify_consensus_state(consensus_state),
         }
@@ -48,8 +49,8 @@ impl ClientStateCommon for AnyClientState {
 
     fn verify_upgrade_client(
         &self,
-        upgraded_client_state: ibc::Any,
-        upgraded_consensus_state: ibc::Any,
+        upgraded_client_state: Any,
+        upgraded_consensus_state: Any,
         proof_upgrade_client: CommitmentProofBytes,
         proof_upgrade_consensus_state: CommitmentProofBytes,
         root: &CommitmentRoot,
@@ -102,7 +103,7 @@ where
         &self,
         ctx: &mut IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
-        consensus_state: ibc::Any,
+        consensus_state: Any,
     ) -> Result<(), ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => cs.initialise(ctx, client_id, consensus_state),
@@ -113,7 +114,7 @@ where
         &self,
         ctx: &mut IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
-        header: ibc::Any,
+        header: Any,
     ) -> Result<Vec<ibc::Height>, ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => cs.update_state(ctx, client_id, header),
@@ -124,7 +125,7 @@ where
         &self,
         ctx: &mut IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
-        client_message: ibc::Any,
+        client_message: Any,
         update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
         match self {
@@ -138,8 +139,8 @@ where
         &self,
         ctx: &mut IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
-        upgraded_client_state: ibc::Any,
-        upgraded_consensus_state: ibc::Any,
+        upgraded_client_state: Any,
+        upgraded_consensus_state: Any,
     ) -> Result<ibc::Height, ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => cs.update_state_on_upgrade(
@@ -161,7 +162,7 @@ where
         &self,
         ctx: &IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
-        client_message: ibc::Any,
+        client_message: Any,
         update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
         match self {
@@ -175,7 +176,7 @@ where
         &self,
         ctx: &IbcExecutionContext<'a, C, Da>,
         client_id: &ClientId,
-        client_message: ibc::Any,
+        client_message: Any,
         update_kind: &UpdateKind,
     ) -> Result<bool, ClientError> {
         match self {
