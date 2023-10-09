@@ -12,9 +12,9 @@ resolver = "2"
 
 [dependencies]
 # external dependencies
-prost = { version = "0.11", default-features = false }
+prost = { workspace = true }
 serde_json = { workspace = true }
-tokio = { workspace = true }
+tokio = { version = "1", features = ["full"] }
 tower-abci = "0.10"
 tower = { version = "0.4", features = ["full"] }
 tempfile = { workspace = true }

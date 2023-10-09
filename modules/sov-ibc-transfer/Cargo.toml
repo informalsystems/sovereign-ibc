@@ -14,13 +14,8 @@ resolver = "2"
 # external dependencies
 anyhow = { workspace = true }
 borsh = { workspace = true }
-prost = { version = "0.11", default-features = false }
-jsonrpsee = { version = "0.18.2", features = [
-    "jsonrpsee-types",
-    "macros",
-    "client-core",
-    "server",
-], optional = true }
+jsonrpsee = { workspace = true, optional = true }
+prost = { workspace = true }
 schemars = { workspace = true, optional = true }
 serde = { workspace = true }
 serde_json = { workspace = true, optional = true }

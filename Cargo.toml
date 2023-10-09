@@ -1,10 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-    "modules/sov-ibc",
-    "modules/sov-ibc-transfer",
-    "mocks"
-]
+members = ["modules/sov-ibc", "modules/sov-ibc-transfer", "mocks"]
 
 [workspace.package]
 version = "0.1.0"
@@ -24,20 +20,31 @@ bytes = "1.2.1"
 derive_more = { version = "0.99.11", features = ["from", "try_into"] }
 digest = "0.10.6"
 hex = "0.4.3"
+jsonrpsee = { version = "0.18.2", features = [
+    "jsonrpsee-types",
+    "macros",
+    "client",
+    "server",
+] }
+prost = { version = "0.11", default-features = false }
 serde = { version = "1.0.188", features = ["derive", "rc"] }
 serde_json = "1.0"
 schemars = { version = "0.8.12", features = ["derive"] }
 tempfile = "3.5"
 thiserror = "1.0.38"
-tokio = { version = "1", features = ["full"] }
 
 # ibc depedenencies
-ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "bc09e28", features = ["borsh", "schema", "serde", "mocks"]}
+ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "bc09e28", features = [
+    "borsh",
+    "schema",
+    "serde",
+    "mocks",
+] }
 ibc-query = { git = "https://github.com/cosmos/ibc-rs", rev = "bc09e28" }
 
 # tendermint dependencies
 tendermint = { version = "0.33", default-features = false }
-tendermint-proto = {version = "0.33", default-features = false}
+tendermint-proto = { version = "0.33", default-features = false }
 tendermint-testgen = { version = "0.33", default-features = false }
 
 # sovereign dependencies
