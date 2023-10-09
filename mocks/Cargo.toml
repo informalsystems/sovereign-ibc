@@ -1,5 +1,5 @@
 [package]
-name = "sov-ibc-mock"
+name = "sov-ibc-mocks"
 authors = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }

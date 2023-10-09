@@ -1,1 +1,0 @@
-# `sov-ibc-mock`
