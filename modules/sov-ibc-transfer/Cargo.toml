@@ -1,0 +1,49 @@
+[package]
+name = "sov-ibc-transfer"
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }
+version = { workspace = true }
+readme = "README.md"
+publish = false
+resolver = "2"
+
+[dependencies]
+# external dependencies
+anyhow = { workspace = true }
+borsh = { workspace = true }
+prost = { version = "0.11", default-features = false }
+jsonrpsee = { version = "0.18.2", features = [
+    "jsonrpsee-types",
+    "macros",
+    "client-core",
+    "server",
+], optional = true }
+schemars = { workspace = true, optional = true }
+serde = { workspace = true }
+serde_json = { workspace = true, optional = true }
+thiserror = { workspace = true }
+uint = "0.9"
+
+# ibc dependencies
+ibc = { workspace = true }
+
+# sovereign dependencies
+sov-bank = { workspace = true }
+sov-modules-api = { workspace = true }
+sov-modules-macros = { workspace = true }
+sov-rollup-interface = { workspace = true }
+
+[features]
+default = []
+serde = ["dep:serde_json"]
+native = [
+    "serde",
+    "sov-bank/native",
+    "sov-modules-api/native",
+    "sov-rollup-interface/native",
+    "schemars",
+    "jsonrpsee",
+]
