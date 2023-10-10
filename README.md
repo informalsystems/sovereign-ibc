@@ -1,3 +1,3 @@
-# `sovereign-ibc` module
+# `sovereign-ibc`
 
-The `sov-ibc` module is an IBC module implemented using `ibc-rs` which enables Sovereign SDK chains to talk IBC.
+This repository contains the IBC implementation for the Sovereign SDK chains using `ibc-rs`.

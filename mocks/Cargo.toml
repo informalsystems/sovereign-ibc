@@ -1,0 +1,51 @@
+[package]
+name = "sov-ibc-mocks"
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }
+version = { workspace = true }
+readme = "README.md"
+publish = false
+resolver = "2"
+
+[dependencies]
+# external dependencies
+prost = { workspace = true }
+serde_json = { workspace = true }
+tokio = { version = "1", features = ["full"] }
+tower-abci = "0.10"
+tower = { version = "0.4", features = ["full"] }
+tempfile = { workspace = true }
+
+# internal dependencies
+sov-ibc = { path = "../modules/sov-ibc" }
+sov-ibc-transfer = { path = "../modules/sov-ibc-transfer" }
+
+# ibc dependencies
+ibc = { workspace = true }
+ibc-proto = { version = "0.35", default-features = false, features = ["borsh"] }
+basecoin-app = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "5f39639" }
+basecoin-store = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "5f39639" }
+tendermint = { workspace = true }
+tendermint-testgen = { workspace = true }
+
+# sovereign dependencies
+sov-bank = { workspace = true }
+sov-chain-state = { workspace = true }
+sov-modules-api = { workspace = true }
+sov-state = { workspace = true }
+sov-rollup-interface = { workspace = true, features = ["mocks"] }
+
+[features]
+default = ["native"]
+native = [
+    "sov-bank/native",
+    "sov-chain-state/native",
+    "sov-modules-api/native",
+    "sov-state/native",
+    "sov-rollup-interface/native",
+    "sov-ibc/native",
+    "sov-ibc-transfer/native",
+]
