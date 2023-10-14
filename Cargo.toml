@@ -26,7 +26,7 @@ jsonrpsee = { version = "0.18.2", features = [
     "client",
     "server",
 ] }
-prost = { version = "0.11", default-features = false }
+prost = { version = "0.12", default-features = false }
 serde = { version = "1.0.188", features = ["derive", "rc"] }
 serde_json = "1.0"
 schemars = { version = "0.8.12", features = ["derive"] }
@@ -34,26 +34,26 @@ tempfile = "3.5"
 thiserror = "1.0.38"
 
 # ibc depedenencies
-ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "bc09e28", features = [
+ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "b7dd19d", features = [
     "borsh",
     "schema",
     "serde",
     "mocks",
 ] }
-ibc-query = { git = "https://github.com/cosmos/ibc-rs", rev = "bc09e28" }
+ibc-query = { git = "https://github.com/cosmos/ibc-rs", rev = "b7dd19d" }
 
 # tendermint dependencies
-tendermint = { version = "0.33", default-features = false }
-tendermint-proto = { version = "0.33", default-features = false }
-tendermint-testgen = { version = "0.33", default-features = false }
+tendermint = { version = "0.34", default-features = false }
+tendermint-proto = { version = "0.34", default-features = false }
+tendermint-testgen = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "10a6191" }
-sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "10a6191", default-features = false }
-sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "10a6191", default-features = false }
-sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "10a6191" }
-sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "10a6191", default-features = false }
-sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "10a6191" }
+sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
+sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
+sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
+sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
+sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
+sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
 
 # dependencies maintained by Sovereign
 jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "199ae1c185e74ee2133db773efacff56706085aa" }

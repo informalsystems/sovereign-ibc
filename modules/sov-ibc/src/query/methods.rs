@@ -8,12 +8,12 @@ use ibc::proto::core::channel::v1::{
     QueryChannelResponse, QueryChannelsRequest, QueryChannelsResponse,
     QueryConnectionChannelsRequest, QueryConnectionChannelsResponse,
     QueryNextSequenceReceiveRequest, QueryNextSequenceReceiveResponse,
-    QueryNextSequenceSendRequest, QueryNextSequenceSendResponse, QueryPacketAcknowledgementRequest,
-    QueryPacketAcknowledgementResponse, QueryPacketAcknowledgementsRequest,
-    QueryPacketAcknowledgementsResponse, QueryPacketCommitmentRequest,
-    QueryPacketCommitmentResponse, QueryPacketCommitmentsRequest, QueryPacketCommitmentsResponse,
-    QueryPacketReceiptRequest, QueryPacketReceiptResponse, QueryUnreceivedAcksRequest,
-    QueryUnreceivedAcksResponse, QueryUnreceivedPacketsRequest, QueryUnreceivedPacketsResponse,
+    QueryPacketAcknowledgementRequest, QueryPacketAcknowledgementResponse,
+    QueryPacketAcknowledgementsRequest, QueryPacketAcknowledgementsResponse,
+    QueryPacketCommitmentRequest, QueryPacketCommitmentResponse, QueryPacketCommitmentsRequest,
+    QueryPacketCommitmentsResponse, QueryPacketReceiptRequest, QueryPacketReceiptResponse,
+    QueryUnreceivedAcksRequest, QueryUnreceivedAcksResponse, QueryUnreceivedPacketsRequest,
+    QueryUnreceivedPacketsResponse,
 };
 use ibc::proto::core::client::v1::{
     QueryClientStateRequest, QueryClientStateResponse, QueryClientStatesRequest,
@@ -31,10 +31,9 @@ use ibc::proto::core::connection::v1::{
 };
 use ibc_query::core::channel::{
     query_channel, query_channel_client_state, query_channel_consensus_state, query_channels,
-    query_connection_channels, query_next_sequence_receive, query_next_sequence_send,
-    query_packet_acknowledgement, query_packet_acknowledgements, query_packet_commitment,
-    query_packet_commitments, query_packet_receipt, query_unreceived_acks,
-    query_unreceived_packets,
+    query_connection_channels, query_next_sequence_receive, query_packet_acknowledgement,
+    query_packet_acknowledgements, query_packet_commitment, query_packet_commitments,
+    query_packet_receipt, query_unreceived_acks, query_unreceived_packets,
 };
 use ibc_query::core::client::{
     query_client_state, query_client_states, query_client_status, query_consensus_state,
@@ -389,20 +388,6 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
         };
 
         query_unreceived_acks(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
-    }
-
-    #[rpc_method(name = "nextSequenceSend")]
-    pub fn next_sequence_send(
-        &self,
-        request: QueryNextSequenceSendRequest,
-        working_set: &mut WorkingSet<C>,
-    ) -> RpcResult<QueryNextSequenceSendResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_next_sequence_send(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
     }
 
     #[rpc_method(name = "nextSequenceReceive")]

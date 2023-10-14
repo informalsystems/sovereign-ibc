@@ -57,12 +57,12 @@ where
     C: Context,
     Da: DaSpec,
 {
-    type ClientValidationContext = Self;
+    type V = Self;
     type E = Self;
     type AnyConsensusState = AnyConsensusState;
     type AnyClientState = AnyClientState;
 
-    fn get_client_validation_context(&self) -> &Self::ClientValidationContext {
+    fn get_client_validation_context(&self) -> &Self::V {
         self
     }
 
@@ -101,44 +101,6 @@ where
                     .map_err(|_| ClientError::Other {
                         description: "Height cannot be zero".to_string(),
                     })?,
-                }
-                .into(),
-            )
-    }
-
-    fn client_update_time(
-        &self,
-        client_id: &ClientId,
-        height: &Height,
-    ) -> Result<Timestamp, ContextError> {
-        self.ibc
-            .client_update_times_map
-            .get(
-                &(client_id.clone(), *height),
-                *self.working_set.borrow_mut(),
-            )
-            .ok_or(
-                ClientError::Other {
-                    description: "Client update time not found".to_string(),
-                }
-                .into(),
-            )
-    }
-
-    fn client_update_height(
-        &self,
-        client_id: &ClientId,
-        height: &Height,
-    ) -> Result<Height, ContextError> {
-        self.ibc
-            .client_update_heights_map
-            .get(
-                &(client_id.clone(), *height),
-                *self.working_set.borrow_mut(),
-            )
-            .ok_or(
-                ClientError::Other {
-                    description: "Client update time not found".to_string(),
                 }
                 .into(),
             )
@@ -398,34 +360,6 @@ where
             .client_counter
             .set(&next_client_counter, *self.working_set.borrow_mut());
 
-        Ok(())
-    }
-
-    fn store_update_time(
-        &mut self,
-        client_id: ClientId,
-        height: Height,
-        timestamp: Timestamp,
-    ) -> Result<(), ContextError> {
-        self.ibc.client_update_times_map.set(
-            &(client_id, height),
-            &timestamp,
-            *self.working_set.borrow_mut(),
-        );
-        Ok(())
-    }
-
-    fn store_update_height(
-        &mut self,
-        client_id: ClientId,
-        height: Height,
-        host_height: Height,
-    ) -> Result<(), ContextError> {
-        self.ibc.client_update_heights_map.set(
-            &(client_id, height),
-            &host_height,
-            *self.working_set.borrow_mut(),
-        );
         Ok(())
     }
 
