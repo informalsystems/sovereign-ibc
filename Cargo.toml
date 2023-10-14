@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["modules/sov-ibc", "modules/sov-ibc-transfer", "mocks"]
+members = ["modules/sov-ibc", "modules/sov-ibc-transfer"]
 
 [workspace.package]
 version = "0.1.0"
@@ -20,7 +20,7 @@ bytes = "1.2.1"
 derive_more = { version = "0.99.11", features = ["from", "try_into"] }
 digest = "0.10.6"
 hex = "0.4.3"
-jsonrpsee = { version = "0.18.2", features = [
+jsonrpsee = { version = "0.20.1", features = [
     "jsonrpsee-types",
     "macros",
     "client",
@@ -48,12 +48,9 @@ tendermint-proto = { version = "0.34", default-features = false }
 tendermint-testgen = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
-sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
-sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
-sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
-sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
-sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "farhad/demo-rollup-with-ibc"}
-
-# dependencies maintained by Sovereign
-jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "199ae1c185e74ee2133db773efacff56706085aa" }
+sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration" }
+sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration" }
+sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration" }
+sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration" }
+sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration" }
+sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git", branch = "ibc-integration" }

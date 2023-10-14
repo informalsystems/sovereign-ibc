@@ -45,6 +45,8 @@ native = [
     "sov-chain-state/native",
     "sov-ibc-transfer/native",
     "sov-modules-api/native",
+    "sov-modules-macros/native",
+    "sov-rollup-interface/native",
     "sov-state/native",
     "schemars",
     "jsonrpsee",
