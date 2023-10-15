@@ -24,7 +24,7 @@ sov-ibc = { path = "../modules/sov-ibc" }
 sov-ibc-transfer = { path = "../modules/sov-ibc-transfer" }
 
 # ibc dependencies
-ibc = { workspace = true }
+ibc = { workspace = true, features = ["mocks"] }
 ibc-proto = { version = "0.37.1", default-features = false, features = ["borsh"] }
 basecoin-app = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "823f846" }
 basecoin-store = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "823f846" }
