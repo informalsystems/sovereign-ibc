@@ -48,9 +48,9 @@ tendermint-proto = { version = "0.34", default-features = false }
 tendermint-testgen = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "fa31bc3" }
-sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "fa31bc3" }
-sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "fa31bc3" }
-sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "fa31bc3" }
-sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "fa31bc3" }
-sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "fa31bc3" }
+sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "33e9610" }
+sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "33e9610" }
+sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "33e9610" }
+sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "33e9610" }
+sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "33e9610" }
+sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "33e9610" }
