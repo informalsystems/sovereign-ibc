@@ -12,9 +12,7 @@ use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;
 use sov_ibc_transfer::call::SDKTokenTransfer;
-use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, DaSpec, Module, Spec};
-use sov_rollup_interface::mocks::MockDaSpec;
 
 use super::app::TestApp;
 use crate::relayer::context::ChainContext;
@@ -62,16 +60,16 @@ where
     }
 }
 
-impl ChainContext<TestApp<'_, DefaultContext, MockDaSpec>> {
+impl<'ws, C: Context, Da: DaSpec + Clone> ChainContext<TestApp<'ws, C, Da>> {
     /// Builds a sdk token transfer message wrapped in a `CallMessage` with the given amount
     /// Note: keep the amount value lower than the initial balance of the sender address
     pub fn build_sdk_transfer(
         &self,
-        token: <DefaultContext as Spec>::Address,
+        token: <C as Spec>::Address,
         sender: Signer,
         receiver: Signer,
         amount: u64,
-    ) -> CallMessage<DefaultContext> {
+    ) -> CallMessage<C> {
         let msg_transfer = SDKTokenTransfer {
             port_id_on_a: PortId::transfer(),
             chan_id_on_a: ChannelId::default(),

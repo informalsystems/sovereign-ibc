@@ -38,6 +38,7 @@ native = [
     "serde",
     "sov-bank/native",
     "sov-modules-api/native",
+    "sov-modules-macros/native",
     "sov-rollup-interface/native",
     "schemars",
     "jsonrpsee",

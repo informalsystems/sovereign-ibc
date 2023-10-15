@@ -35,7 +35,7 @@ use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::{Context, DaSpec, Error, StateMap, StateValue, WorkingSet};
 use sov_modules_macros::ModuleInfo;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct ExampleModuleConfig {}
 
 /// the sov-ibc module that manages all IBC-related states

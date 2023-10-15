@@ -6,7 +6,7 @@ use ibc::core::ics02_client::client_state::{
 };
 use ibc::core::ics02_client::client_type::ClientType;
 use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics02_client::ClientExecutionContext;
+use ibc::core::ics02_client::{ClientExecutionContext, ClientValidationContext};
 use ibc::core::ics23_commitment::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
@@ -15,6 +15,8 @@ use ibc::core::ics24_host::path::{ClientConsensusStatePath, ClientStatePath, Pat
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ContextError, ValidationContext};
 use ibc::proto::Any;
+use ibc::Height;
+use sov_modules_api::{Context, DaSpec};
 
 use super::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;
@@ -197,12 +199,48 @@ where
     }
 }
 
-impl<'a, C, Da> ClientExecutionContext for IbcContext<'a, C, Da>
-where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
-{
-    type ClientValidationContext = <Self as ValidationContext>::ClientValidationContext;
+impl<'a, C: Context, Da: DaSpec> ClientValidationContext for IbcContext<'a, C, Da> {
+    fn client_update_time(
+        &self,
+        client_id: &ClientId,
+        height: &Height,
+    ) -> Result<Timestamp, ContextError> {
+        self.ibc
+            .client_update_times_map
+            .get(
+                &(client_id.clone(), *height),
+                *self.working_set.borrow_mut(),
+            )
+            .ok_or(
+                ClientError::Other {
+                    description: "Client update time not found".to_string(),
+                }
+                .into(),
+            )
+    }
+
+    fn client_update_height(
+        &self,
+        client_id: &ClientId,
+        height: &Height,
+    ) -> Result<Height, ContextError> {
+        self.ibc
+            .client_update_heights_map
+            .get(
+                &(client_id.clone(), *height),
+                *self.working_set.borrow_mut(),
+            )
+            .ok_or(
+                ClientError::Other {
+                    description: "Client update time not found".to_string(),
+                }
+                .into(),
+            )
+    }
+}
+
+impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da> {
+    type V = <Self as ValidationContext>::V;
     type AnyClientState = <Self as ValidationContext>::AnyClientState;
     type AnyConsensusState = <Self as ValidationContext>::AnyConsensusState;
 
@@ -233,15 +271,47 @@ where
 
         Ok(())
     }
+
+    fn store_update_time(
+        &mut self,
+        client_id: ClientId,
+        height: Height,
+        timestamp: Timestamp,
+    ) -> Result<(), ContextError> {
+        self.ibc.client_update_times_map.set(
+            &(client_id, height),
+            &timestamp,
+            *self.working_set.borrow_mut(),
+        );
+        Ok(())
+    }
+
+    fn store_update_height(
+        &mut self,
+        client_id: ClientId,
+        height: Height,
+        host_height: Height,
+    ) -> Result<(), ContextError> {
+        self.ibc.client_update_heights_map.set(
+            &(client_id, height),
+            &host_height,
+            *self.working_set.borrow_mut(),
+        );
+        Ok(())
+    }
 }
 
-impl<'a, C, Da> TmCommonContext for IbcContext<'a, C, Da>
-where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
-{
+impl<'a, C: Context, Da: DaSpec> TmCommonContext for IbcContext<'a, C, Da> {
     type ConversionError = &'static str;
     type AnyConsensusState = AnyConsensusState;
+
+    fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
+        <Self as ValidationContext>::host_timestamp(self)
+    }
+
+    fn host_height(&self) -> Result<Height, ContextError> {
+        <Self as ValidationContext>::host_height(self)
+    }
 
     fn consensus_state(
         &self,
@@ -251,15 +321,7 @@ where
     }
 }
 
-impl<'a, C, Da> TmValidationContext for IbcContext<'a, C, Da>
-where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
-{
-    fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        <Self as ValidationContext>::host_timestamp(self)
-    }
-
+impl<'a, C: Context, Da: DaSpec> TmValidationContext for IbcContext<'a, C, Da> {
     fn next_consensus_state(
         &self,
         client_id: &ClientId,
