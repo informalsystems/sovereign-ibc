@@ -206,7 +206,7 @@ impl<'a, C: Context, Da: DaSpec> ClientValidationContext for IbcContext<'a, C, D
         height: &Height,
     ) -> Result<Timestamp, ContextError> {
         self.ibc
-            .client_update_times_map
+            .client_update_host_times_map
             .get(
                 &(client_id.clone(), *height),
                 *self.working_set.borrow_mut(),
@@ -225,7 +225,7 @@ impl<'a, C: Context, Da: DaSpec> ClientValidationContext for IbcContext<'a, C, D
         height: &Height,
     ) -> Result<Height, ContextError> {
         self.ibc
-            .client_update_heights_map
+            .client_update_host_heights_map
             .get(
                 &(client_id.clone(), *height),
                 *self.working_set.borrow_mut(),
@@ -278,7 +278,7 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         height: Height,
         timestamp: Timestamp,
     ) -> Result<(), ContextError> {
-        self.ibc.client_update_times_map.set(
+        self.ibc.client_update_host_times_map.set(
             &(client_id, height),
             &timestamp,
             *self.working_set.borrow_mut(),
@@ -292,7 +292,11 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         height: Height,
         host_height: Height,
     ) -> Result<(), ContextError> {
-        self.ibc.client_update_heights_map.set(
+        self.ibc
+            .client_update_heights_vec
+            .push(&height, *self.working_set.borrow_mut());
+
+        self.ibc.client_update_host_heights_map.set(
             &(client_id, height),
             &host_height,
             *self.working_set.borrow_mut(),

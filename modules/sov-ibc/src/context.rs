@@ -383,13 +383,13 @@ where
     ) -> Result<(), ContextError> {
         let mut connection_ids = self
             .ibc
-            .connection_ids_map
+            .client_connections_map
             .get(client_connection_path, *self.working_set.borrow_mut())
             .unwrap_or_default();
 
         connection_ids.push(conn_id);
 
-        self.ibc.connection_ids_map.set(
+        self.ibc.client_connections_map.set(
             client_connection_path,
             &connection_ids,
             *self.working_set.borrow_mut(),
