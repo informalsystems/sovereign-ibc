@@ -69,7 +69,6 @@ where
             .ibc
             .client_update_heights_vec
             .iter(*self.working_set.borrow_mut())
-            .map(|h| h)
             .collect();
 
         let mut consesnsus_states = Vec::new();
@@ -87,7 +86,6 @@ where
             .ibc
             .client_update_heights_vec
             .iter(*self.working_set.borrow_mut())
-            .map(|h| h)
             .collect();
 
         Ok(heights)
