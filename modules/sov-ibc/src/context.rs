@@ -421,6 +421,9 @@ where
         commitment_path: &CommitmentPath,
         commitment: PacketCommitment,
     ) -> Result<(), ContextError> {
+        self.ibc
+            .packet_commitment_vec
+            .push(commitment_path, *self.working_set.borrow_mut());
         self.ibc.packet_commitment_map.set(
             commitment_path,
             &commitment,
@@ -445,6 +448,9 @@ where
         receipt: Receipt,
     ) -> Result<(), ContextError> {
         self.ibc
+            .packet_receipt_vec
+            .push(receipt_path, *self.working_set.borrow_mut());
+        self.ibc
             .packet_receipt_map
             .set(receipt_path, &receipt, *self.working_set.borrow_mut());
         Ok(())
@@ -455,6 +461,9 @@ where
         ack_path: &AckPath,
         ack_commitment: AcknowledgementCommitment,
     ) -> Result<(), ContextError> {
+        self.ibc
+            .packet_ack_vec
+            .push(ack_path, *self.working_set.borrow_mut());
         self.ibc
             .packet_ack_map
             .set(ack_path, &ack_commitment, *self.working_set.borrow_mut());
