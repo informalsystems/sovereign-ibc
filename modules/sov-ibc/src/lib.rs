@@ -102,10 +102,19 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     ack_sequence_map: StateMap<SeqAckPath, Sequence>,
 
     #[state]
+    packet_commitment_vec: StateVec<CommitmentPath>,
+
+    #[state]
     packet_commitment_map: StateMap<CommitmentPath, PacketCommitment, PacketCommitmentCodec>,
 
     #[state]
+    packet_receipt_vec: StateVec<ReceiptPath>,
+
+    #[state]
     packet_receipt_map: StateMap<ReceiptPath, Receipt>,
+
+    #[state]
+    packet_ack_vec: StateVec<AckPath>,
 
     #[state]
     packet_ack_map: StateMap<AckPath, AcknowledgementCommitment, AcknowledgementCommitmentCodec>,
