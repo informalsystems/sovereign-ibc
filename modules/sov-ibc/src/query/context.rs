@@ -8,6 +8,7 @@ use ibc::core::ics04_channel::packet::Sequence;
 use ibc::core::ics24_host::identifier::{ChannelId, ClientId, ConnectionId, PortId};
 use ibc::core::ics24_host::path::{
     AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath, Path,
+    ReceiptPath,
 };
 use ibc::core::{ContextError, ValidationContext};
 use ibc::Height;
@@ -157,7 +158,16 @@ where
         &self,
         channel_end_path: &ChannelEndPath,
     ) -> Result<Vec<CommitmentPath>, ContextError> {
-        unimplemented!()
+        Ok(self
+            .ibc
+            .packet_commitment_vec
+            .iter(*self.working_set.borrow_mut())
+            .filter(|commitment_path| {
+                &ChannelEndPath::new(&commitment_path.port_id, &commitment_path.channel_id)
+                    == channel_end_path
+            })
+            .filter(|commitment_path| self.get_packet_commitment(commitment_path).is_ok())
+            .collect())
     }
 
     fn packet_acknowledgements(
@@ -165,7 +175,25 @@ where
         channel_end_path: &ChannelEndPath,
         sequences: impl ExactSizeIterator<Item = Sequence>,
     ) -> Result<Vec<AckPath>, ContextError> {
-        unimplemented!()
+        let collected_paths: Vec<_> = if sequences.len() == 0 {
+            self.ibc
+                .packet_ack_vec
+                .iter(*self.working_set.borrow_mut())
+                .filter(|ack_path| {
+                    &ChannelEndPath::new(&ack_path.port_id, &ack_path.channel_id)
+                        == channel_end_path
+                })
+                .collect()
+        } else {
+            sequences
+                .map(|seq| AckPath::new(&channel_end_path.0, &channel_end_path.1, seq))
+                .collect()
+        };
+
+        Ok(collected_paths
+            .into_iter()
+            .filter(|ack_path| self.get_packet_acknowledgement(ack_path).is_ok())
+            .collect())
     }
 
     fn unreceived_packets(
@@ -173,7 +201,11 @@ where
         channel_end_path: &ChannelEndPath,
         sequences: impl ExactSizeIterator<Item = Sequence>,
     ) -> Result<Vec<Sequence>, ContextError> {
-        unimplemented!()
+        Ok(sequences
+            .map(|seq| ReceiptPath::new(&channel_end_path.0, &channel_end_path.1, seq))
+            .filter(|receipt_path| self.get_packet_receipt(receipt_path).is_err())
+            .map(|commitment_path| commitment_path.sequence)
+            .collect())
     }
 
     fn unreceived_acks(
@@ -181,6 +213,30 @@ where
         channel_end_path: &ChannelEndPath,
         sequences: impl ExactSizeIterator<Item = Sequence>,
     ) -> Result<Vec<Sequence>, ContextError> {
-        unimplemented!()
+        let collected_paths: Vec<_> = if sequences.len() == 0 {
+            self.ibc
+                .packet_commitment_vec
+                .iter(*self.working_set.borrow_mut())
+                .filter(|commitment_path| {
+                    &ChannelEndPath::new(&commitment_path.port_id, &commitment_path.channel_id)
+                        == channel_end_path
+                })
+                .collect()
+        } else {
+            sequences
+                .map(|seq| CommitmentPath::new(&channel_end_path.0, &channel_end_path.1, seq))
+                .collect()
+        };
+
+        Ok(collected_paths
+            .into_iter()
+            .filter(|commitment_path| {
+                self.ibc
+                    .packet_commitment_map
+                    .get(commitment_path, *self.working_set.borrow_mut())
+                    .is_some()
+            })
+            .map(|commitment_path| commitment_path.sequence)
+            .collect())
     }
 }
