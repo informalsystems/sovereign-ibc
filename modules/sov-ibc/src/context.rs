@@ -436,6 +436,17 @@ where
         &mut self,
         commitment_path: &CommitmentPath,
     ) -> Result<(), ContextError> {
+        let unprocessed_packets = self
+            .ibc
+            .packet_commitment_vec
+            .iter(*self.working_set.borrow_mut())
+            .filter(|path| path != commitment_path)
+            .collect::<Vec<CommitmentPath>>();
+
+        self.ibc
+            .packet_commitment_vec
+            .set_all(unprocessed_packets, *self.working_set.borrow_mut());
+
         self.ibc
             .packet_commitment_map
             .delete(commitment_path, *self.working_set.borrow_mut());
@@ -471,6 +482,17 @@ where
     }
 
     fn delete_packet_acknowledgement(&mut self, ack_path: &AckPath) -> Result<(), ContextError> {
+        let filtered_acks = self
+            .ibc
+            .packet_ack_vec
+            .iter(*self.working_set.borrow_mut())
+            .filter(|path| path != ack_path)
+            .collect::<Vec<AckPath>>();
+
+        self.ibc
+            .packet_ack_vec
+            .set_all(filtered_acks, *self.working_set.borrow_mut());
+
         self.ibc
             .packet_ack_map
             .delete(ack_path, *self.working_set.borrow_mut());
