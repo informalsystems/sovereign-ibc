@@ -1,6 +1,12 @@
 [workspace]
 resolver = "2"
-members = ["modules/sov-ibc", "modules/sov-ibc-transfer", "mocks"]
+members = [
+    "clients/ics08-wasm",
+    "clients/sov-celestia-cw",
+    "modules/sov-ibc",
+    "modules/sov-ibc-transfer",
+    "mocks",
+]
 
 [workspace.package]
 version = "0.1.0"
@@ -16,7 +22,8 @@ rust-version = "1.66"
 # external dependencies
 anyhow = "1.0.68"
 borsh = { version = "0.10.3", features = ["rc", "bytes"] }
-bytes = "1.2.1"
+base64 = { version = "0.21", default-features = false }
+bytes = { version = "1.2.1", default-features = false }
 derive_more = { version = "0.99.11", features = ["from", "try_into"] }
 digest = "0.10.6"
 hex = "0.4.3"
@@ -34,15 +41,16 @@ tempfile = "3.5"
 thiserror = "1.0.38"
 
 # ibc depedenencies
-ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "b7dd19d", features = [
+ibc = { path = "../ibc-rs/crates/ibc", default-features = false, features = [
     "borsh",
     "schema",
     "serde",
 ] }
-ibc-query = { git = "https://github.com/cosmos/ibc-rs", rev = "b7dd19d" }
+ibc-query = { path = "../ibc-rs/crates/ibc-query", default-features = false }
 
 # tendermint dependencies
 tendermint = { version = "0.34", default-features = false }
+tendermint-light-client-verifier = { version = "0.34", default-features = false }
 tendermint-proto = { version = "0.34", default-features = false }
 tendermint-testgen = { version = "0.34", default-features = false }
 
