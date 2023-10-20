@@ -18,8 +18,8 @@ use crate::types::proto::SovHeader as RawSovHeader;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ClientMessage {
-    Header(SovHeader),
-    Misbehaviour(SovMisbehaviour),
+    Header(Box<SovHeader>),
+    Misbehaviour(Box<SovMisbehaviour>),
 }
 
 impl Protobuf<Any> for ClientMessage {}
@@ -29,14 +29,16 @@ impl TryFrom<Any> for ClientMessage {
 
     fn try_from(any: Any) -> Result<Self, Self::Error> {
         let msg = match &*any.type_url {
-            SOVEREIGN_HEADER_TYPE_URL => Self::Header(
-                Protobuf::<RawSovHeader>::decode(&*any.value)
-                    .map_err(|e| ContractError::Celestia(format!("{e:?}")))?,
-            ),
-            SOVEREIGN_MISBEHAVIOUR_TYPE_URL => Self::Misbehaviour(
-                Protobuf::<RawSovMisbehaviour>::decode(&*any.value)
-                    .map_err(|e| ContractError::Celestia(format!("{e:?}")))?,
-            ),
+            SOVEREIGN_HEADER_TYPE_URL => {
+                let header = Protobuf::<RawSovHeader>::decode(&*any.value)
+                    .map_err(|e| ContractError::Celestia(format!("{e:?}")))?;
+                Self::Header(Box::new(header))
+            }
+            SOVEREIGN_MISBEHAVIOUR_TYPE_URL => {
+                let misbehaviour = Protobuf::<RawSovMisbehaviour>::decode(&*any.value)
+                    .map_err(|e| ContractError::Celestia(format!("{e:?}")))?;
+                Self::Misbehaviour(Box::new(misbehaviour))
+            }
             _ => Err(ContractError::Celestia(format!(
                 "Unknown type: {}",
                 any.type_url
@@ -52,11 +54,11 @@ impl From<ClientMessage> for Any {
         match msg {
             ClientMessage::Header(header) => Any {
                 type_url: SOVEREIGN_HEADER_TYPE_URL.to_string(),
-                value: Protobuf::<Any>::encode_vec(&header).unwrap(),
+                value: Protobuf::<Any>::encode_vec(&*header).unwrap(),
             },
             ClientMessage::Misbehaviour(misbehaviour) => Any {
                 type_url: SOVEREIGN_MISBEHAVIOUR_TYPE_URL.to_string(),
-                value: Protobuf::<Any>::encode_vec(&misbehaviour).unwrap(),
+                value: Protobuf::<Any>::encode_vec(&*misbehaviour).unwrap(),
             },
         }
     }

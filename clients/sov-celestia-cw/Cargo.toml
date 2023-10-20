@@ -30,7 +30,7 @@ getrandom = { version = "0.2", features = ["js"] }
 
 # ibc dependencies
 ibc = { workspace = true }
-ibc-proto = { path = "../../../ibc-proto-rs", default-features = false, features = ["json-schema"] }
+ibc-proto = { version = "0.37.1", default-features = false, features = ["json-schema"] }
 ics23 = {version = "0.11", default-features = false }
 ics08-wasm = { path = "../ics08-wasm", default-features = false, features = ["cosmwasm"] }
 
@@ -48,11 +48,6 @@ cosmwasm-std = "1.4.1"
 
 [features]
 default = ["std"]
-
-# use library feature to disable all instantiate/execute/query exports
-library = []
-# for more explicit tests, cargo test --features=backtraces
-backtraces = ["cosmwasm-std/backtraces"]
 std = [
 	"ibc/std",
 	"ibc-proto/std",
@@ -67,3 +62,5 @@ std = [
 test = [
   "std"
 ]
+# use library feature to disable all instantiate/execute/query exports
+library = []

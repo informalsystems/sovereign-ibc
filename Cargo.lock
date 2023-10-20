@@ -396,6 +396,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=823f846#823f8463f7e54b3e772e0a47fc86fe18569c3ebc"
 dependencies = [
  "base64 0.21.4",
  "basecoin-store",
@@ -429,6 +430,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=823f846#823f8463f7e54b3e772e0a47fc86fe18569c3ebc"
 dependencies = [
  "base64 0.21.4",
  "derive_more",
@@ -942,9 +944,9 @@ dependencies = [
 
 [[package]]
 name = "cpufeatures"
-version = "0.2.9"
+version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a17b76ff3a4162b0b27f354a0c87015ddad39d35f9c0c36607a3bdd175dde1f1"
+checksum = "3fbc60abd742b35f2492f808e1abbb83d45f72db402e14c55057edc9c7b1e9e4"
 dependencies = [
  "libc",
 ]
@@ -1796,6 +1798,7 @@ dependencies = [
 [[package]]
 name = "ibc"
 version = "0.46.0"
+source = "git+https://github.com/cosmos/ibc-rs/?rev=b7dd19d#b7dd19dff88540ffe841f3967b60c62673fc9a67"
 dependencies = [
  "borsh",
  "bytes",
@@ -1826,6 +1829,7 @@ dependencies = [
 [[package]]
 name = "ibc-derive"
 version = "0.3.0"
+source = "git+https://github.com/cosmos/ibc-rs/?rev=b7dd19d#b7dd19dff88540ffe841f3967b60c62673fc9a67"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -1836,6 +1840,7 @@ dependencies = [
 [[package]]
 name = "ibc-proto"
 version = "0.37.1"
+source = "git+https://github.com/cosmos/ibc-proto-rs?rev=6573eeb#6573eeb3a4d03b5d21ef36aaa1d6d4b66271bd8a"
 dependencies = [
  "base64 0.21.4",
  "borsh",
@@ -1853,6 +1858,7 @@ dependencies = [
 [[package]]
 name = "ibc-query"
 version = "0.46.0"
+source = "git+https://github.com/cosmos/ibc-rs/?rev=b7dd19d#b7dd19dff88540ffe841f3967b60c62673fc9a67"
 dependencies = [
  "displaydoc",
  "ibc",

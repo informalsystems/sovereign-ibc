@@ -2,8 +2,10 @@ use alloc::vec::Vec;
 use std::str::FromStr;
 
 use cosmwasm_schema::cw_serde;
+use ibc::core::ics02_client::error::ClientError;
 use ibc::core::ics23_commitment::commitment::{CommitmentPrefix, CommitmentProofBytes};
 use ibc::core::ics24_host::path::Path;
+use ibc::core::ContextError;
 use ibc::proto::Any;
 use ibc::Height;
 use ibc_proto::ibc::core::client::v1::Height as RawHeight;
@@ -98,7 +100,11 @@ impl TryFrom<VerifyMembershipMsgRaw> for VerifyMembershipMsg {
         let prefix = raw.path.key_path.remove(0).into_bytes();
         let path_str = raw.path.key_path.join("");
         let path = Path::from_str(&path_str)?;
-        let height = Height::try_from(raw.height).unwrap();
+        let height = Height::try_from(raw.height).map_err(|e| {
+            ContractError::Context(ContextError::ClientError(ClientError::Other {
+                description: e.to_string(),
+            }))
+        })?;
         Ok(Self {
             proof,
             path,
@@ -139,7 +145,7 @@ impl TryFrom<VerifyNonMembershipMsgRaw> for VerifyNonMembershipMsg {
         let prefix = raw.path.key_path.remove(0).into_bytes();
         let path_str = raw.path.key_path.join("");
         let path = Path::from_str(&path_str)?;
-        let height = raw.height.try_into().unwrap();
+        let height = raw.height.try_into().expect("invalid height");
         Ok(Self {
             proof,
             path,
@@ -184,7 +190,7 @@ impl VerifyClientMessageMsg {
         };
 
         if let Ok(header) = SovHeader::try_from(maybe_any_header) {
-            return Ok(ClientMessage::Header(header));
+            return Ok(ClientMessage::Header(Box::new(header)));
         }
 
         let maybe_any_misbehaviour = Any {
@@ -193,7 +199,7 @@ impl VerifyClientMessageMsg {
         };
 
         if let Ok(misbehaviour) = SovMisbehaviour::try_from(maybe_any_misbehaviour) {
-            return Ok(ClientMessage::Misbehaviour(misbehaviour));
+            return Ok(ClientMessage::Misbehaviour(Box::new(misbehaviour)));
         }
 
         Err(ContractError::Celestia(

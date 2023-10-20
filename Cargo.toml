@@ -41,12 +41,12 @@ tempfile = "3.5"
 thiserror = "1.0.38"
 
 # ibc depedenencies
-ibc = { path = "../ibc-rs/crates/ibc", default-features = false, features = [
+ibc = { git = "https://github.com/cosmos/ibc-rs/", rev = "b7dd19d", default-features = false, features = [
     "borsh",
     "schema",
     "serde",
 ] }
-ibc-query = { path = "../ibc-rs/crates/ibc-query", default-features = false }
+ibc-query = { git = "https://github.com/cosmos/ibc-rs/", rev = "b7dd19d", default-features = false }
 
 # tendermint dependencies
 tendermint = { version = "0.34", default-features = false }
@@ -61,3 +61,7 @@ sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git"
 sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
 sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
 sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
+
+
+[patch.crates-io]
+ibc-proto = { git = "https://github.com/cosmos/ibc-proto-rs", rev = "6573eeb" }

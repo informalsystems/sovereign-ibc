@@ -69,7 +69,9 @@ impl SovClientState {
                     header.da_header.extended_header.header.clone(),
                     header.da_header.extended_header.commit.clone(),
                 )
-                .unwrap(),
+                .map_err(|e| ClientError::Other {
+                    description: format!("failed to create signed header: {}", e),
+                })?,
                 validators: &header.da_header.extended_header.validator_set,
                 // NB: This will skip the
                 // VerificationPredicates::next_validators_match check for the

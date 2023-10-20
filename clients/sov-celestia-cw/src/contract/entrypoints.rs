@@ -11,6 +11,7 @@ use ibc::core::ics02_client::ClientExecutionContext;
 use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::ics24_host::path::ClientConsensusStatePath;
 use ibc::core::{ContextError, ValidationContext};
+use ibc::proto::Any;
 
 use super::error::ContractError;
 use super::msgs::{
@@ -118,10 +119,10 @@ fn process_message(
 
             let client_state = ctx.client_state(&client_id)?;
 
-            let (update_kind, any_client_msg) = match msg.client_message {
-                ClientMessage::Header(header) => (UpdateKind::UpdateClient, header.into()),
+            let (update_kind, any_client_msg): (_, Any) = match msg.client_message {
+                ClientMessage::Header(header) => (UpdateKind::UpdateClient, (*header).into()),
                 ClientMessage::Misbehaviour(misbehaviour) => {
-                    (UpdateKind::SubmitMisbehaviour, misbehaviour.into())
+                    (UpdateKind::SubmitMisbehaviour, (*misbehaviour).into())
                 }
             };
 
@@ -136,10 +137,10 @@ fn process_message(
 
             let client_state = ctx.client_state(&client_id)?;
 
-            let (update_kind, any_client_msg) = match msg.client_message {
-                ClientMessage::Header(header) => (UpdateKind::UpdateClient, header.into()),
+            let (update_kind, any_client_msg): (_, Any) = match msg.client_message {
+                ClientMessage::Header(header) => (UpdateKind::UpdateClient, (*header).into()),
                 ClientMessage::Misbehaviour(misbehaviour) => {
-                    (UpdateKind::SubmitMisbehaviour, misbehaviour.into())
+                    (UpdateKind::SubmitMisbehaviour, (*misbehaviour).into())
                 }
             };
 
@@ -155,9 +156,9 @@ fn process_message(
             let client_state = ctx.client_state(&client_id)?;
 
             let (update_kind, any_client_msg) = match msg.client_message {
-                ClientMessage::Header(header) => (UpdateKind::UpdateClient, header.into()),
+                ClientMessage::Header(header) => (UpdateKind::UpdateClient, (*header).into()),
                 ClientMessage::Misbehaviour(misbehaviour) => {
-                    (UpdateKind::SubmitMisbehaviour, misbehaviour.into())
+                    (UpdateKind::SubmitMisbehaviour, (*misbehaviour).into())
                 }
             };
 
@@ -173,9 +174,9 @@ fn process_message(
             let client_state = ctx.client_state(&client_id)?;
 
             let (_, any_client_msg) = match msg.client_message {
-                ClientMessage::Header(header) => (UpdateKind::UpdateClient, header.into()),
+                ClientMessage::Header(header) => (UpdateKind::UpdateClient, (*header).into()),
                 ClientMessage::Misbehaviour(misbehaviour) => {
-                    (UpdateKind::SubmitMisbehaviour, misbehaviour.into())
+                    (UpdateKind::SubmitMisbehaviour, (*misbehaviour).into())
                 }
             };
 

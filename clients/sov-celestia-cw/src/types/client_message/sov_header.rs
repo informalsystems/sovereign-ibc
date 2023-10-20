@@ -63,7 +63,7 @@ impl TryFrom<Any> for SovHeader {
     fn try_from(any: Any) -> Result<Self, Self::Error> {
         let msg = match &*any.type_url {
             SOVEREIGN_HEADER_TYPE_URL => {
-                Protobuf::<RawSovHeader>::decode_vec(&*any.value).map_err(Error::source)?
+                Protobuf::<RawSovHeader>::decode_vec(&any.value).map_err(Error::source)?
             }
             _ => Err(Error::invalid(any.type_url.clone()))?,
         };
@@ -107,7 +107,7 @@ impl SovHeader {
             .time
             .unix_timestamp_nanos();
 
-        Timestamp::from_nanoseconds(time as u64).unwrap()
+        Timestamp::from_nanoseconds(time as u64).expect("malformed header")
     }
 
     pub fn height(&self) -> Height {
