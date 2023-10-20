@@ -1,0 +1,50 @@
+[package]
+name = "ics11-sov-celestia-cw"
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }
+version = { workspace = true }
+readme = "README.md"
+publish = false
+resolver = "2"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# external dependencies
+derive_more = { workspace = true }
+prost = { workspace = true, default-features = false }
+serde = { workspace = true, features = ["derive"] }
+serde_json =  { package = "serde-json-wasm", version = "1.0.0" , default-features = false, optional = true }
+thiserror = { version = "1.0.31" }
+getrandom = { version = "0.2", features = ["js"] }
+
+# ibc dependencies
+ibc = { workspace = true }
+ibc-proto = { version = "0.37.1", default-features = false, features = ["json-schema"] }
+ics08-wasm = { path = "../ics08-wasm", default-features = false, features = ["cosmwasm"] }
+ics11-sov-celestia = { path = "../ics11-sov-celestia", default-features = false, features = ["serde"] }
+tendermint-proto = { git = "https://github.com/eigerco/celestia-tendermint-rs.git", rev = "1f8b574" }
+
+# cosmwasm dependencies
+cosmwasm-schema = "1.4.1"
+cosmwasm-std = "1.4.1"
+
+[features]
+default = ["std"]
+std = [
+	"ibc/std",
+	"ibc-proto/std",
+	"ics08-wasm/std",
+	"prost/std",
+	"serde/std",
+	"serde_json/std",
+]
+test = [
+  "std"
+]
+# use library feature to disable all instantiate/execute/query exports
+library = []

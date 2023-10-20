@@ -1880,6 +1880,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "ics11-sov-celestia"
+version = "0.1.0"
+dependencies = [
+ "base64 0.21.4",
+ "bytes",
+ "celestia-proto",
+ "celestia-types",
+ "derive_more",
+ "ibc",
+ "ibc-proto",
+ "ics23 0.11.0",
+ "prost 0.12.1",
+ "schemars",
+ "serde",
+ "serde-json-wasm 1.0.0",
+ "tendermint 0.32.0",
+ "tendermint-light-client-verifier 0.32.0",
+ "tendermint-proto 0.32.0",
+ "thiserror",
+]
+
+[[package]]
+name = "ics11-sov-celestia-cw"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "derive_more",
+ "getrandom",
+ "ibc",
+ "ibc-proto",
+ "ics08-wasm",
+ "ics11-sov-celestia",
+ "prost 0.12.1",
+ "serde",
+ "serde-json-wasm 1.0.0",
+ "tendermint-proto 0.32.0",
+ "thiserror",
+]
+
+[[package]]
 name = "ics23"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3637,33 +3678,6 @@ dependencies = [
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
- "thiserror",
-]
-
-[[package]]
-name = "sov-celestia-cw"
-version = "0.1.0"
-dependencies = [
- "base64 0.21.4",
- "bytes",
- "celestia-proto",
- "celestia-types",
- "cosmwasm-schema",
- "cosmwasm-std",
- "derive_more",
- "getrandom",
- "ibc",
- "ibc-proto",
- "ics08-wasm",
- "ics23 0.11.0",
- "prost 0.12.1",
- "schemars",
- "serde",
- "serde-json-wasm 1.0.0",
- "sha2 0.10.8",
- "tendermint 0.32.0",
- "tendermint-light-client-verifier 0.32.0",
- "tendermint-proto 0.32.0",
  "thiserror",
 ]
 
