@@ -383,13 +383,13 @@ where
     ) -> Result<(), ContextError> {
         let mut connection_ids = self
             .ibc
-            .connection_ids_map
+            .client_connections_map
             .get(client_connection_path, *self.working_set.borrow_mut())
             .unwrap_or_default();
 
         connection_ids.push(conn_id);
 
-        self.ibc.connection_ids_map.set(
+        self.ibc.client_connections_map.set(
             client_connection_path,
             &connection_ids,
             *self.working_set.borrow_mut(),
@@ -421,6 +421,9 @@ where
         commitment_path: &CommitmentPath,
         commitment: PacketCommitment,
     ) -> Result<(), ContextError> {
+        self.ibc
+            .packet_commitment_vec
+            .push(commitment_path, *self.working_set.borrow_mut());
         self.ibc.packet_commitment_map.set(
             commitment_path,
             &commitment,
@@ -433,6 +436,17 @@ where
         &mut self,
         commitment_path: &CommitmentPath,
     ) -> Result<(), ContextError> {
+        let unprocessed_packets = self
+            .ibc
+            .packet_commitment_vec
+            .iter(*self.working_set.borrow_mut())
+            .filter(|path| path != commitment_path)
+            .collect::<Vec<CommitmentPath>>();
+
+        self.ibc
+            .packet_commitment_vec
+            .set_all(unprocessed_packets, *self.working_set.borrow_mut());
+
         self.ibc
             .packet_commitment_map
             .delete(commitment_path, *self.working_set.borrow_mut());
@@ -445,6 +459,9 @@ where
         receipt: Receipt,
     ) -> Result<(), ContextError> {
         self.ibc
+            .packet_receipt_vec
+            .push(receipt_path, *self.working_set.borrow_mut());
+        self.ibc
             .packet_receipt_map
             .set(receipt_path, &receipt, *self.working_set.borrow_mut());
         Ok(())
@@ -456,12 +473,26 @@ where
         ack_commitment: AcknowledgementCommitment,
     ) -> Result<(), ContextError> {
         self.ibc
+            .packet_ack_vec
+            .push(ack_path, *self.working_set.borrow_mut());
+        self.ibc
             .packet_ack_map
             .set(ack_path, &ack_commitment, *self.working_set.borrow_mut());
         Ok(())
     }
 
     fn delete_packet_acknowledgement(&mut self, ack_path: &AckPath) -> Result<(), ContextError> {
+        let filtered_acks = self
+            .ibc
+            .packet_ack_vec
+            .iter(*self.working_set.borrow_mut())
+            .filter(|path| path != ack_path)
+            .collect::<Vec<AckPath>>();
+
+        self.ibc
+            .packet_ack_vec
+            .set_all(filtered_acks, *self.working_set.borrow_mut());
+
         self.ibc
             .packet_ack_map
             .delete(ack_path, *self.working_set.borrow_mut());
