@@ -1,4 +1,3 @@
-pub mod entrypoints;
 pub mod error;
 pub mod msgs;
 pub mod processed_states;

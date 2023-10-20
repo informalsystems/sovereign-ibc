@@ -14,15 +14,15 @@ use ibc::core::{ContextError, ValidationContext};
 use ibc::proto::Any;
 use ics11_sov_celestia::client_message::ClientMessage;
 
-use super::error::ContractError;
-use super::msgs::{
+use crate::contexts::{ContextMut, ContextRef};
+use crate::types::error::ContractError;
+use crate::types::msgs::{
     CheckForMisbehaviourMsg, ExecuteMsg, ExportMetadataMsg, InstantiateMsg, QueryMsg, StatusMsg,
     UpdateStateMsg, UpdateStateOnMisbehaviourMsg, VerifyClientMessageMsg, VerifyMembershipMsg,
     VerifyNonMembershipMsg, VerifyUpgradeAndUpdateStateMsg,
 };
-use super::processed_states::ReadonlyProcessedStates;
-use super::response::{ContractResult, QueryResponse};
-use crate::context::{ContextMut, ContextRef};
+use crate::types::processed_states::ReadonlyProcessedStates;
+use crate::types::response::{ContractResult, QueryResponse};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(

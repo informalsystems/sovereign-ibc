@@ -4,7 +4,7 @@ use alloc::vec::Vec;
 use cosmwasm_std::{Order, Storage};
 use ibc::Height;
 
-use crate::contract::msgs::GenesisMetadata;
+use crate::types::msgs::GenesisMetadata;
 
 pub struct ProcessedStates<'a>(&'a mut dyn Storage);
 

@@ -9,7 +9,7 @@ use ics11_sov_celestia::error::Error;
 
 use super::definition::ContextMut;
 use super::{ContextRef, StorageRef};
-use crate::contract::processed_states::ReadonlyProcessedStates;
+use crate::types::processed_states::ReadonlyProcessedStates;
 
 impl CommonContext for ContextMut<'_> {
     type ConversionError = Error;

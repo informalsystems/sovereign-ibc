@@ -11,5 +11,6 @@
 
 extern crate alloc;
 
-pub mod context;
-pub mod contract;
+pub mod contexts;
+pub mod entrypoints;
+pub mod types;

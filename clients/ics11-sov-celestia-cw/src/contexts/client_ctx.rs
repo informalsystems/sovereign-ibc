@@ -11,7 +11,7 @@ use ics11_sov_celestia::consensus_state::AnyConsensusState;
 
 use super::definition::{ContextMut, StorageMut};
 use super::{ContextRef, StorageRef};
-use crate::contract::processed_states::{ProcessedStates, ReadonlyProcessedStates};
+use crate::types::processed_states::{ProcessedStates, ReadonlyProcessedStates};
 
 impl ClientValidationContext for ContextMut<'_> {
     fn client_update_time(
