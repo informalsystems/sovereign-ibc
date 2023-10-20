@@ -32,7 +32,7 @@ use ibc::proto::Any;
 use ibc::Height;
 use serde::{Deserialize, Serialize};
 use sov_ibc_transfer::IbcTransfer;
-use sov_modules_api::{Context, DaSpec, Error, StateMap, StateValue, WorkingSet};
+use sov_modules_api::{Context, DaSpec, Error, StateMap, StateValue, StateVec, WorkingSet};
 use sov_modules_macros::ModuleInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
@@ -51,25 +51,14 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     pub address: C::Address,
 
     #[module]
-    transfer: IbcTransfer<C>,
-
-    #[module]
     chain_state: sov_chain_state::ChainState<C, Da>,
 
+    #[module]
+    transfer: IbcTransfer<C>,
+
+    // ----------- IBC core client state maps -------------
     #[state]
     client_counter: StateValue<u64>,
-
-    #[state]
-    connection_counter: StateValue<u64>,
-
-    #[state]
-    channel_counter: StateValue<u64>,
-
-    #[state]
-    client_update_times_map: StateMap<(ClientId, Height), Timestamp>,
-
-    #[state]
-    client_update_heights_map: StateMap<(ClientId, Height), Height>,
 
     #[state]
     client_state_map: StateMap<ClientId, AnyClientState, ProtobufCodec<Any>>,
@@ -78,10 +67,27 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     consensus_state_map: StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec<Any>>,
 
     #[state]
+    client_update_heights_vec: StateVec<Height>,
+
+    #[state]
+    client_update_host_times_map: StateMap<(ClientId, Height), Timestamp>,
+
+    #[state]
+    client_update_host_heights_map: StateMap<(ClientId, Height), Height>,
+
+    // ----------- IBC core connection state maps -------------
+    #[state]
+    connection_counter: StateValue<u64>,
+
+    #[state]
     connection_end_map: StateMap<ConnectionPath, ConnectionEnd, ProtobufCodec<RawConnectionEnd>>,
 
     #[state]
-    connection_ids_map: StateMap<ClientConnectionPath, Vec<ConnectionId>>,
+    client_connections_map: StateMap<ClientConnectionPath, Vec<ConnectionId>>,
+
+    // ----------- IBC core channel state maps -------------
+    #[state]
+    channel_counter: StateValue<u64>,
 
     #[state]
     channel_end_map: StateMap<ChannelEndPath, ChannelEnd, ProtobufCodec<RawChannelEnd>>,
@@ -96,10 +102,19 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     ack_sequence_map: StateMap<SeqAckPath, Sequence>,
 
     #[state]
+    packet_commitment_vec: StateVec<CommitmentPath>,
+
+    #[state]
     packet_commitment_map: StateMap<CommitmentPath, PacketCommitment, PacketCommitmentCodec>,
 
     #[state]
+    packet_receipt_vec: StateVec<ReceiptPath>,
+
+    #[state]
     packet_receipt_map: StateMap<ReceiptPath, Receipt>,
+
+    #[state]
+    packet_ack_vec: StateVec<AckPath>,
 
     #[state]
     packet_ack_map: StateMap<AckPath, AcknowledgementCommitment, AcknowledgementCommitmentCodec>,
