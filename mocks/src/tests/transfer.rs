@@ -1,5 +1,9 @@
+use std::str::FromStr;
 use std::time::Duration;
 
+use ibc::applications::transfer::{Coin, PrefixedDenom, TracePrefix};
+use ibc::core::ics02_client::client_state::ClientStateCommon;
+use ibc::core::ics24_host::identifier::{ChannelId, PortId};
 use ibc::core::ValidationContext;
 use ibc::test_utils::get_dummy_account_id;
 use ibc::Signer;
@@ -86,4 +90,80 @@ async fn test_recv_packet() {
     // let msg_recv_packet = build_msg_recv_packet_for_sov(&rly, cs.latest_height()).await;
 
     // rly.src_chain_ctx().send_msg(vec![msg_recv_packet]);
+}
+
+#[tokio::test]
+async fn test_token_transfer() {
+    let mut sov_builder = DefaultBuilder::default();
+
+    let token = sov_builder.get_tokens().first().unwrap();
+
+    let _token_address = get_genesis_token_address::<DefaultContext>(&token.token_name, token.salt);
+
+    let sender_on_sov = token.address_and_balances[0].0;
+
+    let receiver_on_cos = get_dummy_account_id();
+
+    let transfer_amount = 100;
+    let transfer_denom = PrefixedDenom::from_str("ustake").unwrap();
+
+    // let expected_sender_balance = token.address_and_balances[0].1 - transfer_amount;
+
+    let rly = sovereign_cosmos_setup(&mut sov_builder, true).await;
+
+    let msg_create_client = rly.build_msg_create_client();
+
+    rly.src_chain_ctx().send_msg(vec![msg_create_client]);
+
+    // initiate token transfer Cosmos Side
+
+    let msg_sdk_token_transfer = rly.dst_chain_ctx().build_token_transfer(
+        transfer_denom.clone(),
+        receiver_on_cos,
+        Signer::from(sender_on_sov.to_string()),
+        transfer_amount,
+    );
+
+    rly.dst_chain_ctx().send_msg(vec![msg_sdk_token_transfer]);
+
+    sleep(Duration::from_secs(1)).await;
+
+    let target_height = rly.dst_chain_ctx().query_ibc().host_height().unwrap();
+
+    let msg_update_client = rly.build_msg_update_client_for_sov(target_height);
+
+    rly.src_chain_ctx().send_msg(vec![msg_update_client]);
+
+    let cs = rly
+        .src_chain_ctx()
+        .query_ibc()
+        .client_state(rly.src_client_id())
+        .unwrap();
+
+    let msg_recv_packet = rly.build_msg_recv_packet_for_sov(cs.latest_height());
+
+    rly.src_chain_ctx().send_msg(vec![msg_recv_packet]);
+
+    // Checks that the token has been transferred
+
+    let denom_path_prefix = TracePrefix::new(PortId::transfer(), ChannelId::default());
+    let ibc_coin = {
+        let mut denom = transfer_denom;
+        denom.add_trace_prefix(denom_path_prefix);
+        Coin {
+            denom,
+            amount: transfer_amount.into(),
+        }
+    };
+
+    let sov_ibc_token_address = rly
+        .src_chain_ctx()
+        .querier()
+        .get_minted_token_address(ibc_coin.denom)
+        .unwrap();
+
+    let _balance = rly
+        .src_chain_ctx()
+        .querier()
+        .get_balance_of(sender_on_sov, sov_ibc_token_address);
 }
