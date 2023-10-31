@@ -5,19 +5,19 @@ use ibc::core::ics02_client::client_state::ClientStateCommon;
 use ibc::core::ics02_client::msgs::create_client::MsgCreateClient;
 use ibc::core::ics02_client::msgs::update_client::MsgUpdateClient;
 use ibc::core::ics04_channel::msgs::MsgRecvPacket;
-use ibc::core::ics04_channel::packet::{Packet, Sequence};
+use ibc::core::ics04_channel::packet::Packet;
 use ibc::core::ics04_channel::timeout::TimeoutHeight;
 use ibc::core::ics24_host::identifier::{ChannelId, ClientId, PortId};
-use ibc::core::ics24_host::path::ReceiptPath;
+use ibc::core::ics24_host::path::{CommitmentPath, SeqSendPath};
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{Msg, ValidationContext};
 use ibc::{Height, Signer};
+use ibc_query::core::context::ProvableContext;
 use sov_ibc::call::CallMessage;
 use sov_modules_api::default_context::DefaultContext;
 
 use super::context::ChainContext;
 use super::handle::Handle;
-use super::Relayer;
 use crate::cosmos::helpers::dummy_tm_client_state;
 
 /// The relay context for relaying between a mock sovereign chain and a mock
@@ -133,38 +133,54 @@ where
 
         CallMessage::Core(msg_update_client.to_any())
     }
-}
 
-pub async fn build_msg_recv_packet_for_sov(
-    rly: &Relayer<'_>,
-    proof_height_on_a: Height,
-) -> CallMessage<DefaultContext> {
-    let packet = Packet {
-        seq_on_a: Sequence::from(1),
-        port_id_on_a: PortId::transfer(),
-        chan_id_on_b: ChannelId::default(),
-        port_id_on_b: PortId::transfer(),
-        chan_id_on_a: ChannelId::default(),
-        data: vec![0],
-        timeout_height_on_b: TimeoutHeight::no_timeout(),
-        timeout_timestamp_on_b: Timestamp::none(),
-    };
+    pub fn build_msg_recv_packet_for_sov(
+        &self,
+        proof_height_on_a: Height,
+    ) -> CallMessage<DefaultContext> {
+        let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
 
-    let receipt_path =
-        ReceiptPath::new(&packet.port_id_on_a, &packet.chan_id_on_a, packet.seq_on_a);
+        let latest_seq_send = (u64::from(
+            self.dst_chain_ctx()
+                .query_ibc()
+                .get_next_sequence_send(&seq_send_path)
+                .expect("no error"),
+        ) - 1)
+            .into();
 
-    let (_, proof_commitment_on_a) = rly
-        .dst_chain_ctx()
-        .querier()
-        .query(receipt_path, &proof_height_on_a)
-        .await;
+        let commitment_path =
+            CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
 
-    let msg_recv_packet = MsgRecvPacket {
-        packet,
-        proof_commitment_on_a,
-        proof_height_on_a,
-        signer: rly.src_chain_ctx().signer().clone(),
-    };
+        let packet_commitment_data = self
+            .dst_chain_ctx()
+            .query_ibc()
+            .get_packet_commitment(&commitment_path)
+            .expect("no error");
 
-    CallMessage::Core(msg_recv_packet.to_any())
+        let proof_commitment_on_a = self
+            .dst_chain_ctx()
+            .query_ibc()
+            .get_proof(proof_height_on_a, &commitment_path.into())
+            .expect("no error");
+
+        let packet = Packet {
+            seq_on_a: latest_seq_send,
+            port_id_on_a: PortId::transfer(),
+            chan_id_on_b: ChannelId::default(),
+            port_id_on_b: PortId::transfer(),
+            chan_id_on_a: ChannelId::default(),
+            data: packet_commitment_data.into_vec(),
+            timeout_height_on_b: TimeoutHeight::no_timeout(),
+            timeout_timestamp_on_b: Timestamp::none(),
+        };
+
+        let msg_recv_packet = MsgRecvPacket {
+            packet,
+            proof_commitment_on_a: proof_commitment_on_a.try_into().expect("no error"),
+            proof_height_on_a,
+            signer: self.src_chain_ctx().signer().clone(),
+        };
+
+        CallMessage::Core(msg_recv_packet.to_any())
+    }
 }
