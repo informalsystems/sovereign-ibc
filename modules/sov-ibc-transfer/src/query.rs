@@ -11,6 +11,11 @@ pub struct EscrowedTokenResponse<C: Context> {
     pub address: C::Address,
 }
 
+#[derive(Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize, Clone)]
+pub struct MintedTokenResponse<C: Context> {
+    pub address: C::Address,
+}
+
 #[rpc_gen(client, server, namespace = "transfer")]
 impl<C> IbcTransfer<C>
 where
@@ -32,6 +37,26 @@ where
                 ))?;
 
         Ok(EscrowedTokenResponse {
+            address: token_address.clone(),
+        })
+    }
+
+    #[rpc_method(name = "mintedToken")]
+    pub fn minted_token(
+        &self,
+        token_denom: String,
+        working_set: &mut WorkingSet<C>,
+    ) -> RpcResult<MintedTokenResponse<C>> {
+        let token_address =
+            self.minted_tokens
+                .get(&token_denom, working_set)
+                .ok_or(ErrorObjectOwned::owned(
+                    jsonrpsee::types::error::UNKNOWN_ERROR_CODE,
+                    format!("No minted token found for denom {}", token_denom),
+                    None::<String>,
+                ))?;
+
+        Ok(MintedTokenResponse {
             address: token_address.clone(),
         })
     }

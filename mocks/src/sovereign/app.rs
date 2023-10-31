@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use ibc::applications::transfer::PrefixedDenom;
 use ibc::clients::ics07_tendermint::client_type as tm_client_type;
 use ibc::clients::ics07_tendermint::consensus_state::ConsensusState as TmConsensusState;
 use ibc::core::ics02_client::client_state::ClientStateCommon;
@@ -102,6 +103,17 @@ where
     /// Returns access to the transfer module
     pub fn transfer(&self) -> &IbcTransfer<C> {
         &self.ibc_transfer_ctx.ibc_transfer
+    }
+
+    /// Returns token address of an IBC denom
+    pub fn get_minted_token_address(&self, token_denom: PrefixedDenom) -> Option<C::Address> {
+        self.transfer()
+            .minted_token(
+                token_denom.to_string(),
+                &mut self.working_set().borrow_mut(),
+            )
+            .map(|token| token.address)
+            .ok()
     }
 
     /// Returns the balance of a user for a given token
