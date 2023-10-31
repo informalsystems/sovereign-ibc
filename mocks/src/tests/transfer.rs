@@ -5,7 +5,7 @@ use ibc::applications::transfer::{Coin, PrefixedDenom, TracePrefix};
 use ibc::core::ics02_client::client_state::ClientStateCommon;
 use ibc::core::ics24_host::identifier::{ChannelId, PortId};
 use ibc::core::ValidationContext;
-use ibc::test_utils::get_dummy_account_id;
+use ibc::test_utils::{get_dummy_account_id, get_dummy_bech32_account};
 use ibc::Signer;
 use sov_bank::get_genesis_token_address;
 use sov_modules_api::default_context::DefaultContext;
@@ -102,7 +102,7 @@ async fn test_token_transfer() {
 
     let sender_on_sov = token.address_and_balances[0].0;
 
-    let receiver_on_cos = get_dummy_account_id();
+    let receiver_on_cos = Signer::from(get_dummy_bech32_account());
 
     let transfer_amount = 100;
     let transfer_denom = PrefixedDenom::from_str("ustake").unwrap();
