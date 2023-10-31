@@ -1,15 +1,23 @@
 use std::fmt::Debug;
+use std::str::FromStr;
 
 use basecoin_app::modules::ibc::{AnyConsensusState, IbcContext};
 use basecoin_store::context::ProvableStore;
 use basecoin_store::impls::RevertibleStore;
+use ibc::applications::transfer::msgs::transfer::MsgTransfer;
+use ibc::applications::transfer::packet::PacketData;
+use ibc::applications::transfer::{Coin, Memo, PrefixedDenom};
 use ibc::clients::ics07_tendermint::header::Header;
 use ibc::core::events::IbcEvent;
-use ibc::core::ics24_host::identifier::ChainId;
+use ibc::core::ics04_channel::timeout::TimeoutHeight;
+use ibc::core::ics24_host::identifier::{ChainId, ChannelId, PortId};
+use ibc::core::timestamp::Timestamp;
+use ibc::core::Msg;
 use ibc::proto::Any;
-use ibc::Height;
+use ibc::{Height, Signer};
 
 use super::app::MockCosmosChain;
+use crate::relayer::context::ChainContext;
 use crate::relayer::handle::Handle;
 
 impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
@@ -62,5 +70,37 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
         }
 
         events
+    }
+}
+
+impl<S: ProvableStore + Debug + Default> ChainContext<MockCosmosChain<S>> {
+    /// Builds a CosmosChain token transfer message; serialized to Any
+    /// Note: keep the amount value lower than the initial balance of the sender address
+    pub fn build_token_transfer(
+        &self,
+        denom: PrefixedDenom,
+        sender: Signer,
+        receiver: Signer,
+        amount: u64,
+    ) -> Any {
+        let packet_data = PacketData {
+            token: Coin {
+                denom,
+                amount: amount.into(),
+            },
+            sender,
+            receiver,
+            memo: Memo::from_str("").unwrap(),
+        };
+
+        let msg = MsgTransfer {
+            port_id_on_a: PortId::transfer(),
+            chan_id_on_a: ChannelId::default(),
+            packet_data,
+            timeout_height_on_b: TimeoutHeight::At(Height::new(0, 200).unwrap()),
+            timeout_timestamp_on_b: Timestamp::none(),
+        };
+
+        msg.to_any()
     }
 }
