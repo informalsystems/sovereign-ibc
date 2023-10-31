@@ -4,6 +4,7 @@ use ibc::core::ics24_host::identifier::ChainId;
 use ibc::core::ValidationContext;
 use ibc::proto::Any;
 use ibc::Height;
+use ibc_query::core::context::ProvableContext;
 
 /// Defines the interface that empowers a chain context with the ability to
 /// query different states of a chain.
@@ -15,7 +16,7 @@ pub trait QueryService {
 
 /// Defines the interface that enables a mock chain to provide query endpoints.
 pub trait Handle {
-    type IbcContext: ValidationContext;
+    type IbcContext: ValidationContext + ProvableContext;
 
     type Header: Into<Any>;
 

@@ -3006,6 +3006,7 @@ dependencies = [
  "basecoin-store",
  "ibc",
  "ibc-proto",
+ "ibc-query",
  "prost 0.12.1",
  "serde_json",
  "sov-bank",
