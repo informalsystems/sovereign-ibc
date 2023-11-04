@@ -3,9 +3,9 @@ use ibc::core::ics24_host::path::ClientConsensusStatePath;
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ContextError, ValidationContext as CoreValidationContext};
 use ibc::Height;
-use ics11_sov_celestia::consensus_state::AnyConsensusState;
-use ics11_sov_celestia::context::{CommonContext, ValidationContext};
-use ics11_sov_celestia::error::Error;
+use sov_celestia_client::consensus_state::AnyConsensusState;
+use sov_celestia_client::context::{CommonContext, ValidationContext};
+use sov_celestia_client::error::Error;
 
 use super::definition::ContextMut;
 use super::{ContextRef, StorageRef};

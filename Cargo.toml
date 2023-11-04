@@ -2,8 +2,8 @@
 resolver = "2"
 members = [
     "clients/ics08-wasm",
-    "clients/ics11-sov-celestia",
-    "clients/ics11-sov-celestia-cw",
+    "clients/sov-celestia",
+    "clients/sov-celestia-cw",
     "modules/sov-ibc",
     "modules/sov-ibc-transfer",
     "mocks",

@@ -42,15 +42,16 @@ pub struct ClientState {
     pub trust_level: TrustThreshold,
     pub trusting_period: Duration,
     pub unbonding_period: Duration,
-    pub(crate) max_clock_drift: Duration,
+    pub max_clock_drift: Duration,
     pub latest_height: Height,
     pub proof_specs: ProofSpecs,
     pub upgrade_path: Vec<String>,
-    pub(crate) allow_update: AllowUpdate,
-    pub(crate) frozen_height: Option<Height>,
+    pub allow_update: AllowUpdate,
+    pub frozen_height: Option<Height>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    pub(crate) da_verifier: ProdVerifier,
-    pub(crate) snark_verifier: String,
+    pub da_verifier: ProdVerifier,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub snark_verifier: String,
 }
 
 impl ClientState {

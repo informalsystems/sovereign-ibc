@@ -12,7 +12,7 @@ use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::ics24_host::path::ClientConsensusStatePath;
 use ibc::core::{ContextError, ValidationContext};
 use ibc::proto::Any;
-use ics11_sov_celestia::client_message::ClientMessage;
+use sov_celestia_client::client_message::ClientMessage;
 
 use crate::contexts::{ContextMut, ContextRef};
 use crate::types::error::ContractError;

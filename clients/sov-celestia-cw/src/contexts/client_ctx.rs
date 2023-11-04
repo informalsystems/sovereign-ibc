@@ -6,8 +6,8 @@ use ibc::core::timestamp::Timestamp;
 use ibc::core::{ContextError, ValidationContext};
 use ibc::proto::Any;
 use ibc::Height;
-use ics11_sov_celestia::client_state::AnyClientState;
-use ics11_sov_celestia::consensus_state::AnyConsensusState;
+use sov_celestia_client::client_state::AnyClientState;
+use sov_celestia_client::consensus_state::AnyConsensusState;
 
 use super::definition::{ContextMut, StorageMut};
 use super::{ContextRef, StorageRef};

@@ -12,13 +12,13 @@ use ibc_proto::ibc::core::client::v1::Height as RawHeight;
 use ibc_proto::ibc::lightclients::wasm::v1::ClientMessage as RawClientMessage;
 use ics08_wasm::client_state::ClientState as WasmClientState;
 use ics08_wasm::consensus_state::ConsensusState as WasmConsensusState;
-use ics11_sov_celestia::client_message::{
+use prost::Message;
+use sov_celestia_client::client_message::{
     ClientMessage, SovHeader, SovMisbehaviour, SOVEREIGN_HEADER_TYPE_URL,
     SOVEREIGN_MISBEHAVIOUR_TYPE_URL,
 };
-use ics11_sov_celestia::serializer::Base64;
-use ics11_sov_celestia::Bytes;
-use prost::Message;
+use sov_celestia_client::serializer::Base64;
+use sov_celestia_client::Bytes;
 
 use super::error::ContractError;
 

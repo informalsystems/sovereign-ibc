@@ -16,9 +16,9 @@ use ibc::core::timestamp::Timestamp;
 use ibc::core::{ContextError, ExecutionContext, ValidationContext};
 use ibc::proto::Any;
 use ibc::Height;
-use ics11_sov_celestia::client_state::{AnyClientState, SOVEREIGN_CLIENT_STATE_TYPE_URL};
-use ics11_sov_celestia::consensus_state::AnyConsensusState;
-use ics11_sov_celestia::proto::{
+use sov_celestia_client::client_state::{AnyClientState, SOVEREIGN_CLIENT_STATE_TYPE_URL};
+use sov_celestia_client::consensus_state::AnyConsensusState;
+use sov_celestia_client::proto::{
     ClientState as RawSovClientState, ConsensusState as RawSovConsensusState,
 };
 use tendermint_proto::Protobuf;

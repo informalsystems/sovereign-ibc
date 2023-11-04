@@ -1,5 +1,5 @@
 [package]
-name = "ics11-sov-celestia-cw"
+name = "sov-celestia-client-cw"
 authors = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
@@ -26,7 +26,7 @@ getrandom = { version = "0.2", features = ["js"] }
 ibc = { workspace = true }
 ibc-proto = { version = "0.37.1", default-features = false, features = ["json-schema"] }
 ics08-wasm = { path = "../ics08-wasm", default-features = false, features = ["cosmwasm"] }
-ics11-sov-celestia = { path = "../ics11-sov-celestia", default-features = false, features = ["serde"] }
+sov-celestia-client = { path = "../sov-celestia", default-features = false, features = ["serde"] }
 tendermint-proto = { git = "https://github.com/eigerco/celestia-tendermint-rs.git", rev = "1f8b574" }
 
 # cosmwasm dependencies

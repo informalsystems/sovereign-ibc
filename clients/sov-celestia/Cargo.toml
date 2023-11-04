@@ -1,5 +1,5 @@
 [package]
-name = "ics11-sov-celestia"
+name = "sov-celestia-client"
 authors = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
