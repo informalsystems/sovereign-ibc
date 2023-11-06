@@ -1,5 +1,9 @@
+use alloc::string::String;
+use alloc::vec::Vec;
+
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
+use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 pub struct Base64;
@@ -14,7 +18,7 @@ impl Base64 {
         let base64 = String::deserialize(deserializer)?;
         let bytes = BASE64_STANDARD
             .decode(base64.as_bytes())
-            .map_err(serde::de::Error::custom)?;
+            .map_err(Error::custom)?;
 
         Ok(bytes)
     }

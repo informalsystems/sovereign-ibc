@@ -162,3 +162,18 @@ impl ConsensusStateTrait for ConsensusState {
         <Self as Protobuf<Any>>::encode_vec(self).unwrap()
     }
 }
+
+#[cfg(any(test, feature = "test-utils"))]
+pub mod test_util {
+    use ics08_wasm::consensus_state::ConsensusState as WasmConsensusState;
+
+    use super::*;
+
+    impl ConsensusState {
+        pub fn into_wasm(&self) -> WasmConsensusState {
+            WasmConsensusState {
+                data: Any::from(self.clone()).value,
+            }
+        }
+    }
+}

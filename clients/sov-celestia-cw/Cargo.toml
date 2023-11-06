@@ -8,7 +8,6 @@ rust-version = { workspace = true }
 version = { workspace = true }
 readme = "README.md"
 publish = false
-resolver = "2"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -20,7 +19,6 @@ prost = { workspace = true, default-features = false }
 serde = { workspace = true, features = ["derive"] }
 serde_json =  { package = "serde-json-wasm", version = "1.0.0" , default-features = false, optional = true }
 thiserror = { version = "1.0.31" }
-getrandom = { version = "0.2", features = ["js"] }
 
 # ibc dependencies
 ibc = { workspace = true }

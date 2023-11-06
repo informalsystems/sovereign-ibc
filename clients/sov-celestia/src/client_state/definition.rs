@@ -294,3 +294,59 @@ impl From<ClientState> for Any {
         }
     }
 }
+
+#[cfg(any(test, feature = "test-utils"))]
+pub mod test_util {
+    use ics08_wasm::client_state::ClientState as WasmClientState;
+
+    use super::*;
+    use crate::Bytes;
+
+    #[derive(typed_builder::TypedBuilder, Debug)]
+    pub struct ClientStateConfig {
+        pub chain_id: ChainId,
+        #[builder(default)]
+        pub trust_level: TrustThreshold,
+        #[builder(default = Duration::from_secs(64000))]
+        pub trusting_period: Duration,
+        #[builder(default = Duration::from_secs(128000))]
+        pub unbonding_period: Duration,
+        #[builder(default = Duration::from_millis(3000))]
+        max_clock_drift: Duration,
+        pub latest_height: Height,
+        #[builder(default)]
+        pub proof_specs: ProofSpecs,
+        #[builder(default)]
+        pub upgrade_path: Vec<String>,
+        #[builder(default = AllowUpdate { after_expiry: false, after_misbehaviour: false })]
+        allow_update: AllowUpdate,
+    }
+
+    impl TryFrom<ClientStateConfig> for ClientState {
+        type Error = Error;
+
+        fn try_from(config: ClientStateConfig) -> Result<Self, Self::Error> {
+            ClientState::new(
+                config.chain_id,
+                config.trust_level,
+                config.trusting_period,
+                config.unbonding_period,
+                config.max_clock_drift,
+                config.latest_height,
+                config.proof_specs,
+                config.upgrade_path,
+                config.allow_update,
+            )
+        }
+    }
+
+    impl ClientState {
+        pub fn into_wasm(&self, code_hash: Bytes) -> WasmClientState {
+            WasmClientState {
+                data: Any::from(self.clone()).value,
+                code_hash,
+                latest_height: self.latest_height,
+            }
+        }
+    }
+}
