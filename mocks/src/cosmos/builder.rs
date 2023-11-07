@@ -39,7 +39,7 @@ impl CosmosBuilder {
         }
     }
 
-    pub fn build_chain<S>(&mut self, store: S) -> MockCosmosChain<S>
+    pub fn build_chain<S>(&mut self, app_state: serde_json::Value, store: S) -> MockCosmosChain<S>
     where
         S: ProvableStore + Debug + Default,
     {
@@ -47,6 +47,7 @@ impl CosmosBuilder {
             self.runtime.clone(),
             self.chain_id.clone(),
             self.validators.clone(),
+            app_state,
             store,
         );
 
