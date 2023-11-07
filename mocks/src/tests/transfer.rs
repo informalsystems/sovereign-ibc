@@ -31,7 +31,7 @@ async fn test_sdk_token_transfer() {
 
     let expected_sender_balance = token.address_and_balances[0].1 - transfer_amount;
 
-    let rly = sovereign_cosmos_setup(&mut sov_builder, true).await;
+    let rly = sovereign_cosmos_setup(&mut sov_builder, serde_json::json!({}), true).await;
 
     let msg_sdk_token_transfer = rly.src_chain_ctx().build_sdk_transfer(
         token_address,
@@ -64,7 +64,7 @@ async fn test_sdk_token_transfer() {
 async fn test_recv_packet() {
     let mut sov_builder = DefaultBuilder::default();
 
-    let rly = sovereign_cosmos_setup(&mut sov_builder, true).await;
+    let rly = sovereign_cosmos_setup(&mut sov_builder, serde_json::json!({}), true).await;
 
     let msg_create_client = rly.build_msg_create_client();
 
@@ -109,7 +109,13 @@ async fn test_token_transfer() {
 
     // let expected_sender_balance = token.address_and_balances[0].1 - transfer_amount;
 
-    let rly = sovereign_cosmos_setup(&mut sov_builder, true).await;
+    let accounts = serde_json::json!({
+        receiver_on_cos.to_string(): {
+            "ustake": "100000",
+        }
+    });
+
+    let rly = sovereign_cosmos_setup(&mut sov_builder, accounts, true).await;
 
     let msg_create_client = rly.build_msg_create_client();
 
