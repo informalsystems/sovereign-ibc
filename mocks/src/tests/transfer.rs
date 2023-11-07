@@ -140,6 +140,8 @@ async fn test_token_transfer() {
 
     rly.src_chain_ctx().send_msg(vec![msg_update_client]);
 
+    sleep(Duration::from_secs(1)).await;
+
     let cs = rly
         .src_chain_ctx()
         .query_ibc()
