@@ -170,7 +170,7 @@ where
             port_id_on_b: PortId::transfer(),
             chan_id_on_a: ChannelId::default(),
             data: packet_commitment_data.into_vec(),
-            timeout_height_on_b: TimeoutHeight::no_timeout(),
+            timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
             timeout_timestamp_on_b: Timestamp::none(),
         };
 

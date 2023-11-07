@@ -97,7 +97,7 @@ impl<S: ProvableStore + Debug + Default> ChainContext<MockCosmosChain<S>> {
             port_id_on_a: PortId::transfer(),
             chan_id_on_a: ChannelId::default(),
             packet_data,
-            timeout_height_on_b: TimeoutHeight::At(Height::new(0, 200).unwrap()),
+            timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
             timeout_timestamp_on_b: Timestamp::none(),
         };
 

@@ -73,7 +73,7 @@ impl<'ws, C: Context, Da: DaSpec + Clone> ChainContext<TestApp<'ws, C, Da>> {
         let msg_transfer = SDKTokenTransfer {
             port_id_on_a: PortId::transfer(),
             chan_id_on_a: ChannelId::default(),
-            timeout_height_on_b: TimeoutHeight::no_timeout(),
+            timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
             timeout_timestamp_on_b: Timestamp::none(),
             token_address: token,
             amount,
