@@ -22,6 +22,7 @@ pub fn dummy_tm_client_state(chain_id: ChainId, latest_hight: Height) -> ClientS
     .unwrap()
 }
 
+use ibc::test_utils::get_dummy_bech32_account;
 use ibc::Signer;
 
 pub fn genesis_app_state() -> serde_json::Value {
@@ -55,6 +56,11 @@ pub fn genesis_app_state() -> serde_json::Value {
       },
       "cosmos1as9ap057eellftptlhyw5ajna7uaeewzkk6fnz": {
         "basecoin": "0x1000000000"
+      },
+      get_dummy_bech32_account(): {
+        "basecoin": "0x1000000000",
+        "othercoin": "0x1000000000",
+        "samoleans": "0x1000000000"
       }
     })
 }
