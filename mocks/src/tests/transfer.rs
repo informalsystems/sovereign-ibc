@@ -2,7 +2,6 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use ibc::applications::transfer::{Coin, PrefixedDenom, TracePrefix};
-use ibc::core::ics02_client::client_state::ClientStateCommon;
 use ibc::core::ics24_host::identifier::{ChannelId, PortId};
 use ibc::core::ValidationContext;
 use ibc::test_utils::{get_dummy_account_id, get_dummy_bech32_account};
@@ -142,13 +141,7 @@ async fn test_token_transfer() {
 
     sleep(Duration::from_secs(1)).await;
 
-    let cs = rly
-        .src_chain_ctx()
-        .query_ibc()
-        .client_state(rly.src_client_id())
-        .unwrap();
-
-    let msg_recv_packet = rly.build_msg_recv_packet_for_sov(cs.latest_height());
+    let msg_recv_packet = rly.build_msg_recv_packet_for_sov(target_height);
 
     rly.src_chain_ctx().send_msg(vec![msg_recv_packet]);
 
