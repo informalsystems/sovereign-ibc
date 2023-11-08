@@ -7,12 +7,15 @@ use ibc::core::ics02_client::msgs::update_client::MsgUpdateClient;
 use ibc::core::ics04_channel::msgs::MsgRecvPacket;
 use ibc::core::ics04_channel::packet::Packet;
 use ibc::core::ics04_channel::timeout::TimeoutHeight;
+use ibc::core::ics23_commitment::merkle::MerkleProof;
 use ibc::core::ics24_host::identifier::{ChannelId, ClientId, PortId};
 use ibc::core::ics24_host::path::{CommitmentPath, SeqSendPath};
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{Msg, ValidationContext};
 use ibc::{Height, Signer};
+use ibc_proto::ics23::CommitmentProof;
 use ibc_query::core::context::ProvableContext;
+use prost::Message;
 use sov_ibc::call::CallMessage;
 use sov_modules_api::default_context::DefaultContext;
 
@@ -157,11 +160,18 @@ where
             .get_packet_commitment(&commitment_path)
             .expect("no error");
 
-        let proof_commitment_on_a = self
-            .dst_chain_ctx()
-            .query_ibc()
-            .get_proof(proof_height_on_a, &commitment_path.into())
-            .expect("no error");
+        let proof_commitment_on_a = CommitmentProof::decode(
+            self.dst_chain_ctx()
+                .query_ibc()
+                .get_proof(proof_height_on_a, &commitment_path.into())
+                .expect("no error")
+                .as_slice(),
+        )
+        .expect("no error");
+
+        let merkle_proofs = MerkleProof {
+            proofs: vec![proof_commitment_on_a.clone()],
+        };
 
         let packet = Packet {
             seq_on_a: latest_seq_send,
@@ -176,7 +186,7 @@ where
 
         let msg_recv_packet = MsgRecvPacket {
             packet,
-            proof_commitment_on_a: proof_commitment_on_a.try_into().expect("no error"),
+            proof_commitment_on_a: merkle_proofs.try_into().expect("no error"),
             proof_height_on_a,
             signer: self.src_chain_ctx().signer().clone(),
         };
