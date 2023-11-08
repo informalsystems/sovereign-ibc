@@ -104,17 +104,11 @@ async fn test_token_transfer() {
     let receiver_on_cos = Signer::from(get_dummy_bech32_account());
 
     let transfer_amount = 100;
-    let transfer_denom = PrefixedDenom::from_str("ustake").unwrap();
+    let transfer_denom = PrefixedDenom::from_str("basecoin").unwrap();
 
     // let expected_sender_balance = token.address_and_balances[0].1 - transfer_amount;
 
-    let accounts = serde_json::json!({
-        receiver_on_cos.to_string(): {
-            "ustake": "100000",
-        }
-    });
-
-    let rly = sovereign_cosmos_setup(&mut sov_builder, accounts, true).await;
+    let rly = sovereign_cosmos_setup(&mut sov_builder, true).await;
 
     let msg_create_client = rly.build_msg_create_client();
 
