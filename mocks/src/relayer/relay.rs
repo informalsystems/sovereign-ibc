@@ -169,8 +169,11 @@ where
         )
         .expect("no error");
 
+        // iavl and tendermint specs are (almost) same
+        // https://github.com/informalsystems/sovereign-ibc/blob/7d92f33dd50b573a7e2b1550b964011f7ff821b0/mocks/src/cosmos/helpers/dummy.rs#L15
+        // https://github.com/cosmos/ibc-rs/blob/527bb141383129db804b0b9d49793c4a900deede/crates/ibc/src/core/ics23_commitment/specs.rs#L14-L33
         let merkle_proofs = MerkleProof {
-            proofs: vec![proof_commitment_on_a.clone()],
+            proofs: vec![proof_commitment_on_a.clone(), proof_commitment_on_a.clone()],
         };
 
         let packet = Packet {
