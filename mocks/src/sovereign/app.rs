@@ -137,7 +137,7 @@ where
     }
 
     /// Establishes a tendermint light client on the ibc module
-    pub fn setup_client(&mut self) -> ClientId {
+    pub fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
         let client_counter = self.ibc_ctx.client_counter().unwrap();
 
         let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
@@ -145,7 +145,7 @@ where
         let client_state_path = ClientStatePath::new(&client_id);
 
         let client_state = AnyClientState::Tendermint(dummy_tm_client_state(
-            self.chain_id.clone(),
+            client_chain_id.clone(),
             Height::new(0, 3).unwrap(),
         ));
 
