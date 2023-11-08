@@ -16,7 +16,6 @@ use crate::sovereign::builder::DefaultBuilder;
 /// Set ups a relayer between a mock sovereign chain and a mock cosmos chain
 pub async fn sovereign_cosmos_setup(
     sov_builder: &mut DefaultBuilder,
-    accounts: serde_json::Value,
     with_manual_tao: bool,
 ) -> Relayer {
     let mut sov_chain = sov_builder.build();
@@ -28,7 +27,7 @@ pub async fn sovereign_cosmos_setup(
 
     let mut cos_builder = CosmosBuilder::default();
 
-    let mut cos_chain = cos_builder.build_chain(accounts, InMemoryStore::default());
+    let mut cos_chain = cos_builder.build_chain(InMemoryStore::default());
 
     let cos_client_counter = cos_chain.ibc_ctx().client_counter().unwrap();
 

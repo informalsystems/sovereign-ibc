@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use basecoin_app::modules::auth::Auth;
 use basecoin_app::modules::bank::Bank;
-use basecoin_app::modules::context::{prefix, Identifiable, Module};
+use basecoin_app::modules::context::{prefix, Identifiable};
 use basecoin_app::modules::ibc::{AnyConsensusState, Ibc, IbcContext};
 use basecoin_app::modules::types::IdentifiedModule;
 use basecoin_app::{BaseCoinApp, Builder};
@@ -72,20 +72,16 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         runtime: Arc<Runtime>,
         chain_id: ChainId,
         validators: Vec<Validator>,
-        app_state: serde_json::Value,
         store: S,
     ) -> Self {
         let app_builder = Builder::new(store);
 
-        let mut auth = Auth::new(app_builder.module_store(&prefix::Auth {}.identifier()));
-        auth.init(app_state.clone());
-
-        let mut bank = Bank::new(
+        let auth = Auth::new(app_builder.module_store(&prefix::Auth {}.identifier()));
+        let bank = Bank::new(
             app_builder.module_store(&prefix::Bank {}.identifier()),
             auth.account_reader().clone(),
             auth.account_keeper().clone(),
         );
-        bank.init(app_state);
 
         let ibc = Ibc::new(
             app_builder.module_store(&prefix::Ibc {}.identifier()),
