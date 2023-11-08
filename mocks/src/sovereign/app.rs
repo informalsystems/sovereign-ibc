@@ -146,7 +146,7 @@ where
 
         let client_state = AnyClientState::Tendermint(dummy_tm_client_state(
             self.chain_id.clone(),
-            Height::new(0, 10).unwrap(),
+            Height::new(0, 3).unwrap(),
         ));
 
         let latest_height = client_state.latest_height();
@@ -174,7 +174,7 @@ where
             .unwrap();
 
         let consensus_state_path =
-            ClientConsensusStatePath::new(&client_id, &Height::new(0, 10).unwrap());
+            ClientConsensusStatePath::new(&client_id, &Height::new(0, 3).unwrap());
 
         let consensus_state = AnyConsensusState::Tendermint(TmConsensusState::new(
             vec![].into(),
