@@ -111,9 +111,9 @@ async fn test_token_transfer() {
 
     let rly = sovereign_cosmos_setup(&mut sov_builder, true).await;
 
-    let msg_create_client = rly.build_msg_create_client();
+    // let msg_create_client = rly.build_msg_create_client();
 
-    rly.src_chain_ctx().send_msg(vec![msg_create_client]);
+    // rly.src_chain_ctx().send_msg(vec![msg_create_client]);
 
     // initiate token transfer Cosmos Side
 
