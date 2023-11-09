@@ -124,7 +124,8 @@ async fn test_token_transfer() {
         transfer_amount,
     );
 
-    rly.dst_chain_ctx().send_msg(vec![msg_sdk_token_transfer]);
+    rly.dst_chain_ctx()
+        .send_msg(vec![msg_sdk_token_transfer.clone().to_any()]);
 
     sleep(Duration::from_secs(1)).await;
 
