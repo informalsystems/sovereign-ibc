@@ -143,6 +143,7 @@ where
     pub fn build_msg_recv_packet_for_sov(
         &self,
         proof_height_on_a: Height,
+        msg_transfer: MsgTransfer,
     ) -> CallMessage<DefaultContext> {
         let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
 
@@ -157,11 +158,11 @@ where
         let commitment_path =
             CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
 
-        let packet_commitment_data = self
-            .dst_chain_ctx()
-            .query_ibc()
-            .get_packet_commitment(&commitment_path)
-            .expect("no error");
+        // let packet_commitment_data = self
+        //     .dst_chain_ctx()
+        //     .query_ibc()
+        //     .get_packet_commitment(&commitment_path)
+        //     .expect("no error");
 
         let proof_commitment_on_a = CommitmentProof::decode(
             self.dst_chain_ctx()
@@ -181,13 +182,13 @@ where
 
         let packet = Packet {
             seq_on_a: latest_seq_send,
-            port_id_on_a: PortId::transfer(),
+            chan_id_on_a: msg_transfer.chan_id_on_a,
+            port_id_on_a: msg_transfer.port_id_on_a,
             chan_id_on_b: ChannelId::default(),
             port_id_on_b: PortId::transfer(),
-            chan_id_on_a: ChannelId::default(),
-            data: packet_commitment_data.into_vec(),
-            timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
-            timeout_timestamp_on_b: Timestamp::none(),
+            data: serde_json::to_vec(&msg_transfer.packet_data).unwrap(),
+            timeout_height_on_b: msg_transfer.timeout_height_on_b,
+            timeout_timestamp_on_b: msg_transfer.timeout_timestamp_on_b,
         };
 
         let msg_recv_packet = MsgRecvPacket {
