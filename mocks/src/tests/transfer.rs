@@ -4,7 +4,8 @@ use std::time::Duration;
 use ibc::applications::transfer::{Coin, PrefixedDenom, TracePrefix};
 use ibc::core::ics02_client::client_state::ClientStateCommon;
 use ibc::core::ics24_host::identifier::{ChannelId, PortId};
-use ibc::core::ValidationContext;
+
+use ibc::core::{Msg, ValidationContext};
 use ibc::test_utils::{get_dummy_account_id, get_dummy_bech32_account};
 use ibc::Signer;
 use sov_bank::get_genesis_token_address;

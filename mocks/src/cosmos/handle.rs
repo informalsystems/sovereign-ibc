@@ -12,7 +12,7 @@ use ibc::core::events::IbcEvent;
 use ibc::core::ics04_channel::timeout::TimeoutHeight;
 use ibc::core::ics24_host::identifier::{ChainId, ChannelId, PortId};
 use ibc::core::timestamp::Timestamp;
-use ibc::core::Msg;
+
 use ibc::proto::Any;
 use ibc::{Height, Signer};
 
