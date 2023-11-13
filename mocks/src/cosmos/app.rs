@@ -46,6 +46,8 @@ use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tower::Service;
 
+use basecoin_app::abci::v0_37::impls::query as basecoin_query;
+
 use super::helpers::{
     convert_tm_to_ics_merkle_proof, dummy_tm_client_state, genesis_app_state, MutexUtil,
 };
@@ -267,6 +269,38 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             AbciResponse::Query(res) => res,
             _ => panic!("unexpected response from query"),
         };
+
+        let proof = match response.proof {
+            Some(proof) => proof,
+            None => panic!("proof not found in query response"),
+        };
+
+        let merkle_proof = convert_tm_to_ics_merkle_proof(&proof);
+
+        let commitment_proof = merkle_proof.try_into().unwrap();
+
+        (response.value.into(), commitment_proof)
+    }
+
+    /// Queries the chain for a given path and height.
+    pub fn sync_query(
+        &self,
+        data: Vec<u8>,
+        path: String,
+        height: &Height,
+    ) -> (Vec<u8>, CommitmentProofBytes) {
+        let response: ResponseQuery = basecoin_query(
+            &self.app,
+            RequestQuery {
+                data: data.into(),
+                path,
+                height: height.revision_height().try_into().unwrap(),
+                prove: true,
+            }
+            .into(),
+        )
+        .try_into()
+        .unwrap();
 
         let proof = match response.proof {
             Some(proof) => proof,
