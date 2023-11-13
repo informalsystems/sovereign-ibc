@@ -1,4 +1,3 @@
-
 use std::sync::Arc;
 
 use ibc::applications::transfer::msgs::transfer::MsgTransfer;
@@ -15,7 +14,9 @@ use ibc::core::ics24_host::identifier::{ChannelId, ClientId, PortId};
 use ibc::core::ics24_host::path::{CommitmentPath, SeqSendPath};
 
 use ibc::core::{Msg, ValidationContext};
+use ibc::hosts::tendermint::IBC_QUERY_PATH;
 use ibc::{Height, Signer};
+
 use ibc_proto::ics23::CommitmentProof;
 use ibc_query::core::context::ProvableContext;
 use prost::Message;
@@ -25,6 +26,7 @@ use sov_modules_api::default_context::DefaultContext;
 use super::context::ChainContext;
 use super::handle::Handle;
 use crate::cosmos::helpers::dummy_tm_client_state;
+use ibc_proto::ibc::core::commitment::v1::MerkleProof as RawMerkleProof;
 
 /// The relay context for relaying between a mock sovereign chain and a mock
 /// cosmos chain
@@ -158,11 +160,13 @@ where
         let commitment_path =
             CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
 
-        // let packet_commitment_data = self
-        //     .dst_chain_ctx()
-        //     .query_ibc()
-        //     .get_packet_commitment(&commitment_path)
-        //     .expect("no error");
+        let (_, commitment_proofs) = self.dst_chain_ctx().query(
+            commitment_path.to_string().as_bytes().to_vec(),
+            IBC_QUERY_PATH.to_string(),
+            &proof_height_on_a,
+        );
+
+        let merkle_proofs = MerkleProof::from(RawMerkleProof::try_from(commitment_proofs).unwrap());
 
         let proof_commitment_on_a = CommitmentProof::decode(
             self.dst_chain_ctx()
@@ -173,12 +177,8 @@ where
         )
         .expect("no error");
 
-        // iavl and tendermint specs are (almost) same
-        // https://github.com/informalsystems/sovereign-ibc/blob/7d92f33dd50b573a7e2b1550b964011f7ff821b0/mocks/src/cosmos/helpers/dummy.rs#L15
-        // https://github.com/cosmos/ibc-rs/blob/527bb141383129db804b0b9d49793c4a900deede/crates/ibc/src/core/ics23_commitment/specs.rs#L14-L33
-        let merkle_proofs = MerkleProof {
-            proofs: vec![proof_commitment_on_a.clone(), proof_commitment_on_a.clone()],
-        };
+        assert_eq!(merkle_proofs.proofs[0], proof_commitment_on_a);
+        assert_eq!(merkle_proofs.proofs.len(), 2);
 
         let packet = Packet {
             seq_on_a: latest_seq_send,
