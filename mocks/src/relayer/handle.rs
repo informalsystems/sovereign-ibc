@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use ibc::core::ics23_commitment::commitment::CommitmentProofBytes;
 use ibc::core::ics24_host::identifier::ChainId;
 use ibc::core::ValidationContext;
 use ibc::proto::Any;
@@ -33,6 +34,13 @@ pub trait Handle {
         cons_state: <<Self as Handle>::IbcContext as ValidationContext>::AnyConsensusState,
     ) -> Any;
 
+    fn query(
+        &self,
+        data: Vec<u8>,
+        path: String,
+        height: &Height,
+    ) -> (Vec<u8>, CommitmentProofBytes);
+
     fn query_ibc(&self) -> Self::IbcContext;
 
     fn send_msg(&self, msg: Vec<Self::Message>) -> Vec<Self::Event>;
@@ -63,6 +71,15 @@ where
         cons_state: <<Self as Handle>::IbcContext as ValidationContext>::AnyConsensusState,
     ) -> Any {
         Ctx::service(self).consensus_state_to_any(cons_state)
+    }
+
+    fn query(
+        &self,
+        data: Vec<u8>,
+        path: String,
+        height: &Height,
+    ) -> (Vec<u8>, CommitmentProofBytes) {
+        Ctx::service(self).query(data, path, height)
     }
 
     fn query_ibc(&self) -> Self::IbcContext {

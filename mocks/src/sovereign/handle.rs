@@ -4,6 +4,7 @@ use ibc::applications::transfer::Memo;
 use ibc::clients::ics07_tendermint::header::Header;
 use ibc::core::events::IbcEvent;
 use ibc::core::ics04_channel::timeout::TimeoutHeight;
+use ibc::core::ics23_commitment::commitment::CommitmentProofBytes;
 use ibc::core::ics24_host::identifier::{ChainId, ChannelId, PortId};
 use ibc::core::timestamp::Timestamp;
 use ibc::proto::Any;
@@ -42,6 +43,15 @@ where
 
     fn query_ibc(&self) -> Self::IbcContext {
         self.ibc_ctx()
+    }
+
+    fn query(
+        &self,
+        _data: Vec<u8>,
+        _path: String,
+        _height: &Height,
+    ) -> (Vec<u8>, CommitmentProofBytes) {
+        unimplemented!()
     }
 
     fn send_msg(&self, msg: Vec<Self::Message>) -> Vec<Self::Event> {

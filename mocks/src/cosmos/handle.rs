@@ -10,6 +10,7 @@ use ibc::applications::transfer::{Coin, Memo, PrefixedDenom};
 use ibc::clients::ics07_tendermint::header::Header;
 use ibc::core::events::IbcEvent;
 use ibc::core::ics04_channel::timeout::TimeoutHeight;
+use ibc::core::ics23_commitment::commitment::CommitmentProofBytes;
 use ibc::core::ics24_host::identifier::{ChainId, ChannelId, PortId};
 use ibc::core::timestamp::Timestamp;
 
@@ -54,6 +55,15 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
 
     fn query_ibc(&self) -> Self::IbcContext {
         self.ibc_ctx()
+    }
+
+    fn query(
+        &self,
+        data: Vec<u8>,
+        path: String,
+        height: &Height,
+    ) -> (Vec<u8>, CommitmentProofBytes) {
+        self.sync_query(data, path, height)
     }
 
     fn consensus_state_to_any(&self, consensus_state: AnyConsensusState) -> Any {
