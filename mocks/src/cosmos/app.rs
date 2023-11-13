@@ -33,7 +33,9 @@ use ibc::core::ics24_host::path::{
 use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::hosts::tendermint::IBC_QUERY_PATH;
 use ibc::Height;
-use tendermint::abci::request::{InitChain, Query};
+use tendermint::abci::request::InitChain;
+use tendermint::abci::request::Query as RequestQuery;
+use tendermint::abci::response::Query as ResponseQuery;
 use tendermint::block::Height as TmHeight;
 use tendermint::v0_37::abci::{Request as AbciRequest, Response as AbciResponse};
 use tendermint::{AppHash, Hash, Time};
@@ -252,7 +254,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         path: impl Into<Path> + Send,
         height: &Height,
     ) -> (Vec<u8>, CommitmentProofBytes) {
-        let request = Query {
+        let request = RequestQuery {
             path: IBC_QUERY_PATH.to_string(),
             data: path.into().to_string().into_bytes().into(),
             height: TmHeight::try_from(height.revision_height()).unwrap(),
