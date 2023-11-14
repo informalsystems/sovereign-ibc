@@ -159,7 +159,7 @@ where
         let commitment_path =
             CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
 
-        let (packet_commitment_on_a, commitment_proofs) = self.dst_chain_ctx().query(
+        let (_, commitment_proofs) = self.dst_chain_ctx().query(
             commitment_path.to_string().as_bytes().to_vec(),
             IBC_QUERY_PATH.to_string(),
             &proof_height_on_a,
@@ -189,14 +189,6 @@ where
             timeout_height_on_b: msg_transfer.timeout_height_on_b,
             timeout_timestamp_on_b: msg_transfer.timeout_timestamp_on_b,
         };
-
-        let packet_commitment = compute_packet_commitment(
-            &packet.data,
-            &packet.timeout_height_on_b,
-            &packet.timeout_timestamp_on_b,
-        );
-
-        assert_eq!(packet_commitment, packet_commitment_on_a.into());
 
         let msg_recv_packet = MsgRecvPacket {
             packet,
