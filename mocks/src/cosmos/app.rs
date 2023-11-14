@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use basecoin_app::abci::v0_37::impls::query as basecoin_query;
 use basecoin_app::modules::auth::Auth;
 use basecoin_app::modules::bank::Bank;
 use basecoin_app::modules::context::{prefix, Identifiable};
@@ -33,8 +34,7 @@ use ibc::core::ics24_host::path::{
 use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::hosts::tendermint::IBC_QUERY_PATH;
 use ibc::Height;
-use tendermint::abci::request::InitChain;
-use tendermint::abci::request::Query as RequestQuery;
+use tendermint::abci::request::{InitChain, Query as RequestQuery};
 use tendermint::abci::response::Query as ResponseQuery;
 use tendermint::block::Height as TmHeight;
 use tendermint::v0_37::abci::{Request as AbciRequest, Response as AbciResponse};
@@ -45,8 +45,6 @@ use tendermint_testgen::{Generator, Header, LightBlock, Validator};
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tower::Service;
-
-use basecoin_app::abci::v0_37::impls::query as basecoin_query;
 
 use super::helpers::{
     convert_tm_to_ics_merkle_proof, dummy_tm_client_state, genesis_app_state, MutexUtil,

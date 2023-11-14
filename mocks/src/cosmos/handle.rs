@@ -13,7 +13,6 @@ use ibc::core::ics04_channel::timeout::TimeoutHeight;
 use ibc::core::ics23_commitment::commitment::CommitmentProofBytes;
 use ibc::core::ics24_host::identifier::{ChainId, ChannelId, PortId};
 use ibc::core::timestamp::Timestamp;
-
 use ibc::proto::Any;
 use ibc::{Height, Signer};
 
