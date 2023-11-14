@@ -12,7 +12,48 @@ pub fn dummy_tm_client_state(chain_id: ChainId, latest_hight: Height) -> ClientS
         Duration::from_secs(128000),
         Duration::from_millis(3000),
         latest_hight,
-        Default::default(),
+        serde_json::from_str(
+            r#"[
+              {
+                "leaf_spec": {
+                  "hash": 1,
+                  "prehash_key": 0,
+                  "prehash_value": 0,
+                  "length": 0,
+                  "prefix": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+                },
+                "inner_spec": {
+                  "child_order": [0, 1, 2],
+                  "child_size": 32,
+                  "min_prefix_length": 0,
+                  "max_prefix_length": 64,
+                  "empty_child": "ACA=",
+                  "hash": 1
+                },
+                "max_depth": 0,
+                "min_depth": 0
+              },
+              {
+                "leaf_spec": {
+                  "hash": 1,
+                  "prehash_key": 0,
+                  "prehash_value": 0,
+                  "length": 0,
+                  "prefix": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+                },
+                "inner_spec": {
+                  "child_order": [0, 1, 2],
+                  "child_size": 32,
+                  "min_prefix_length": 0,
+                  "max_prefix_length": 64,
+                  "empty_child": "ACA=",
+                  "hash": 1
+                },
+                "max_depth": 0,
+                "min_depth": 0
+              }
+            ]"#,
+        ).unwrap(),
         Default::default(),
         AllowUpdate {
             after_expiry: false,
