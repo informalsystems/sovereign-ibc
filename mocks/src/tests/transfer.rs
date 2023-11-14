@@ -144,8 +144,9 @@ async fn test_token_transfer() {
         .client_state(rly.src_client_id())
         .unwrap();
 
-    let msg_recv_packet =
-        rly.build_msg_recv_packet_for_sov(cs.latest_height(), msg_sdk_token_transfer);
+    assert_eq!(cs.latest_height(), target_height);
+
+    let msg_recv_packet = rly.build_msg_recv_packet_for_sov(target_height, msg_sdk_token_transfer);
 
     rly.src_chain_ctx().send_msg(vec![msg_recv_packet]);
 
