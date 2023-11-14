@@ -38,19 +38,17 @@ pub async fn sovereign_cosmos_setup(
 
     if with_manual_tao {
         let sov_client_id = sov_chain.setup_client(cos_chain.chain_id());
-
-        let sov_conn_id = sov_chain.setup_connection(sov_client_id);
-
-        let (sov_port_id, sov_chan_id) = sov_chain.setup_channel(sov_conn_id);
-
-        sov_chain.with_send_sequence(sov_port_id, sov_chan_id, Sequence::from(1));
-
         let cos_client_id = cos_chain.setup_client(sov_chain.chain_id());
 
-        let cos_conn_id = cos_chain.setup_connection(cos_client_id);
+        let sov_conn_id =
+            sov_chain.setup_connection(sov_client_id, cos_chain.ibc_ctx().commitment_prefix());
+        let cos_conn_id =
+            cos_chain.setup_connection(cos_client_id, sov_chain.ibc_ctx.commitment_prefix());
 
+        let (sov_port_id, sov_chan_id) = sov_chain.setup_channel(sov_conn_id);
         let (cos_port_id, cos_chan_id) = cos_chain.setup_channel(cos_conn_id);
 
+        sov_chain.with_send_sequence(sov_port_id, sov_chan_id, Sequence::from(1));
         cos_chain.with_send_sequence(cos_port_id, cos_chan_id, Sequence::from(1));
     }
 
