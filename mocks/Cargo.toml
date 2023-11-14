@@ -38,6 +38,7 @@ sov-chain-state = { workspace = true }
 sov-modules-api = { workspace = true }
 sov-state = { workspace = true }
 sov-rollup-interface = { workspace = true, features = ["mocks"] }
+sha2 = "0.10.8"
 
 [features]
 default = ["native"]

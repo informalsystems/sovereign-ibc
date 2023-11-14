@@ -201,3 +201,20 @@ where
         CallMessage::Core(msg_recv_packet.to_any())
     }
 }
+
+pub fn compute_packet_commitment(
+    packet_data: &[u8],
+    timeout_height: &TimeoutHeight,
+    timeout_timestamp: &Timestamp,
+) -> PacketCommitment {
+    use sha2::Digest;
+
+    let mut hash_input = [0; 8 * 3 + 32];
+
+    hash_input[..8].copy_from_slice(&timeout_timestamp.nanoseconds().to_be_bytes());
+    hash_input[8..16].copy_from_slice(&timeout_height.commitment_revision_number().to_be_bytes());
+    hash_input[16..24].copy_from_slice(&timeout_height.commitment_revision_height().to_be_bytes());
+    hash_input[24..].copy_from_slice(&<[u8; 32]>::from(sha2::Sha256::digest(packet_data)));
+
+    sha2::Sha256::digest(hash_input).to_vec().into()
+}
