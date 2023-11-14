@@ -15,6 +15,7 @@ use ibc::core::ics04_channel::channel::{
 };
 use ibc::core::ics04_channel::packet::Sequence;
 use ibc::core::ics04_channel::Version as ChannelVersion;
+use ibc::core::ics23_commitment::commitment::CommitmentPrefix;
 use ibc::core::ics24_host::identifier::{ChainId, ChannelId, ClientId, ConnectionId, PortId};
 use ibc::core::ics24_host::path::{
     ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, SeqAckPath,
@@ -195,12 +196,14 @@ where
     }
 
     /// Establishes a connection on the ibc module with the `Open` state
-    pub fn setup_connection(&mut self, client_id: ClientId) -> ConnectionId {
+    pub fn setup_connection(
+        &mut self,
+        client_id: ClientId,
+        prefix: CommitmentPrefix,
+    ) -> ConnectionId {
         let connection_id = ConnectionId::new(0);
 
         let connection_path = ConnectionPath::new(&connection_id);
-
-        let prefix = self.ibc_ctx.commitment_prefix();
 
         let connection_end = ConnectionEnd::new(
             ConnectionState::Open,
