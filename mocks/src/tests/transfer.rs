@@ -167,8 +167,10 @@ async fn test_token_transfer() {
         .get_minted_token_address(ibc_coin.denom)
         .unwrap();
 
-    let _balance = rly
+    let balance = rly
         .src_chain_ctx()
         .querier()
         .get_balance_of(sender_on_sov, sov_ibc_token_address);
+
+    assert_eq!(balance, transfer_amount);
 }
