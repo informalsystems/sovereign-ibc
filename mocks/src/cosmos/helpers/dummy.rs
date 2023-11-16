@@ -33,14 +33,14 @@ pub fn basecoin_proofspecs() -> ProofSpecs {
     [spec.clone(), spec].to_vec().into()
 }
 
-pub fn dummy_tm_client_state(chain_id: ChainId, latest_hight: Height) -> ClientState {
+pub fn dummy_tm_client_state(chain_id: ChainId, latest_height: Height) -> ClientState {
     ClientState::new(
         chain_id,
         Default::default(),
         Duration::from_secs(64000),
         Duration::from_secs(128000),
         Duration::from_millis(3000),
-        latest_hight,
+        latest_height,
         basecoin_proofspecs(),
         Default::default(),
         AllowUpdate {
