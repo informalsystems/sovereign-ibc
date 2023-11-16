@@ -4,6 +4,35 @@ use ibc::clients::ics07_tendermint::client_state::{AllowUpdate, ClientState};
 use ibc::core::ics24_host::identifier::ChainId;
 use ibc::Height;
 
+use ibc::core::ics23_commitment::specs::ProofSpecs;
+use ibc::test_utils::get_dummy_bech32_account;
+use ibc::Signer;
+use ibc_proto::ics23::ProofSpec as RawProofSpec;
+
+pub fn basecoin_proofspecs() -> ProofSpecs {
+    let spec = RawProofSpec {
+        leaf_spec: Some(ibc_proto::ics23::LeafOp {
+            hash: ibc_proto::ics23::HashOp::Sha256.into(),
+            prehash_key: ibc_proto::ics23::HashOp::NoHash.into(),
+            prehash_value: ibc_proto::ics23::HashOp::NoHash.into(),
+            length: ibc_proto::ics23::LengthOp::NoPrefix.into(),
+            prefix: [0; 64].into(),
+        }),
+        inner_spec: Some(ibc_proto::ics23::InnerSpec {
+            child_order: [0, 1, 2].into(),
+            child_size: 32,
+            min_prefix_length: 0,
+            max_prefix_length: 64,
+            empty_child: [0, 32].into(),
+            hash: ibc_proto::ics23::HashOp::Sha256.into(),
+        }),
+        max_depth: 0,
+        min_depth: 0,
+        prehash_key_before_comparison: false,
+    };
+    [spec.clone(), spec].to_vec().into()
+}
+
 pub fn dummy_tm_client_state(chain_id: ChainId, latest_hight: Height) -> ClientState {
     ClientState::new(
         chain_id,
@@ -12,48 +41,7 @@ pub fn dummy_tm_client_state(chain_id: ChainId, latest_hight: Height) -> ClientS
         Duration::from_secs(128000),
         Duration::from_millis(3000),
         latest_hight,
-        serde_json::from_str(
-            r#"[
-              {
-                "leaf_spec": {
-                  "hash": 1,
-                  "prehash_key": 0,
-                  "prehash_value": 0,
-                  "length": 0,
-                  "prefix": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-                },
-                "inner_spec": {
-                  "child_order": [0, 1, 2],
-                  "child_size": 32,
-                  "min_prefix_length": 0,
-                  "max_prefix_length": 64,
-                  "empty_child": "ACA=",
-                  "hash": 1
-                },
-                "max_depth": 0,
-                "min_depth": 0
-              },
-              {
-                "leaf_spec": {
-                  "hash": 1,
-                  "prehash_key": 0,
-                  "prehash_value": 0,
-                  "length": 0,
-                  "prefix": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-                },
-                "inner_spec": {
-                  "child_order": [0, 1, 2],
-                  "child_size": 32,
-                  "min_prefix_length": 0,
-                  "max_prefix_length": 64,
-                  "empty_child": "ACA=",
-                  "hash": 1
-                },
-                "max_depth": 0,
-                "min_depth": 0
-              }
-            ]"#,
-        ).unwrap(),
+        basecoin_proofspecs(),
         Default::default(),
         AllowUpdate {
             after_expiry: false,
@@ -62,9 +50,6 @@ pub fn dummy_tm_client_state(chain_id: ChainId, latest_hight: Height) -> ClientS
     )
     .unwrap()
 }
-
-use ibc::test_utils::get_dummy_bech32_account;
-use ibc::Signer;
 
 pub fn genesis_app_state() -> serde_json::Value {
     serde_json::json!({
