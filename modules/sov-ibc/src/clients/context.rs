@@ -272,6 +272,17 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         Ok(())
     }
 
+    fn delete_consensus_state(
+        &mut self,
+        consensus_state_path: ClientConsensusStatePath,
+    ) -> Result<(), ContextError> {
+        self.ibc
+            .consensus_state_map
+            .remove(&consensus_state_path, &mut self.working_set.borrow_mut());
+
+        Ok(())
+    }
+
     fn store_update_time(
         &mut self,
         client_id: ClientId,
@@ -304,19 +315,15 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         Ok(())
     }
 
-    fn delete_consensus_state(
-        &mut self,
-        consensus_state_path: ClientConsensusStatePath,
-    ) -> Result<(), ContextError> {
-        todo!()
-    }
-
     fn delete_update_time(
         &mut self,
         client_id: ClientId,
         height: Height,
     ) -> Result<(), ContextError> {
-        todo!()
+        self.ibc
+            .client_update_host_times_map
+            .remove(&(client_id, height), *self.working_set.borrow_mut());
+        Ok(())
     }
 
     fn delete_update_height(
@@ -324,7 +331,10 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         client_id: ClientId,
         height: Height,
     ) -> Result<(), ContextError> {
-        todo!()
+        self.ibc
+            .client_update_host_heights_map
+            .remove(&(client_id, height), *self.working_set.borrow_mut());
+        Ok(())
     }
 }
 
@@ -347,8 +357,13 @@ impl<'a, C: Context, Da: DaSpec> TmCommonContext for IbcContext<'a, C, Da> {
         <Self as ValidationContext>::consensus_state(self, client_cons_state_path)
     }
 
-    fn consensus_state_heights(&self, client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
-        todo!()
+    fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
+        let heights = self
+            .ibc
+            .client_update_heights_vec
+            .iter(*self.working_set.borrow_mut())
+            .collect::<Vec<_>>();
+        Ok(heights)
     }
 }
 
