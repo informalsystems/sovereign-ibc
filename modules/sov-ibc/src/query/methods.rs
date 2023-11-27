@@ -2,7 +2,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use ibc::proto::core::channel::v1::{
+use ibc_core::channel::types::proto::v1::{
     QueryChannelClientStateRequest, QueryChannelClientStateResponse,
     QueryChannelConsensusStateRequest, QueryChannelConsensusStateResponse, QueryChannelRequest,
     QueryChannelResponse, QueryChannelsRequest, QueryChannelsResponse,
@@ -15,14 +15,14 @@ use ibc::proto::core::channel::v1::{
     QueryUnreceivedAcksRequest, QueryUnreceivedAcksResponse, QueryUnreceivedPacketsRequest,
     QueryUnreceivedPacketsResponse,
 };
-use ibc::proto::core::client::v1::{
+use ibc_core::client::types::proto::v1::{
     QueryClientStateRequest, QueryClientStateResponse, QueryClientStatesRequest,
     QueryClientStatesResponse, QueryClientStatusRequest, QueryClientStatusResponse,
     QueryConsensusStateHeightsRequest, QueryConsensusStateHeightsResponse,
     QueryConsensusStateRequest, QueryConsensusStateResponse, QueryConsensusStatesRequest,
     QueryConsensusStatesResponse,
 };
-use ibc::proto::core::connection::v1::{
+use ibc_core::connection::types::proto::v1::{
     QueryClientConnectionsRequest, QueryClientConnectionsResponse,
     QueryConnectionClientStateRequest, QueryConnectionClientStateResponse,
     QueryConnectionConsensusStateRequest, QueryConnectionConsensusStateResponse,

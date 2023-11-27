@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use ibc::core::ics02_client::client_state::ClientStateCommon;
-use ibc::core::ValidationContext;
+use ibc_core::client::context::client_state::ClientStateCommon;
+use ibc_core::host::ValidationContext;
 use tokio::time::sleep;
 
 use crate::relayer::handle::Handle;

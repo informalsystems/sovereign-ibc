@@ -3,7 +3,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use basecoin_store::context::ProvableStore;
-use ibc::core::ics24_host::identifier::ChainId;
+use ibc_core::host::types::identifiers::ChainId;
 use tendermint_testgen::Validator;
 use tokio::runtime::Runtime;
 

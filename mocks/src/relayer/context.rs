@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ibc::Signer;
+use ibc_core::primitives::Signer;
 
 use super::handle::{Handle, QueryService};
 
