@@ -27,7 +27,6 @@ ibc-core              = { workspace = true }
 ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-core-host-cosmos  = { workspace = true }
-ibc-proto             = { version = "0.38.0", default-features = false, features = ["borsh"] }
 
 # cosmos dependencies
 basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "d1cd0d7" }

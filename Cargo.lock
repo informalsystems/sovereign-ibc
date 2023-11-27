@@ -3380,7 +3380,6 @@ dependencies = [
  "ibc-client-tendermint",
  "ibc-core",
  "ibc-core-host-cosmos",
- "ibc-proto",
  "ibc-testkit",
  "prost 0.12.1",
  "serde_json",
