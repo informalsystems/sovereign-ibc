@@ -2,9 +2,11 @@ use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::rc::Rc;
 
-use ibc::applications::transfer::{MODULE_ID_STR, PORT_ID_STR};
-use ibc::core::ics24_host::identifier::PortId;
-use ibc::core::router::{self, ModuleId, Router};
+use ibc_app_transfer::types::{MODULE_ID_STR, PORT_ID_STR};
+use ibc_core::host::types::identifiers::PortId;
+use ibc_core::router::module::Module;
+use ibc_core::router::router::Router;
+use ibc_core::router::types::module::ModuleId;
 use sov_ibc_transfer::context::IbcTransferContext;
 use sov_modules_api::{Context, DaSpec, WorkingSet};
 
@@ -33,7 +35,7 @@ impl<'ws, C: Context, Da: DaSpec> IbcRouter<'ws, C, Da> {
 }
 
 impl<'ws, C: Context, Da: DaSpec> Router for IbcRouter<'ws, C, Da> {
-    fn get_route(&self, module_id: &ModuleId) -> Option<&dyn router::Module> {
+    fn get_route(&self, module_id: &ModuleId) -> Option<&dyn Module> {
         if *module_id == ModuleId::new(MODULE_ID_STR.to_string()) {
             Some(&self.transfer_ctx)
         } else {
@@ -41,7 +43,7 @@ impl<'ws, C: Context, Da: DaSpec> Router for IbcRouter<'ws, C, Da> {
         }
     }
 
-    fn get_route_mut(&mut self, module_id: &ModuleId) -> Option<&mut dyn router::Module> {
+    fn get_route_mut(&mut self, module_id: &ModuleId) -> Option<&mut dyn Module> {
         if *module_id == ModuleId::new(MODULE_ID_STR.to_string()) {
             Some(&mut self.transfer_ctx)
         } else {

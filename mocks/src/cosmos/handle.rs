@@ -3,11 +3,11 @@ use std::fmt::Debug;
 use basecoin_app::modules::ibc::{AnyConsensusState, IbcContext};
 use basecoin_store::context::ProvableStore;
 use basecoin_store::impls::RevertibleStore;
-use ibc::clients::ics07_tendermint::header::Header;
-use ibc::core::events::IbcEvent;
-use ibc::core::ics24_host::identifier::ChainId;
-use ibc::proto::Any;
-use ibc::Height;
+use ibc_client_tendermint::types::Header;
+use ibc_core::client::types::Height;
+use ibc_core::handler::types::events::IbcEvent;
+use ibc_core::host::types::identifiers::ChainId;
+use ibc_core::primitives::proto::Any;
 
 use super::app::MockCosmosChain;
 use crate::relayer::handle::Handle;

@@ -2,15 +2,15 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use anyhow::Result;
-use ibc::applications::transfer::context::TokenTransferExecutionContext;
-use ibc::applications::transfer::msgs::transfer::MsgTransfer;
-use ibc::applications::transfer::packet::PacketData;
-use ibc::applications::transfer::{send_transfer, Memo, PrefixedCoin};
-use ibc::core::ics04_channel::timeout::TimeoutHeight;
-use ibc::core::ics24_host::identifier::{ChannelId, PortId};
-use ibc::core::timestamp::Timestamp;
-use ibc::core::ExecutionContext;
-use ibc::Signer;
+use ibc_app_transfer::context::TokenTransferExecutionContext;
+use ibc_app_transfer::handler::send_transfer;
+use ibc_app_transfer::types::msgs::transfer::MsgTransfer;
+use ibc_app_transfer::types::packet::PacketData;
+use ibc_app_transfer::types::{Memo, PrefixedCoin};
+use ibc_core::channel::types::timeout::TimeoutHeight;
+use ibc_core::host::types::identifiers::{ChannelId, PortId};
+use ibc_core::host::ExecutionContext;
+use ibc_core::primitives::{Signer, Timestamp};
 use sov_modules_api::{Context, WorkingSet};
 
 use super::context::EscrowExtraData;

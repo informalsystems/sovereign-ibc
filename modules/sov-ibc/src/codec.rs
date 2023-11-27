@@ -1,8 +1,8 @@
 use core::fmt::Display;
 use std::marker::PhantomData;
 
-use ibc::core::ics04_channel::commitment::{AcknowledgementCommitment, PacketCommitment};
-use ibc::proto::protobuf::{Error, Protobuf};
+use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
+use ibc_core::primitives::proto::Protobuf;
 use prost::Message;
 use sov_state::codec::{BorshCodec, StateCodec, StateValueCodec};
 
@@ -16,16 +16,16 @@ impl<V, Raw> StateValueCodec<V> for ProtobufCodec<Raw>
 where
     V: Protobuf<Raw>,
     V::Error: Display,
-    Raw: Message + Default,
+    Raw: From<V> + Message + Default,
 {
-    type Error = Error;
+    type Error = ();
 
     fn encode_value(&self, value: &V) -> Vec<u8> {
-        value.encode_vec()
+        value.clone().encode_vec()
     }
 
     fn try_decode_value(&self, bytes: &[u8]) -> Result<V, Self::Error> {
-        Protobuf::decode_vec(bytes)
+        Ok(Protobuf::decode_vec(bytes).unwrap())
     }
 }
 
@@ -49,7 +49,7 @@ pub struct PacketCommitmentCodec {
 }
 
 impl StateValueCodec<PacketCommitment> for PacketCommitmentCodec {
-    type Error = Error;
+    type Error = ();
 
     fn encode_value(&self, commitment: &PacketCommitment) -> Vec<u8> {
         commitment.clone().into_vec()
@@ -80,7 +80,7 @@ pub struct AcknowledgementCommitmentCodec {
 }
 
 impl StateValueCodec<AcknowledgementCommitment> for AcknowledgementCommitmentCodec {
-    type Error = Error;
+    type Error = ();
 
     fn encode_value(&self, commitment: &AcknowledgementCommitment) -> Vec<u8> {
         commitment.clone().into_vec()

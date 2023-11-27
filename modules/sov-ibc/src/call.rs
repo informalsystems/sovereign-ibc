@@ -3,8 +3,9 @@ use std::fmt::Debug;
 use std::rc::Rc;
 
 use anyhow::{bail, Result};
-use ibc::core::{dispatch, MsgEnvelope};
-use ibc::proto::Any;
+use ibc_core::entrypoint::dispatch;
+use ibc_core::handler::types::msgs::MsgEnvelope;
+use ibc_core::primitives::proto::Any;
 use sov_ibc_transfer::call::SDKTokenTransfer;
 use sov_ibc_transfer::context::IbcTransferContext;
 use sov_modules_api::{CallResponse, Context, DaSpec, WorkingSet};
@@ -23,7 +24,6 @@ use crate::Ibc;
 )]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
 pub enum CallMessage<C: sov_modules_api::Context> {
-    #[cfg_attr(feature = "native", schemars(with = "ibc::utils::schema::AnySchema"))]
     Core(Any),
 
     Transfer(SDKTokenTransfer<C>),

@@ -1,55 +1,49 @@
 [workspace]
 resolver = "2"
-members = ["modules/sov-ibc", "modules/sov-ibc-transfer", "mocks"]
+members  = ["modules/sov-ibc", "modules/sov-ibc-transfer", "mocks"]
 
 [workspace.package]
-version = "0.1.0"
-edition = "2021"
-license = "MIT OR Apache-2.0"
-authors = ["Informal Systems <hello@informal.systems>"]
-publish = false
-repository = "https://github.com/informalsystems/sovereign-ibc"
+version      = "0.1.0"
+license      = "MIT OR Apache-2.0"
+edition      = "2021"
 rust-version = "1.66"
+publish      = false
+authors      = ["Informal Systems <hello@informal.systems>"]
+repository   = "https://github.com/informalsystems/sovereign-ibc"
 
 [workspace.dependencies]
-
 # external dependencies
-anyhow = "1.0.68"
-borsh = { version = "0.10.3", features = ["rc", "bytes"] }
-bytes = "1.2.1"
+anyhow      = "1.0.68"
+borsh       = { version = "0.10.3", features = ["rc", "bytes"] }
+bytes       = "1.2.1"
 derive_more = { version = "0.99.11", features = ["from", "try_into"] }
-digest = "0.10.6"
-hex = "0.4.3"
-jsonrpsee = { version = "0.20.1", features = [
-    "jsonrpsee-types",
-    "macros",
-    "client",
-    "server",
-] }
-prost = { version = "0.12", default-features = false }
-serde = { version = "1.0.188", features = ["derive", "rc"] }
-serde_json = "1.0"
-schemars = { version = "0.8.12", features = ["derive"] }
-tempfile = "3.5"
-thiserror = "1.0.38"
+digest      = "0.10.6"
+hex         = "0.4.3"
+jsonrpsee   = { version = "0.20.1", features = ["jsonrpsee-types", "macros", "client", "server"] }
+prost       = { version = "0.12", default-features = false }
+serde       = { version = "1.0.188", features = ["derive", "rc"] }
+serde_json  = "1.0"
+schemars    = { version = "0.8.12", features = ["derive"] }
+tempfile    = "3.5"
+thiserror   = "1.0.38"
 
 # ibc depedenencies
-ibc = { git = "https://github.com/cosmos/ibc-rs", rev = "b7dd19d", features = [
-    "borsh",
-    "schema",
-    "serde",
-] }
-ibc-query = { git = "https://github.com/cosmos/ibc-rs", rev = "b7dd19d" }
+ibc-core              = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false, features = ["borsh","schema","serde"] }
+ibc-core-host-cosmos  = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
+ibc-client-tendermint = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
+ibc-app-transfer      = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
+ibc-query             = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
+ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
 
-# tendermint dependencies
-tendermint = { version = "0.34", default-features = false }
-tendermint-proto = { version = "0.34", default-features = false }
-tendermint-testgen = { version = "0.34", default-features = false }
+# cosmos dependencies
+tendermint            = { version = "0.34", default-features = false }
+tendermint-proto      = { version = "0.34", default-features = false }
+tendermint-testgen    = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-bank = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-chain-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-modules-api = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-modules-macros = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-state = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-rollup-interface = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
+sov-bank              = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
+sov-chain-state       = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
+sov-modules-api       = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
+sov-modules-macros    = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
+sov-state             = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
+sov-rollup-interface  = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
