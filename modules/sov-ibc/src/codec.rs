@@ -55,7 +55,7 @@ pub struct PacketCommitmentCodec {
 }
 
 impl StateValueCodec<PacketCommitment> for PacketCommitmentCodec {
-    type Error = ();
+    type Error = Error;
 
     fn encode_value(&self, commitment: &PacketCommitment) -> Vec<u8> {
         commitment.clone().into_vec()
@@ -86,7 +86,7 @@ pub struct AcknowledgementCommitmentCodec {
 }
 
 impl StateValueCodec<AcknowledgementCommitment> for AcknowledgementCommitmentCodec {
-    type Error = ();
+    type Error = Error;
 
     fn encode_value(&self, commitment: &AcknowledgementCommitment) -> Vec<u8> {
         commitment.clone().into_vec()
