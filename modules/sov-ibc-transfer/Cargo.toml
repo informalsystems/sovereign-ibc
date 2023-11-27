@@ -6,8 +6,8 @@ rust-version = { workspace = true }
 version      = { workspace = true }
 authors      = { workspace = true }
 repository   = { workspace = true }
-publish = false
-readme = "README.md"
+publish      = false
+readme       = "README.md"
 
 [dependencies]
 # external dependencies
@@ -19,7 +19,7 @@ schemars   = { workspace = true, optional = true }
 serde      = { workspace = true }
 serde_json = { workspace = true, optional = true }
 thiserror  = { workspace = true }
-uint = "0.9"
+uint       = "0.9"
 
 # ibc dependencies
 ibc-app-transfer = { workspace = true, features = ["borsh", "schema"] }
@@ -33,7 +33,7 @@ sov-rollup-interface = { workspace = true }
 
 [features]
 default = []
-serde = ["dep:serde_json"]
+serde = ["serde_json"]
 native = [
     "serde",
     "sov-bank/native",
