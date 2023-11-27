@@ -339,8 +339,8 @@ where
 
 impl<'a, C, Da> ExecutionContext for IbcContext<'a, C, Da>
 where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
+    C: Context,
+    Da: DaSpec,
 {
     fn get_client_execution_context(&mut self) -> &mut Self::E {
         self

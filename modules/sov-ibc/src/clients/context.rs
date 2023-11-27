@@ -98,8 +98,8 @@ impl ClientStateCommon for AnyClientState {
 
 impl<'a, C, Da> ClientStateExecution<IbcContext<'a, C, Da>> for AnyClientState
 where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
+    C: Context,
+    Da: DaSpec,
 {
     fn initialise(
         &self,
@@ -157,8 +157,8 @@ where
 
 impl<'a, C, Da> ClientStateValidation<IbcContext<'a, C, Da>> for AnyClientState
 where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
+    C: Context,
+    Da: DaSpec,
 {
     fn verify_client_message(
         &self,

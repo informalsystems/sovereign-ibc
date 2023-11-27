@@ -109,7 +109,7 @@ where
 }
 
 /// Extra data to be passed to `TokenTransfer` contexts' escrow methods
-pub struct EscrowExtraData<C: sov_modules_api::Context> {
+pub struct EscrowExtraData<C: Context> {
     /// The address of the token being escrowed
     pub token_address: C::Address,
 }
@@ -462,13 +462,13 @@ where
 
 /// Address type, which wraps C::Address. This is needed to implement
 /// `TryFrom<Signer>` (circumventing the orphan rule).
-pub struct Address<C: sov_modules_api::Context> {
+pub struct Address<C: Context> {
     pub address: C::Address,
 }
 
 impl<C> TryFrom<Signer> for Address<C>
 where
-    C: sov_modules_api::Context,
+    C: Context,
 {
     type Error = anyhow::Error;
 
