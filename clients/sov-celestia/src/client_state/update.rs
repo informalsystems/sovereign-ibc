@@ -1,8 +1,8 @@
 use alloc::format;
 
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc::core::ics24_host::path::ClientConsensusStatePath;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::host::types::path::ClientConsensusStatePath;
 use tendermint::block::signed_header::SignedHeader;
 use tendermint_light_client_verifier::types::{TrustedBlockState, UntrustedBlockState};
 
@@ -32,8 +32,11 @@ impl SovClientState {
         // of the new header against the trusted consensus state.
         {
             let _trusted_state = {
-                let trusted_client_cons_state_path =
-                    ClientConsensusStatePath::new(client_id, &header.da_header.trusted_height);
+                let trusted_client_cons_state_path = ClientConsensusStatePath::new(
+                    client_id.clone(),
+                    header.da_header.trusted_height.revision_number(),
+                    header.da_header.trusted_height.revision_height(),
+                );
                 let trusted_consensus_state: SovConsensusState = ctx
                     .consensus_state(&trusted_client_cons_state_path)?
                     .try_into()
@@ -107,7 +110,11 @@ impl SovClientState {
         let header_consensus_state = SovConsensusState::from(header.clone());
 
         let maybe_existing_consensus_state = {
-            let path_at_header_height = ClientConsensusStatePath::new(client_id, &header.height());
+            let path_at_header_height = ClientConsensusStatePath::new(
+                client_id.clone(),
+                header.height().revision_number(),
+                header.height().revision_height(),
+            );
 
             ctx.consensus_state(&path_at_header_height).ok()
         };

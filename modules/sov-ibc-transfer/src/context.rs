@@ -1,22 +1,24 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use ibc::applications::transfer::context::{
+use ibc_app_transfer::context::{TokenTransferExecutionContext, TokenTransferValidationContext};
+use ibc_app_transfer::module::{
     on_acknowledgement_packet_validate, on_chan_open_ack_validate, on_chan_open_confirm_validate,
     on_chan_open_init_execute, on_chan_open_init_validate, on_chan_open_try_execute,
     on_chan_open_try_validate, on_recv_packet_execute, on_timeout_packet_execute,
-    on_timeout_packet_validate, TokenTransferExecutionContext, TokenTransferValidationContext,
+    on_timeout_packet_validate,
 };
-use ibc::applications::transfer::error::TokenTransferError;
-use ibc::applications::transfer::{self, PrefixedCoin, PORT_ID_STR, VERSION};
-use ibc::core::ics04_channel::acknowledgement::Acknowledgement;
-use ibc::core::ics04_channel::channel::{Counterparty, Order};
-use ibc::core::ics04_channel::error::{ChannelError, PacketError};
-use ibc::core::ics04_channel::packet::Packet;
-use ibc::core::ics04_channel::Version as ChannelVersion;
-use ibc::core::ics24_host::identifier::{ChannelId, ConnectionId, PortId};
-use ibc::core::router::ModuleExtras;
-use ibc::Signer;
+use ibc_app_transfer::types::error::TokenTransferError;
+use ibc_app_transfer::types::{Amount, PrefixedCoin, PORT_ID_STR, VERSION};
+use ibc_core::channel::types::acknowledgement::Acknowledgement;
+use ibc_core::channel::types::channel::{Counterparty, Order};
+use ibc_core::channel::types::error::{ChannelError, PacketError};
+use ibc_core::channel::types::packet::Packet;
+use ibc_core::channel::types::Version as ChannelVersion;
+use ibc_core::host::types::identifiers::{ChannelId, ConnectionId, PortId};
+use ibc_core::primitives::Signer;
+use ibc_core::router::module::Module;
+use ibc_core::router::types::module::ModuleExtras;
 use sov_bank::Coins;
 use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::digest::Digest;
@@ -71,7 +73,7 @@ impl<'ws, C: Context> IbcTransferContext<'ws, C> {
         token_address: C::Address,
         from_account: &C::Address,
         to_account: &C::Address,
-        amount: &transfer::Amount,
+        amount: &Amount,
     ) -> Result<(), TokenTransferError> {
         let amount: sov_bank::Amount = (*amount.as_ref())
             .try_into()
@@ -107,7 +109,7 @@ where
 }
 
 /// Extra data to be passed to `TokenTransfer` contexts' escrow methods
-pub struct EscrowExtraData<C: sov_modules_api::Context> {
+pub struct EscrowExtraData<C: Context> {
     /// The address of the token being escrowed
     pub token_address: C::Address,
 }
@@ -170,7 +172,7 @@ where
                 coin: coin.denom.to_string(),
             })?;
 
-        let sender_balance: transfer::Amount = sender_balance.into();
+        let sender_balance: Amount = sender_balance.into();
 
         if coin.amount > sender_balance {
             return Err(TokenTransferError::InsufficientFunds {
@@ -203,7 +205,7 @@ where
                 coin: coin.denom.to_string(),
             })?;
 
-        let sender_balance: transfer::Amount = sender_balance.into();
+        let sender_balance: Amount = sender_balance.into();
 
         if coin.amount > sender_balance {
             return Err(TokenTransferError::InsufficientFunds {
@@ -237,7 +239,7 @@ where
         coin: &PrefixedCoin,
     ) -> Result<(), TokenTransferError> {
         // ensure that escrow account has enough balance
-        let escrow_balance: transfer::Amount = {
+        let escrow_balance: Amount = {
             let token_address = {
                 self.ibc_transfer
                     .escrowed_tokens
@@ -460,13 +462,13 @@ where
 
 /// Address type, which wraps C::Address. This is needed to implement
 /// `TryFrom<Signer>` (circumventing the orphan rule).
-pub struct Address<C: sov_modules_api::Context> {
+pub struct Address<C: Context> {
     pub address: C::Address,
 }
 
 impl<C> TryFrom<Signer> for Address<C>
 where
-    C: sov_modules_api::Context,
+    C: Context,
 {
     type Error = anyhow::Error;
 
@@ -479,7 +481,7 @@ where
     }
 }
 
-impl<'ws, C> ibc::core::router::Module for IbcTransferContext<'ws, C>
+impl<'ws, C> Module for IbcTransferContext<'ws, C>
 where
     C: Context,
 {

@@ -1,29 +1,35 @@
 [package]
 name = "ics08-wasm"
-version = { workspace = true }
-authors = { workspace = true }
-license = { workspace = true }
+version 	 = { workspace = true }
+authors 	 = { workspace = true }
+license 	 = { workspace = true }
 rust-version = { workspace = true }
-edition = { workspace = true }
+edition 	 = { workspace = true }
 
 [dependencies]
 # external dependencies
-base64 = { workspace = true, features = ["alloc"] }
-bytes = { workspace = true }
-prost = { workspace = true }
-serde = { workspace = true , optional = true }
+base64 			= { workspace = true, features = ["alloc"] }
+bytes 			= { workspace = true }
+prost 			= { workspace = true }
+serde 			= { workspace = true , optional = true }
 cosmwasm-schema = { version = "1.4.1", default-features = false, optional = true }
 
 # ibc dependencies
-ibc = { workspace = true, default-features = false }
-ibc-proto = { version = "0.37.1", default-features = false }
+ibc-core-client = { workspace = true, default-features = false }
+ibc-primitives 	= { workspace = true, default-features = false }
+ibc-proto 		= { workspace = true, default-features = false }
 
 [features]
 default = ["std"]
 std = [
-	"ibc/std",
+	"ibc-core-client/std",
 	"ibc-proto/std",
 	"prost/std",
 	"serde/std"
 ]
-cosmwasm = ["cosmwasm-schema", "std", "serde", "ibc-proto/serde"]
+cosmwasm = [
+	"cosmwasm-schema", 
+	"ibc-proto/serde",
+	"serde", 
+	"std", 
+]

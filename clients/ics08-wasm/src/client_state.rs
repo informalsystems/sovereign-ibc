@@ -2,10 +2,9 @@ use alloc::string::ToString;
 
 #[cfg(feature = "cosmwasm")]
 use cosmwasm_schema::cw_serde;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::proto::protobuf::Protobuf;
-use ibc::Height;
-use ibc_proto::google::protobuf::Any;
+use ibc_core_client::types::error::ClientError;
+use ibc_core_client::types::Height;
+use ibc_primitives::proto::{Any, Protobuf};
 use ibc_proto::ibc::lightclients::wasm::v1::ClientState as RawClientState;
 
 #[cfg(feature = "cosmwasm")]
@@ -66,7 +65,7 @@ impl From<ClientState> for Any {
     fn from(value: ClientState) -> Self {
         Self {
             type_url: WASM_CLIENT_STATE_TYPE_URL.to_string(),
-            value: Protobuf::<RawClientState>::encode_vec(&value),
+            value: Protobuf::<RawClientState>::encode_vec(value),
         }
     }
 }

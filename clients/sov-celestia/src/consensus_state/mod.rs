@@ -2,13 +2,15 @@ pub mod definition;
 use alloc::vec::Vec;
 
 pub use definition::ConsensusState as SovConsensusState;
-use ibc::core::ics02_client::consensus_state::ConsensusState;
-use ibc::proto::Any;
+use ibc_core::client::context::consensus_state::ConsensusState;
+use ibc_core::commitment_types::commitment::CommitmentRoot;
+use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::Timestamp;
 use tendermint_proto::Protobuf;
 
 use super::error::Error;
 
-#[derive(Clone, Debug, ConsensusState)]
+#[derive(Clone, Debug)]
 pub enum AnyConsensusState {
     Sovereign(SovConsensusState),
 }
@@ -37,5 +39,19 @@ impl From<AnyConsensusState> for Any {
                 value: Protobuf::<Any>::encode_vec(&cs).unwrap(),
             },
         }
+    }
+}
+
+impl ConsensusState for AnyConsensusState {
+    fn root(&self) -> &CommitmentRoot {
+        todo!()
+    }
+
+    fn timestamp(&self) -> Timestamp {
+        todo!()
+    }
+
+    fn encode_vec(self) -> Vec<u8> {
+        todo!()
     }
 }

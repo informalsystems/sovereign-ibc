@@ -1,8 +1,8 @@
 use alloc::string::{String, ToString};
 
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics24_host::identifier::IdentifierError;
-use ibc::core::ContextError;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::host::types::error::IdentifierError;
 use tendermint_light_client_verifier::Verdict;
 
 /// Defines the error type for Sovereign light client.

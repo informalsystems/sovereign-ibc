@@ -1,7 +1,7 @@
 use core::fmt::{Display, Error as FmtError, Formatter};
 
 use celestia_types::ExtendedHeader;
-use ibc::Height;
+use ibc_core::client::types::Height;
 use tendermint::validator;
 use tendermint_proto::Protobuf;
 

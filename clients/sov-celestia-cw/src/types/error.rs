@@ -2,9 +2,9 @@ use alloc::string::String;
 use std::error::Error as StdError;
 
 use derive_more::{Display, From};
-use ibc::core::ics23_commitment::error::CommitmentError;
-use ibc::core::ics24_host::path::PathError;
-use ibc::core::ContextError;
+use ibc_core::commitment_types::error::CommitmentError;
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::host::types::path::PathError;
 
 #[derive(From, Display, Debug)]
 pub enum ContractError {

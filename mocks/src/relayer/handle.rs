@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use ibc::core::ics24_host::identifier::ChainId;
-use ibc::core::ValidationContext;
-use ibc::proto::Any;
-use ibc::Height;
+use ibc_core::client::types::Height;
+use ibc_core::host::types::identifiers::ChainId;
+use ibc_core::host::ValidationContext;
+use ibc_core::primitives::proto::Any;
 
 /// Defines the interface that empowers a chain context with the ability to
 /// query different states of a chain.

@@ -1,11 +1,11 @@
 use alloc::string::ToString;
 
-use ibc::core::ics02_client::ClientExecutionContext;
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc::core::ics24_host::path::ClientConsensusStatePath;
-use ibc::core::timestamp::Timestamp;
-use ibc::core::ContextError;
-use ibc::Height;
+use ibc_core::client::context::ClientExecutionContext;
+use ibc_core::client::types::Height;
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::host::types::path::ClientConsensusStatePath;
+use ibc_core::primitives::Timestamp;
 
 use crate::consensus_state::SovConsensusState;
 

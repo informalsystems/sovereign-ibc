@@ -8,7 +8,7 @@ use alloc::format;
 
 pub use aggregate_snark::AggregateSNARK;
 pub use celestia_header::CelestiaHeader;
-use ibc::proto::Any;
+use ibc_core::primitives::proto::Any;
 pub use sov_header::{SovHeader, SOVEREIGN_HEADER_TYPE_URL};
 pub use sov_misbehaviour::{RawSovMisbehaviour, SovMisbehaviour, SOVEREIGN_MISBEHAVIOUR_TYPE_URL};
 use tendermint_proto::Protobuf;

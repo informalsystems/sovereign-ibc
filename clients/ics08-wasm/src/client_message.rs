@@ -1,6 +1,6 @@
-use ibc::core::ics02_client::error::ClientError;
+use ibc_core_client::types::error::ClientError;
+use ibc_primitives::proto::Protobuf;
 use ibc_proto::ibc::lightclients::wasm::v1::ClientMessage as RawClientMessage;
-use ibc_proto::protobuf::Protobuf;
 
 use crate::Bytes;
 

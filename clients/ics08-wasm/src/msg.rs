@@ -1,10 +1,9 @@
 use alloc::string::{String, ToString};
 
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::Msg;
-use ibc::proto::protobuf::Protobuf;
-use ibc::Signer;
+use ibc_core_client::types::error::ClientError;
+use ibc_primitives::{Msg, Signer};
 use ibc_proto::ibc::lightclients::wasm::v1::MsgStoreCode as RawMsgStoreCode;
+use ibc_proto::Protobuf;
 
 use crate::Bytes;
 

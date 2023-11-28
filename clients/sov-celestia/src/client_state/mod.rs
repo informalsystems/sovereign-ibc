@@ -7,18 +7,18 @@ use alloc::str::FromStr;
 use alloc::vec::Vec;
 
 pub use definition::{AllowUpdate, ClientState as SovClientState, SOVEREIGN_CLIENT_STATE_TYPE_URL};
-use ibc::core::ics02_client::client_state::{
-    ClientStateCommon, ClientStateExecution, ClientStateValidation, Status, UpdateKind,
+use ibc_core::client::context::client_state::{
+    ClientStateCommon, ClientStateExecution, ClientStateValidation,
 };
-use ibc::core::ics02_client::client_type::ClientType;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics02_client::{ClientExecutionContext, ClientValidationContext};
-use ibc::core::ics23_commitment::commitment::{
+use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::{Height, Status, UpdateKind};
+use ibc_core::commitment_types::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc::core::ics24_host::path::Path;
-use ibc::proto::Any;
+use ibc_core::host::types::identifiers::{ClientId, ClientType};
+use ibc_core::host::types::path::Path;
+use ibc_core::primitives::proto::Any;
 use tendermint_proto::Protobuf;
 
 use super::consensus_state::SovConsensusState;
@@ -78,13 +78,13 @@ impl ClientStateCommon for AnyClientState {
         }
     }
 
-    fn latest_height(&self) -> ibc::Height {
+    fn latest_height(&self) -> Height {
         match self {
             AnyClientState::Sovereign(cs) => cs.latest_height(),
         }
     }
 
-    fn validate_proof_height(&self, proof_height: ibc::Height) -> Result<(), ClientError> {
+    fn validate_proof_height(&self, proof_height: Height) -> Result<(), ClientError> {
         match self {
             AnyClientState::Sovereign(cs) => cs.validate_proof_height(proof_height),
         }
@@ -157,7 +157,7 @@ where
         ctx: &mut Ctx,
         client_id: &ClientId,
         header: Any,
-    ) -> Result<Vec<ibc::Height>, ClientError> {
+    ) -> Result<Vec<Height>, ClientError> {
         match self {
             AnyClientState::Sovereign(cs) => cs.update_state(ctx, client_id, header),
         }
@@ -183,7 +183,7 @@ where
         client_id: &ClientId,
         upgraded_client_state: Any,
         upgraded_consensus_state: Any,
-    ) -> Result<ibc::Height, ClientError> {
+    ) -> Result<Height, ClientError> {
         match self {
             AnyClientState::Sovereign(cs) => cs.update_state_on_upgrade(
                 ctx,

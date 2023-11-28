@@ -1,21 +1,22 @@
 use std::time::Duration;
 
-use ibc::core::events::IbcEvent;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics03_connection::connection::ConnectionEnd;
-use ibc::core::ics04_channel::channel::ChannelEnd;
-use ibc::core::ics04_channel::commitment::{AcknowledgementCommitment, PacketCommitment};
-use ibc::core::ics04_channel::packet::{Receipt, Sequence};
-use ibc::core::ics23_commitment::commitment::CommitmentPrefix;
-use ibc::core::ics24_host::identifier::{ClientId, ConnectionId};
-use ibc::core::ics24_host::path::{
+use ibc_core::channel::types::channel::ChannelEnd;
+use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
+use ibc_core::channel::types::packet::Receipt;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentPrefix;
+use ibc_core::connection::types::ConnectionEnd;
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::handler::types::events::IbcEvent;
+use ibc_core::host::types::identifiers::{ClientId, ConnectionId, Sequence};
+use ibc_core::host::types::path::{
     AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, ClientStatePath,
     CommitmentPath, ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
 };
-use ibc::core::timestamp::Timestamp;
-use ibc::core::{ContextError, ExecutionContext, ValidationContext};
-use ibc::proto::Any;
-use ibc::Height;
+use ibc_core::host::{ExecutionContext, ValidationContext};
+use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::{Signer, Timestamp};
 use sov_celestia_client::client_state::{AnyClientState, SOVEREIGN_CLIENT_STATE_TYPE_URL};
 use sov_celestia_client::consensus_state::AnyConsensusState;
 use sov_celestia_client::proto::{
@@ -143,7 +144,7 @@ impl ValidationContext for ContextMut<'_> {
         Duration::ZERO
     }
 
-    fn validate_message_signer(&self, _signer: &ibc::Signer) -> Result<(), ContextError> {
+    fn validate_message_signer(&self, _signer: &Signer) -> Result<(), ContextError> {
         Ok(())
     }
 }
@@ -374,7 +375,7 @@ impl ValidationContext for ContextRef<'_> {
         Duration::ZERO
     }
 
-    fn validate_message_signer(&self, _signer: &ibc::Signer) -> Result<(), ContextError> {
+    fn validate_message_signer(&self, _signer: &Signer) -> Result<(), ContextError> {
         Ok(())
     }
 }

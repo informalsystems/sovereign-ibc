@@ -4,9 +4,9 @@ use alloc::format;
 use alloc::string::String;
 
 use bytes::Buf;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc_proto::google::protobuf::Any;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::primitives::proto::Any;
 use prost::Message;
 use tendermint_proto::Protobuf;
 

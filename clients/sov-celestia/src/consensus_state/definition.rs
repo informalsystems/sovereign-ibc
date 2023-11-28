@@ -2,10 +2,10 @@
 
 use alloc::vec::Vec;
 
-use ibc::core::ics02_client::consensus_state::ConsensusState as ConsensusStateTrait;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics23_commitment::commitment::CommitmentRoot;
-use ibc::core::timestamp::Timestamp;
+use ibc_core::client::context::consensus_state::ConsensusState as ConsensusStateTrait;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::commitment_types::commitment::CommitmentRoot;
+use ibc_core::primitives::Timestamp;
 use ibc_proto::google::protobuf::Any;
 use tendermint::hash::Algorithm;
 use tendermint::time::Time;
@@ -158,8 +158,8 @@ impl ConsensusStateTrait for ConsensusState {
         Timestamp::from_nanoseconds(time as u64).expect("invalid timestamp")
     }
 
-    fn encode_vec(&self) -> Vec<u8> {
-        <Self as Protobuf<Any>>::encode_vec(self).unwrap()
+    fn encode_vec(self) -> Vec<u8> {
+        <Self as Protobuf<Any>>::encode_vec(&self).unwrap()
     }
 }
 

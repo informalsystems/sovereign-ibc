@@ -1,11 +1,12 @@
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics02_client::{ClientExecutionContext, ClientValidationContext};
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc::core::ics24_host::path::{ClientConsensusStatePath, ClientStatePath};
-use ibc::core::timestamp::Timestamp;
-use ibc::core::{ContextError, ValidationContext};
-use ibc::proto::Any;
-use ibc::Height;
+use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::Height;
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
+use ibc_core::host::ValidationContext;
+use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::Timestamp;
 use sov_celestia_client::client_state::AnyClientState;
 use sov_celestia_client::consensus_state::AnyConsensusState;
 
@@ -69,6 +70,29 @@ impl ClientExecutionContext for ContextMut<'_> {
     ) -> Result<(), ContextError> {
         store_update_height(self, _client_id, height, host_height)
     }
+
+    fn delete_consensus_state(
+        &mut self,
+        _consensus_state_path: ClientConsensusStatePath,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn delete_update_time(
+        &mut self,
+        _client_id: ClientId,
+        _height: Height,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn delete_update_height(
+        &mut self,
+        _client_id: ClientId,
+        _height: Height,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
 }
 
 impl ClientValidationContext for ContextRef<'_> {
@@ -126,6 +150,29 @@ impl ClientExecutionContext for ContextRef<'_> {
         _host_height: Height,
     ) -> Result<(), ContextError> {
         unimplemented!()
+    }
+
+    fn delete_consensus_state(
+        &mut self,
+        _consensus_state_path: ClientConsensusStatePath,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn delete_update_time(
+        &mut self,
+        _client_id: ClientId,
+        _height: Height,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn delete_update_height(
+        &mut self,
+        _client_id: ClientId,
+        _height: Height,
+    ) -> Result<(), ContextError> {
+        todo!()
     }
 }
 

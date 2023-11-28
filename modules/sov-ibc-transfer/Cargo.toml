@@ -1,38 +1,39 @@
 [package]
 name = "sov-ibc-transfer"
-authors = { workspace = true }
-edition = { workspace = true }
-license = { workspace = true }
-repository = { workspace = true }
+license      = { workspace = true }
+edition      = { workspace = true }
 rust-version = { workspace = true }
-version = { workspace = true }
-readme = "README.md"
-publish = false
+version      = { workspace = true }
+authors      = { workspace = true }
+repository   = { workspace = true }
+publish      = false
+readme       = "README.md"
 
 [dependencies]
 # external dependencies
-anyhow = { workspace = true }
-borsh = { workspace = true }
-jsonrpsee = { workspace = true, optional = true }
-prost = { workspace = true }
-schemars = { workspace = true, optional = true }
-serde = { workspace = true }
+anyhow     = { workspace = true }
+borsh      = { workspace = true }
+jsonrpsee  = { workspace = true, optional = true }
+prost      = { workspace = true }
+schemars   = { workspace = true, optional = true }
+serde      = { workspace = true }
 serde_json = { workspace = true, optional = true }
-thiserror = { workspace = true }
-uint = "0.9"
+thiserror  = { workspace = true }
+uint       = "0.9"
 
 # ibc dependencies
-ibc = { workspace = true }
+ibc-app-transfer = { workspace = true, features = ["borsh", "schema"] }
+ibc-core         = { workspace = true }
 
 # sovereign dependencies
-sov-bank = { workspace = true }
-sov-modules-api = { workspace = true }
-sov-modules-macros = { workspace = true }
+sov-bank             = { workspace = true }
+sov-modules-api      = { workspace = true }
+sov-modules-macros   = { workspace = true }
 sov-rollup-interface = { workspace = true }
 
 [features]
 default = []
-serde = ["dep:serde_json"]
+serde = ["serde_json"]
 native = [
     "serde",
     "sov-bank/native",

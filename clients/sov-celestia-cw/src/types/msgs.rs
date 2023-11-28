@@ -2,12 +2,12 @@ use alloc::vec::Vec;
 use std::str::FromStr;
 
 use cosmwasm_schema::cw_serde;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics23_commitment::commitment::{CommitmentPrefix, CommitmentProofBytes};
-use ibc::core::ics24_host::path::Path;
-use ibc::core::ContextError;
-use ibc::proto::Any;
-use ibc::Height;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::{CommitmentPrefix, CommitmentProofBytes};
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::host::types::path::Path;
+use ibc_core::primitives::proto::Any;
 use ibc_proto::ibc::core::client::v1::Height as RawHeight;
 use ibc_proto::ibc::lightclients::wasm::v1::ClientMessage as RawClientMessage;
 use ics08_wasm::client_state::ClientState as WasmClientState;

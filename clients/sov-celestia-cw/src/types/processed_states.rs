@@ -2,7 +2,7 @@ use alloc::format;
 use alloc::vec::Vec;
 
 use cosmwasm_std::{Order, Storage};
-use ibc::Height;
+use ibc_core::client::types::Height;
 
 use crate::types::msgs::GenesisMetadata;
 

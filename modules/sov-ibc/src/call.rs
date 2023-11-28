@@ -3,8 +3,9 @@ use std::fmt::Debug;
 use std::rc::Rc;
 
 use anyhow::{bail, Result};
-use ibc::core::{dispatch, MsgEnvelope};
-use ibc::proto::Any;
+use ibc_core::entrypoint::dispatch;
+use ibc_core::handler::types::msgs::MsgEnvelope;
+use ibc_core::primitives::proto::Any;
 use sov_ibc_transfer::call::SDKTokenTransfer;
 use sov_ibc_transfer::context::IbcTransferContext;
 use sov_modules_api::{CallResponse, Context, DaSpec, WorkingSet};
@@ -22,8 +23,7 @@ use crate::Ibc;
     schemars(bound = "C::Address: ::schemars::JsonSchema", rename = "CallMessage")
 )]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
-pub enum CallMessage<C: sov_modules_api::Context> {
-    #[cfg_attr(feature = "native", schemars(with = "ibc::utils::schema::AnySchema"))]
+pub enum CallMessage<C: Context> {
     Core(Any),
 
     Transfer(SDKTokenTransfer<C>),
@@ -39,7 +39,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
         msg: Any,
         context: C,
         working_set: &mut WorkingSet<C>,
-    ) -> Result<sov_modules_api::CallResponse> {
+    ) -> Result<CallResponse> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         let mut execution_context = IbcContext {
@@ -49,7 +49,9 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
 
         let mut router = IbcRouter::new(self, context, shared_working_set);
 
-        let msg_envelope = MsgEnvelope::try_from(msg).unwrap();
+        let msg_envelope = MsgEnvelope::try_from(msg).map_err(|e| {
+            anyhow::anyhow!("Failed to convert Any to MsgEnvelope: {}", e.to_string())
+        })?;
 
         match dispatch(&mut execution_context, &mut router, msg_envelope) {
             Ok(_) => Ok(CallResponse::default()),

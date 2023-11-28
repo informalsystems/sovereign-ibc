@@ -1,8 +1,9 @@
 use std::time::Duration;
 
-use ibc::clients::ics07_tendermint::client_state::{AllowUpdate, ClientState};
-use ibc::core::ics24_host::identifier::ChainId;
-use ibc::Height;
+use ibc_client_tendermint::types::{AllowUpdate, ClientState};
+use ibc_core::client::types::Height;
+use ibc_core::host::types::identifiers::ChainId;
+use ibc_core::primitives::Signer;
 
 pub fn dummy_tm_client_state(chain_id: ChainId, latest_hight: Height) -> ClientState {
     ClientState::new(
@@ -21,8 +22,6 @@ pub fn dummy_tm_client_state(chain_id: ChainId, latest_hight: Height) -> ClientS
     )
     .unwrap()
 }
-
-use ibc::Signer;
 
 pub fn genesis_app_state() -> serde_json::Value {
     serde_json::json!({

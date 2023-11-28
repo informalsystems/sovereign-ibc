@@ -1,10 +1,10 @@
 use alloc::format;
 
-use ibc::core::ics02_client::consensus_state::ConsensusState;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc::core::ics24_host::path::ClientConsensusStatePath;
-use ibc::core::timestamp::Timestamp;
+use ibc_core::client::context::consensus_state::ConsensusState;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::host::types::path::ClientConsensusStatePath;
+use ibc_core::primitives::Timestamp;
 
 use super::update::check_header_trusted_next_validator_set;
 use super::SovClientState;
@@ -32,8 +32,11 @@ impl SovClientState {
 
         let header_1 = misbehaviour.header1();
         let trusted_consensus_state_1 = {
-            let consensus_state_path =
-                ClientConsensusStatePath::new(client_id, &header_1.da_header.trusted_height);
+            let consensus_state_path = ClientConsensusStatePath::new(
+                client_id.clone(),
+                header_1.da_header.trusted_height.revision_number(),
+                header_1.da_header.trusted_height.revision_height(),
+            );
             let consensus_state = ctx.consensus_state(&consensus_state_path)?;
 
             consensus_state
@@ -45,8 +48,11 @@ impl SovClientState {
 
         let header_2 = misbehaviour.header2();
         let trusted_consensus_state_2 = {
-            let consensus_state_path =
-                ClientConsensusStatePath::new(client_id, &header_2.da_header.trusted_height);
+            let consensus_state_path = ClientConsensusStatePath::new(
+                client_id.clone(),
+                header_2.da_header.trusted_height.revision_number(),
+                header_2.da_header.trusted_height.revision_height(),
+            );
             let consensus_state = ctx.consensus_state(&consensus_state_path)?;
 
             consensus_state

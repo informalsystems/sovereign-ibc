@@ -11,28 +11,31 @@ use basecoin_app::{BaseCoinApp, Builder};
 use basecoin_store::context::{ProvableStore, Store};
 use basecoin_store::impls::RevertibleStore;
 use basecoin_store::utils::SharedRwExt;
-use ibc::clients::ics07_tendermint::client_type as tm_client_type;
-use ibc::clients::ics07_tendermint::consensus_state::ConsensusState as TmConsensusState;
-use ibc::core::ics02_client::client_state::ClientStateCommon;
-use ibc::core::ics02_client::ClientExecutionContext;
-use ibc::core::ics03_connection::connection::{
-    ConnectionEnd, Counterparty as ConnCounterparty, State as ConnectionState,
+use ibc_client_tendermint::client_state::ClientState as TmClientState;
+use ibc_client_tendermint::types::{
+    client_type as tm_client_type, ConsensusState as TmConsensusState,
 };
-use ibc::core::ics03_connection::version::Version as ConnectionVersion;
-use ibc::core::ics04_channel::channel::{
+use ibc_core::channel::types::channel::{
     ChannelEnd, Counterparty as ChanCounterparty, Order, State as ChannelState,
 };
-use ibc::core::ics04_channel::packet::Sequence;
-use ibc::core::ics04_channel::Version as ChannelVersion;
-use ibc::core::ics23_commitment::commitment::CommitmentProofBytes;
-use ibc::core::ics24_host::identifier::{ChainId, ChannelId, ClientId, ConnectionId, PortId};
-use ibc::core::ics24_host::path::{
+use ibc_core::channel::types::Version as ChannelVersion;
+use ibc_core::client::context::client_state::ClientStateCommon;
+use ibc_core::client::context::ClientExecutionContext;
+use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentProofBytes;
+use ibc_core::connection::types::version::Version as ConnectionVersion;
+use ibc_core::connection::types::{
+    ConnectionEnd, Counterparty as ConnCounterparty, State as ConnectionState,
+};
+use ibc_core::host::types::identifiers::{
+    ChainId, ChannelId, ClientId, ConnectionId, PortId, Sequence,
+};
+use ibc_core::host::types::path::{
     ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, Path, SeqAckPath,
     SeqRecvPath, SeqSendPath,
 };
-use ibc::core::{ExecutionContext, ValidationContext};
-use ibc::hosts::tendermint::IBC_QUERY_PATH;
-use ibc::Height;
+use ibc_core::host::{ExecutionContext, ValidationContext};
+use ibc_core_host_cosmos::IBC_QUERY_PATH;
 use tendermint::abci::request::{InitChain, Query};
 use tendermint::block::Height as TmHeight;
 use tendermint::v0_37::abci::{Request as AbciRequest, Response as AbciResponse};
@@ -288,7 +291,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         let client_state =
             dummy_tm_client_state(self.chain_id.clone(), Height::new(0, 10).unwrap());
 
-        let latest_height = client_state.latest_height();
+        let latest_height = TmClientState::from(client_state.clone()).latest_height();
 
         self.ibc_ctx()
             .store_update_time(
@@ -309,17 +312,14 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         self.ibc_ctx().increase_client_counter().unwrap();
 
         self.ibc_ctx()
-            .store_client_state(client_state_path, client_state)
+            .store_client_state(client_state_path, client_state.into())
             .unwrap();
 
-        let consensus_state_path =
-            ClientConsensusStatePath::new(&client_id, &Height::new(0, 10).unwrap());
+        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 10);
 
-        let consensus_state = AnyConsensusState::Tendermint(TmConsensusState::new(
-            vec![].into(),
-            Time::now(),
-            Hash::None,
-        ));
+        let consensus_state = AnyConsensusState::Tendermint(
+            TmConsensusState::new(vec![].into(), Time::now(), Hash::None).into(),
+        );
 
         self.ibc_ctx()
             .store_consensus_state(consensus_state_path, consensus_state)

@@ -6,22 +6,21 @@ use alloc::vec::Vec;
 use core::convert::{TryFrom, TryInto};
 use core::str::FromStr;
 
-use ibc::core::ics02_client::client_state::{
-    ClientStateCommon, ClientStateExecution, ClientStateValidation, Status, UpdateKind,
+use ibc_core::client::context::client_state::{
+    ClientStateCommon, ClientStateExecution, ClientStateValidation,
 };
-use ibc::core::ics02_client::client_type::ClientType;
-use ibc::core::ics02_client::consensus_state::ConsensusState;
-use ibc::core::ics02_client::error::{ClientError, UpgradeClientError};
-use ibc::core::ics02_client::{ClientExecutionContext, ClientValidationContext};
-use ibc::core::ics23_commitment::commitment::{
+use ibc_core::client::context::consensus_state::ConsensusState;
+use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
+use ibc_core::client::types::error::{ClientError, UpgradeClientError};
+use ibc_core::client::types::{Height, Status, UpdateKind};
+use ibc_core::commitment_types::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
-use ibc::core::ics23_commitment::merkle::{apply_prefix, MerkleProof};
-use ibc::core::ics24_host::identifier::{ChainId, ClientId};
-use ibc::core::ics24_host::path::{
+use ibc_core::commitment_types::merkle::{apply_prefix, MerkleProof};
+use ibc_core::host::types::identifiers::{ChainId, ClientId, ClientType};
+use ibc_core::host::types::path::{
     ClientConsensusStatePath, ClientStatePath, Path, UpgradeClientPath,
 };
-use ibc::Height;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::core::commitment::v1::MerkleProof as RawMerkleProof;
 use prost::Message;
@@ -238,14 +237,17 @@ where
         }
 
         let latest_consensus_state: SovConsensusState = {
-            let any_latest_consensus_state = match ctx.consensus_state(
-                &ClientConsensusStatePath::new(client_id, &self.latest_height),
-            ) {
-                Ok(cs) => cs,
-                // if the client state does not have an associated consensus state for its latest height
-                // then it must be expired
-                Err(_) => return Ok(Status::Expired),
-            };
+            let any_latest_consensus_state =
+                match ctx.consensus_state(&ClientConsensusStatePath::new(
+                    client_id.clone(),
+                    self.latest_height.revision_number(),
+                    self.latest_height.revision_height(),
+                )) {
+                    Ok(cs) => cs,
+                    // if the client state does not have an associated consensus state for its latest height
+                    // then it must be expired
+                    Err(_) => return Ok(Status::Expired),
+                };
 
             any_latest_consensus_state.try_into()?
         };
@@ -282,7 +284,11 @@ where
 
         ctx.store_client_state(ClientStatePath::new(client_id), self.clone().into())?;
         ctx.store_consensus_state(
-            ClientConsensusStatePath::new(client_id, &self.latest_height),
+            ClientConsensusStatePath::new(
+                client_id.clone(),
+                self.latest_height.revision_number(),
+                self.latest_height.revision_height(),
+            ),
             tm_consensus_state.into(),
         )?;
         ctx.store_update_time(
@@ -305,7 +311,11 @@ where
         let header_height = header.height();
 
         let maybe_existing_consensus_state = {
-            let path_at_header_height = ClientConsensusStatePath::new(client_id, &header_height);
+            let path_at_header_height = ClientConsensusStatePath::new(
+                client_id.clone(),
+                header_height.revision_number(),
+                header_height.revision_height(),
+            );
 
             ctx.consensus_state(&path_at_header_height).ok()
         };
@@ -320,7 +330,11 @@ where
             let new_client_state = self.clone().with_header(header)?;
 
             ctx.store_consensus_state(
-                ClientConsensusStatePath::new(client_id, &new_client_state.latest_height),
+                ClientConsensusStatePath::new(
+                    client_id.clone(),
+                    new_client_state.latest_height.revision_number(),
+                    new_client_state.latest_height.revision_height(),
+                ),
                 new_consensus_state.into(),
             )?;
             ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
@@ -401,7 +415,11 @@ where
 
         ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
         ctx.store_consensus_state(
-            ClientConsensusStatePath::new(client_id, &latest_height),
+            ClientConsensusStatePath::new(
+                client_id.clone(),
+                latest_height.revision_number(),
+                latest_height.revision_height(),
+            ),
             new_consensus_state.into(),
         )?;
         ctx.store_update_time(client_id.clone(), latest_height, ctx.host_timestamp()?)?;

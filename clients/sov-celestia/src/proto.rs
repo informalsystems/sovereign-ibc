@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 
 use celestia_proto::header::pb::ExtendedHeader;
-use ibc::proto::tendermint::v1::Fraction;
+use ibc_client_tendermint::types::proto::v1::Fraction;
 use ibc_proto::google::protobuf::{Duration, Timestamp};
 use ibc_proto::ibc::core::client::v1::Height;
 use ibc_proto::ibc::core::commitment::v1::MerkleRoot;

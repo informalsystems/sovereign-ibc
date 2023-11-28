@@ -1,6 +1,6 @@
-use ibc::core::ics23_commitment::merkle::MerkleProof;
-use ibc::proto::core::commitment::v1::MerkleProof as RawMerkleProof;
-use ibc_proto::ics23::CommitmentProof;
+use ibc_core::commitment_types::merkle::MerkleProof;
+use ibc_core::commitment_types::proto::ics23::CommitmentProof;
+use ibc_core::commitment_types::proto::v1::MerkleProof as RawMerkleProof;
 use tendermint::merkle::proof::ProofOps;
 
 pub fn convert_tm_to_ics_merkle_proof(tm_proof: &ProofOps) -> MerkleProof {

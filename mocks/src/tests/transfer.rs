@@ -1,8 +1,8 @@
 use std::time::Duration;
 
-use ibc::core::ValidationContext;
-use ibc::test_utils::get_dummy_account_id;
-use ibc::Signer;
+use ibc_core::host::ValidationContext;
+use ibc_core::primitives::Signer;
+use ibc_testkit::fixtures::core::signer::dummy_account_id;
 use sov_bank::get_genesis_token_address;
 use sov_modules_api::default_context::DefaultContext;
 use tokio::time::sleep;
@@ -21,7 +21,7 @@ async fn test_sdk_token_transfer() {
 
     let sender_on_sov = token.address_and_balances[0].0;
 
-    let receiver_on_cos = get_dummy_account_id();
+    let receiver_on_cos = dummy_account_id();
 
     let transfer_amount = 100;
 

@@ -1,17 +1,16 @@
 use std::sync::Arc;
 
-use ibc::clients::ics07_tendermint::client_type as tm_client_type;
-use ibc::core::ics02_client::client_state::ClientStateCommon;
-use ibc::core::ics02_client::msgs::create_client::MsgCreateClient;
-use ibc::core::ics02_client::msgs::update_client::MsgUpdateClient;
-use ibc::core::ics04_channel::msgs::MsgRecvPacket;
-use ibc::core::ics04_channel::packet::{Packet, Sequence};
-use ibc::core::ics04_channel::timeout::TimeoutHeight;
-use ibc::core::ics24_host::identifier::{ChannelId, ClientId, PortId};
-use ibc::core::ics24_host::path::ReceiptPath;
-use ibc::core::timestamp::Timestamp;
-use ibc::core::{Msg, ValidationContext};
-use ibc::{Height, Signer};
+use ibc_client_tendermint::types::client_type as tm_client_type;
+use ibc_core::channel::types::msgs::MsgRecvPacket;
+use ibc_core::channel::types::packet::Packet;
+use ibc_core::channel::types::timeout::TimeoutHeight;
+use ibc_core::client::context::client_state::ClientStateCommon;
+use ibc_core::client::types::msgs::{MsgCreateClient, MsgUpdateClient};
+use ibc_core::client::types::Height;
+use ibc_core::host::types::identifiers::{ChannelId, ClientId, PortId, Sequence};
+use ibc_core::host::types::path::ReceiptPath;
+use ibc_core::host::ValidationContext;
+use ibc_core::primitives::{Msg, Signer, Timestamp};
 use sov_ibc::call::CallMessage;
 use sov_modules_api::default_context::DefaultContext;
 

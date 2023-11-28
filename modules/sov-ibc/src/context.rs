@@ -2,25 +2,26 @@ use core::time::Duration;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use ibc::clients::ics07_tendermint::client_state::ClientState as TmClientState;
-use ibc::core::events::IbcEvent;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics03_connection::connection::ConnectionEnd;
-use ibc::core::ics03_connection::error::ConnectionError;
-use ibc::core::ics04_channel::channel::ChannelEnd;
-use ibc::core::ics04_channel::commitment::{AcknowledgementCommitment, PacketCommitment};
-use ibc::core::ics04_channel::error::{ChannelError, PacketError};
-use ibc::core::ics04_channel::packet::{Receipt, Sequence};
-use ibc::core::ics23_commitment::commitment::CommitmentPrefix;
-use ibc::core::ics24_host::identifier::{ClientId, ConnectionId};
-use ibc::core::ics24_host::path::{
+use ibc_client_tendermint::client_state::ClientState as TmClientState;
+use ibc_core::channel::types::channel::ChannelEnd;
+use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
+use ibc_core::channel::types::error::{ChannelError, PacketError};
+use ibc_core::channel::types::packet::Receipt;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentPrefix;
+use ibc_core::connection::types::error::ConnectionError;
+use ibc_core::connection::types::ConnectionEnd;
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::handler::types::events::IbcEvent;
+use ibc_core::host::types::identifiers::{ClientId, ConnectionId, Sequence};
+use ibc_core::host::types::path::{
     AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath,
     ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
 };
-use ibc::core::timestamp::Timestamp;
-use ibc::core::{ContextError, ExecutionContext, ValidationContext};
-use ibc::proto::Any;
-use ibc::Height;
+use ibc_core::host::{ExecutionContext, ValidationContext};
+use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::{Signer, Timestamp};
 use sov_modules_api::{Context, DaSpec, WorkingSet};
 
 use crate::clients::{AnyClientState, AnyConsensusState};
@@ -95,8 +96,8 @@ where
                 ClientError::ConsensusStateNotFound {
                     client_id: client_cons_state_path.client_id.clone(),
                     height: Height::new(
-                        client_cons_state_path.epoch,
-                        client_cons_state_path.height,
+                        client_cons_state_path.revision_number,
+                        client_cons_state_path.revision_height,
                     )
                     .map_err(|_| ClientError::Other {
                         description: "Height cannot be zero".to_string(),
@@ -331,15 +332,15 @@ where
         Duration::ZERO
     }
 
-    fn validate_message_signer(&self, signer: &ibc::Signer) -> Result<(), ContextError> {
+    fn validate_message_signer(&self, signer: &Signer) -> Result<(), ContextError> {
         Ok(())
     }
 }
 
 impl<'a, C, Da> ExecutionContext for IbcContext<'a, C, Da>
 where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
+    C: Context,
+    Da: DaSpec,
 {
     fn get_client_execution_context(&mut self) -> &mut Self::E {
         self
