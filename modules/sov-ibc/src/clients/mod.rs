@@ -1,14 +1,15 @@
 pub mod context;
 
 use derive_more::{From, TryInto};
-use ibc::clients::ics07_tendermint::client_state::ClientState as TmClientState;
-use ibc::clients::ics07_tendermint::consensus_state::ConsensusState as TmConsensusState;
-use ibc::core::ics02_client::consensus_state::ConsensusState;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::proto::protobuf::Protobuf;
-use ibc::proto::Any;
+use ibc_client_tendermint::client_state::ClientState as TmClientState;
+use ibc_client_tendermint::consensus_state::ConsensusState as TmConsensusState;
+use ibc_core::client::context::consensus_state::ConsensusState;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::commitment_types::commitment;
+use ibc_core::primitives;
+use ibc_core::primitives::proto::{Any, Protobuf};
 
-#[derive(Clone, From, TryInto, ConsensusState)]
+#[derive(Clone, From, TryInto)]
 pub enum AnyConsensusState {
     Tendermint(TmConsensusState),
 }
@@ -57,3 +58,25 @@ impl From<AnyClientState> for Any {
 }
 
 impl Protobuf<Any> for AnyClientState {}
+
+impl ConsensusState for AnyConsensusState {
+    fn root(&self) -> &commitment::CommitmentRoot {
+        match self {
+            AnyConsensusState::Tendermint(cs) => cs.root(),
+        }
+    }
+
+    fn timestamp(&self) -> primitives::Timestamp {
+        match self {
+            AnyConsensusState::Tendermint(cs) => cs.timestamp().into(),
+        }
+    }
+
+    fn encode_vec(self) -> Vec<u8> {
+        match self {
+            AnyConsensusState::Tendermint(cs) => {
+                <TmConsensusState as ConsensusState>::encode_vec(cs)
+            }
+        }
+    }
+}

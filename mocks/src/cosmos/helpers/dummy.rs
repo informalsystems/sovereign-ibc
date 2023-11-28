@@ -1,30 +1,31 @@
 use std::time::Duration;
 
-use ibc::clients::ics07_tendermint::client_state::{AllowUpdate, ClientState};
-use ibc::core::ics24_host::identifier::ChainId;
-use ibc::Height;
-
-use ibc::core::ics23_commitment::specs::ProofSpecs;
-use ibc::test_utils::get_dummy_bech32_account;
-use ibc::Signer;
-use ibc_proto::ics23::ProofSpec as RawProofSpec;
+use ibc_client_tendermint::types::{AllowUpdate, ClientState};
+use ibc_core::client::types::Height;
+use ibc_core::commitment_types::proto::ics23::{
+    HashOp, InnerSpec, LeafOp, LengthOp, ProofSpec as RawProofSpec,
+};
+use ibc_core::commitment_types::specs::ProofSpecs;
+use ibc_core::host::types::identifiers::ChainId;
+use ibc_core::primitives::Signer;
+use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 
 pub fn basecoin_proofspecs() -> ProofSpecs {
     let spec = RawProofSpec {
-        leaf_spec: Some(ibc_proto::ics23::LeafOp {
-            hash: ibc_proto::ics23::HashOp::Sha256.into(),
-            prehash_key: ibc_proto::ics23::HashOp::NoHash.into(),
-            prehash_value: ibc_proto::ics23::HashOp::NoHash.into(),
-            length: ibc_proto::ics23::LengthOp::NoPrefix.into(),
+        leaf_spec: Some(LeafOp {
+            hash: HashOp::Sha256.into(),
+            prehash_key: HashOp::NoHash.into(),
+            prehash_value: HashOp::NoHash.into(),
+            length: LengthOp::NoPrefix.into(),
             prefix: [0; 64].into(),
         }),
-        inner_spec: Some(ibc_proto::ics23::InnerSpec {
+        inner_spec: Some(InnerSpec {
             child_order: [0, 1, 2].into(),
             child_size: 32,
             min_prefix_length: 0,
             max_prefix_length: 64,
             empty_child: [0, 32].into(),
-            hash: ibc_proto::ics23::HashOp::Sha256.into(),
+            hash: HashOp::Sha256.into(),
         }),
         max_depth: 0,
         min_depth: 0,
@@ -83,7 +84,7 @@ pub fn genesis_app_state() -> serde_json::Value {
       "cosmos1as9ap057eellftptlhyw5ajna7uaeewzkk6fnz": {
         "basecoin": "0x1000000000"
       },
-      get_dummy_bech32_account(): {
+      dummy_bech32_account(): {
         "basecoin": "0x1000000000",
         "othercoin": "0x1000000000",
         "samoleans": "0x1000000000"

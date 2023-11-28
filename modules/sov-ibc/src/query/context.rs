@@ -1,17 +1,18 @@
-use ibc::clients::ics07_tendermint::client_type as tm_client_type;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics03_connection::connection::IdentifiedConnectionEnd;
-use ibc::core::ics03_connection::error::ConnectionError;
-use ibc::core::ics04_channel::channel::IdentifiedChannelEnd;
-use ibc::core::ics04_channel::error::ChannelError;
-use ibc::core::ics04_channel::packet::Sequence;
-use ibc::core::ics24_host::identifier::{ChannelId, ClientId, ConnectionId, PortId};
-use ibc::core::ics24_host::path::{
+use ibc_client_tendermint::types::client_type as tm_client_type;
+use ibc_core::channel::types::channel::IdentifiedChannelEnd;
+use ibc_core::channel::types::error::ChannelError;
+use ibc_core::channel::types::packet::PacketState;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::Height;
+use ibc_core::connection::types::error::ConnectionError;
+use ibc_core::connection::types::IdentifiedConnectionEnd;
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::host::types::identifiers::{ChannelId, ClientId, ConnectionId, PortId, Sequence};
+use ibc_core::host::types::path::{
     AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath, Path,
     ReceiptPath,
 };
-use ibc::core::{ContextError, ValidationContext};
-use ibc::Height;
+use ibc_core::host::ValidationContext;
 use ibc_query::core::context::{ProvableContext, QueryContext};
 use sov_modules_api::{Context, DaSpec};
 
@@ -61,10 +62,7 @@ where
     fn consensus_states(
         &self,
         client_id: &ClientId,
-    ) -> Result<
-        Vec<(Height, <Self as ValidationContext>::AnyConsensusState)>,
-        ibc::core::ContextError,
-    > {
+    ) -> Result<Vec<(Height, <Self as ValidationContext>::AnyConsensusState)>, ContextError> {
         let update_heights: Vec<Height> = self
             .ibc
             .client_update_heights_vec
@@ -74,7 +72,11 @@ where
         let mut consesnsus_states = Vec::new();
 
         for height in update_heights {
-            let cs = self.consensus_state(&ClientConsensusStatePath::new(client_id, &height))?;
+            let cs = self.consensus_state(&ClientConsensusStatePath::new(
+                client_id.clone(),
+                height.revision_number(),
+                height.revision_height(),
+            ))?;
             consesnsus_states.push((height, cs));
         }
 
@@ -155,24 +157,31 @@ where
     fn packet_commitments(
         &self,
         channel_end_path: &ChannelEndPath,
-    ) -> Result<Vec<CommitmentPath>, ContextError> {
-        Ok(self
-            .ibc
+    ) -> Result<Vec<PacketState>, ContextError> {
+        self.ibc
             .packet_commitment_vec
             .iter(*self.working_set.borrow_mut())
             .filter(|commitment_path| {
                 &ChannelEndPath::new(&commitment_path.port_id, &commitment_path.channel_id)
                     == channel_end_path
             })
-            .filter(|commitment_path| self.get_packet_commitment(commitment_path).is_ok())
-            .collect())
+            .map(|commitment_path| {
+                self.get_packet_commitment(&commitment_path)
+                    .map(|packet| PacketState {
+                        seq: commitment_path.sequence,
+                        port_id: commitment_path.port_id,
+                        chan_id: commitment_path.channel_id,
+                        data: packet.as_ref().into(),
+                    })
+            })
+            .collect::<Result<Vec<_>, _>>()
     }
 
     fn packet_acknowledgements(
         &self,
         channel_end_path: &ChannelEndPath,
         sequences: impl ExactSizeIterator<Item = Sequence>,
-    ) -> Result<Vec<AckPath>, ContextError> {
+    ) -> Result<Vec<PacketState>, ContextError> {
         let collected_paths: Vec<_> = if sequences.len() == 0 {
             self.ibc
                 .packet_ack_vec
@@ -188,10 +197,18 @@ where
                 .collect()
         };
 
-        Ok(collected_paths
+        collected_paths
             .into_iter()
-            .filter(|ack_path| self.get_packet_acknowledgement(ack_path).is_ok())
-            .collect())
+            .map(|ack_path| {
+                self.get_packet_acknowledgement(&ack_path)
+                    .map(|packet| PacketState {
+                        seq: ack_path.sequence,
+                        port_id: ack_path.port_id,
+                        chan_id: ack_path.channel_id,
+                        data: packet.as_ref().into(),
+                    })
+            })
+            .collect::<Result<Vec<_>, _>>()
     }
 
     fn unreceived_packets(

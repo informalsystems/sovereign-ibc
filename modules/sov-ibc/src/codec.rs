@@ -1,8 +1,9 @@
 use core::fmt::Display;
+use std::io::Error;
 use std::marker::PhantomData;
 
-use ibc::core::ics04_channel::commitment::{AcknowledgementCommitment, PacketCommitment};
-use ibc::proto::protobuf::{Error, Protobuf};
+use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
+use ibc_core::primitives::proto::Protobuf;
 use prost::Message;
 use sov_state::codec::{BorshCodec, StateCodec, StateValueCodec};
 
@@ -16,16 +17,21 @@ impl<V, Raw> StateValueCodec<V> for ProtobufCodec<Raw>
 where
     V: Protobuf<Raw>,
     V::Error: Display,
-    Raw: Message + Default,
+    Raw: From<V> + Message + Default,
 {
     type Error = Error;
 
     fn encode_value(&self, value: &V) -> Vec<u8> {
-        value.encode_vec()
+        value.clone().encode_vec()
     }
 
     fn try_decode_value(&self, bytes: &[u8]) -> Result<V, Self::Error> {
-        Protobuf::decode_vec(bytes)
+        Protobuf::decode_vec(bytes).map_err(|e| {
+            Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Protobuf decode error: {}", e),
+            )
+        })
     }
 }
 

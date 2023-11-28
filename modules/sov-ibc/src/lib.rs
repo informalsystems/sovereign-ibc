@@ -1,5 +1,12 @@
 #![allow(unused_variables)]
-#![allow(dead_code)]
+#![forbid(unsafe_code)]
+#![deny(
+    warnings,
+    unused_import_braces,
+    unused_qualifications,
+    rust_2018_idioms,
+    clippy::unwrap_used
+)]
 
 pub mod call;
 pub mod clients;
@@ -16,20 +23,20 @@ mod router;
 
 use clients::{AnyClientState, AnyConsensusState};
 use codec::{AcknowledgementCommitmentCodec, PacketCommitmentCodec, ProtobufCodec};
-use ibc::core::ics03_connection::connection::ConnectionEnd;
-use ibc::core::ics04_channel::channel::ChannelEnd;
-use ibc::core::ics04_channel::commitment::{AcknowledgementCommitment, PacketCommitment};
-use ibc::core::ics04_channel::packet::{Receipt, Sequence};
-use ibc::core::ics24_host::identifier::{ClientId, ConnectionId};
-use ibc::core::ics24_host::path::{
+use ibc_core::channel::types::channel::ChannelEnd;
+use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
+use ibc_core::channel::types::packet::Receipt;
+use ibc_core::channel::types::proto::v1::Channel as RawChannelEnd;
+use ibc_core::client::types::Height;
+use ibc_core::connection::types::proto::v1::ConnectionEnd as RawConnectionEnd;
+use ibc_core::connection::types::ConnectionEnd;
+use ibc_core::host::types::identifiers::{ClientId, ConnectionId, Sequence};
+use ibc_core::host::types::path::{
     AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath,
     ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
 };
-use ibc::core::timestamp::Timestamp;
-use ibc::proto::core::channel::v1::Channel as RawChannelEnd;
-use ibc::proto::core::connection::v1::ConnectionEnd as RawConnectionEnd;
-use ibc::proto::Any;
-use ibc::Height;
+use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::Timestamp;
 use serde::{Deserialize, Serialize};
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::{Context, DaSpec, Error, StateMap, StateValue, StateVec, WorkingSet};

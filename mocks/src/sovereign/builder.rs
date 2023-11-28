@@ -1,4 +1,4 @@
-use ibc::core::ics24_host::identifier::ChainId;
+use ibc_core::host::types::identifiers::ChainId;
 use sov_bank::TokenConfig;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, WorkingSet};
@@ -20,7 +20,7 @@ pub struct DefaultBuilder {
 
 impl Default for DefaultBuilder {
     fn default() -> Self {
-        let chain_id = ChainId::new("ibc", 0).unwrap();
+        let chain_id = ChainId::new("ibc-0").unwrap();
 
         let tmpdir = tempfile::tempdir().unwrap();
 

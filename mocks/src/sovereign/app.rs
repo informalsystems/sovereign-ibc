@@ -1,28 +1,30 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use ibc::applications::transfer::PrefixedDenom;
-use ibc::clients::ics07_tendermint::client_type as tm_client_type;
-use ibc::clients::ics07_tendermint::consensus_state::ConsensusState as TmConsensusState;
-use ibc::core::ics02_client::client_state::ClientStateCommon;
-use ibc::core::ics02_client::ClientExecutionContext;
-use ibc::core::ics03_connection::connection::{
-    ConnectionEnd, Counterparty as ConnCounterparty, State as ConnectionState,
+use ibc_app_transfer::types::PrefixedDenom;
+use ibc_client_tendermint::types::{
+    client_type as tm_client_type, ConsensusState as TmConsensusState,
 };
-use ibc::core::ics03_connection::version::Version as ConnectionVersion;
-use ibc::core::ics04_channel::channel::{
+use ibc_core::channel::types::channel::{
     ChannelEnd, Counterparty as ChanCounterparty, Order, State as ChannelState,
 };
-use ibc::core::ics04_channel::packet::Sequence;
-use ibc::core::ics04_channel::Version as ChannelVersion;
-use ibc::core::ics23_commitment::commitment::CommitmentPrefix;
-use ibc::core::ics24_host::identifier::{ChainId, ChannelId, ClientId, ConnectionId, PortId};
-use ibc::core::ics24_host::path::{
+use ibc_core::channel::types::Version as ChannelVersion;
+use ibc_core::client::context::client_state::ClientStateCommon;
+use ibc_core::client::context::ClientExecutionContext;
+use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentPrefix;
+use ibc_core::connection::types::version::Version as ConnectionVersion;
+use ibc_core::connection::types::{
+    ConnectionEnd, Counterparty as ConnCounterparty, State as ConnectionState,
+};
+use ibc_core::host::types::identifiers::{
+    ChainId, ChannelId, ClientId, ConnectionId, PortId, Sequence,
+};
+use ibc_core::host::types::path::{
     ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, SeqAckPath,
     SeqRecvPath, SeqSendPath,
 };
-use ibc::core::{ExecutionContext, ValidationContext};
-use ibc::Height;
+use ibc_core::host::{ExecutionContext, ValidationContext};
 use sov_bank::Bank;
 use sov_ibc::clients::{AnyClientState, AnyConsensusState};
 use sov_ibc::context::IbcContext;
@@ -145,10 +147,9 @@ where
 
         let client_state_path = ClientStatePath::new(&client_id);
 
-        let client_state = AnyClientState::Tendermint(dummy_tm_client_state(
-            client_chain_id.clone(),
-            Height::new(0, 3).unwrap(),
-        ));
+        let client_state = AnyClientState::Tendermint(
+            dummy_tm_client_state(client_chain_id.clone(), Height::new(0, 3).unwrap()).into(),
+        );
 
         let latest_height = client_state.latest_height();
 
@@ -174,19 +175,21 @@ where
             .store_client_state(client_state_path, client_state)
             .unwrap();
 
-        let consensus_state_path =
-            ClientConsensusStatePath::new(&client_id, &Height::new(0, 3).unwrap());
+        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 3);
 
-        let consensus_state = AnyConsensusState::Tendermint(TmConsensusState::new(
-            vec![].into(),
-            Time::now(),
-            // Hash for default validator set of CosmosBuilder
-            Hash::Sha256([
-                0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb, 0x4b,
-                0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d, 0x9e, 0xe1,
-                0x86, 0x1b, 0xc1, 0x43,
-            ]),
-        ));
+        let consensus_state = AnyConsensusState::Tendermint(
+            TmConsensusState::new(
+                vec![].into(),
+                Time::now(),
+                // Hash for default validator set of CosmosBuilder
+                Hash::Sha256([
+                    0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
+                    0x4b, 0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d,
+                    0x9e, 0xe1, 0x86, 0x1b, 0xc1, 0x43,
+                ]),
+            )
+            .into(),
+        );
 
         self.ibc_ctx
             .store_consensus_state(consensus_state_path, consensus_state)

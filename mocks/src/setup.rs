@@ -1,10 +1,9 @@
 use std::time::Duration;
 
 use basecoin_store::impls::InMemoryStore;
-use ibc::clients::ics07_tendermint::client_type as tm_client_type;
-use ibc::core::ics04_channel::packet::Sequence;
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc::core::ValidationContext;
+use ibc_client_tendermint::types::client_type as tm_client_type;
+use ibc_core::host::types::identifiers::{ClientId, Sequence};
+use ibc_core::host::ValidationContext;
 use tokio::time::sleep;
 
 use super::cosmos::helpers::dummy_signer;

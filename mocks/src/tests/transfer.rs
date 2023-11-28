@@ -1,12 +1,12 @@
 use std::str::FromStr;
 use std::time::Duration;
 
-use ibc::applications::transfer::{Coin, PrefixedDenom, TracePrefix};
-use ibc::core::ics02_client::client_state::ClientStateCommon;
-use ibc::core::ics24_host::identifier::{ChannelId, PortId};
-use ibc::core::{Msg, ValidationContext};
-use ibc::test_utils::{get_dummy_account_id, get_dummy_bech32_account};
-use ibc::Signer;
+use ibc_app_transfer::types::{Coin, PrefixedDenom, TracePrefix};
+use ibc_core::client::context::client_state::ClientStateCommon;
+use ibc_core::host::types::identifiers::{ChannelId, PortId};
+use ibc_core::host::ValidationContext;
+use ibc_core::primitives::{Msg, Signer};
+use ibc_testkit::fixtures::core::signer::{dummy_account_id, dummy_bech32_account};
 use sov_bank::get_genesis_token_address;
 use sov_modules_api::default_context::DefaultContext;
 use tokio::time::sleep;
@@ -25,7 +25,7 @@ async fn test_sdk_token_transfer() {
 
     let sender_on_sov = token.address_and_balances[0].0;
 
-    let receiver_on_cos = get_dummy_account_id();
+    let receiver_on_cos = dummy_account_id();
 
     let transfer_amount = 100;
 
@@ -102,7 +102,7 @@ async fn test_token_transfer() {
 
     let sender_on_sov = token.address_and_balances[0].0;
 
-    let receiver_on_cos = Signer::from(get_dummy_bech32_account());
+    let receiver_on_cos = Signer::from(dummy_bech32_account());
 
     let transfer_amount = 100;
     let transfer_denom = PrefixedDenom::from_str("basecoin").unwrap();

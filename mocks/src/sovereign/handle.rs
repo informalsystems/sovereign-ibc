@@ -1,14 +1,14 @@
 use std::str::FromStr;
 
-use ibc::applications::transfer::Memo;
-use ibc::clients::ics07_tendermint::header::Header;
-use ibc::core::events::IbcEvent;
-use ibc::core::ics04_channel::timeout::TimeoutHeight;
-use ibc::core::ics23_commitment::commitment::CommitmentProofBytes;
-use ibc::core::ics24_host::identifier::{ChainId, ChannelId, PortId};
-use ibc::core::timestamp::Timestamp;
-use ibc::proto::Any;
-use ibc::{Height, Signer};
+use ibc_app_transfer::types::Memo;
+use ibc_client_tendermint::types::Header;
+use ibc_core::channel::types::timeout::TimeoutHeight;
+use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentProofBytes;
+use ibc_core::handler::types::events::IbcEvent;
+use ibc_core::host::types::identifiers::{ChainId, ChannelId, PortId};
+use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::{Signer, Timestamp};
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;

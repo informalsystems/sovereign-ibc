@@ -1,21 +1,21 @@
-use ibc::clients::ics07_tendermint::{
+use ibc_client_tendermint::context::{
     CommonContext as TmCommonContext, ValidationContext as TmValidationContext,
 };
-use ibc::core::ics02_client::client_state::{
-    ClientStateCommon, ClientStateExecution, ClientStateValidation, Status, UpdateKind,
+use ibc_core::client::context::client_state::{
+    ClientStateCommon, ClientStateExecution, ClientStateValidation,
 };
-use ibc::core::ics02_client::client_type::ClientType;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics02_client::{ClientExecutionContext, ClientValidationContext};
-use ibc::core::ics23_commitment::commitment::{
+use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::{Height, Status, UpdateKind};
+use ibc_core::commitment_types::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc::core::ics24_host::path::{ClientConsensusStatePath, ClientStatePath, Path};
-use ibc::core::timestamp::Timestamp;
-use ibc::core::{ContextError, ValidationContext};
-use ibc::proto::Any;
-use ibc::Height;
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::host::types::identifiers::{ClientId, ClientType};
+use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath, Path};
+use ibc_core::host::ValidationContext;
+use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::Timestamp;
 use sov_modules_api::{Context, DaSpec};
 
 use super::{AnyClientState, AnyConsensusState};
@@ -37,13 +37,13 @@ impl ClientStateCommon for AnyClientState {
         }
     }
 
-    fn latest_height(&self) -> ibc::Height {
+    fn latest_height(&self) -> Height {
         match self {
             AnyClientState::Tendermint(cs) => cs.latest_height(),
         }
     }
 
-    fn validate_proof_height(&self, proof_height: ibc::Height) -> Result<(), ClientError> {
+    fn validate_proof_height(&self, proof_height: Height) -> Result<(), ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => cs.validate_proof_height(proof_height),
         }
@@ -98,8 +98,8 @@ impl ClientStateCommon for AnyClientState {
 
 impl<'a, C, Da> ClientStateExecution<IbcContext<'a, C, Da>> for AnyClientState
 where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
+    C: Context,
+    Da: DaSpec,
 {
     fn initialise(
         &self,
@@ -117,7 +117,7 @@ where
         ctx: &mut IbcContext<'a, C, Da>,
         client_id: &ClientId,
         header: Any,
-    ) -> Result<Vec<ibc::Height>, ClientError> {
+    ) -> Result<Vec<Height>, ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => cs.update_state(ctx, client_id, header),
         }
@@ -143,7 +143,7 @@ where
         client_id: &ClientId,
         upgraded_client_state: Any,
         upgraded_consensus_state: Any,
-    ) -> Result<ibc::Height, ClientError> {
+    ) -> Result<Height, ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => cs.update_state_on_upgrade(
                 ctx,
@@ -157,8 +157,8 @@ where
 
 impl<'a, C, Da> ClientStateValidation<IbcContext<'a, C, Da>> for AnyClientState
 where
-    C: sov_modules_api::Context,
-    Da: sov_modules_api::DaSpec,
+    C: Context,
+    Da: DaSpec,
 {
     fn verify_client_message(
         &self,
@@ -272,6 +272,17 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         Ok(())
     }
 
+    fn delete_consensus_state(
+        &mut self,
+        consensus_state_path: ClientConsensusStatePath,
+    ) -> Result<(), ContextError> {
+        self.ibc
+            .consensus_state_map
+            .remove(&consensus_state_path, &mut self.working_set.borrow_mut());
+
+        Ok(())
+    }
+
     fn store_update_time(
         &mut self,
         client_id: ClientId,
@@ -303,6 +314,28 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         );
         Ok(())
     }
+
+    fn delete_update_time(
+        &mut self,
+        client_id: ClientId,
+        height: Height,
+    ) -> Result<(), ContextError> {
+        self.ibc
+            .client_update_host_times_map
+            .remove(&(client_id, height), *self.working_set.borrow_mut());
+        Ok(())
+    }
+
+    fn delete_update_height(
+        &mut self,
+        client_id: ClientId,
+        height: Height,
+    ) -> Result<(), ContextError> {
+        self.ibc
+            .client_update_host_heights_map
+            .remove(&(client_id, height), *self.working_set.borrow_mut());
+        Ok(())
+    }
 }
 
 impl<'a, C: Context, Da: DaSpec> TmCommonContext for IbcContext<'a, C, Da> {
@@ -323,13 +356,22 @@ impl<'a, C: Context, Da: DaSpec> TmCommonContext for IbcContext<'a, C, Da> {
     ) -> Result<Self::AnyConsensusState, ContextError> {
         <Self as ValidationContext>::consensus_state(self, client_cons_state_path)
     }
+
+    fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
+        let heights = self
+            .ibc
+            .client_update_heights_vec
+            .iter(*self.working_set.borrow_mut())
+            .collect::<Vec<_>>();
+        Ok(heights)
+    }
 }
 
 impl<'a, C: Context, Da: DaSpec> TmValidationContext for IbcContext<'a, C, Da> {
     fn next_consensus_state(
         &self,
         client_id: &ClientId,
-        height: &ibc::Height,
+        height: &Height,
     ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
         // Searches for the most recent height at which a client has been
         // updated and a consensus state has been stored.
@@ -366,7 +408,11 @@ impl<'a, C: Context, Da: DaSpec> TmValidationContext for IbcContext<'a, C, Da> {
         while height.revision_height() < latest_height.revision_height() {
             target_height = target_height.increment();
 
-            let cons_state_path = ClientConsensusStatePath::new(client_id, &target_height);
+            let cons_state_path = ClientConsensusStatePath::new(
+                client_id.clone(),
+                target_height.revision_number(),
+                target_height.revision_height(),
+            );
 
             let next_cons_state = self
                 .ibc
@@ -384,7 +430,7 @@ impl<'a, C: Context, Da: DaSpec> TmValidationContext for IbcContext<'a, C, Da> {
     fn prev_consensus_state(
         &self,
         client_id: &ClientId,
-        height: &ibc::Height,
+        height: &Height,
     ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
         // Searches for the most recent height at which a client has been
         // updated and a consensus state has been stored.
@@ -407,7 +453,11 @@ impl<'a, C: Context, Da: DaSpec> TmValidationContext for IbcContext<'a, C, Da> {
         // If the height is greater equal than the latest height, the previous
         // consensus state is the latest consensus state
         if height >= &latest_height {
-            let cons_state_path = ClientConsensusStatePath::new(client_id, &latest_height);
+            let cons_state_path = ClientConsensusStatePath::new(
+                client_id.clone(),
+                latest_height.revision_number(),
+                latest_height.revision_height(),
+            );
 
             let prev_cons_state = self
                 .ibc
@@ -425,7 +475,11 @@ impl<'a, C: Context, Da: DaSpec> TmValidationContext for IbcContext<'a, C, Da> {
         let mut target_height = *height;
 
         while target_height.revision_height() > 0 {
-            let cons_state_path = ClientConsensusStatePath::new(client_id, &target_height);
+            let cons_state_path = ClientConsensusStatePath::new(
+                client_id.clone(),
+                target_height.revision_number(),
+                target_height.revision_height(),
+            );
 
             let prev_cons_state = self
                 .ibc
