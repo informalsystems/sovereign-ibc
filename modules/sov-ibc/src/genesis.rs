@@ -1,5 +1,5 @@
 use anyhow::Result;
-use sov_modules_api::{Context, DaSpec, Module, WorkingSet};
+use sov_modules_api::{Context, DaSpec, Module, StateValueAccessor, WorkingSet};
 
 use crate::Ibc;
 

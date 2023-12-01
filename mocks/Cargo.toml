@@ -38,8 +38,9 @@ tendermint-testgen   = { workspace = true }
 sov-bank             = { workspace = true }
 sov-chain-state      = { workspace = true }
 sov-modules-api      = { workspace = true }
+sov-mock-da          = { workspace = true }
 sov-state            = { workspace = true }
-sov-rollup-interface = { workspace = true, features = ["mocks"] }
+sov-rollup-interface = { workspace = true }
 
 [dev-dependencies]
 ibc-testkit           = { workspace = true }
@@ -50,6 +51,7 @@ native = [
     "sov-bank/native",
     "sov-chain-state/native",
     "sov-modules-api/native",
+    "sov-mock-da/native",
     "sov-state/native",
     "sov-rollup-interface/native",
     "sov-ibc/native",
