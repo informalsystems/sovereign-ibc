@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use ibc_app_transfer::types::PrefixedDenom;
 use ibc_client_tendermint::types::{
     client_type as tm_client_type, ConsensusState as TmConsensusState,
 };
@@ -109,12 +108,9 @@ where
     }
 
     /// Returns token address of an IBC denom
-    pub fn get_minted_token_address(&self, token_denom: PrefixedDenom) -> Option<C::Address> {
+    pub fn get_minted_token_address(&self, token_denom: String) -> Option<C::Address> {
         self.transfer()
-            .minted_token(
-                token_denom.to_string(),
-                &mut self.working_set().borrow_mut(),
-            )
+            .minted_token(token_denom, &mut self.working_set().borrow_mut())
             .map(|token| token.address)
             .ok()
     }

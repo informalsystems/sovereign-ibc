@@ -14,7 +14,7 @@ async fn test_create_client() {
 
     let rly = sovereign_cosmos_setup(&mut sovereign_builder, false).await;
 
-    let msg_create_client = rly.build_msg_create_client();
+    let msg_create_client = rly.build_msg_create_client_for_sov();
 
     rly.src_chain_ctx().send_msg(vec![msg_create_client]);
 
@@ -35,7 +35,7 @@ async fn test_update_client() {
 
     let rly = sovereign_cosmos_setup(&mut sovereign_builder, false).await;
 
-    let msg_create_client = rly.build_msg_create_client();
+    let msg_create_client = rly.build_msg_create_client_for_sov();
 
     rly.src_chain_ctx().send_msg(vec![msg_create_client]);
 

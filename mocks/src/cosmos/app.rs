@@ -3,8 +3,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use basecoin_app::abci::v0_37::impls::query as basecoin_query;
+use basecoin_app::modules::auth::proto::AccountId;
 use basecoin_app::modules::auth::Auth;
-use basecoin_app::modules::bank::Bank;
+use basecoin_app::modules::bank::{Bank, BankReader, Denom};
 use basecoin_app::modules::context::{prefix, Identifiable};
 use basecoin_app::modules::ibc::{AnyConsensusState, Ibc, IbcContext};
 use basecoin_app::modules::types::IdentifiedModule;
@@ -32,15 +33,14 @@ use ibc_core::host::types::identifiers::{
     ChainId, ChannelId, ClientId, ConnectionId, PortId, Sequence,
 };
 use ibc_core::host::types::path::{
-    ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, Path, SeqAckPath,
+    ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, SeqAckPath,
     SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
-use ibc_core_host_cosmos::IBC_QUERY_PATH;
 use tendermint::abci::request::{InitChain, Query as RequestQuery};
 use tendermint::abci::response::Query as ResponseQuery;
 use tendermint::block::Height as TmHeight;
-use tendermint::v0_37::abci::{Request as AbciRequest, Response as AbciResponse};
+use tendermint::v0_37::abci::Request as AbciRequest;
 use tendermint::{AppHash, Hash, Time};
 use tendermint_testgen::consensus::default_consensus_params;
 use tendermint_testgen::light_block::TmLightBlock;
@@ -131,6 +131,25 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
     pub fn ibc_ctx(&self) -> IbcContext<RevertibleStore<S>> {
         self.app.ibc().ctx()
+    }
+
+    pub fn balance(&self, denom: &str, account: String) -> Option<u64> {
+        let account_id: AccountId = account.parse().unwrap();
+
+        let denom = Denom(denom.to_string());
+
+        if let Some(coin) = self
+            .app
+            .bank()
+            .balance_reader()
+            .get_all_balances(account_id)
+            .into_iter()
+            .find(|c| c.denom == denom)
+        {
+            Some(coin.amount.try_into().ok()?)
+        } else {
+            None
+        }
     }
 
     pub fn get_blocks(&self) -> Vec<TmLightBlock> {
@@ -252,39 +271,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     }
 
     /// Queries the chain for a given path and height.
-    pub async fn query(
-        &self,
-        path: impl Into<Path> + Send,
-        height: &Height,
-    ) -> (Vec<u8>, CommitmentProofBytes) {
-        let request = RequestQuery {
-            path: IBC_QUERY_PATH.to_string(),
-            data: path.into().to_string().into_bytes().into(),
-            height: TmHeight::try_from(height.revision_height()).unwrap(),
-            prove: true,
-        };
-
-        let mut app = self.app.clone();
-
-        let response = match app.call(AbciRequest::Query(request)).await.unwrap() {
-            AbciResponse::Query(res) => res,
-            _ => panic!("unexpected response from query"),
-        };
-
-        let proof = match response.proof {
-            Some(proof) => proof,
-            None => panic!("proof not found in query response"),
-        };
-
-        let merkle_proof = convert_tm_to_ics_merkle_proof(&proof);
-
-        let commitment_proof = merkle_proof.try_into().unwrap();
-
-        (response.value.into(), commitment_proof)
-    }
-
-    /// Queries the chain for a given path and height.
-    pub fn sync_query(
+    pub fn query(
         &self,
         data: Vec<u8>,
         path: String,
@@ -350,7 +337,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             .store_client_state(client_state_path, client_state.into())
             .unwrap();
 
-        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 10);
+        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 3);
 
         let consensus_state = AnyConsensusState::Tendermint(
             TmConsensusState::new(vec![].into(), Time::now(), Hash::None).into(),

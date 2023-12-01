@@ -1,37 +1,15 @@
 use std::time::Duration;
 
+use basecoin_store::avl::get_proof_spec;
 use ibc_client_tendermint::types::{AllowUpdate, ClientState};
 use ibc_core::client::types::Height;
-use ibc_core::commitment_types::proto::ics23::{
-    HashOp, InnerSpec, LeafOp, LengthOp, ProofSpec as RawProofSpec,
-};
 use ibc_core::commitment_types::specs::ProofSpecs;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::Signer;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 
-pub fn basecoin_proofspecs() -> ProofSpecs {
-    let spec = RawProofSpec {
-        leaf_spec: Some(LeafOp {
-            hash: HashOp::Sha256.into(),
-            prehash_key: HashOp::NoHash.into(),
-            prehash_value: HashOp::NoHash.into(),
-            length: LengthOp::NoPrefix.into(),
-            prefix: [0; 64].into(),
-        }),
-        inner_spec: Some(InnerSpec {
-            child_order: [0, 1, 2].into(),
-            child_size: 32,
-            min_prefix_length: 0,
-            max_prefix_length: 64,
-            empty_child: [0, 32].into(),
-            hash: HashOp::Sha256.into(),
-        }),
-        max_depth: 0,
-        min_depth: 0,
-        prehash_key_before_comparison: false,
-    };
-    [spec.clone(), spec].to_vec().into()
+pub fn basecoin_proof_specs() -> ProofSpecs {
+    [get_proof_spec(), get_proof_spec()].to_vec().into()
 }
 
 pub fn dummy_tm_client_state(chain_id: ChainId, latest_height: Height) -> ClientState {
@@ -42,7 +20,7 @@ pub fn dummy_tm_client_state(chain_id: ChainId, latest_height: Height) -> Client
         Duration::from_secs(128000),
         Duration::from_millis(3000),
         latest_height,
-        basecoin_proofspecs(),
+        basecoin_proof_specs(),
         Default::default(),
         AllowUpdate {
             after_expiry: false,
