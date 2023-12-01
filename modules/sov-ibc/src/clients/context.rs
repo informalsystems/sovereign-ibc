@@ -16,7 +16,7 @@ use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath, Pat
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::Timestamp;
-use sov_modules_api::{Context, DaSpec};
+use sov_modules_api::{Context, DaSpec, StateMapAccessor, StateVecAccessor};
 
 use super::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;

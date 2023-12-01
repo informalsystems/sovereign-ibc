@@ -11,6 +11,7 @@ pub mod context;
 mod genesis;
 
 use anyhow::anyhow;
+use ibc_core::handler::types::events::IbcEvent;
 use serde::{Deserialize, Serialize};
 use sov_modules_api::{Context, Error, Module, ModuleInfo, StateMap, WorkingSet};
 
@@ -57,6 +58,8 @@ impl<C: Context> Module for IbcTransfer<C> {
     type Config = TransferConfig;
 
     type CallMessage = ();
+
+    type Event = IbcEvent;
 
     fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<C>) -> Result<(), Error> {
         Ok(self.init_module(config, working_set)?)

@@ -11,7 +11,7 @@ use ibc_core::channel::types::timeout::TimeoutHeight;
 use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use ibc_core::host::ExecutionContext;
 use ibc_core::primitives::{Signer, Timestamp};
-use sov_modules_api::{Context, WorkingSet};
+use sov_modules_api::{Context, StateMapAccessor, WorkingSet};
 
 use super::context::EscrowExtraData;
 use super::IbcTransfer;

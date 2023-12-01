@@ -22,7 +22,9 @@ use ibc_core::host::types::path::{
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp};
-use sov_modules_api::{Context, DaSpec, WorkingSet};
+use sov_modules_api::{
+    Context, DaSpec, StateMapAccessor, StateValueAccessor, StateVecAccessor, WorkingSet,
+};
 
 use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::Ibc;

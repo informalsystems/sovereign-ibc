@@ -1,8 +1,8 @@
 use ibc_core::host::types::identifiers::ChainId;
 use sov_bank::TokenConfig;
+use sov_mock_da::MockDaSpec;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, WorkingSet};
-use sov_rollup_interface::mocks::MockDaSpec;
 use sov_state::ProverStorage;
 
 use super::app::TestApp;
@@ -66,7 +66,7 @@ impl DefaultBuilder {
 
         TestApp::<'ws, DefaultContext, MockDaSpec>::new(
             self.chain_id.clone(),
-            DefaultContext::new(relayer_address.0),
+            DefaultContext::new(relayer_address.0, 0),
             self.runtime.bank.clone(),
             &self.runtime.ibc,
             self.runtime.ibc_transfer.clone(),

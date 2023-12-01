@@ -15,6 +15,7 @@ pub mod genesis;
 
 #[cfg(feature = "native")]
 mod query;
+use ibc_core::handler::types::events::IbcEvent;
 #[cfg(feature = "native")]
 pub use query::*;
 
@@ -133,6 +134,8 @@ impl<C: Context, Da: DaSpec> sov_modules_api::Module for Ibc<C, Da> {
     type Config = ExampleModuleConfig;
 
     type CallMessage = call::CallMessage<C>;
+
+    type Event = IbcEvent;
 
     fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<C>) -> Result<(), Error> {
         Ok(self.init_module(config, working_set)?)
