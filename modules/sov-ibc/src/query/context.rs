@@ -14,7 +14,7 @@ use ibc_core::host::types::path::{
 };
 use ibc_core::host::ValidationContext;
 use ibc_query::core::context::{ProvableContext, QueryContext};
-use sov_modules_api::{Context, DaSpec};
+use sov_modules_api::{Context, DaSpec, StateMapAccessor, StateValueAccessor, StateVecAccessor};
 
 use crate::context::IbcContext;
 

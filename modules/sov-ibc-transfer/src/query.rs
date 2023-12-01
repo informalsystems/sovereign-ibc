@@ -2,7 +2,7 @@
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::types::ErrorObjectOwned;
 use sov_modules_api::macros::rpc_gen;
-use sov_modules_api::{Context, WorkingSet};
+use sov_modules_api::{Context, StateMapAccessor, WorkingSet};
 
 use super::IbcTransfer;
 

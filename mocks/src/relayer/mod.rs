@@ -6,8 +6,8 @@ pub mod relay;
 #[cfg(feature = "native")]
 pub mod relayer_type {
     use basecoin_store::impls::InMemoryStore;
+    use sov_mock_da::MockDaSpec;
     use sov_modules_api::default_context::DefaultContext;
-    use sov_rollup_interface::mocks::MockDaSpec;
 
     use super::relay::MockRelayer;
     use crate::cosmos::app::MockCosmosChain;

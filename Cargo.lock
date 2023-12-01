@@ -244,9 +244,9 @@ dependencies = [
  "ibc",
  "ibc-proto",
  "ibc-query",
- "ics23 0.11.0",
+ "ics23",
  "primitive-types",
- "prost 0.12.3",
+ "prost",
  "serde",
  "serde_derive",
  "serde_json",
@@ -274,8 +274,8 @@ dependencies = [
  "displaydoc",
  "ed25519",
  "ibc",
- "ics23 0.11.0",
- "prost 0.12.3",
+ "ics23",
+ "prost",
  "serde",
  "serde_json",
  "sha2 0.10.8",
@@ -353,6 +353,21 @@ dependencies = [
  "subtle",
  "zeroize",
 ]
+
+[[package]]
+name = "bit-set"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0700ddab506f33b20a03b13996eccd309a48e5ff77d0d95926aa0210fb4e95f1"
+dependencies = [
+ "bit-vec",
+]
+
+[[package]]
+name = "bit-vec"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
 
 [[package]]
 name = "bitflags"
@@ -586,9 +601,9 @@ checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
 name = "core-foundation"
-version = "0.9.3"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "194a7a9e6de53fa55116934067c844d9d749312f75c6f6d0980e8c252f8c2146"
+checksum = "91e195e091a93c46f7102ec7818a2aa394e1e1771c3ab4825963fa03e45afb8f"
 dependencies = [
  "core-foundation-sys",
  "libc",
@@ -596,9 +611,9 @@ dependencies = [
 
 [[package]]
 name = "core-foundation-sys"
-version = "0.8.4"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e496a50fda8aacccc86d7529e2c1e0892dbd0f898a6b5645b5561b89c3210efa"
+checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 
 [[package]]
 name = "cosmos-sdk-proto"
@@ -606,7 +621,7 @@ version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32560304ab4c365791fd307282f76637213d8083c1a98490c35159cd67852237"
 dependencies = [
- "prost 0.12.3",
+ "prost",
  "prost-types",
  "tendermint-proto",
 ]
@@ -1434,7 +1449,7 @@ dependencies = [
  "ibc-core-handler-types",
  "ibc-core-host",
  "ibc-primitives",
- "prost 0.12.3",
+ "prost",
  "serde",
  "tendermint",
  "tendermint-light-client-verifier",
@@ -1452,7 +1467,7 @@ dependencies = [
  "ibc-core-host-types",
  "ibc-primitives",
  "ibc-proto",
- "prost 0.12.3",
+ "prost",
  "serde",
  "tendermint",
  "tendermint-light-client-verifier",
@@ -1495,7 +1510,7 @@ dependencies = [
  "ibc-core-host",
  "ibc-core-router",
  "ibc-primitives",
- "prost 0.12.3",
+ "prost",
 ]
 
 [[package]]
@@ -1512,7 +1527,7 @@ dependencies = [
  "ibc-core-host-types",
  "ibc-primitives",
  "ibc-proto",
- "prost 0.12.3",
+ "prost",
  "schemars",
  "serde",
  "sha2 0.10.8",
@@ -1531,7 +1546,7 @@ dependencies = [
  "ibc-core-handler-types",
  "ibc-core-host",
  "ibc-primitives",
- "prost 0.12.3",
+ "prost",
 ]
 
 [[package]]
@@ -1547,7 +1562,7 @@ dependencies = [
  "ibc-core-host-types",
  "ibc-derive",
  "ibc-primitives",
- "prost 0.12.3",
+ "prost",
  "subtle-encoding",
  "tendermint",
 ]
@@ -1564,7 +1579,7 @@ dependencies = [
  "ibc-core-host-types",
  "ibc-primitives",
  "ibc-proto",
- "prost 0.12.3",
+ "prost",
  "schemars",
  "serde",
  "subtle-encoding",
@@ -1581,8 +1596,8 @@ dependencies = [
  "displaydoc",
  "ibc-primitives",
  "ibc-proto",
- "ics23 0.11.0",
- "prost 0.12.3",
+ "ics23",
+ "prost",
  "schemars",
  "serde",
  "subtle-encoding",
@@ -1598,7 +1613,7 @@ dependencies = [
  "ibc-core-handler-types",
  "ibc-core-host",
  "ibc-primitives",
- "prost 0.12.3",
+ "prost",
 ]
 
 [[package]]
@@ -1614,7 +1629,7 @@ dependencies = [
  "ibc-core-host-types",
  "ibc-primitives",
  "ibc-proto",
- "prost 0.12.3",
+ "prost",
  "schemars",
  "serde",
  "subtle-encoding",
@@ -1652,7 +1667,7 @@ dependencies = [
  "ibc-core-router-types",
  "ibc-primitives",
  "ibc-proto",
- "prost 0.12.3",
+ "prost",
  "schemars",
  "serde",
  "subtle-encoding",
@@ -1674,7 +1689,7 @@ dependencies = [
  "ibc-core-handler-types",
  "ibc-core-host-types",
  "ibc-primitives",
- "prost 0.12.3",
+ "prost",
  "subtle-encoding",
 ]
 
@@ -1695,7 +1710,7 @@ dependencies = [
  "ibc-core-host-types",
  "ibc-primitives",
  "ibc-proto",
- "prost 0.12.3",
+ "prost",
  "serde",
  "sha2 0.10.8",
  "subtle-encoding",
@@ -1726,7 +1741,7 @@ dependencies = [
  "ibc-core-host-types",
  "ibc-core-router-types",
  "ibc-primitives",
- "prost 0.12.3",
+ "prost",
  "subtle-encoding",
 ]
 
@@ -1741,8 +1756,8 @@ dependencies = [
  "ibc-core-host-types",
  "ibc-primitives",
  "ibc-proto",
- "ics23 0.11.0",
- "prost 0.12.3",
+ "ics23",
+ "prost",
  "schemars",
  "serde",
  "subtle-encoding",
@@ -1769,7 +1784,7 @@ dependencies = [
  "derive_more",
  "displaydoc",
  "ibc-proto",
- "prost 0.12.3",
+ "prost",
  "schemars",
  "serde",
  "tendermint",
@@ -1786,8 +1801,8 @@ dependencies = [
  "borsh",
  "bytes",
  "flex-error",
- "ics23 0.11.0",
- "prost 0.12.3",
+ "ics23",
+ "prost",
  "schemars",
  "serde",
  "subtle-encoding",
@@ -1818,29 +1833,12 @@ dependencies = [
  "ibc-proto",
  "parking_lot",
  "primitive-types",
- "prost 0.12.3",
+ "prost",
  "subtle-encoding",
  "tendermint",
  "tendermint-testgen",
  "tracing",
  "typed-builder",
-]
-
-[[package]]
-name = "ics23"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "442d4bab37956e76f739c864f246c825d87c0bb7f9afa65660c57833c91bf6d4"
-dependencies = [
- "anyhow",
- "bytes",
- "hex",
- "informalsystems-pbjson",
- "prost 0.11.9",
- "ripemd",
- "serde",
- "sha2 0.10.8",
- "sha3",
 ]
 
 [[package]]
@@ -1853,7 +1851,7 @@ dependencies = [
  "bytes",
  "hex",
  "informalsystems-pbjson",
- "prost 0.12.3",
+ "prost",
  "ripemd",
  "serde",
  "sha2 0.10.8",
@@ -1957,6 +1955,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1964,17 +1971,16 @@ checksum = "af150ab688ff2122fcef229be89cb50dd66af9e01a4ff320cc137eecc9bacc38"
 
 [[package]]
 name = "jmt"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23f1cb339f7d5288603665c0ccbef7ad33a782ced36e18b6b207f175479eb3b7"
+version = "0.9.0"
+source = "git+https://github.com/penumbra-zone/jmt.git?rev=1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6#1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6"
 dependencies = [
  "anyhow",
  "borsh",
  "digest 0.10.7",
  "hashbrown 0.13.2",
  "hex",
- "ics23 0.10.2",
- "itertools",
+ "ics23",
+ "itertools 0.10.5",
  "mirai-annotations",
  "num-derive",
  "num-traits",
@@ -2213,6 +2219,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "libm"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
+
+[[package]]
 name = "librocksdb-sys"
 version = "0.11.0+8.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2241,9 +2253,9 @@ dependencies = [
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.4.11"
+version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "969488b55f8ac402214f3f5fd243ebb7206cf82de60d3172994707a4bcc2b829"
+checksum = "c4cd1a83af159aa67994778be9070f0ae1bd732942279cabb14f86f986a21456"
 
 [[package]]
 name = "lock_api"
@@ -2359,6 +2371,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39e3200413f237f41ab11ad6d161bc7239c84dcb631773ccd7de3dfe4b5c267c"
 dependencies = [
  "autocfg",
+ "libm",
 ]
 
 [[package]]
@@ -2638,13 +2651,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "prost"
-version = "0.11.9"
+name = "proptest"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b82eaa1d779e9a4bc1c3217db8ffbeabaae1dca241bf70183242128d48681cd"
+checksum = "31b476131c3c86cb68032fdc5cb6d5a1045e3e42d96b69fa599fd77701e1f5bf"
 dependencies = [
- "bytes",
- "prost-derive 0.11.9",
+ "bit-set",
+ "bit-vec",
+ "bitflags 2.4.1",
+ "lazy_static",
+ "num-traits",
+ "rand",
+ "rand_chacha",
+ "rand_xorshift",
+ "regex-syntax",
+ "rusty-fork",
+ "tempfile",
+ "unarray",
 ]
 
 [[package]]
@@ -2654,20 +2677,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "146c289cda302b98a28d40c8b3b90498d6e526dd24ac2ecea73e4e491685b94a"
 dependencies = [
  "bytes",
- "prost-derive 0.12.3",
-]
-
-[[package]]
-name = "prost-derive"
-version = "0.11.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5d2d8d10f3c6ded6da8b05b5fb3b8a5082514344d56c9f871412d29b4e075b4"
-dependencies = [
- "anyhow",
- "itertools",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
+ "prost-derive",
 ]
 
 [[package]]
@@ -2677,7 +2687,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "efb6c9a1dd1def8e2124d17e83a20af56f1570d6c2d2bd9e266ccb768df3840e"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.11.0",
  "proc-macro2",
  "quote",
  "syn 2.0.39",
@@ -2689,8 +2699,14 @@ version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "193898f59edcf43c26227dcd4c8427f00d99d61e95dcde58dabd49fa291d470e"
 dependencies = [
- "prost 0.12.3",
+ "prost",
 ]
+
+[[package]]
+name = "quick-error"
+version = "1.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
 
 [[package]]
 name = "quote"
@@ -2735,6 +2751,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
+]
+
+[[package]]
+name = "rand_xorshift"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d25bf25ec5ae4a3f1b92f929810509a2f53d7dca2f50b794ff57e3face536c8f"
+dependencies = [
+ "rand_core",
 ]
 
 [[package]]
@@ -2893,15 +2918,15 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.25"
+version = "0.38.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc99bc2d4f1fed22595588a013687477aedf3cdcfb26558c559edb67b4d9b22e"
+checksum = "9470c4bf8246c8daf25f9598dca807fb6510347b1e1cfa55749113850c79d88a"
 dependencies = [
  "bitflags 2.4.1",
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2952,6 +2977,18 @@ name = "rustversion"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
+
+[[package]]
+name = "rusty-fork"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb3dcc6e454c328bb824492db107ab7c0ae8fcffe4ad210136ef014458c1bc4f"
+dependencies = [
+ "fnv",
+ "quick-error",
+ "tempfile",
+ "wait-timeout",
+]
 
 [[package]]
 name = "ryu"
@@ -3298,8 +3335,8 @@ dependencies = [
 
 [[package]]
 name = "sov-bank"
-version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git?rev=876eb0b#876eb0bbe32351d80c3c3f5b9155c503d29c1411"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
 dependencies = [
  "anyhow",
  "borsh",
@@ -3309,15 +3346,14 @@ dependencies = [
  "serde",
  "serde_json",
  "sov-modules-api",
- "sov-rollup-interface",
  "sov-state",
  "thiserror",
 ]
 
 [[package]]
 name = "sov-chain-state"
-version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git?rev=876eb0b#876eb0bbe32351d80c3c3f5b9155c503d29c1411"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
 dependencies = [
  "anyhow",
  "borsh",
@@ -3325,14 +3361,13 @@ dependencies = [
  "serde",
  "serde_json",
  "sov-modules-api",
- "sov-rollup-interface",
  "sov-state",
 ]
 
 [[package]]
 name = "sov-db"
-version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git?rev=876eb0b#876eb0bbe32351d80c3c3f5b9155c503d29c1411"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
 dependencies = [
  "anyhow",
  "bincode",
@@ -3347,14 +3382,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sov-first-read-last-write-cache"
-version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git?rev=876eb0b#876eb0bbe32351d80c3c3f5b9155c503d29c1411"
-dependencies = [
- "thiserror",
-]
-
-[[package]]
 name = "sov-ibc"
 version = "0.1.0"
 dependencies = [
@@ -3366,7 +3393,7 @@ dependencies = [
  "ibc-core",
  "ibc-query",
  "jsonrpsee",
- "prost 0.12.3",
+ "prost",
  "schemars",
  "serde",
  "serde_json",
@@ -3392,12 +3419,13 @@ dependencies = [
  "ibc-core-host-cosmos",
  "ibc-query",
  "ibc-testkit",
- "prost 0.12.3",
+ "prost",
  "serde_json",
  "sov-bank",
  "sov-chain-state",
  "sov-ibc",
  "sov-ibc-transfer",
+ "sov-mock-da",
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
@@ -3418,7 +3446,7 @@ dependencies = [
  "ibc-app-transfer",
  "ibc-core",
  "jsonrpsee",
- "prost 0.12.3",
+ "prost",
  "schemars",
  "serde",
  "serde_json",
@@ -3431,9 +3459,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "sov-mock-da"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "borsh",
+ "bytes",
+ "futures",
+ "hex",
+ "pin-project",
+ "serde",
+ "sha2 0.10.8",
+ "sov-rollup-interface",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+]
+
+[[package]]
 name = "sov-modules-api"
-version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git?rev=876eb0b#876eb0bbe32351d80c3c3f5b9155c503d29c1411"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
 dependencies = [
  "anyhow",
  "bech32",
@@ -3449,7 +3497,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.8",
- "sov-first-read-last-write-cache",
+ "sov-modules-core",
  "sov-modules-macros",
  "sov-rollup-interface",
  "sov-state",
@@ -3457,9 +3505,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "sov-modules-core"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
+dependencies = [
+ "anyhow",
+ "bech32",
+ "borsh",
+ "derive_more",
+ "digest 0.10.7",
+ "hex",
+ "jmt",
+ "schemars",
+ "serde",
+ "sha2 0.10.8",
+ "sov-rollup-interface",
+ "thiserror",
+]
+
+[[package]]
 name = "sov-modules-macros"
-version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git?rev=876eb0b#876eb0bbe32351d80c3c3f5b9155c503d29c1411"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
 dependencies = [
  "anyhow",
  "borsh",
@@ -3468,21 +3535,23 @@ dependencies = [
  "quote",
  "schemars",
  "serde_json",
+ "sov-modules-core",
  "syn 1.0.109",
 ]
 
 [[package]]
 name = "sov-rollup-interface"
-version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git?rev=876eb0b#876eb0bbe32351d80c3c3f5b9155c503d29c1411"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
 dependencies = [
  "anyhow",
  "async-trait",
- "bincode",
  "borsh",
  "bytes",
  "digest 0.10.7",
+ "futures",
  "hex",
+ "proptest",
  "serde",
  "sha2 0.10.8",
  "thiserror",
@@ -3491,8 +3560,8 @@ dependencies = [
 
 [[package]]
 name = "sov-schema-db"
-version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git?rev=876eb0b#876eb0bbe32351d80c3c3f5b9155c503d29c1411"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
 dependencies = [
  "anyhow",
  "once_cell",
@@ -3504,8 +3573,8 @@ dependencies = [
 
 [[package]]
 name = "sov-state"
-version = "0.2.0"
-source = "git+https://github.com/informalsystems/sovereign-sdk.git?rev=876eb0b#876eb0bbe32351d80c3c3f5b9155c503d29c1411"
+version = "0.3.0"
+source = "git+https://github.com/Sovereign-Labs/sovereign-sdk.git?rev=88b77d6#88b77d6214abd034b952dfafbc5992bf21eedfdf"
 dependencies = [
  "anyhow",
  "bcs",
@@ -3516,7 +3585,7 @@ dependencies = [
  "serde_json",
  "sha2 0.10.8",
  "sov-db",
- "sov-first-read-last-write-cache",
+ "sov-modules-core",
  "sov-rollup-interface",
  "thiserror",
 ]
@@ -3653,7 +3722,7 @@ dependencies = [
  "k256",
  "num-traits",
  "once_cell",
- "prost 0.12.3",
+ "prost",
  "prost-types",
  "ripemd",
  "serde",
@@ -3706,7 +3775,7 @@ dependencies = [
  "flex-error",
  "num-derive",
  "num-traits",
- "prost 0.12.3",
+ "prost",
  "prost-types",
  "serde",
  "serde_bytes",
@@ -3904,6 +3973,7 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
  "tokio",
+ "tokio-util 0.7.10",
 ]
 
 [[package]]
@@ -4018,7 +4088,7 @@ dependencies = [
  "hyper-timeout",
  "percent-encoding",
  "pin-project",
- "prost 0.12.3",
+ "prost",
  "tokio",
  "tokio-stream",
  "tower",
@@ -4033,7 +4103,7 @@ version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fa37c513df1339d197f4ba21d28c918b9ef1ac1768265f11ecb6b7f1cba1b76"
 dependencies = [
- "prost 0.12.3",
+ "prost",
  "prost-types",
  "tokio",
  "tokio-stream",
@@ -4070,7 +4140,7 @@ dependencies = [
  "bytes",
  "futures",
  "pin-project",
- "prost 0.12.3",
+ "prost",
  "tendermint",
  "tendermint-proto",
  "tokio",
@@ -4195,6 +4265,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "unarray"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eaea85b334db583fe3274d12b4cd1880032beab409c0d774be044d4480ab9a94"
+
+[[package]]
 name = "unicode-bidi"
 version = "0.3.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4261,6 +4337,15 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+
+[[package]]
+name = "wait-timeout"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f200f5b12eb75f8c1ed65abd4b2db8a6e1b138a20de009dacee265a2498f3f6"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "walkdir"
