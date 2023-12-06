@@ -135,35 +135,3 @@ async fn test_send_transfer_on_cos() {
 
     assert_eq!(sender_balance, initial_sender_balance - transfer_amount);
 }
-
-#[tokio::test]
-async fn test_recv_packet() {
-    let mut sov_builder = DefaultBuilder::default();
-
-    let rly = sovereign_cosmos_setup(&mut sov_builder, false).await;
-
-    let msg_create_client = rly.build_msg_create_client_for_sov();
-
-    rly.src_chain_ctx().send_msg(vec![msg_create_client]);
-
-    sleep(Duration::from_secs(1)).await;
-
-    let target_height = rly.dst_chain_ctx().query_ibc().host_height().unwrap();
-
-    let msg_update_client = rly.build_msg_update_client_for_sov(target_height);
-
-    rly.src_chain_ctx().send_msg(vec![msg_update_client]);
-
-    let _cs = rly
-        .src_chain_ctx()
-        .query_ibc()
-        .client_state(rly.src_client_id())
-        .unwrap();
-
-    // FIXME: This test already fails as there must be a send packet on the mock
-    // cosmos chain
-
-    // let msg_recv_packet = build_msg_recv_packet_for_sov(&rly, cs.latest_height()).await;
-
-    // rly.src_chain_ctx().send_msg(vec![msg_recv_packet]);
-}

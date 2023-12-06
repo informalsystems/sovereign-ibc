@@ -42,7 +42,7 @@ pub async fn sovereign_cosmos_setup(
         let sov_conn_id =
             sov_chain.setup_connection(sov_client_id, cos_chain.ibc_ctx().commitment_prefix());
         let cos_conn_id =
-            cos_chain.setup_connection(cos_client_id, sov_chain.ibc_ctx.commitment_prefix());
+            cos_chain.setup_connection(cos_client_id, sov_chain.ibc_ctx().commitment_prefix());
 
         let (sov_port_id, sov_chan_id) = sov_chain.setup_channel(sov_conn_id);
         let (cos_port_id, cos_chan_id) = cos_chain.setup_channel(cos_conn_id);
