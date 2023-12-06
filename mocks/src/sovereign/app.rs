@@ -44,7 +44,7 @@ where
     chain_id: ChainId,
     sdk_ctx: C,
     bank: Bank<C>,
-    pub ibc_ctx: IbcContext<'ws, C, Da>,
+    ibc_ctx: IbcContext<'ws, C, Da>,
     ibc_transfer_ctx: IbcTransferContext<'ws, C>,
 }
 
