@@ -11,6 +11,7 @@ use ibc_core::channel::types::Version as ChannelVersion;
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::client::context::ClientExecutionContext;
 use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentPrefix;
 use ibc_core::connection::types::version::Version as ConnectionVersion;
 use ibc_core::connection::types::{
     ConnectionEnd, Counterparty as ConnCounterparty, State as ConnectionState,
@@ -106,6 +107,14 @@ where
         &self.ibc_transfer_ctx.ibc_transfer
     }
 
+    /// Returns token address of an IBC denom
+    pub fn get_minted_token_address(&self, token_denom: String) -> Option<C::Address> {
+        self.transfer()
+            .minted_token(token_denom, &mut self.working_set().borrow_mut())
+            .map(|token| token.address)
+            .ok()
+    }
+
     /// Returns the balance of a user for a given token
     pub fn get_balance_of(&self, user_address: C::Address, token_address: C::Address) -> u64 {
         self.bank
@@ -127,7 +136,7 @@ where
     }
 
     /// Establishes a tendermint light client on the ibc module
-    pub fn setup_client(&mut self) -> ClientId {
+    pub fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
         let client_counter = self.ibc_ctx.client_counter().unwrap();
 
         let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
@@ -135,7 +144,7 @@ where
         let client_state_path = ClientStatePath::new(&client_id);
 
         let client_state = AnyClientState::Tendermint(
-            dummy_tm_client_state(self.chain_id.clone(), Height::new(0, 10).unwrap()).into(),
+            dummy_tm_client_state(client_chain_id.clone(), Height::new(0, 3).unwrap()).into(),
         );
 
         let latest_height = client_state.latest_height();
@@ -162,10 +171,20 @@ where
             .store_client_state(client_state_path, client_state)
             .unwrap();
 
-        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 10);
+        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 3);
 
         let consensus_state = AnyConsensusState::Tendermint(
-            TmConsensusState::new(vec![].into(), Time::now(), Hash::None).into(),
+            TmConsensusState::new(
+                vec![].into(),
+                Time::now(),
+                // Hash for default validator set of CosmosBuilder
+                Hash::Sha256([
+                    0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
+                    0x4b, 0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d,
+                    0x9e, 0xe1, 0x86, 0x1b, 0xc1, 0x43,
+                ]),
+            )
+            .into(),
         );
 
         self.ibc_ctx
@@ -176,12 +195,14 @@ where
     }
 
     /// Establishes a connection on the ibc module with the `Open` state
-    pub fn setup_connection(&mut self, client_id: ClientId) -> ConnectionId {
+    pub fn setup_connection(
+        &mut self,
+        client_id: ClientId,
+        prefix: CommitmentPrefix,
+    ) -> ConnectionId {
         let connection_id = ConnectionId::new(0);
 
         let connection_path = ConnectionPath::new(&connection_id);
-
-        let prefix = self.ibc_ctx.commitment_prefix();
 
         let connection_end = ConnectionEnd::new(
             ConnectionState::Open,

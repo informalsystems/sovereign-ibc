@@ -5,6 +5,7 @@ use basecoin_store::context::ProvableStore;
 use basecoin_store::impls::RevertibleStore;
 use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentProofBytes;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::Any;
@@ -46,6 +47,15 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
 
     fn query_ibc(&self) -> Self::IbcContext {
         self.ibc_ctx()
+    }
+
+    fn query(
+        &self,
+        data: Vec<u8>,
+        path: String,
+        height: &Height,
+    ) -> (Vec<u8>, CommitmentProofBytes) {
+        self.query(data, path, height)
     }
 
     fn consensus_state_to_any(&self, consensus_state: AnyConsensusState) -> Any {

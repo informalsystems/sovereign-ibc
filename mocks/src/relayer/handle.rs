@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
 use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentProofBytes;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::proto::Any;
+use ibc_query::core::context::ProvableContext;
 
 /// Defines the interface that empowers a chain context with the ability to
 /// query different states of a chain.
@@ -15,7 +17,7 @@ pub trait QueryService {
 
 /// Defines the interface that enables a mock chain to provide query endpoints.
 pub trait Handle {
-    type IbcContext: ValidationContext;
+    type IbcContext: ValidationContext + ProvableContext;
 
     type Header: Into<Any>;
 
@@ -31,6 +33,13 @@ pub trait Handle {
         &self,
         cons_state: <<Self as Handle>::IbcContext as ValidationContext>::AnyConsensusState,
     ) -> Any;
+
+    fn query(
+        &self,
+        data: Vec<u8>,
+        path: String,
+        height: &Height,
+    ) -> (Vec<u8>, CommitmentProofBytes);
 
     fn query_ibc(&self) -> Self::IbcContext;
 
@@ -62,6 +71,15 @@ where
         cons_state: <<Self as Handle>::IbcContext as ValidationContext>::AnyConsensusState,
     ) -> Any {
         Ctx::service(self).consensus_state_to_any(cons_state)
+    }
+
+    fn query(
+        &self,
+        data: Vec<u8>,
+        path: String,
+        height: &Height,
+    ) -> (Vec<u8>, CommitmentProofBytes) {
+        Ctx::service(self).query(data, path, height)
     }
 
     fn query_ibc(&self) -> Self::IbcContext {

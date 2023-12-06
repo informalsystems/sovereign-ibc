@@ -4,13 +4,15 @@ on:
     paths:
       - .github/workflows/rust.yml
       - Cargo.toml
-      - crates/**
+      - modules/**
+      - mocks/**
   push:
     branches: main
     paths:
       - .github/workflows/rust.yml
       - Cargo.toml
-      - crates/**
+      - modules/**
+      - mocks/**
 
 env:
   CARGO_INCREMENTAL: 0
