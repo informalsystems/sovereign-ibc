@@ -9,7 +9,7 @@ use sov_modules_api::Context;
 use sov_rollup_interface::da::Time;
 
 // The default initial slot height.
-const DEFAULT_INIT_HEIGHT: u64 = 10;
+const DEFAULT_INIT_HEIGHT: u64 = 1;
 
 // The default initial balance for each address.
 const DEFAULT_INIT_BALANCE: u64 = 1000;
@@ -20,6 +20,7 @@ const DEFAULT_ADDRESS_COUNT: u64 = 3;
 // The default token name.
 const DEFAULT_TOKEN_NAME: &str = "sov-demo-token";
 
+#[derive(Clone)]
 pub struct TestConfig<C: Context> {
     pub chain_state_config: ChainStateConfig,
     pub bank_config: BankConfig<C>,

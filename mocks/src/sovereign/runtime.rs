@@ -3,13 +3,16 @@ use sov_chain_state::ChainState;
 use sov_ibc::Ibc;
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
-use sov_modules_api::{AccessoryWorkingSet, Context, DaSpec, Module, Spec, WorkingSet};
+use sov_modules_api::macros::DefaultRuntime;
+use sov_modules_api::{
+    AccessoryWorkingSet, Context, DaSpec, DispatchCall, Genesis, MessageCodec, Spec, WorkingSet,
+};
 use sov_state::Storage;
 
-use super::config::TestConfig;
-
-#[derive()]
-pub struct TestRuntime<C, Da>
+#[derive(Genesis, DispatchCall, MessageCodec, DefaultRuntime, Clone)]
+#[serialization(serde::Serialize, serde::Deserialize)]
+#[serialization(borsh::BorshDeserialize, borsh::BorshSerialize)]
+pub struct Runtime<C, Da>
 where
     C: Context,
     Da: DaSpec,
@@ -20,38 +23,7 @@ where
     pub ibc_transfer: IbcTransfer<C>,
 }
 
-impl<C, Da> Default for TestRuntime<C, Da>
-where
-    C: Context,
-    Da: DaSpec,
-{
-    fn default() -> Self {
-        Self {
-            chain_state: ChainState::default(),
-            bank: Bank::default(),
-            ibc: Ibc::default(),
-            ibc_transfer: IbcTransfer::default(),
-        }
-    }
-}
-
-impl<C: Context, Da: DaSpec> TestRuntime<C, Da> {
-    pub fn genesis(&mut self, cfg: &TestConfig<C>, working_set: &mut WorkingSet<C>) {
-        self.chain_state
-            .genesis(&cfg.chain_state_config, working_set)
-            .unwrap();
-
-        self.bank.genesis(&cfg.bank_config, working_set).unwrap();
-
-        self.ibc.genesis(&cfg.ibc_config, working_set).unwrap();
-
-        self.ibc_transfer
-            .genesis(&cfg.ibc_transfer_config, working_set)
-            .unwrap();
-    }
-}
-
-impl<C: Context, Da: DaSpec> SlotHooks<Da> for TestRuntime<C, Da> {
+impl<C: Context, Da: DaSpec> SlotHooks<Da> for Runtime<C, Da> {
     type Context = C;
 
     fn begin_slot_hook(
@@ -74,7 +46,7 @@ impl<C: Context, Da: DaSpec> SlotHooks<Da> for TestRuntime<C, Da> {
     }
 }
 
-impl<C: Context, Da: DaSpec> FinalizeHook<Da> for TestRuntime<C, Da> {
+impl<C: Context, Da: DaSpec> FinalizeHook<Da> for Runtime<C, Da> {
     type Context = C;
 
     fn finalize_hook(

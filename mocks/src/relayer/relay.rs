@@ -11,23 +11,22 @@ use ibc_core::channel::types::timeout::TimeoutHeight;
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::client::types::msgs::{MsgCreateClient, MsgUpdateClient};
 use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentProofBytes;
 use ibc_core::commitment_types::merkle::MerkleProof;
 use ibc_core::commitment_types::proto::ics23::CommitmentProof;
 use ibc_core::commitment_types::proto::v1::MerkleProof as RawMerkleProof;
 use ibc_core::host::types::identifiers::{ChannelId, ClientId, PortId};
-use ibc_core::host::types::path::{CommitmentPath, SeqSendPath};
-use ibc_core::host::ValidationContext;
+use ibc_core::host::types::path::{CommitmentPath, Path, SeqSendPath};
 use ibc_core::primitives::{Msg, Signer, Timestamp};
-use ibc_core_host_cosmos::IBC_QUERY_PATH;
-use ibc_query::core::context::ProvableContext;
 use prost::Message;
 use sov_ibc::call::CallMessage;
+use sov_ibc::clients::AnyClientState;
 use sov_ibc_transfer::call::SDKTokenTransfer;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, Spec};
 
 use super::context::ChainContext;
-use super::handle::Handle;
+use super::handle::{Handle, QueryReq, QueryResp};
 use crate::cosmos::helpers::dummy_tm_client_state;
 
 /// The relay context for relaying between a mock sovereign chain and a mock
@@ -87,24 +86,29 @@ where
 
     /// Builds a create client message wrapped in a `CallMessage`
     pub fn build_msg_create_client_for_sov(&self) -> CallMessage<DefaultContext> {
-        let current_height = self.dst_chain_ctx().query_ibc().host_height().unwrap();
+        let current_height = match self.dst_chain_ctx().query(QueryReq::HostHeight) {
+            QueryResp::HostHeight(height) => height,
+            _ => panic!("unexpected query response"),
+        };
 
-        let tm_client_state = dummy_tm_client_state(
-            self.dst_chain_ctx().query_chain_id().clone(),
-            current_height,
-        );
+        let chain_id = match self.dst_chain_ctx().query(QueryReq::ChainId) {
+            QueryResp::ChainId(chain_id) => chain_id,
+            _ => panic!("unexpected query response"),
+        };
 
-        let consensus_state = self
+        let tm_client_state = dummy_tm_client_state(chain_id, current_height);
+
+        let consensus_state = match self
             .dst_chain_ctx()
-            .query_ibc()
-            .host_consensus_state(&current_height)
-            .unwrap();
-
-        let any_cons_state = self.dst_chain_ctx().consensus_state_to_any(consensus_state);
+            .query(QueryReq::HostConsensusState(current_height))
+        {
+            QueryResp::HostConsensusState(cons) => cons,
+            _ => panic!("unexpected query response"),
+        };
 
         let msg_create_client = MsgCreateClient {
             client_state: tm_client_state.into(),
-            consensus_state: any_cons_state,
+            consensus_state,
             signer: self.src_chain_ctx().signer().clone(),
         };
 
@@ -139,31 +143,36 @@ where
         &self,
         target_height: Height,
     ) -> CallMessage<DefaultContext> {
-        let client_counter = self
-            .src_chain_ctx()
-            .query_ibc()
-            .client_counter()
-            .unwrap()
-            .checked_sub(1)
-            .unwrap();
+        let res = self.src_chain_ctx().query(QueryReq::ClientCounter);
 
-        std::println!("client_counter: {}", client_counter);
+        let client_counter = match res {
+            QueryResp::ClientCounter(counter) => counter.checked_sub(1).unwrap(),
+            _ => panic!("unexpected query response"),
+        };
 
         let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
 
-        let client_state = self
+        let any_client_state = match self
             .src_chain_ctx()
-            .query_ibc()
-            .client_state(&client_id)
-            .unwrap();
+            .query(QueryReq::ClientState(client_id.clone()))
+        {
+            QueryResp::ClientState(state) => state,
+            _ => panic!("unexpected query response"),
+        };
 
-        let header = self
-            .dst_chain_ctx()
-            .query_header(&target_height, &client_state.latest_height());
+        let client_state = AnyClientState::try_from(any_client_state).unwrap();
+
+        let header = match self.dst_chain_ctx().query(QueryReq::Header(
+            target_height,
+            client_state.latest_height(),
+        )) {
+            QueryResp::Header(header) => header,
+            _ => panic!("unexpected query response"),
+        };
 
         let msg_update_client = MsgUpdateClient {
             client_id,
-            client_message: header.into(),
+            client_message: header,
             signer: self.src_chain_ctx().signer().clone(),
         };
 
@@ -177,35 +186,31 @@ where
     ) -> CallMessage<DefaultContext> {
         let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
 
-        let latest_seq_send = (u64::from(
-            self.dst_chain_ctx()
-                .query_ibc()
-                .get_next_sequence_send(&seq_send_path)
-                .expect("no error"),
-        ) - 1)
-            .into();
+        let next_seq_send = match self
+            .dst_chain_ctx()
+            .query(QueryReq::NextSeqSend(seq_send_path.clone()))
+        {
+            QueryResp::NextSeqSend(seq) => seq,
+            _ => panic!("unexpected query response"),
+        };
+
+        let latest_seq_send = (u64::from(next_seq_send) - 1).into();
 
         let commitment_path =
             CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
 
-        let (_, commitment_proofs) = self.dst_chain_ctx().query(
-            commitment_path.to_string().as_bytes().to_vec(),
-            IBC_QUERY_PATH.to_string(),
-            &proof_height_on_a,
-        );
+        let (_, proof_bytes) = match self.dst_chain_ctx().query(QueryReq::ValueWithProof(
+            Path::Commitment(commitment_path.clone()),
+            proof_height_on_a,
+        )) {
+            QueryResp::ValueWithProof(value, proof) => (value, proof),
+            _ => panic!("unexpected query response"),
+        };
+
+        let commitment_proofs = CommitmentProofBytes::try_from(proof_bytes).unwrap();
 
         let merkle_proofs = MerkleProof::from(RawMerkleProof::try_from(commitment_proofs).unwrap());
 
-        let proof_commitment_on_a = CommitmentProof::decode(
-            self.dst_chain_ctx()
-                .query_ibc()
-                .get_proof(proof_height_on_a, &commitment_path.into())
-                .expect("no error")
-                .as_slice(),
-        )
-        .expect("no error");
-
-        assert_eq!(merkle_proofs.proofs[0], proof_commitment_on_a);
         assert_eq!(merkle_proofs.proofs.len(), 2);
 
         let packet = Packet {
@@ -265,33 +270,46 @@ where
     ) -> CallMessage<DefaultContext> {
         let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
 
-        let latest_seq_send = (u64::from(
-            self.src_chain_ctx()
-                .query_ibc()
-                .get_next_sequence_send(&seq_send_path)
-                .expect("no error"),
-        ) - 1)
-            .into();
+        let resp = self
+            .src_chain_ctx()
+            .query(QueryReq::NextSeqSend(seq_send_path.clone()));
+
+        let next_seq_send = match resp {
+            QueryResp::NextSeqSend(seq) => seq,
+            _ => panic!("unexpected query response"),
+        };
+
+        let latest_seq_send = (u64::from(next_seq_send) - 1).into();
 
         let commitment_path =
             CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
 
-        let (_, commitment_proofs) = self.src_chain_ctx().query(
-            commitment_path.to_string().as_bytes().to_vec(),
-            IBC_QUERY_PATH.to_string(),
-            &proof_height_on_a,
-        );
+        let resp = self.src_chain_ctx().query(QueryReq::ValueWithProof(
+            Path::Commitment(commitment_path.clone()),
+            proof_height_on_a,
+        ));
+
+        let (_, proof_bytes) = match resp {
+            QueryResp::ValueWithProof(value, proof) => (value, proof),
+            _ => panic!("unexpected query response"),
+        };
+
+        let commitment_proofs = CommitmentProofBytes::try_from(proof_bytes).unwrap();
 
         let merkle_proofs = MerkleProof::from(RawMerkleProof::try_from(commitment_proofs).unwrap());
 
-        let proof_commitment_on_a = CommitmentProof::decode(
-            self.dst_chain_ctx()
-                .query_ibc()
-                .get_proof(proof_height_on_a, &commitment_path.into())
-                .expect("no error")
-                .as_slice(),
-        )
-        .expect("no error");
+        let resp = self.dst_chain_ctx().query(QueryReq::ValueWithProof(
+            Path::Commitment(commitment_path.clone()),
+            proof_height_on_a,
+        ));
+
+        let (_, proof_bytes) = match resp {
+            QueryResp::ValueWithProof(value, proof) => (value, proof),
+            _ => panic!("unexpected query response"),
+        };
+
+        let proof_commitment_on_a =
+            CommitmentProof::decode(proof_bytes.as_slice()).expect("no error");
 
         assert_eq!(merkle_proofs.proofs[0], proof_commitment_on_a);
         assert_eq!(merkle_proofs.proofs.len(), 2);

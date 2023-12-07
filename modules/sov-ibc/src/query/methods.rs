@@ -1,7 +1,9 @@
 //! Defines rpc queries exposed by the ibc module
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::str::FromStr;
 
+use borsh::BorshSerialize;
 use ibc_core::channel::types::proto::v1::{
     QueryChannelClientStateRequest, QueryChannelClientStateResponse,
     QueryChannelConsensusStateRequest, QueryChannelConsensusStateResponse, QueryChannelRequest,
@@ -29,6 +31,9 @@ use ibc_core::connection::types::proto::v1::{
     QueryConnectionParamsRequest, QueryConnectionParamsResponse, QueryConnectionRequest,
     QueryConnectionResponse, QueryConnectionsRequest, QueryConnectionsResponse,
 };
+use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::host::types::path::ClientConsensusStatePath;
+use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::{
     query_channel, query_channel_client_state, query_channel_consensus_state, query_channels,
     query_connection_channels, query_next_sequence_receive, query_packet_acknowledgement,
@@ -36,8 +41,7 @@ use ibc_query::core::channel::{
     query_packet_receipt, query_unreceived_acks, query_unreceived_packets,
 };
 use ibc_query::core::client::{
-    query_client_state, query_client_states, query_client_status, query_consensus_state,
-    query_consensus_state_heights, query_consensus_states,
+    query_client_states, query_client_status, query_consensus_state_heights, query_consensus_states,
 };
 use ibc_query::core::connection::{
     query_client_connections, query_connection, query_connection_client_state,
@@ -47,25 +51,60 @@ use jsonrpsee::core::RpcResult;
 use jsonrpsee::types::ErrorObjectOwned;
 use sov_modules_api::macros::rpc_gen;
 use sov_modules_api::{Context, DaSpec, WorkingSet};
+use sov_state::storage::{NativeStorage, StateCodec, StateValueCodec, StorageKey};
 
+use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;
 use crate::Ibc;
 
 /// Structure returned by the `client_state` rpc method.
 #[rpc_gen(client, server, namespace = "ibc")]
-impl<C: Context, Da: DaSpec> Ibc<C, Da> {
+impl<C: Context, Da: DaSpec> Ibc<C, Da>
+where
+    C::Storage: NativeStorage,
+{
     #[rpc_method(name = "clientState")]
     pub fn client_state(
         &self,
         request: QueryClientStateRequest,
         working_set: &mut WorkingSet<C>,
     ) -> RpcResult<QueryClientStateResponse> {
+        let prefix = self.client_state_map.prefix();
+
+        let codec = self.client_state_map.codec();
+
+        let client_id =
+            ClientId::from_str(request.client_id.as_str()).map_err(to_jsonrpsee_error)?;
+
+        let key = StorageKey::new(prefix, &client_id, codec.key_codec());
+
+        let value_with_proof = working_set.get_with_proof(key);
+
+        let storage_value = value_with_proof.value.ok_or_else(|| {
+            to_jsonrpsee_error(format!("Client state not found for client {client_id:?}"))
+        })?;
+
+        let client_state: AnyClientState = codec
+            .try_decode_value(storage_value.value())
+            .map_err(to_jsonrpsee_error)?;
+
+        let proof = value_with_proof
+            .proof
+            .try_to_vec()
+            .map_err(to_jsonrpsee_error)?;
+
         let ibc_ctx = IbcContext {
             ibc: self,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
-        query_client_state(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        let current_height = ibc_ctx.host_height().map_err(to_jsonrpsee_error)?;
+
+        Ok(QueryClientStateResponse {
+            client_state: Some(client_state.into()),
+            proof,
+            proof_height: Some(current_height.into()),
+        })
     }
 
     #[rpc_method(name = "clientStates")]
@@ -88,12 +127,51 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
         request: QueryConsensusStateRequest,
         working_set: &mut WorkingSet<C>,
     ) -> RpcResult<QueryConsensusStateResponse> {
+        let prefix = self.consensus_state_map.prefix();
+
+        let codec = self.consensus_state_map.codec();
+
+        let client_id =
+            ClientId::from_str(request.client_id.as_str()).map_err(to_jsonrpsee_error)?;
+
+        let path = ClientConsensusStatePath::new(
+            client_id.clone(),
+            request.revision_number,
+            request.revision_height,
+        );
+
+        let key = StorageKey::new(prefix, &path, codec.key_codec());
+
+        let value_with_proof = working_set.get_with_proof(key);
+
+        let storage_value = value_with_proof.value.ok_or_else(|| {
+            to_jsonrpsee_error(format!(
+                "Consensus state not found for client {}",
+                client_id
+            ))
+        })?;
+
+        let consensus_state: AnyConsensusState = codec
+            .try_decode_value(storage_value.value())
+            .map_err(to_jsonrpsee_error)?;
+
+        let proof = value_with_proof
+            .proof
+            .try_to_vec()
+            .map_err(to_jsonrpsee_error)?;
+
         let ibc_ctx = IbcContext {
             ibc: self,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
-        query_consensus_state(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        let proof_height = ibc_ctx.host_height().map_err(to_jsonrpsee_error)?;
+
+        Ok(QueryConsensusStateResponse {
+            consensus_state: Some(consensus_state.into()),
+            proof,
+            proof_height: Some(proof_height.into()),
+        })
     }
 
     #[rpc_method(name = "consensusStates")]
