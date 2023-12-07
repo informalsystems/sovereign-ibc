@@ -3411,16 +3411,21 @@ dependencies = [
 name = "sov-ibc-mocks"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "basecoin-app",
  "basecoin-store",
+ "borsh",
  "ibc-app-transfer",
  "ibc-client-tendermint",
  "ibc-core",
  "ibc-core-host-cosmos",
  "ibc-query",
  "ibc-testkit",
+ "jmt",
  "prost",
+ "serde",
  "serde_json",
+ "sha2 0.10.8",
  "sov-bank",
  "sov-chain-state",
  "sov-ibc",

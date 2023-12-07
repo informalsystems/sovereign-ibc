@@ -53,6 +53,8 @@ use super::helpers::{
     convert_tm_to_ics_merkle_proof, dummy_tm_client_state, genesis_app_state, MutexUtil,
 };
 
+const JAN_1_2023: i64 = 1672531200;
+
 /// Defines a mock Cosmos chain that includes simplified store, application,
 /// consensus layers.
 #[derive(Clone)]
@@ -102,7 +104,8 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let genesis_height = Height::new(chain_id.revision_number(), 1).expect("never fails");
 
-        let genesis_time = Time::now();
+        // This set to Jan 1, 2023 to comply with the genesis time of the mock rollup.
+        let genesis_time = Time::from_unix_timestamp(JAN_1_2023, 0).expect("never fails");
 
         let genesis_block = Self::generate_block(
             &chain_id,
