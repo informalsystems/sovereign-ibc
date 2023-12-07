@@ -49,7 +49,6 @@ sov-state            = { workspace = true }
 sov-rollup-interface = { workspace = true }
 jmt                  = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
-
 [features]
 default = ["native"]
 native = [

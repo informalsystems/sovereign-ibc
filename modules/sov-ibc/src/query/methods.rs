@@ -146,8 +146,7 @@ where
 
         let storage_value = value_with_proof.value.ok_or_else(|| {
             to_jsonrpsee_error(format!(
-                "Consensus state not found for client {}",
-                client_id
+                "Consensus state not found for client {client_id:?}"
             ))
         })?;
 

@@ -104,6 +104,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let genesis_height = Height::new(chain_id.revision_number(), 1).expect("never fails");
 
+        // This set to Jan 1, 2023 to comply with the genesis time of the mock rollup.
         let genesis_time = Time::from_unix_timestamp(JAN_1_2023, 0).expect("never fails");
 
         let genesis_block = Self::generate_block(
