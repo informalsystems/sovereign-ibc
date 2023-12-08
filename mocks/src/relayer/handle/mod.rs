@@ -46,6 +46,7 @@ pub enum QueryReq {
     HostConsensusState(Height),
     Header(Height, Height),
     ClientState(ClientId),
+    ConsensusState(ClientId, Height),
     NextSeqSend(SeqSendPath),
     ValueWithProof(Path, Height),
 }
@@ -57,6 +58,7 @@ pub enum QueryResp {
     HostConsensusState(Any),
     Header(Any),
     ClientState(Any),
+    ConsensusState(Any),
     NextSeqSend(Sequence),
     ValueWithProof(Vec<u8>, Vec<u8>),
 }

@@ -6,7 +6,7 @@ pub mod relay;
 #[cfg(feature = "native")]
 pub mod relayer_type {
     use basecoin_store::impls::InMemoryStore;
-    use sov_mock_da::MockDaSpec;
+    use sov_mock_da::MockDaService;
     use sov_modules_api::default_context::DefaultContext;
     use sov_state::DefaultStorageSpec;
 
@@ -16,7 +16,7 @@ pub mod relayer_type {
 
     /// Concrete type for the relayer between a mock sovereign chain and a mock
     pub type Relayer<'ws> = MockRelayer<
-        MockRollup<DefaultContext, MockDaSpec, DefaultStorageSpec>,
+        MockRollup<DefaultContext, MockDaService, DefaultStorageSpec>,
         MockCosmosChain<InMemoryStore>,
     >;
 }

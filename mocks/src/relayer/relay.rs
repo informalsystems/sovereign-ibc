@@ -17,6 +17,7 @@ use ibc_core::commitment_types::proto::ics23::CommitmentProof;
 use ibc_core::commitment_types::proto::v1::MerkleProof as RawMerkleProof;
 use ibc_core::host::types::identifiers::{ChannelId, ClientId, PortId};
 use ibc_core::host::types::path::{CommitmentPath, Path, SeqSendPath};
+use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Msg, Signer, Timestamp};
 use prost::Message;
 use sov_ibc::call::CallMessage;
@@ -115,40 +116,47 @@ where
         CallMessage::Core(msg_create_client.to_any())
     }
 
-    /// Builds a sdk token transfer message wrapped in a `CallMessage` with the given amount
-    /// Note: keep the amount value lower than the initial balance of the sender address
-    pub fn build_sdk_transfer_for_sov<C: Context>(
-        &self,
-        token: <C as Spec>::Address,
-        sender: Signer,
-        receiver: Signer,
-        amount: u64,
-    ) -> CallMessage<C> {
-        let msg_transfer = SDKTokenTransfer {
-            port_id_on_a: PortId::transfer(),
-            chan_id_on_a: ChannelId::default(),
-            timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
-            timeout_timestamp_on_b: Timestamp::none(),
-            token_address: token,
-            amount,
-            sender,
-            receiver,
-            memo: Memo::from_str("").unwrap(),
+    /// Builds a create client message wrapped in a `CallMessage`
+    pub fn build_msg_create_client_for_cos(&self) -> Any {
+        let current_height = match self.src_chain_ctx().query(QueryReq::HostHeight) {
+            QueryResp::HostHeight(height) => height,
+            _ => panic!("unexpected query response"),
         };
 
-        CallMessage::Transfer(msg_transfer)
+        let chain_id = match self.src_chain_ctx().query(QueryReq::ChainId) {
+            QueryResp::ChainId(chain_id) => chain_id,
+            _ => panic!("unexpected query response"),
+        };
+
+        let tm_client_state = dummy_tm_client_state(chain_id, current_height);
+
+        let consensus_state = match self
+            .src_chain_ctx()
+            .query(QueryReq::HostConsensusState(current_height))
+        {
+            QueryResp::HostConsensusState(cons) => cons,
+            _ => panic!("unexpected query response"),
+        };
+
+        let msg_create_client = MsgCreateClient {
+            client_state: tm_client_state.into(),
+            consensus_state,
+            signer: self.src_chain_ctx().signer().clone(),
+        };
+
+        msg_create_client.to_any()
     }
 
     pub fn build_msg_update_client_for_sov(
         &self,
         target_height: Height,
     ) -> CallMessage<DefaultContext> {
-        let res = self.src_chain_ctx().query(QueryReq::ClientCounter);
-
-        let client_counter = match res {
-            QueryResp::ClientCounter(counter) => counter.checked_sub(1).unwrap(),
+        let client_counter = match self.src_chain_ctx().query(QueryReq::ClientCounter) {
+            QueryResp::ClientCounter(counter) => counter,
             _ => panic!("unexpected query response"),
-        };
+        }
+        .checked_sub(1)
+        .unwrap();
 
         let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
 
@@ -177,6 +185,65 @@ where
         };
 
         CallMessage::Core(msg_update_client.to_any())
+    }
+
+    pub fn build_msg_update_client_for_cos(&self, target_height: Height) -> Any {
+        let client_counter = match self.dst_chain_ctx().query(QueryReq::ClientCounter) {
+            QueryResp::ClientCounter(counter) => counter,
+            _ => panic!("unexpected query response"),
+        };
+
+        let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
+
+        let any_client_state = match self
+            .dst_chain_ctx()
+            .query(QueryReq::ClientState(client_id.clone()))
+        {
+            QueryResp::ClientState(state) => state,
+            _ => panic!("unexpected query response"),
+        };
+
+        let client_state = AnyClientState::try_from(any_client_state).unwrap();
+
+        let header = match self.src_chain_ctx().query(QueryReq::Header(
+            target_height,
+            client_state.latest_height(),
+        )) {
+            QueryResp::Header(header) => header,
+            _ => panic!("unexpected query response"),
+        };
+
+        let msg_update_client = MsgUpdateClient {
+            client_id,
+            client_message: header,
+            signer: self.dst_chain_ctx().signer().clone(),
+        };
+
+        msg_update_client.to_any()
+    }
+
+    /// Builds a sdk token transfer message wrapped in a `CallMessage` with the given amount
+    /// Note: keep the amount value lower than the initial balance of the sender address
+    pub fn build_sdk_transfer_for_sov<C: Context>(
+        &self,
+        token: <C as Spec>::Address,
+        sender: Signer,
+        receiver: Signer,
+        amount: u64,
+    ) -> CallMessage<C> {
+        let msg_transfer = SDKTokenTransfer {
+            port_id_on_a: PortId::transfer(),
+            chan_id_on_a: ChannelId::default(),
+            timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
+            timeout_timestamp_on_b: Timestamp::none(),
+            token_address: token,
+            amount,
+            sender,
+            receiver,
+            memo: Memo::from_str("").unwrap(),
+        };
+
+        CallMessage::Transfer(msg_transfer)
     }
 
     pub fn build_msg_recv_packet_for_sov(

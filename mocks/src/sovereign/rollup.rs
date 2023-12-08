@@ -12,7 +12,7 @@ use ibc_core::channel::types::Version as ChannelVersion;
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::client::context::ClientExecutionContext;
 use ibc_core::client::types::Height;
-use ibc_core::commitment_types::commitment::CommitmentPrefix;
+use ibc_core::commitment_types::commitment::{CommitmentPrefix, CommitmentRoot};
 use ibc_core::connection::types::version::Version as ConnectionVersion;
 use ibc_core::connection::types::{
     ConnectionEnd, Counterparty as ConnCounterparty, State as ConnectionState,
@@ -30,9 +30,9 @@ use sov_bank::TokenConfig;
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::{AnyClientState, AnyConsensusState};
 use sov_ibc::context::IbcContext;
-use sov_mock_da::{MockAddress, MockDaService};
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
-use sov_modules_api::{Context, DaSpec, DispatchCall, Genesis, StateCheckpoint, WorkingSet};
+use sov_modules_api::{Context, DispatchCall, Genesis, SlotData, StateCheckpoint, WorkingSet};
+use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tendermint::{Hash, Time};
 
@@ -40,74 +40,64 @@ use super::config::TestConfig;
 use super::runtime::{GenesisConfig, Runtime};
 use crate::cosmos::helpers::dummy_tm_client_state;
 use crate::sovereign::runtime::RuntimeCall;
+use crate::JAN_1_2023;
 /// Defines a mock rollup structure with default configurations and specs
 #[derive(Clone)]
 pub struct MockRollup<C, Da, S>
 where
     C: Context,
-    Da: DaSpec,
+    Da: DaService<Error = anyhow::Error> + Clone,
     S: MerkleProofSpec,
 {
     chain_id: ChainId,
     config: TestConfig<C>,
-    runtime: Runtime<C, Da>,
+    runtime: Runtime<C, Da::Spec>,
     prover_storage: ProverStorage<S>,
-    da_service: MockDaService,
-    rollup_ctx: Option<C>,
+    da_service: Da,
+    rollup_ctx: C,
     state_root: <ProverStorage<S> as Storage>::Root,
 }
 
-impl<C, Da, S> Default for MockRollup<C, Da, S>
+impl<C, Da, S> MockRollup<C, Da, S>
 where
-    C: Context,
-    Da: DaSpec,
-    S: MerkleProofSpec,
+    C: Context<Storage = ProverStorage<S>> + Send + Sync,
+    Da: DaService<Error = anyhow::Error> + Clone,
+    <Da as DaService>::Spec: Clone,
+    S: MerkleProofSpec + Clone + 'static,
+    <S as MerkleProofSpec>::Hasher: Send,
 {
-    fn default() -> Self {
-        let chain_id = ChainId::new("ibc-0").unwrap();
-
-        let path = tempfile::tempdir().unwrap();
-
-        let prover_storage = ProverStorage::with_path(path).unwrap();
-
-        let config = TestConfig::default();
-
-        let runtime = Runtime::default();
-
-        let da_service = MockDaService::new(MockAddress::default());
-
+    pub fn new(
+        chain_id: ChainId,
+        config: TestConfig<C>,
+        runtime: Runtime<C, Da::Spec>,
+        prover_storage: ProverStorage<S>,
+        rollup_ctx: C,
+        da_service: Da,
+    ) -> Self {
         Self {
             chain_id,
             config,
             runtime,
             prover_storage,
             da_service,
-            rollup_ctx: None,
+            rollup_ctx,
             state_root: jmt::RootHash([0; 32]),
         }
     }
-}
 
-impl<C, Da, S> MockRollup<C, Da, S>
-where
-    C: Context<Storage = ProverStorage<S>> + Send + Sync,
-    Da: DaSpec + Clone,
-    S: MerkleProofSpec + Clone + 'static,
-    <S as MerkleProofSpec>::Hasher: Send,
-{
     pub fn chain_id(&self) -> &ChainId {
         &self.chain_id
     }
 
     pub fn rollup_ctx(&self) -> C {
-        self.rollup_ctx.clone().unwrap()
+        self.rollup_ctx.clone()
     }
 
     pub fn config(&self) -> &TestConfig<C> {
         &self.config
     }
 
-    pub fn runtime(&self) -> &Runtime<C, Da> {
+    pub fn runtime(&self) -> &Runtime<C, Da::Spec> {
         &self.runtime
     }
 
@@ -115,7 +105,10 @@ where
         self.prover_storage.clone()
     }
 
-    pub fn ibc_ctx<'a>(&'a self, working_set: &'a mut WorkingSet<C>) -> IbcContext<'a, C, Da> {
+    pub fn ibc_ctx<'a>(
+        &'a self,
+        working_set: &'a mut WorkingSet<C>,
+    ) -> IbcContext<'a, C, Da::Spec> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         IbcContext::new(&self.runtime.ibc, shared_working_set.clone())
@@ -159,12 +152,41 @@ where
             .ok()
     }
 
-    pub fn set_rollup_ctx(&mut self, rollup_ctx: C) {
-        self.rollup_ctx = Some(rollup_ctx);
+    fn set_state_root(&mut self, state_root: <ProverStorage<S> as Storage>::Root) {
+        self.state_root = state_root;
     }
 
-    pub fn init_chain(&mut self, rollup_ctx: C) {
-        self.set_rollup_ctx(rollup_ctx);
+    fn set_host_consensus_state(
+        &mut self,
+        checkpoint: StateCheckpoint<C>,
+        root_hash: <ProverStorage<S> as Storage>::Root,
+    ) -> StateCheckpoint<C> {
+        let mut working_set = checkpoint.to_revertable();
+
+        let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);
+
+        let consensus_state = AnyConsensusState::Tendermint(
+            TmConsensusState::new(
+                CommitmentRoot::from_bytes(&root_hash.0),
+                Time::from_unix_timestamp(JAN_1_2023 + current_height as i64, 0).unwrap(),
+                Hash::Sha256([
+                    0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
+                    0x4b, 0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d,
+                    0x9e, 0xe1, 0x86, 0x1b, 0xc1, 0x43,
+                ]),
+            )
+            .into(),
+        );
+
+        self.ibc_ctx(&mut working_set)
+            .store_host_consensus_state(Height::new(0, current_height).unwrap(), consensus_state)
+            .unwrap();
+
+        working_set.checkpoint()
+    }
+
+    pub async fn init_chain(&mut self) -> StateCheckpoint<C> {
+        let mut working_set = WorkingSet::new(self.prover_storage.clone());
 
         let genesis_config = GenesisConfig::new(
             self.config.chain_state_config.clone(),
@@ -173,34 +195,40 @@ where
             self.config.ibc_transfer_config.clone(),
         );
 
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
-
         self.runtime
             .genesis(&genesis_config, &mut working_set)
             .unwrap();
 
-        let mut checkpoint = working_set.checkpoint();
+        self.commit(working_set.checkpoint()).await
+    }
 
-        let (log, witness) = checkpoint.freeze();
-
-        let (genesis_hash, state_update) = self
-            .prover_storage
-            .compute_state_update(log, &witness)
-            .expect("Storage update must succeed");
-
+    pub async fn begin_block(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
         let mut working_set = checkpoint.to_revertable();
 
-        self.runtime
-            .finalize_hook(&genesis_hash, &mut working_set.accessory_state());
+        let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);
 
-        let accessory_log = working_set.checkpoint().freeze_non_provable();
+        // Dummy transaction to trigger the block generation
+        self.da_service.send_transaction(&[0; 32]).await.unwrap();
 
-        self.prover_storage.commit(&state_update, &accessory_log);
+        let block = self
+            .da_service
+            .get_block_at(current_height - 1)
+            .await
+            .unwrap();
 
-        self.state_root = genesis_hash;
+        self.runtime.begin_slot_hook(
+            block.header(),
+            &block.validity_condition(),
+            &self.state_root,
+            &mut working_set,
+        );
+
+        self.set_host_consensus_state(working_set.checkpoint(), self.state_root)
     }
 
     pub async fn commit(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
+        let checkpoint = self.begin_block(checkpoint).await;
+
         let mut working_set = checkpoint.to_revertable();
 
         self.runtime.end_slot_hook(&mut working_set);
@@ -225,13 +253,13 @@ where
 
         self.prover_storage.commit(&state_update, &accessory_log);
 
-        self.state_root = root_hash;
+        self.set_state_root(root_hash);
 
         checkpoint
     }
 
-    pub async fn run(&mut self, sdk_ctx: C) {
-        self.init_chain(sdk_ctx);
+    pub async fn run(&mut self) {
+        self.init_chain().await;
 
         let mut chain = self.clone();
 
@@ -239,11 +267,9 @@ where
             loop {
                 let working_set = WorkingSet::new(chain.prover_storage.clone());
 
-                let checkpoint = working_set.checkpoint();
-
                 tokio::time::sleep(Duration::from_millis(200)).await;
 
-                chain.commit(checkpoint).await;
+                chain.commit(working_set.checkpoint()).await;
             }
         });
     }
@@ -309,7 +335,7 @@ where
         let consensus_state = AnyConsensusState::Tendermint(
             TmConsensusState::new(
                 vec![].into(),
-                Time::now(),
+                Time::from_unix_timestamp(JAN_1_2023, 0).unwrap(),
                 // Hash for default validator set of CosmosBuilder
                 Hash::Sha256([
                     0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,

@@ -2,12 +2,12 @@ use std::time::Duration;
 
 use basecoin_store::impls::InMemoryStore;
 use ibc_client_tendermint::types::client_type as tm_client_type;
-use ibc_core::host::types::identifiers::{ClientId, Sequence};
+use ibc_core::host::types::identifiers::{ChainId, ClientId, Sequence};
 use ibc_core::host::ValidationContext;
-use sov_mock_da::MockDaSpec;
+use sov_mock_da::{MockAddress, MockDaService};
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, WorkingSet};
-use sov_state::DefaultStorageSpec;
+use sov_state::{DefaultStorageSpec, ProverStorage};
 use tokio::time::sleep;
 
 use super::cosmos::helpers::dummy_signer;
@@ -15,25 +15,46 @@ use super::relayer::Relayer;
 use crate::cosmos::builder::CosmosBuilder;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
+use crate::sovereign::config::TestConfig;
 use crate::sovereign::rollup::MockRollup;
+use crate::sovereign::runtime::Runtime;
 
 /// Set ups a relayer between a mock rollup and a mock cosmos chain
 pub async fn setup<'ws>(
     with_manual_tao: bool,
 ) -> (
     Relayer<'ws>,
-    MockRollup<DefaultContext, MockDaSpec, DefaultStorageSpec>,
+    MockRollup<DefaultContext, MockDaService, DefaultStorageSpec>,
 ) {
-    let mut rollup = MockRollup::default();
+    let rollup_chain_id = ChainId::new("mock-rollup-0").unwrap();
 
-    let relayer_address = rollup.config().bank_config.tokens[0]
+    let config = TestConfig::default();
+
+    let relayer_address = config.bank_config.tokens[0]
         .address_and_balances
         .last()
         .unwrap();
 
+    let runtime = Runtime::default();
+
     let rollup_ctx = DefaultContext::new(relayer_address.0, 0);
 
-    rollup.init_chain(rollup_ctx);
+    let da_service = MockDaService::new(MockAddress::default());
+
+    let path = tempfile::tempdir().unwrap();
+
+    let prover_storage = ProverStorage::with_path(path).unwrap();
+
+    let mut rollup = MockRollup::new(
+        rollup_chain_id,
+        config,
+        runtime,
+        prover_storage,
+        rollup_ctx,
+        da_service,
+    );
+
+    rollup.init_chain().await;
 
     let sov_client_counter = match rollup.query(QueryReq::ClientCounter) {
         QueryResp::ClientCounter(counter) => counter,
