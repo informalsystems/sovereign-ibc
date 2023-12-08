@@ -39,6 +39,7 @@ where
     }
 }
 
+/// Defines the different types of queries that can be made to a chain.
 pub enum QueryReq {
     ChainId,
     ClientCounter,
@@ -51,6 +52,7 @@ pub enum QueryReq {
     ValueWithProof(Path, Height),
 }
 
+/// Defines the different types of responses that can be returned from querying
 pub enum QueryResp {
     ChainId(ChainId),
     ClientCounter(u64),

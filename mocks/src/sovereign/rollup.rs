@@ -156,6 +156,7 @@ where
         self.state_root = state_root;
     }
 
+    /// Sets the host consensus state when processing each block
     fn set_host_consensus_state(
         &mut self,
         checkpoint: StateCheckpoint<C>,
@@ -185,6 +186,7 @@ where
         working_set.checkpoint()
     }
 
+    /// Initializes the chain with the genesis configuration
     pub async fn init_chain(&mut self) -> StateCheckpoint<C> {
         let mut working_set = WorkingSet::new(self.prover_storage.clone());
 
@@ -202,6 +204,7 @@ where
         self.commit(working_set.checkpoint()).await
     }
 
+    /// Begins a block by setting the host consensus state and triggering the slot hook
     pub async fn begin_block(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
         let mut working_set = checkpoint.to_revertable();
 
@@ -226,6 +229,8 @@ where
         self.set_host_consensus_state(working_set.checkpoint(), self.state_root)
     }
 
+    /// Commits a block by triggering the end slot hook, computing the state
+    /// update and committing it to the prover storage
     pub async fn commit(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
         let checkpoint = self.begin_block(checkpoint).await;
 
@@ -258,6 +263,8 @@ where
         checkpoint
     }
 
+    /// Runs the rollup chain by initializing the chain and then committing
+    /// blocks at a fixed interval
     pub async fn run(&mut self) {
         self.init_chain().await;
 
@@ -274,6 +281,7 @@ where
         });
     }
 
+    /// Applies an IBC message to the execution layer
     pub async fn apply_msg(&mut self, msg: Vec<CallMessage<C>>) -> Vec<IbcEvent> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 

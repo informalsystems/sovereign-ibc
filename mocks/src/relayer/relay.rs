@@ -116,7 +116,7 @@ where
         CallMessage::Core(msg_create_client.to_any())
     }
 
-    /// Builds a create client message wrapped in a `CallMessage`
+    /// Builds a create client message of type `Any`
     pub fn build_msg_create_client_for_cos(&self) -> Any {
         let current_height = match self.src_chain_ctx().query(QueryReq::HostHeight) {
             QueryResp::HostHeight(height) => height,
@@ -147,6 +147,7 @@ where
         msg_create_client.to_any()
     }
 
+    /// Builds an update client message wrapped in a `CallMessage`
     pub fn build_msg_update_client_for_sov(
         &self,
         target_height: Height,
@@ -187,6 +188,7 @@ where
         CallMessage::Core(msg_update_client.to_any())
     }
 
+    /// Builds an update client message of type `Any`
     pub fn build_msg_update_client_for_cos(&self, target_height: Height) -> Any {
         let client_counter = match self.dst_chain_ctx().query(QueryReq::ClientCounter) {
             QueryResp::ClientCounter(counter) => counter,
@@ -246,11 +248,12 @@ where
         CallMessage::Transfer(msg_transfer)
     }
 
-    pub fn build_msg_recv_packet_for_sov(
+    /// Builds a receive packet message wrapped in a `CallMessage`
+    pub fn build_msg_recv_packet_for_sov<C: Context>(
         &self,
         proof_height_on_a: Height,
         msg_transfer: MsgTransfer,
-    ) -> CallMessage<DefaultContext> {
+    ) -> CallMessage<C> {
         let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
 
         let next_seq_send = match self
@@ -301,7 +304,7 @@ where
         CallMessage::Core(msg_recv_packet.to_any())
     }
 
-    /// Builds a CosmosChain token transfer message; serialized to Any
+    /// Builds a Cosmos chain token transfer message; serialized to Any
     pub fn build_msg_transfer_for_cos(
         &self,
         denom: &str,
@@ -330,11 +333,12 @@ where
         }
     }
 
+    /// Builds a receive packet message of type `Any`
     pub fn build_msg_recv_packet_for_cos<C: Context>(
         &self,
         proof_height_on_a: Height,
         sdk_transfer: SDKTokenTransfer<C>,
-    ) -> CallMessage<DefaultContext> {
+    ) -> Any {
         let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
 
         let resp = self
@@ -409,6 +413,6 @@ where
             signer: self.dst_chain_ctx().signer().clone(),
         };
 
-        CallMessage::Core(msg_recv_packet.to_any())
+        msg_recv_packet.to_any()
     }
 }
