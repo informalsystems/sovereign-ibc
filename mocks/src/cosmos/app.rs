@@ -52,8 +52,7 @@ use tower::Service;
 use super::helpers::{
     convert_tm_to_ics_merkle_proof, dummy_tm_client_state, genesis_app_state, MutexUtil,
 };
-
-const JAN_1_2023: i64 = 1672531200;
+use crate::JAN_1_2023;
 
 /// Defines a mock Cosmos chain that includes simplified store, application,
 /// consensus layers.
@@ -189,13 +188,12 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let validators = self.validators.acquire_mutex();
 
-        let new_tm_light_block = Self::generate_block(
-            &self.chain_id,
-            blocks.len() as u64 + 1,
-            Time::now(),
-            &validators,
-            app_hash,
-        );
+        let height = blocks.len() as u64 + 1;
+
+        let time = Time::from_unix_timestamp(JAN_1_2023 + height as i64, 0).unwrap();
+
+        let new_tm_light_block =
+            Self::generate_block(&self.chain_id, height, time, &validators, app_hash);
 
         blocks.push(new_tm_light_block);
     }
@@ -205,7 +203,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         let app_state = serde_json::to_vec(&genesis_app_state()).expect("infallible serialization");
 
         let request = InitChain {
-            time: Time::now(),
+            time: Time::from_unix_timestamp(JAN_1_2023, 0).unwrap(),
             chain_id: self.chain_id.to_string(),
             consensus_params: default_consensus_params(),
             validators: vec![],
@@ -343,7 +341,12 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 3);
 
         let consensus_state = AnyConsensusState::Tendermint(
-            TmConsensusState::new(vec![].into(), Time::now(), Hash::None).into(),
+            TmConsensusState::new(
+                vec![].into(),
+                Time::from_unix_timestamp(JAN_1_2023, 0).unwrap(),
+                Hash::None,
+            )
+            .into(),
         );
 
         self.ibc_ctx()

@@ -18,7 +18,7 @@ use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::setup::setup;
 
 #[tokio::test]
-async fn test_create_client() {
+async fn test_create_client_on_sov() {
     let (rly, mut rollup) = setup(false).await;
 
     let msg_create_client = rly.build_msg_create_client_for_sov();
@@ -61,7 +61,7 @@ async fn test_create_client() {
 }
 
 #[tokio::test]
-async fn test_update_client() {
+async fn test_update_client_on_sov() {
     let (rly, mut rollup) = setup(false).await;
 
     let msg_create_client = rly.build_msg_create_client_for_sov();
@@ -91,4 +91,39 @@ async fn test_update_client() {
     let client_state = AnyClientState::try_from(any_client_state).unwrap();
 
     assert_eq!(client_state.latest_height(), target_height);
+}
+
+#[tokio::test]
+async fn test_create_client_on_cos() {
+    let (rly, _) = setup(false).await;
+
+    let msg_create_client = rly.build_msg_create_client_for_cos();
+
+    rly.dst_chain_ctx().send_msg(vec![msg_create_client]);
+
+    // Waits for the mock cosmos chain to commit the block
+    sleep(Duration::from_secs(1)).await;
+
+    let _client_counter = match rly.dst_chain_ctx().query(QueryReq::ClientCounter) {
+        QueryResp::ClientCounter(counter) => counter,
+        _ => panic!("Unexpected response"),
+    };
+
+    let client_state = match rly
+        .dst_chain_ctx()
+        .query(QueryReq::ClientState(rly.dst_client_id().clone()))
+    {
+        QueryResp::ClientState(state) => state,
+        _ => panic!("unexpected response"),
+    };
+
+    let client_state = AnyClientState::try_from(client_state).unwrap();
+
+    let _consensus_state = match rly.dst_chain_ctx().query(QueryReq::ConsensusState(
+        rly.dst_client_id().clone(),
+        client_state.latest_height(),
+    )) {
+        QueryResp::ConsensusState(state) => state,
+        _ => panic!("unexpected response"),
+    };
 }

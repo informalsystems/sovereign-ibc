@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use basecoin_store::context::ProvableStore;
 use ibc_client_tendermint::types::Header;
 use ibc_core::handler::types::events::IbcEvent;
+use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::proto::Any;
 use ibc_core_host_cosmos::IBC_QUERY_PATH;
@@ -24,6 +25,16 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
             QueryReq::ClientState(client_id) => {
                 QueryResp::ClientState(self.ibc_ctx().client_state(&client_id).unwrap().into())
             }
+            QueryReq::ConsensusState(client_id, height) => QueryResp::ConsensusState(
+                self.ibc_ctx()
+                    .consensus_state(&ClientConsensusStatePath::new(
+                        client_id,
+                        height.revision_number(),
+                        height.revision_height(),
+                    ))
+                    .unwrap()
+                    .into(),
+            ),
             QueryReq::NextSeqSend(path) => {
                 QueryResp::NextSeqSend(self.ibc_ctx().get_next_sequence_send(&path).unwrap())
             }

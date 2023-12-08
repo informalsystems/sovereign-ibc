@@ -39,6 +39,7 @@ where
     }
 }
 
+/// Defines the different types of queries that can be made to a chain.
 pub enum QueryReq {
     ChainId,
     ClientCounter,
@@ -46,10 +47,12 @@ pub enum QueryReq {
     HostConsensusState(Height),
     Header(Height, Height),
     ClientState(ClientId),
+    ConsensusState(ClientId, Height),
     NextSeqSend(SeqSendPath),
     ValueWithProof(Path, Height),
 }
 
+/// Defines the different types of responses that can be returned from querying
 pub enum QueryResp {
     ChainId(ChainId),
     ClientCounter(u64),
@@ -57,6 +60,7 @@ pub enum QueryResp {
     HostConsensusState(Any),
     Header(Any),
     ClientState(Any),
+    ConsensusState(Any),
     NextSeqSend(Sequence),
     ValueWithProof(Vec<u8>, Vec<u8>),
 }
