@@ -190,13 +190,10 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let height = blocks.len() as u64 + 1;
 
-        let new_tm_light_block = Self::generate_block(
-            &self.chain_id,
-            height,
-            Time::from_unix_timestamp(JAN_1_2023 + height as i64, 0).expect("never fails"),
-            &validators,
-            app_hash,
-        );
+        let time = Time::from_unix_timestamp(JAN_1_2023 + height as i64, 0).unwrap();
+
+        let new_tm_light_block =
+            Self::generate_block(&self.chain_id, height, time, &validators, app_hash);
 
         blocks.push(new_tm_light_block);
     }
