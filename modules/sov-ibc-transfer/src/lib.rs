@@ -6,7 +6,6 @@
     rust_2018_idioms,
     clippy::unwrap_used
 )]
-pub mod call;
 pub mod context;
 mod genesis;
 

@@ -3,10 +3,11 @@ use std::fmt::Debug;
 use std::rc::Rc;
 
 use anyhow::{bail, Result};
+use ibc_app_transfer::handler::send_transfer;
+use ibc_app_transfer::types::msgs::transfer::MsgTransfer;
 use ibc_core::entrypoint::dispatch;
 use ibc_core::handler::types::msgs::MsgEnvelope;
 use ibc_core::primitives::proto::Any;
-use sov_ibc_transfer::call::SDKTokenTransfer;
 use sov_ibc_transfer::context::IbcTransferContext;
 use sov_modules_api::{CallResponse, Context, DaSpec, WorkingSet};
 use thiserror::Error;
@@ -19,14 +20,13 @@ use crate::Ibc;
     feature = "native",
     derive(serde::Serialize),
     derive(serde::Deserialize),
-    derive(schemars::JsonSchema),
-    schemars(bound = "C::Address: ::schemars::JsonSchema", rename = "CallMessage")
+    derive(schemars::JsonSchema)
 )]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
-pub enum CallMessage<C: Context> {
+pub enum CallMessage {
     Core(Any),
 
-    Transfer(SDKTokenTransfer<C>),
+    Transfer(MsgTransfer),
 }
 
 /// Example of a custom error.
@@ -61,11 +61,12 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
 
     pub(crate) fn transfer(
         &self,
-        sdk_token_transfer: SDKTokenTransfer<C>,
+        msg_transfer: MsgTransfer,
         context: C,
         working_set: &mut WorkingSet<C>,
     ) -> Result<CallResponse> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
+
         let mut ibc_ctx = IbcContext {
             ibc: self,
             working_set: shared_working_set.clone(),
@@ -74,11 +75,8 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
         let mut transfer_ctx =
             IbcTransferContext::new(self.transfer.clone(), context, shared_working_set.clone());
 
-        self.transfer.transfer(
-            sdk_token_transfer,
-            &mut ibc_ctx,
-            &mut transfer_ctx,
-            shared_working_set,
-        )
+        send_transfer(&mut ibc_ctx, &mut transfer_ctx, msg_transfer)?;
+
+        Ok(sov_modules_api::CallResponse::default())
     }
 }

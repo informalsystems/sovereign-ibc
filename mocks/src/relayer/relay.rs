@@ -1,9 +1,11 @@
 use std::str::FromStr;
 use std::sync::Arc;
 
+use base64::engine::general_purpose;
+use base64::Engine;
 use ibc_app_transfer::types::msgs::transfer::MsgTransfer;
 use ibc_app_transfer::types::packet::PacketData;
-use ibc_app_transfer::types::{Coin, Memo, PrefixedCoin, PrefixedDenom};
+use ibc_app_transfer::types::{Coin, Memo, PrefixedDenom};
 use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::channel::types::msgs::MsgRecvPacket;
 use ibc_core::channel::types::packet::Packet;
@@ -14,17 +16,14 @@ use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentProofBytes;
 use ibc_core::commitment_types::merkle::MerkleProof;
 use ibc_core::commitment_types::proto::ics23::CommitmentProof;
-use ibc_core::commitment_types::proto::v1::MerkleProof as RawMerkleProof;
 use ibc_core::host::types::identifiers::{ChannelId, ClientId, PortId};
 use ibc_core::host::types::path::{CommitmentPath, Path, SeqSendPath};
 use ibc_core::primitives::proto::Any;
-use ibc_core::primitives::{Msg, Signer, Timestamp};
+use ibc_core::primitives::{Signer, Timestamp, ToProto};
 use prost::Message;
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
-use sov_ibc_transfer::call::SDKTokenTransfer;
-use sov_modules_api::default_context::DefaultContext;
-use sov_modules_api::{Context, Spec};
+use sov_modules_api::{Address, Context};
 
 use super::context::ChainContext;
 use super::handle::{Handle, QueryReq, QueryResp};
@@ -86,7 +85,7 @@ where
     }
 
     /// Builds a create client message wrapped in a `CallMessage`
-    pub fn build_msg_create_client_for_sov(&self) -> CallMessage<DefaultContext> {
+    pub fn build_msg_create_client_for_sov(&self) -> CallMessage {
         let current_height = match self.dst_chain_ctx().query(QueryReq::HostHeight) {
             QueryResp::HostHeight(height) => height,
             _ => panic!("unexpected query response"),
@@ -148,10 +147,7 @@ where
     }
 
     /// Builds an update client message wrapped in a `CallMessage`
-    pub fn build_msg_update_client_for_sov(
-        &self,
-        target_height: Height,
-    ) -> CallMessage<DefaultContext> {
+    pub fn build_msg_update_client_for_sov(&self, target_height: Height) -> CallMessage {
         let client_counter = match self.src_chain_ctx().query(QueryReq::ClientCounter) {
             QueryResp::ClientCounter(counter) => counter,
             _ => panic!("unexpected query response"),
@@ -226,34 +222,45 @@ where
 
     /// Builds a sdk token transfer message wrapped in a `CallMessage` with the given amount
     /// Note: keep the amount value lower than the initial balance of the sender address
-    pub fn build_sdk_transfer_for_sov<C: Context>(
+    pub fn build_msg_transfer_for_sov(
         &self,
-        token: <C as Spec>::Address,
+        token_name: String,
+        token_address: Address,
         sender: Signer,
         receiver: Signer,
         amount: u64,
-    ) -> CallMessage<C> {
-        let msg_transfer = SDKTokenTransfer {
-            port_id_on_a: PortId::transfer(),
-            chan_id_on_a: ChannelId::default(),
-            timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
-            timeout_timestamp_on_b: Timestamp::none(),
-            token_address: token,
-            amount,
+    ) -> CallMessage {
+        let mut token_address_buf = String::new();
+
+        general_purpose::STANDARD_NO_PAD.encode_string(token_address, &mut token_address_buf);
+
+        let packet_data = PacketData {
+            token: Coin {
+                denom: PrefixedDenom::from_str(&token_name).unwrap(),
+                amount: amount.into(),
+            },
             sender,
             receiver,
-            memo: Memo::from_str("").unwrap(),
+            memo: token_address_buf.into(),
+        };
+
+        let msg_transfer = MsgTransfer {
+            port_id_on_a: PortId::transfer(),
+            chan_id_on_a: ChannelId::default(),
+            packet_data,
+            timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
+            timeout_timestamp_on_b: Timestamp::none(),
         };
 
         CallMessage::Transfer(msg_transfer)
     }
 
     /// Builds a receive packet message wrapped in a `CallMessage`
-    pub fn build_msg_recv_packet_for_sov<C: Context>(
+    pub fn build_msg_recv_packet_for_sov(
         &self,
         proof_height_on_a: Height,
         msg_transfer: MsgTransfer,
-    ) -> CallMessage<C> {
+    ) -> CallMessage {
         let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
 
         let next_seq_send = match self
@@ -279,7 +286,7 @@ where
 
         let commitment_proofs = CommitmentProofBytes::try_from(proof_bytes).unwrap();
 
-        let merkle_proofs = MerkleProof::from(RawMerkleProof::try_from(commitment_proofs).unwrap());
+        let merkle_proofs = MerkleProof::try_from(commitment_proofs).unwrap();
 
         assert_eq!(merkle_proofs.proofs.len(), 2);
 
@@ -337,7 +344,7 @@ where
     pub fn build_msg_recv_packet_for_cos<C: Context>(
         &self,
         proof_height_on_a: Height,
-        sdk_transfer: SDKTokenTransfer<C>,
+        msg_transfer: MsgTransfer,
     ) -> Any {
         let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
 
@@ -367,7 +374,7 @@ where
 
         let commitment_proofs = CommitmentProofBytes::try_from(proof_bytes).unwrap();
 
-        let merkle_proofs = MerkleProof::from(RawMerkleProof::try_from(commitment_proofs).unwrap());
+        let merkle_proofs = MerkleProof::try_from(commitment_proofs).unwrap();
 
         let resp = self.dst_chain_ctx().query(QueryReq::ValueWithProof(
             Path::Commitment(commitment_path.clone()),
@@ -385,25 +392,15 @@ where
         assert_eq!(merkle_proofs.proofs[0], proof_commitment_on_a);
         assert_eq!(merkle_proofs.proofs.len(), 2);
 
-        let packet_data = PacketData {
-            token: PrefixedCoin {
-                denom: sdk_transfer.token_address.to_string().parse().unwrap(),
-                amount: sdk_transfer.amount.into(),
-            },
-            sender: sdk_transfer.sender,
-            receiver: sdk_transfer.receiver,
-            memo: sdk_transfer.memo,
-        };
-
         let packet = Packet {
             seq_on_a: latest_seq_send,
-            chan_id_on_a: sdk_transfer.chan_id_on_a,
-            port_id_on_a: sdk_transfer.port_id_on_a,
+            chan_id_on_a: msg_transfer.chan_id_on_a,
+            port_id_on_a: msg_transfer.port_id_on_a,
             chan_id_on_b: ChannelId::default(),
             port_id_on_b: PortId::transfer(),
-            data: serde_json::to_vec(&packet_data).unwrap(),
-            timeout_height_on_b: sdk_transfer.timeout_height_on_b,
-            timeout_timestamp_on_b: sdk_transfer.timeout_timestamp_on_b,
+            data: serde_json::to_vec(&msg_transfer.packet_data).unwrap(),
+            timeout_height_on_b: msg_transfer.timeout_height_on_b,
+            timeout_timestamp_on_b: msg_transfer.timeout_timestamp_on_b,
         };
 
         let msg_recv_packet = MsgRecvPacket {
