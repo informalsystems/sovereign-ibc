@@ -12,6 +12,7 @@ publish      = false
 [dependencies]
 # external dependencies
 anyhow     = { workspace = true }
+base64     = { workspace = true }
 borsh      = { workspace = true }
 prost      = { workspace = true }
 sha2       = { version = "0.10.6", default-features = false }
@@ -35,8 +36,9 @@ ibc-query             = { workspace = true }
 ibc-testkit           = { workspace = true }
 
 # cosmos dependencies
-basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "96e73fd" }
-basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "96e73fd" }
+basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "0f34a4b" }
+basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "0f34a4b" }
+
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
 

@@ -136,7 +136,7 @@ impl<C: Context, Da: DaSpec> sov_modules_api::Module for Ibc<C, Da> {
 
     type Config = ExampleModuleConfig;
 
-    type CallMessage = call::CallMessage<C>;
+    type CallMessage = call::CallMessage;
 
     type Event = IbcEvent;
 

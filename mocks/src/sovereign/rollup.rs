@@ -282,7 +282,7 @@ where
     }
 
     /// Applies an IBC message to the execution layer
-    pub async fn apply_msg(&mut self, msg: Vec<CallMessage<C>>) -> Vec<IbcEvent> {
+    pub async fn apply_msg(&mut self, msg: Vec<CallMessage>) -> Vec<IbcEvent> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
         for m in msg {

@@ -4,7 +4,7 @@ use std::time::Duration;
 use ibc_app_transfer::types::{PrefixedDenom, TracePrefix};
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::host::types::identifiers::{ChannelId, PortId};
-use ibc_core::primitives::{Msg, Signer};
+use ibc_core::primitives::{Signer, ToProto};
 use ibc_testkit::fixtures::core::signer::{dummy_account_id, dummy_bech32_account};
 use sov_bank::get_genesis_token_address;
 use sov_ibc::clients::AnyClientState;
@@ -27,14 +27,15 @@ async fn test_send_transfer_on_sov() {
 
     let expected_sender_balance = token.address_and_balances[0].1 - transfer_amount;
 
-    let msg_sdk_token_transfer = rly.build_sdk_transfer_for_sov(
+    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(
+        token.token_name.clone(),
         token_address,
         Signer::from(sender_on_sov.to_string()),
         receiver_on_cos,
         transfer_amount,
     );
 
-    rollup.apply_msg(vec![msg_sdk_token_transfer]).await;
+    rollup.apply_msg(vec![msg_transfer_on_sov]).await;
 
     // Checks that the token has been transferred
     let escrowed_token = rly
