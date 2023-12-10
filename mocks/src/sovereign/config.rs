@@ -80,7 +80,7 @@ pub fn create_chain_state_config(initial_slot_height: u64) -> ChainStateConfig {
 
 /// Creates a bank configuration with the given number of addresses and initial balance
 pub fn create_bank_config<C: Context>(addresses_count: u64, initial_balance: u64) -> BankConfig<C> {
-    let address_and_balances = (0..addresses_count)
+    let address_and_balances: Vec<_> = (0..addresses_count)
         .map(|i| {
             let key = format!("key_{}", i);
             let addr = gen_address_generic::<C>(&key);
@@ -88,14 +88,21 @@ pub fn create_bank_config<C: Context>(addresses_count: u64, initial_balance: u64
         })
         .collect();
 
-    let token_config = TokenConfig {
+    let genuine_token_config = TokenConfig {
         token_name: DEFAULT_TOKEN_NAME.to_owned(),
-        address_and_balances,
+        address_and_balances: address_and_balances.clone(),
+        authorized_minters: vec![],
+        salt: 0,
+    };
+
+    let forged_token_config = TokenConfig {
+        token_name: DEFAULT_TOKEN_NAME.to_owned(),
+        address_and_balances: address_and_balances.clone(),
         authorized_minters: vec![],
         salt: 5,
     };
 
     BankConfig {
-        tokens: vec![token_config],
+        tokens: vec![genuine_token_config, forged_token_config],
     }
 }

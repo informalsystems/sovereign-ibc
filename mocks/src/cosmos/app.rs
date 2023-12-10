@@ -48,6 +48,7 @@ use tendermint_testgen::{Generator, Header, LightBlock, Validator};
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tower::Service;
+use tracing::debug;
 
 use super::helpers::{
     convert_tm_to_ics_merkle_proof, dummy_tm_client_state, genesis_app_state, MutexUtil,
@@ -135,7 +136,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         self.app.ibc().ctx()
     }
 
-    pub fn balance(&self, denom: &str, account: String) -> Option<u64> {
+    pub fn get_balance_of(&self, denom: &str, account: String) -> Option<u64> {
         let account_id: AccountId = account.parse().unwrap();
 
         let denom = Denom(denom.to_string());
@@ -189,6 +190,8 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         let validators = self.validators.acquire_mutex();
 
         let height = blocks.len() as u64 + 1;
+
+        debug!("cosmos: growing chain to height {}", height);
 
         let time = Time::from_unix_timestamp(JAN_1_2023 + height as i64, 0).unwrap();
 

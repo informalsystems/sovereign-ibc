@@ -23,10 +23,10 @@ use ibc_core::primitives::{Signer, Timestamp, ToProto};
 use prost::Message;
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
-use sov_modules_api::{Address, Context};
 
 use super::context::ChainContext;
 use super::handle::{Handle, QueryReq, QueryResp};
+use crate::configs::transfer::TransferTestConfig;
 use crate::cosmos::helpers::dummy_tm_client_state;
 
 /// The relay context for relaying between a mock sovereign chain and a mock
@@ -185,7 +185,7 @@ where
     }
 
     /// Builds an update client message of type `Any`
-    pub fn build_msg_update_client_for_cos(&self, target_height: Height) -> Any {
+    pub fn build_msg_update_client_for_cos(&self, target_height: Height) -> MsgUpdateClient {
         let client_counter = match self.dst_chain_ctx().query(QueryReq::ClientCounter) {
             QueryResp::ClientCounter(counter) => counter,
             _ => panic!("unexpected query response"),
@@ -211,48 +211,38 @@ where
             _ => panic!("unexpected query response"),
         };
 
-        let msg_update_client = MsgUpdateClient {
+        MsgUpdateClient {
             client_id,
             client_message: header,
             signer: self.dst_chain_ctx().signer().clone(),
-        };
-
-        msg_update_client.to_any()
+        }
     }
 
     /// Builds a sdk token transfer message wrapped in a `CallMessage` with the given amount
     /// Note: keep the amount value lower than the initial balance of the sender address
-    pub fn build_msg_transfer_for_sov(
-        &self,
-        token_name: String,
-        token_address: Address,
-        sender: Signer,
-        receiver: Signer,
-        amount: u64,
-    ) -> CallMessage {
+    pub fn build_msg_transfer_for_sov(&self, config: &TransferTestConfig) -> MsgTransfer {
         let mut token_address_buf = String::new();
 
-        general_purpose::STANDARD_NO_PAD.encode_string(token_address, &mut token_address_buf);
+        general_purpose::STANDARD_NO_PAD
+            .encode_string(config.token_address.unwrap(), &mut token_address_buf);
 
         let packet_data = PacketData {
             token: Coin {
-                denom: PrefixedDenom::from_str(&token_name).unwrap(),
-                amount: amount.into(),
+                denom: PrefixedDenom::from_str(&config.denom_on_sov).unwrap(),
+                amount: config.amount.into(),
             },
-            sender,
-            receiver,
+            sender: Signer::from(config.address_on_sov.to_string()),
+            receiver: Signer::from(config.address_on_cos.clone()),
             memo: token_address_buf.into(),
         };
 
-        let msg_transfer = MsgTransfer {
+        MsgTransfer {
             port_id_on_a: PortId::transfer(),
             chan_id_on_a: ChannelId::default(),
             packet_data,
             timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
             timeout_timestamp_on_b: Timestamp::none(),
-        };
-
-        CallMessage::Transfer(msg_transfer)
+        }
     }
 
     /// Builds a receive packet message wrapped in a `CallMessage`
@@ -312,21 +302,27 @@ where
     }
 
     /// Builds a Cosmos chain token transfer message; serialized to Any
-    pub fn build_msg_transfer_for_cos(
-        &self,
-        denom: &str,
-        sender: Signer,
-        receiver: Signer,
-        amount: u64,
-    ) -> MsgTransfer {
+    pub fn build_msg_transfer_for_cos(&self, config: &TransferTestConfig) -> MsgTransfer {
+        let memo = match config.token_address {
+            Some(token_address) => {
+                let mut token_address_buf = String::new();
+
+                general_purpose::STANDARD_NO_PAD
+                    .encode_string(token_address, &mut token_address_buf);
+
+                token_address_buf.into()
+            }
+            None => Memo::from_str("").unwrap(),
+        };
+
         let packet_data = PacketData {
             token: Coin {
-                denom: PrefixedDenom::from_str(denom).unwrap(),
-                amount: amount.into(),
+                denom: PrefixedDenom::from_str(&config.denom_on_cos).unwrap(),
+                amount: config.amount.into(),
             },
-            sender,
-            receiver,
-            memo: Memo::from_str("").unwrap(),
+            sender: Signer::from(config.address_on_cos.clone()),
+            receiver: Signer::from(config.address_on_sov.to_string()),
+            memo,
         };
 
         MsgTransfer {
@@ -341,11 +337,11 @@ where
     }
 
     /// Builds a receive packet message of type `Any`
-    pub fn build_msg_recv_packet_for_cos<C: Context>(
+    pub fn build_msg_recv_packet_for_cos(
         &self,
         proof_height_on_a: Height,
         msg_transfer: MsgTransfer,
-    ) -> Any {
+    ) -> MsgRecvPacket {
         let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
 
         let resp = self
@@ -403,13 +399,11 @@ where
             timeout_timestamp_on_b: msg_transfer.timeout_timestamp_on_b,
         };
 
-        let msg_recv_packet = MsgRecvPacket {
+        MsgRecvPacket {
             packet,
             proof_commitment_on_a: merkle_proofs.try_into().expect("no error"),
             proof_height_on_a,
             signer: self.dst_chain_ctx().signer().clone(),
-        };
-
-        msg_recv_packet.to_any()
+        }
     }
 }
