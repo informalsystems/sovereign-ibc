@@ -31,14 +31,17 @@ use sov_ibc::call::CallMessage;
 use sov_ibc::clients::{AnyClientState, AnyConsensusState};
 use sov_ibc::context::IbcContext;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
-use sov_modules_api::{Context, DispatchCall, Genesis, SlotData, StateCheckpoint, WorkingSet};
+use sov_modules_api::{
+    Context, DispatchCall, Genesis, ModuleInfo, SlotData, StateCheckpoint, WorkingSet,
+};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tendermint::{Hash, Time};
+use tracing::{debug, info};
 
 use super::config::TestConfig;
 use super::runtime::{GenesisConfig, Runtime};
-use crate::cosmos::helpers::dummy_tm_client_state;
+use crate::cosmos::dummy_tm_client_state;
 use crate::sovereign::runtime::RuntimeCall;
 use crate::JAN_1_2023;
 /// Defines a mock rollup structure with default configurations and specs
@@ -119,6 +122,17 @@ where
         &self.config.bank_config.tokens
     }
 
+    /// Returns the address of the relayer. We use the last address in the list
+    /// as the relayer address
+    pub fn get_relayer_address(&self) -> C::Address {
+        self.config.bank_config.tokens[0]
+            .address_and_balances
+            .last()
+            .unwrap()
+            .0
+            .clone()
+    }
+
     /// Returns the balance of a user for a given token
     pub fn get_balance_of(&self, user_address: C::Address, token_address: C::Address) -> u64 {
         let mut working_set = WorkingSet::new(self.prover_storage.clone());
@@ -186,6 +200,44 @@ where
         working_set.checkpoint()
     }
 
+    /// Creates a token with the given configuration
+    pub async fn create_token(&mut self, token: &TokenConfig<C>) -> C::Address {
+        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+
+        // Temporarily set the relayer address as the sender of rollup context
+
+        self.rollup_ctx = C::new(self.get_relayer_address(), self.rollup_ctx().slot_height());
+
+        let token_address = self
+            .runtime()
+            .bank
+            .create_token(
+                token.token_name.clone(),
+                token.salt,
+                1000,
+                token.address_and_balances[0].0.clone(),
+                vec![self.get_relayer_address()],
+                &self.rollup_ctx(),
+                &mut working_set,
+            )
+            .unwrap();
+
+        // Reset the rollup context to the default address
+        self.rollup_ctx = C::new(
+            self.runtime().ibc_transfer.address().clone(),
+            self.rollup_ctx().slot_height(),
+        );
+
+        self.commit(working_set.checkpoint()).await;
+
+        info!(
+            "rollup: created token {} with address {}",
+            token.token_name, token_address
+        );
+
+        token_address
+    }
+
     /// Initializes the chain with the genesis configuration
     pub async fn init_chain(&mut self) -> StateCheckpoint<C> {
         let mut working_set = WorkingSet::new(self.prover_storage.clone());
@@ -210,14 +262,12 @@ where
 
         let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);
 
+        debug!("rollup: processing block at height {}", current_height);
+
         // Dummy transaction to trigger the block generation
         self.da_service.send_transaction(&[0; 32]).await.unwrap();
 
-        let block = self
-            .da_service
-            .get_block_at(current_height - 1)
-            .await
-            .unwrap();
+        let block = self.da_service.get_block_at(current_height).await.unwrap();
 
         self.runtime.begin_slot_hook(
             block.header(),
@@ -258,9 +308,18 @@ where
 
         self.prover_storage.commit(&state_update, &accessory_log);
 
+        let mut working_set = checkpoint.to_revertable();
+
+        let slot_height = self.ibc_ctx(&mut working_set).host_height().unwrap();
+
+        self.rollup_ctx = C::new(
+            self.runtime().ibc_transfer.address().clone(),
+            slot_height.revision_height(),
+        );
+
         self.set_state_root(root_hash);
 
-        checkpoint
+        working_set.checkpoint()
     }
 
     /// Runs the rollup chain by initializing the chain and then committing
@@ -285,11 +344,11 @@ where
     pub async fn apply_msg(&mut self, msg: Vec<CallMessage>) -> Vec<IbcEvent> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        for m in msg {
+        msg.into_iter().for_each(|m| {
             self.runtime()
                 .dispatch_call(RuntimeCall::ibc(m), &mut working_set, &self.rollup_ctx())
                 .unwrap();
-        }
+        });
 
         let _ = working_set.events();
 

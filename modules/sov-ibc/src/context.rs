@@ -30,7 +30,7 @@ use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::Ibc;
 
 /// The SDK doesn't have a concept of a "revision number", so we default to 0
-const HOST_REVISION_NUMBER: u64 = 0;
+pub const HOST_REVISION_NUMBER: u64 = 0;
 
 #[derive(Clone)]
 pub struct IbcContext<'a, C, Da>

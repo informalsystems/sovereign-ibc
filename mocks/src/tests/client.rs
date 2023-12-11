@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use borsh::BorshDeserialize;
 use ibc_client_tendermint::types::proto::v1::{
     ClientState as RawClientState, ConsensusState as RawConsensusState,
@@ -12,12 +10,12 @@ use ibc_core::primitives::proto::Protobuf;
 use jmt::proof::SparseMerkleProof;
 use sha2::Sha256;
 use sov_ibc::clients::AnyClientState;
-use tokio::time::sleep;
+use test_log::test;
 
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::setup::setup;
+use crate::setup::{setup, wait_for_cosmos_block};
 
-#[tokio::test]
+#[test(tokio::test)]
 async fn test_create_client_on_sov() {
     let (rly, mut rollup) = setup(false).await;
 
@@ -60,7 +58,7 @@ async fn test_create_client_on_sov() {
     }
 }
 
-#[tokio::test]
+#[test(tokio::test)]
 async fn test_update_client_on_sov() {
     let (rly, mut rollup) = setup(false).await;
 
@@ -68,8 +66,7 @@ async fn test_update_client_on_sov() {
 
     rollup.apply_msg(vec![msg_create_client]).await;
 
-    // Waits for the mock cosmos chain to progress a few blocks
-    sleep(Duration::from_secs(1)).await;
+    wait_for_cosmos_block().await;
 
     let target_height = match rly.dst_chain_ctx().query(QueryReq::HostHeight) {
         QueryResp::HostHeight(height) => height,
@@ -93,7 +90,7 @@ async fn test_update_client_on_sov() {
     assert_eq!(client_state.latest_height(), target_height);
 }
 
-#[tokio::test]
+#[test(tokio::test)]
 async fn test_create_client_on_cos() {
     let (rly, _) = setup(false).await;
 
@@ -101,8 +98,7 @@ async fn test_create_client_on_cos() {
 
     rly.dst_chain_ctx().send_msg(vec![msg_create_client]);
 
-    // Waits for the mock cosmos chain to commit the block
-    sleep(Duration::from_secs(1)).await;
+    wait_for_cosmos_block().await;
 
     let _client_counter = match rly.dst_chain_ctx().query(QueryReq::ClientCounter) {
         QueryResp::ClientCounter(counter) => counter,

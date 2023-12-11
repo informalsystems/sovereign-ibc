@@ -238,7 +238,7 @@ where
             .bank
             .get_balance_of(
                 from_account.address.clone(),
-                token_address,
+                token_address.clone(),
                 &mut self.working_set.borrow_mut(),
             )
             .ok_or(TokenTransferError::InvalidCoin {

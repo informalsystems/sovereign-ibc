@@ -22,7 +22,7 @@ use crate::Ibc;
     derive(serde::Deserialize),
     derive(schemars::JsonSchema)
 )]
-#[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
+#[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Clone, Debug, PartialEq)]
 pub enum CallMessage {
     Core(Any),
 
