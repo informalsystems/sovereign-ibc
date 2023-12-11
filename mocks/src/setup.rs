@@ -7,26 +7,20 @@ use ibc_core::host::ValidationContext;
 use sov_mock_da::{MockAddress, MockDaService};
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, ModuleInfo, WorkingSet};
-use sov_state::{DefaultStorageSpec, ProverStorage};
+use sov_state::ProverStorage;
 use tokio::time::sleep;
 use tracing::info;
 
-use super::cosmos::helpers::dummy_signer;
-use super::relayer::Relayer;
-use crate::cosmos::builder::CosmosBuilder;
+use super::cosmos::dummy_signer;
+use super::relayer::DefaultRelayer;
+use crate::cosmos::CosmosBuilder;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
-use crate::sovereign::config::TestConfig;
-use crate::sovereign::rollup::MockRollup;
-use crate::sovereign::runtime::Runtime;
+use crate::relayer::DefaultRollup;
+use crate::sovereign::{MockRollup, Runtime, TestConfig, DEFAULT_INIT_HEIGHT};
 
-/// Set ups a relayer between a mock rollup and a mock cosmos chain
-pub async fn setup<'ws>(
-    with_manual_tao: bool,
-) -> (
-    Relayer<'ws>,
-    MockRollup<DefaultContext, MockDaService, DefaultStorageSpec>,
-) {
+/// Initializes a mock rollup and a mock Cosmos chain and sets up the relayer between them.
+pub async fn setup(with_manual_tao: bool) -> (DefaultRelayer, DefaultRollup) {
     let rollup_chain_id = ChainId::new("mock-rollup-0").unwrap();
 
     let config = TestConfig::default();
@@ -34,8 +28,8 @@ pub async fn setup<'ws>(
     let runtime = Runtime::default();
 
     // Set the default sender address to the address of the 'sov-ibc-transfer'
-    // module, ensuring that the module's address is used for token creation.
-    let rollup_ctx = DefaultContext::new(*runtime.ibc_transfer.address(), 0);
+    // module, ensuring that the module's address is used for the token creation.
+    let rollup_ctx = DefaultContext::new(*runtime.ibc_transfer.address(), DEFAULT_INIT_HEIGHT);
 
     let da_service = MockDaService::new(MockAddress::default());
 
@@ -98,7 +92,7 @@ pub async fn setup<'ws>(
             .await;
         cos_chain.with_send_sequence(cos_port_id, cos_chan_id, Sequence::from(1));
 
-        info!("relayer: initialized manual IBC TAO layers");
+        info!("relayer: manually initialized IBC TAO layers");
     }
 
     (
@@ -114,7 +108,7 @@ pub async fn setup<'ws>(
     )
 }
 
+/// Waits for the mock Cosmos chain to generate a few blocks.
 pub async fn wait_for_cosmos_block() {
-    // Waits for the mock Cosmos chain to generate a few blocks before proceeding.
     sleep(Duration::from_secs(1)).await;
 }

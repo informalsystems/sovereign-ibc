@@ -11,14 +11,18 @@ pub mod relayer_type {
     use sov_state::DefaultStorageSpec;
 
     use super::relay::MockRelayer;
-    use crate::cosmos::app::MockCosmosChain;
-    use crate::sovereign::rollup::MockRollup;
+    use crate::cosmos::MockCosmosChain;
+    use crate::sovereign::MockRollup;
 
-    /// Concrete type for the relayer between a mock sovereign chain and a mock
-    pub type Relayer<'ws> = MockRelayer<
+    /// Default concrete type for the relayer between the mock rollup and the
+    /// mock Cosmos chain.
+    pub type DefaultRelayer = MockRelayer<
         MockRollup<DefaultContext, MockDaService, DefaultStorageSpec>,
         MockCosmosChain<InMemoryStore>,
     >;
+
+    /// Default concrete type for the mock rollup.
+    pub type DefaultRollup = MockRollup<DefaultContext, MockDaService, DefaultStorageSpec>;
 }
 
 #[cfg(feature = "native")]

@@ -23,11 +23,12 @@ use ibc_core::primitives::{Signer, Timestamp, ToProto};
 use prost::Message;
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
+use sov_ibc::context::HOST_REVISION_NUMBER;
 
 use super::context::ChainContext;
 use super::handle::{Handle, QueryReq, QueryResp};
-use crate::configs::transfer::TransferTestConfig;
-use crate::cosmos::helpers::dummy_tm_client_state;
+use crate::configs::TransferTestConfig;
+use crate::cosmos::dummy_tm_client_state;
 
 /// The relay context for relaying between a mock sovereign chain and a mock
 /// cosmos chain
@@ -224,15 +225,15 @@ where
         let mut token_address_buf = String::new();
 
         general_purpose::STANDARD_NO_PAD
-            .encode_string(config.token_address.unwrap(), &mut token_address_buf);
+            .encode_string(config.sov_token_address.unwrap(), &mut token_address_buf);
 
         let packet_data = PacketData {
             token: Coin {
-                denom: PrefixedDenom::from_str(&config.denom_on_sov).unwrap(),
+                denom: PrefixedDenom::from_str(&config.sov_denom).unwrap(),
                 amount: config.amount.into(),
             },
-            sender: Signer::from(config.address_on_sov.to_string()),
-            receiver: Signer::from(config.address_on_cos.clone()),
+            sender: Signer::from(config.sov_address.to_string()),
+            receiver: Signer::from(config.cos_address.clone()),
             memo: token_address_buf.into(),
         };
 
@@ -303,7 +304,7 @@ where
 
     /// Builds a Cosmos chain token transfer message; serialized to Any
     pub fn build_msg_transfer_for_cos(&self, config: &TransferTestConfig) -> MsgTransfer {
-        let memo = match config.token_address {
+        let memo = match config.sov_token_address {
             Some(token_address) => {
                 let mut token_address_buf = String::new();
 
@@ -317,11 +318,11 @@ where
 
         let packet_data = PacketData {
             token: Coin {
-                denom: PrefixedDenom::from_str(&config.denom_on_cos).unwrap(),
+                denom: PrefixedDenom::from_str(&config.cos_denom).unwrap(),
                 amount: config.amount.into(),
             },
-            sender: Signer::from(config.address_on_cos.clone()),
-            receiver: Signer::from(config.address_on_sov.to_string()),
+            sender: Signer::from(config.cos_address.clone()),
+            receiver: Signer::from(config.sov_address.to_string()),
             memo,
         };
 
@@ -330,8 +331,7 @@ where
             chan_id_on_a: ChannelId::default(),
             packet_data,
             // NOTE: packet timeout height and timeout timestamp cannot both be 0
-            // Sovereign chain's initial revision number has been set to 1
-            timeout_height_on_b: TimeoutHeight::At(Height::new(1, 200).unwrap()),
+            timeout_height_on_b: TimeoutHeight::At(Height::new(HOST_REVISION_NUMBER, 200).unwrap()),
             timeout_timestamp_on_b: Timestamp::none(),
         }
     }

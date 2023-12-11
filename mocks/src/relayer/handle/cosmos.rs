@@ -7,12 +7,15 @@ use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::proto::Any;
 use ibc_core_host_cosmos::IBC_QUERY_PATH;
+use tracing::info;
 
-use crate::cosmos::app::MockCosmosChain;
+use crate::cosmos::MockCosmosChain;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 
 impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
     fn query(&self, request: QueryReq) -> QueryResp {
+        info!("cosmos: got query request: {:?}", request);
+
         match request {
             QueryReq::ChainId => QueryResp::ChainId(self.chain_id().clone()),
             QueryReq::HostHeight => QueryResp::HostHeight(self.ibc_ctx().host_height().unwrap()),

@@ -41,7 +41,7 @@ use tracing::{debug, info};
 
 use super::config::TestConfig;
 use super::runtime::{GenesisConfig, Runtime};
-use crate::cosmos::helpers::dummy_tm_client_state;
+use crate::cosmos::dummy_tm_client_state;
 use crate::sovereign::runtime::RuntimeCall;
 use crate::JAN_1_2023;
 /// Defines a mock rollup structure with default configurations and specs
@@ -267,11 +267,7 @@ where
         // Dummy transaction to trigger the block generation
         self.da_service.send_transaction(&[0; 32]).await.unwrap();
 
-        let block = self
-            .da_service
-            .get_block_at(current_height - 1)
-            .await
-            .unwrap();
+        let block = self.da_service.get_block_at(current_height).await.unwrap();
 
         self.runtime.begin_slot_hook(
             block.header(),

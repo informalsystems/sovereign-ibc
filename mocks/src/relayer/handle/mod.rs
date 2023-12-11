@@ -40,6 +40,7 @@ where
 }
 
 /// Defines the different types of queries that can be made to a chain.
+#[derive(Debug)]
 pub enum QueryReq {
     ChainId,
     ClientCounter,
@@ -53,6 +54,7 @@ pub enum QueryReq {
 }
 
 /// Defines the different types of responses that can be returned from querying
+#[derive(Debug)]
 pub enum QueryResp {
     ChainId(ChainId),
     ClientCounter(u64),

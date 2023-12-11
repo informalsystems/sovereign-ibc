@@ -7,9 +7,10 @@ use ibc_core::primitives::proto::Any;
 use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
+use tracing::info;
 
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::sovereign::rollup::MockRollup;
+use crate::sovereign::MockRollup;
 
 impl<C, Da, S> Handle for MockRollup<C, Da, S>
 where
@@ -20,6 +21,8 @@ where
     <S as MerkleProofSpec>::Hasher: Send,
 {
     fn query(&self, request: QueryReq) -> QueryResp {
+        info!("rollup: got query request: {:?}", request);
+
         let mut working_set = WorkingSet::new(self.prover_storage());
 
         let ibc_ctx = self.ibc_ctx(&mut working_set);

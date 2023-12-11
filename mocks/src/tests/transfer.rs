@@ -10,7 +10,7 @@ use sov_ibc::clients::AnyClientState;
 use sov_modules_api::default_context::DefaultContext;
 use test_log::test;
 
-use crate::configs::transfer::TransferTestConfig;
+use crate::configs::TransferTestConfig;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp, QueryService};
 use crate::setup::{setup, wait_for_cosmos_block};
 
@@ -25,9 +25,9 @@ async fn test_escrow_unescrow_on_sov() {
     let token: TokenConfig<DefaultContext> = rollup.get_tokens()[0].clone();
     let token_address = get_genesis_token_address::<DefaultContext>(&token.token_name, token.salt);
     let mut cfg = TransferTestConfig::builder()
-        .denom_on_sov(token.token_name.clone())
-        .token_address(Some(token_address))
-        .address_on_sov(token.address_and_balances[0].0)
+        .sov_denom(token.token_name.clone())
+        .sov_token_address(Some(token_address))
+        .sov_address(token.address_and_balances[0].0)
         .build();
 
     let expected_sender_balance = token.address_and_balances[0].1 - cfg.amount * 2;
@@ -65,7 +65,7 @@ async fn test_escrow_unescrow_on_sov() {
     let sender_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.address_on_sov, token_address);
+        .get_balance_of(cfg.sov_address, token_address);
 
     assert_eq!(sender_balance, expected_sender_balance);
 
@@ -74,13 +74,13 @@ async fn test_escrow_unescrow_on_sov() {
     // -----------------------------------------------------------------------
     let fake_token_address = rollup.create_token(&token).await;
 
-    cfg.token_address = Some(fake_token_address);
+    cfg.sov_token_address = Some(fake_token_address);
     cfg.amount = 50;
 
     let fake_token_sender_initial_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.address_on_sov, fake_token_address);
+        .get_balance_of(cfg.sov_address, fake_token_address);
 
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
@@ -102,14 +102,14 @@ async fn test_escrow_unescrow_on_sov() {
     let sender_genuine_token_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.address_on_sov, token_address);
+        .get_balance_of(cfg.sov_address, token_address);
 
     assert_eq!(sender_genuine_token_balance, expected_sender_balance);
 
     let fake_token_sender_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.address_on_sov, fake_token_address);
+        .get_balance_of(cfg.sov_address, fake_token_address);
 
     assert_eq!(
         fake_token_sender_balance,
@@ -126,8 +126,8 @@ async fn test_mint_burn_on_sov() {
     // set transfer parameters
     let token = rollup.get_tokens()[0].clone();
     let mut cfg = TransferTestConfig::builder()
-        .denom_on_sov(token.token_name.clone())
-        .address_on_sov(token.address_and_balances[0].0)
+        .sov_denom(token.token_name.clone())
+        .sov_address(token.address_and_balances[0].0)
         .build();
 
     let fake_token = TokenConfig {
@@ -141,7 +141,7 @@ async fn test_mint_burn_on_sov() {
     let initial_sender_balance = rly
         .dst_chain_ctx()
         .service()
-        .get_balance_of(&cfg.denom_on_cos, cfg.address_on_cos.clone())
+        .get_balance_of(&cfg.cos_denom, cfg.cos_address.clone())
         .unwrap();
 
     // -----------------------------------------------------------------------
@@ -190,7 +190,7 @@ async fn test_mint_burn_on_sov() {
     // Check uniqueness of the created token address
     // -----------------------------------------------------------------------
     let denom_path_prefix = TracePrefix::new(PortId::transfer(), ChannelId::default());
-    let mut prefixed_denom = PrefixedDenom::from_str(&cfg.denom_on_cos).unwrap();
+    let mut prefixed_denom = PrefixedDenom::from_str(&cfg.cos_denom).unwrap();
     prefixed_denom.add_trace_prefix(denom_path_prefix);
 
     let token_address_on_sov = rly
@@ -229,7 +229,7 @@ async fn test_mint_burn_on_sov() {
     let receiver_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.address_on_sov, token_address_on_sov);
+        .get_balance_of(cfg.sov_address, token_address_on_sov);
 
     let mut expected_receiver_balance = cfg.amount * 2;
 
@@ -238,7 +238,7 @@ async fn test_mint_burn_on_sov() {
     let sender_balance = rly
         .dst_chain_ctx()
         .service()
-        .get_balance_of(&cfg.denom_on_cos, cfg.address_on_cos.clone())
+        .get_balance_of(&cfg.cos_denom, cfg.cos_address.clone())
         .unwrap();
 
     let expected_sender_balance = initial_sender_balance - cfg.amount * 2;
@@ -249,8 +249,8 @@ async fn test_mint_burn_on_sov() {
     // Send back the token to the Cosmos chain
     // -----------------------------------------------------------------------
 
-    cfg.denom_on_sov = "transfer/channel-0/basecoin".to_string();
-    cfg.token_address = Some(token_address_on_sov);
+    cfg.sov_denom = "transfer/channel-0/basecoin".to_string();
+    cfg.sov_token_address = Some(token_address_on_sov);
 
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
@@ -278,7 +278,7 @@ async fn test_mint_burn_on_sov() {
     let sender_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.address_on_sov, token_address_on_sov);
+        .get_balance_of(cfg.sov_address, token_address_on_sov);
 
     expected_receiver_balance -= cfg.amount;
 
