@@ -1,19 +1,26 @@
 use std::time::Duration;
 
+use basecoin_store::avl::get_proof_spec;
 use ibc_client_tendermint::types::{AllowUpdate, ClientState};
 use ibc_core::client::types::Height;
+use ibc_core::commitment_types::specs::ProofSpecs;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::Signer;
+use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 
-pub fn dummy_tm_client_state(chain_id: ChainId, latest_hight: Height) -> ClientState {
+pub fn basecoin_proof_specs() -> ProofSpecs {
+    [get_proof_spec(), get_proof_spec()].to_vec().into()
+}
+
+pub fn dummy_tm_client_state(chain_id: ChainId, latest_height: Height) -> ClientState {
     ClientState::new(
         chain_id,
         Default::default(),
         Duration::from_secs(64000),
         Duration::from_secs(128000),
         Duration::from_millis(3000),
-        latest_hight,
-        Default::default(),
+        latest_height,
+        basecoin_proof_specs(),
         Default::default(),
         AllowUpdate {
             after_expiry: false,
@@ -54,6 +61,11 @@ pub fn genesis_app_state() -> serde_json::Value {
       },
       "cosmos1as9ap057eellftptlhyw5ajna7uaeewzkk6fnz": {
         "basecoin": "0x1000000000"
+      },
+      dummy_bech32_account(): {
+        "basecoin": "0x1000000000",
+        "othercoin": "0x1000000000",
+        "samoleans": "0x1000000000"
       }
     })
 }

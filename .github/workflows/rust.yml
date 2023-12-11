@@ -4,13 +4,15 @@ on:
     paths:
       - .github/workflows/rust.yml
       - Cargo.toml
-      - crates/**
+      - modules/**
+      - mocks/**
   push:
     branches: main
     paths:
       - .github/workflows/rust.yml
       - Cargo.toml
-      - crates/**
+      - modules/**
+      - mocks/**
 
 env:
   CARGO_INCREMENTAL: 0
@@ -38,6 +40,7 @@ jobs:
           toolchain: nightly # Since fmt uses unstable features for organizing imports
           components: rustfmt
           override: true
+      - uses: Swatinem/rust-cache@v1
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -52,6 +55,7 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - uses: Swatinem/rust-cache@v1
       - uses: actions-rs/cargo@v1
         with:
           command: doc

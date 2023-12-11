@@ -5,7 +5,8 @@ use std::marker::PhantomData;
 use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
 use ibc_core::primitives::proto::Protobuf;
 use prost::Message;
-use sov_state::codec::{BorshCodec, StateCodec, StateValueCodec};
+use sov_state::codec::BorshCodec;
+use sov_state::storage::{StateCodec, StateValueCodec};
 
 #[derive(Default, Clone)]
 pub struct ProtobufCodec<Raw> {

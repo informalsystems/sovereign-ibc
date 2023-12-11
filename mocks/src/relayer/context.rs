@@ -4,23 +4,18 @@ use ibc_core::primitives::Signer;
 
 use super::handle::{Handle, QueryService};
 
-/// Holds the necessary fields for querying a mock Cosmos
-/// chain endpoint.
+/// Defines the chain context by which the relayer interacts with the chain.
 #[derive(Clone)]
 pub struct ChainContext<E: Handle> {
-    /// Chain handle
-    querier: Arc<E>,
-    /// relayer address on the chain for sending messages
+    /// Mimics the chain service for querying the chain state
+    service: Arc<E>,
+    /// relayer address to sign and submit messages
     signer: Signer,
 }
 
 impl<E: Handle> ChainContext<E> {
-    pub fn new(querier: Arc<E>, signer: Signer) -> Self {
-        Self { querier, signer }
-    }
-
-    pub fn querier(&self) -> &Arc<E> {
-        &self.querier
+    pub fn new(service: Arc<E>, signer: Signer) -> Self {
+        Self { service, signer }
     }
 
     pub fn signer(&self) -> &Signer {
@@ -34,7 +29,7 @@ where
 {
     type E = E;
 
-    fn service(&self) -> &Arc<Self::E> {
-        &self.querier
+    fn service(&self) -> &Self::E {
+        &self.service
     }
 }

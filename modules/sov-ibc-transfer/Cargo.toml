@@ -12,6 +12,7 @@ readme       = "README.md"
 [dependencies]
 # external dependencies
 anyhow     = { workspace = true }
+base64     = { workspace = true }
 borsh      = { workspace = true }
 jsonrpsee  = { workspace = true, optional = true }
 prost      = { workspace = true }

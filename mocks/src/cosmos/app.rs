@@ -2,8 +2,10 @@ use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use basecoin_app::abci::v0_37::impls::query as basecoin_query;
+use basecoin_app::modules::auth::proto::AccountId;
 use basecoin_app::modules::auth::Auth;
-use basecoin_app::modules::bank::Bank;
+use basecoin_app::modules::bank::{Bank, BankReader, Denom};
 use basecoin_app::modules::context::{prefix, Identifiable};
 use basecoin_app::modules::ibc::{AnyConsensusState, Ibc, IbcContext};
 use basecoin_app::modules::types::IdentifiedModule;
@@ -22,7 +24,7 @@ use ibc_core::channel::types::Version as ChannelVersion;
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::client::context::ClientExecutionContext;
 use ibc_core::client::types::Height;
-use ibc_core::commitment_types::commitment::CommitmentProofBytes;
+use ibc_core::commitment_types::commitment::{CommitmentPrefix, CommitmentProofBytes};
 use ibc_core::connection::types::version::Version as ConnectionVersion;
 use ibc_core::connection::types::{
     ConnectionEnd, Counterparty as ConnCounterparty, State as ConnectionState,
@@ -31,14 +33,14 @@ use ibc_core::host::types::identifiers::{
     ChainId, ChannelId, ClientId, ConnectionId, PortId, Sequence,
 };
 use ibc_core::host::types::path::{
-    ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, Path, SeqAckPath,
+    ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, SeqAckPath,
     SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
-use ibc_core_host_cosmos::IBC_QUERY_PATH;
-use tendermint::abci::request::{InitChain, Query};
+use tendermint::abci::request::{InitChain, Query as RequestQuery};
+use tendermint::abci::response::Query as ResponseQuery;
 use tendermint::block::Height as TmHeight;
-use tendermint::v0_37::abci::{Request as AbciRequest, Response as AbciResponse};
+use tendermint::v0_37::abci::Request as AbciRequest;
 use tendermint::{AppHash, Hash, Time};
 use tendermint_testgen::consensus::default_consensus_params;
 use tendermint_testgen::light_block::TmLightBlock;
@@ -46,10 +48,12 @@ use tendermint_testgen::{Generator, Header, LightBlock, Validator};
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tower::Service;
+use tracing::debug;
 
 use super::helpers::{
     convert_tm_to_ics_merkle_proof, dummy_tm_client_state, genesis_app_state, MutexUtil,
 };
+use crate::JAN_1_2023;
 
 /// Defines a mock Cosmos chain that includes simplified store, application,
 /// consensus layers.
@@ -85,6 +89,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             auth.account_reader().clone(),
             auth.account_keeper().clone(),
         );
+
         let ibc = Ibc::new(
             app_builder.module_store(&prefix::Ibc {}.identifier()),
             bank.bank_keeper().clone(),
@@ -99,7 +104,8 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let genesis_height = Height::new(chain_id.revision_number(), 1).expect("never fails");
 
-        let genesis_time = Time::now();
+        // This set to Jan 1, 2023 to comply with the genesis time of the mock rollup.
+        let genesis_time = Time::from_unix_timestamp(JAN_1_2023, 0).expect("never fails");
 
         let genesis_block = Self::generate_block(
             &chain_id,
@@ -128,6 +134,25 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
     pub fn ibc_ctx(&self) -> IbcContext<RevertibleStore<S>> {
         self.app.ibc().ctx()
+    }
+
+    pub fn get_balance_of(&self, denom: &str, account: String) -> Option<u64> {
+        let account_id: AccountId = account.parse().unwrap();
+
+        let denom = Denom(denom.to_string());
+
+        if let Some(coin) = self
+            .app
+            .bank()
+            .balance_reader()
+            .get_all_balances(account_id)
+            .into_iter()
+            .find(|c| c.denom == denom)
+        {
+            Some(coin.amount.try_into().ok()?)
+        } else {
+            None
+        }
     }
 
     pub fn get_blocks(&self) -> Vec<TmLightBlock> {
@@ -164,13 +189,14 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let validators = self.validators.acquire_mutex();
 
-        let new_tm_light_block = Self::generate_block(
-            &self.chain_id,
-            blocks.len() as u64 + 1,
-            Time::now(),
-            &validators,
-            app_hash,
-        );
+        let height = blocks.len() as u64 + 1;
+
+        debug!("cosmos: growing chain to height {}", height);
+
+        let time = Time::from_unix_timestamp(JAN_1_2023 + height as i64, 0).unwrap();
+
+        let new_tm_light_block =
+            Self::generate_block(&self.chain_id, height, time, &validators, app_hash);
 
         blocks.push(new_tm_light_block);
     }
@@ -180,7 +206,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         let app_state = serde_json::to_vec(&genesis_app_state()).expect("infallible serialization");
 
         let request = InitChain {
-            time: Time::now(),
+            time: Time::from_unix_timestamp(JAN_1_2023, 0).unwrap(),
             chain_id: self.chain_id.to_string(),
             consensus_params: default_consensus_params(),
             validators: vec![],
@@ -249,24 +275,24 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     }
 
     /// Queries the chain for a given path and height.
-    pub async fn query(
+    pub fn query(
         &self,
-        path: impl Into<Path> + Send,
+        data: Vec<u8>,
+        path: String,
         height: &Height,
     ) -> (Vec<u8>, CommitmentProofBytes) {
-        let request = Query {
-            path: IBC_QUERY_PATH.to_string(),
-            data: path.into().to_string().into_bytes().into(),
-            height: TmHeight::try_from(height.revision_height()).unwrap(),
-            prove: true,
-        };
-
-        let mut app = self.app.clone();
-
-        let response = match app.call(AbciRequest::Query(request)).await.unwrap() {
-            AbciResponse::Query(res) => res,
-            _ => panic!("unexpected response from query"),
-        };
+        let response: ResponseQuery = basecoin_query(
+            &self.app,
+            RequestQuery {
+                data: data.into(),
+                path,
+                height: height.revision_height().try_into().unwrap(),
+                prove: true,
+            }
+            .into(),
+        )
+        .try_into()
+        .unwrap();
 
         let proof = match response.proof {
             Some(proof) => proof,
@@ -281,7 +307,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     }
 
     /// Establishes a tendermint light client on the ibc module
-    pub fn setup_client(&mut self) -> ClientId {
+    pub fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
         let client_counter = self.ibc_ctx().client_counter().unwrap();
 
         let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
@@ -289,7 +315,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         let client_state_path = ClientStatePath::new(&client_id);
 
         let client_state =
-            dummy_tm_client_state(self.chain_id.clone(), Height::new(0, 10).unwrap());
+            dummy_tm_client_state(client_chain_id.clone(), Height::new(0, 3).unwrap());
 
         let latest_height = TmClientState::from(client_state.clone()).latest_height();
 
@@ -315,10 +341,15 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             .store_client_state(client_state_path, client_state.into())
             .unwrap();
 
-        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 10);
+        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 3);
 
         let consensus_state = AnyConsensusState::Tendermint(
-            TmConsensusState::new(vec![].into(), Time::now(), Hash::None).into(),
+            TmConsensusState::new(
+                vec![].into(),
+                Time::from_unix_timestamp(JAN_1_2023, 0).unwrap(),
+                Hash::None,
+            )
+            .into(),
         );
 
         self.ibc_ctx()
@@ -329,12 +360,14 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     }
 
     /// Establishes a connection on the ibc module with `Open` state
-    pub fn setup_connection(&mut self, client_id: ClientId) -> ConnectionId {
+    pub fn setup_connection(
+        &mut self,
+        client_id: ClientId,
+        prefix: CommitmentPrefix,
+    ) -> ConnectionId {
         let connection_id = ConnectionId::new(0);
 
         let connection_path = ConnectionPath::new(&connection_id);
-
-        let prefix = self.ibc_ctx().commitment_prefix();
 
         let connection_end = ConnectionEnd::new(
             ConnectionState::Open,

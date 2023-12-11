@@ -1,7 +1,7 @@
-use alloc::string::{String, ToString};
+use alloc::string::ToString;
 
 use ibc_core_client::types::error::ClientError;
-use ibc_primitives::{Msg, Signer};
+use ibc_primitives::Signer;
 use ibc_proto::ibc::lightclients::wasm::v1::MsgStoreCode as RawMsgStoreCode;
 use ibc_proto::Protobuf;
 
@@ -14,14 +14,6 @@ pub const WASM_MSG_STORE_CODE_TYPE_URL: &str = "/ibc.lightclients.wasm.v1.MsgSto
 pub struct MsgStoreCode {
     pub signer: Signer,
     pub wasm_byte_code: Bytes,
-}
-
-impl Msg for MsgStoreCode {
-    type Raw = RawMsgStoreCode;
-
-    fn type_url(&self) -> String {
-        WASM_MSG_STORE_CODE_TYPE_URL.to_string()
-    }
 }
 
 impl Protobuf<RawMsgStoreCode> for MsgStoreCode {}

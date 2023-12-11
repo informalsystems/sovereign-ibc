@@ -74,21 +74,17 @@ impl TryFrom<Any> for ClientState {
     type Error = ClientError;
 
     fn try_from(any: Any) -> Result<Self, Self::Error> {
-        use core::ops::Deref;
+        fn decode_client_state(value: &[u8]) -> Result<ClientState, ClientError> {
+            let client_state =
+                Protobuf::<RawClientState>::decode(value).map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })?;
 
-        use bytes::Buf;
-        use prost::Message;
-
-        fn decode_client_state<B: Buf>(buf: B) -> Result<ClientState, ClientError> {
-            RawClientState::decode(buf)
-                .map_err(ClientError::Decode)?
-                .try_into()
+            Ok(client_state)
         }
 
         match any.type_url.as_str() {
-            WASM_CLIENT_STATE_TYPE_URL => {
-                decode_client_state(any.value.deref()).map_err(Into::into)
-            }
+            WASM_CLIENT_STATE_TYPE_URL => decode_client_state(&any.value),
             _ => Err(ClientError::Other {
                 description: "type_url does not match".into(),
             }),

@@ -2,24 +2,58 @@ use std::time::Duration;
 
 use basecoin_store::impls::InMemoryStore;
 use ibc_client_tendermint::types::client_type as tm_client_type;
-use ibc_core::host::types::identifiers::{ClientId, Sequence};
+use ibc_core::host::types::identifiers::{ChainId, ClientId, Sequence};
 use ibc_core::host::ValidationContext;
+use sov_mock_da::{MockAddress, MockDaService};
+use sov_modules_api::default_context::DefaultContext;
+use sov_modules_api::{Context, ModuleInfo, WorkingSet};
+use sov_state::ProverStorage;
 use tokio::time::sleep;
+use tracing::info;
 
-use super::cosmos::helpers::dummy_signer;
-use super::relayer::Relayer;
-use crate::cosmos::builder::CosmosBuilder;
+use super::cosmos::dummy_signer;
+use super::relayer::DefaultRelayer;
+use crate::cosmos::CosmosBuilder;
+use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
-use crate::sovereign::builder::DefaultBuilder;
+use crate::relayer::DefaultRollup;
+use crate::sovereign::{MockRollup, Runtime, TestConfig, DEFAULT_INIT_HEIGHT};
 
-/// Set ups a relayer between a mock sovereign chain and a mock cosmos chain
-pub async fn sovereign_cosmos_setup(
-    sov_builder: &mut DefaultBuilder,
-    with_manual_tao: bool,
-) -> Relayer {
-    let mut sov_chain = sov_builder.build();
+/// Initializes a mock rollup and a mock Cosmos chain and sets up the relayer between them.
+pub async fn setup(with_manual_tao: bool) -> (DefaultRelayer, DefaultRollup) {
+    let rollup_chain_id = ChainId::new("mock-rollup-0").unwrap();
 
-    let sov_client_counter = sov_chain.ibc_ctx().client_counter().unwrap();
+    let config = TestConfig::default();
+
+    let runtime = Runtime::default();
+
+    // Set the default sender address to the address of the 'sov-ibc-transfer'
+    // module, ensuring that the module's address is used for the token creation.
+    let rollup_ctx = DefaultContext::new(*runtime.ibc_transfer.address(), DEFAULT_INIT_HEIGHT);
+
+    let da_service = MockDaService::new(MockAddress::default());
+
+    let path = tempfile::tempdir().unwrap();
+
+    let prover_storage = ProverStorage::with_path(path).unwrap();
+
+    let mut rollup = MockRollup::new(
+        rollup_chain_id,
+        config,
+        runtime,
+        prover_storage,
+        rollup_ctx,
+        da_service,
+    );
+
+    rollup.init_chain().await;
+
+    info!("rollup: initialized with chain id {}", rollup.chain_id());
+
+    let sov_client_counter = match rollup.query(QueryReq::ClientCounter) {
+        QueryResp::ClientCounter(counter) => counter,
+        _ => panic!("Unexpected response"),
+    };
 
     // TODO: this should be updated when there is a light client for sovereign chains
     let sov_client_id = ClientId::new(tm_client_type(), sov_client_counter).unwrap();
@@ -28,37 +62,53 @@ pub async fn sovereign_cosmos_setup(
 
     let mut cos_chain = cos_builder.build_chain(InMemoryStore::default());
 
+    wait_for_cosmos_block().await;
+
+    info!("cosmos: initialized with chain id {}", cos_chain.chain_id());
+
     let cos_client_counter = cos_chain.ibc_ctx().client_counter().unwrap();
 
     let cos_client_id = ClientId::new(tm_client_type(), cos_client_counter).unwrap();
 
-    // Waits for the mock Cosmos chain to generate a few blocks before proceeding.
-    sleep(Duration::from_secs(1)).await;
-
     if with_manual_tao {
-        let sov_client_id = sov_chain.setup_client();
+        let sov_client_id = rollup.setup_client(cos_chain.chain_id()).await;
+        let cos_client_id = cos_chain.setup_client(rollup.chain_id());
 
-        let sov_conn_id = sov_chain.setup_connection(sov_client_id);
+        let sov_conn_id = rollup
+            .setup_connection(sov_client_id, cos_chain.ibc_ctx().commitment_prefix())
+            .await;
 
-        let (sov_port_id, sov_chan_id) = sov_chain.setup_channel(sov_conn_id);
+        let mut working_set = WorkingSet::new(rollup.prover_storage());
+        let cos_conn_id = cos_chain.setup_connection(
+            cos_client_id,
+            rollup.ibc_ctx(&mut working_set).commitment_prefix(),
+        );
 
-        sov_chain.with_send_sequence(sov_port_id, sov_chan_id, Sequence::from(1));
-
-        let cos_client_id = cos_chain.setup_client();
-
-        let cos_conn_id = cos_chain.setup_connection(cos_client_id);
-
+        let (sov_port_id, sov_chan_id) = rollup.setup_channel(sov_conn_id).await;
         let (cos_port_id, cos_chan_id) = cos_chain.setup_channel(cos_conn_id);
 
+        rollup
+            .with_send_sequence(sov_port_id, sov_chan_id, Sequence::from(1))
+            .await;
         cos_chain.with_send_sequence(cos_port_id, cos_chan_id, Sequence::from(1));
+
+        info!("relayer: manually initialized IBC TAO layers");
     }
 
-    MockRelayer::new(
-        sov_chain.into(),
-        cos_chain.into(),
-        sov_client_id,
-        cos_client_id,
-        dummy_signer(),
-        dummy_signer(),
+    (
+        MockRelayer::new(
+            rollup.clone().into(),
+            cos_chain.into(),
+            sov_client_id,
+            cos_client_id,
+            rollup.get_relayer_address().to_string().into(),
+            dummy_signer(),
+        ),
+        rollup,
     )
+}
+
+/// Waits for the mock Cosmos chain to generate a few blocks.
+pub async fn wait_for_cosmos_block() {
+    sleep(Duration::from_secs(1)).await;
 }

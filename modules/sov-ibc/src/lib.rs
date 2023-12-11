@@ -15,6 +15,7 @@ pub mod genesis;
 
 #[cfg(feature = "native")]
 mod query;
+use ibc_core::handler::types::events::IbcEvent;
 #[cfg(feature = "native")]
 pub use query::*;
 
@@ -72,6 +73,9 @@ pub struct Ibc<C: Context, Da: DaSpec> {
 
     #[state]
     consensus_state_map: StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec<Any>>,
+
+    #[state]
+    host_consensus_state_map: StateMap<Height, AnyConsensusState, ProtobufCodec<Any>>,
 
     #[state]
     client_update_heights_vec: StateVec<Height>,
@@ -132,7 +136,9 @@ impl<C: Context, Da: DaSpec> sov_modules_api::Module for Ibc<C, Da> {
 
     type Config = ExampleModuleConfig;
 
-    type CallMessage = call::CallMessage<C>;
+    type CallMessage = call::CallMessage;
+
+    type Event = IbcEvent;
 
     fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<C>) -> Result<(), Error> {
         Ok(self.init_module(config, working_set)?)

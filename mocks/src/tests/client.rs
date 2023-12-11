@@ -1,58 +1,125 @@
-use std::time::Duration;
-
+use borsh::BorshDeserialize;
+use ibc_client_tendermint::types::proto::v1::{
+    ClientState as RawClientState, ConsensusState as RawConsensusState,
+};
+use ibc_client_tendermint::types::{ClientState, ConsensusState};
 use ibc_core::client::context::client_state::ClientStateCommon;
-use ibc_core::host::ValidationContext;
-use tokio::time::sleep;
+use ibc_core::client::types::Height;
+use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath, Path};
+use ibc_core::primitives::proto::Protobuf;
+use jmt::proof::SparseMerkleProof;
+use sha2::Sha256;
+use sov_ibc::clients::AnyClientState;
+use test_log::test;
 
-use crate::relayer::handle::Handle;
-use crate::setup::sovereign_cosmos_setup;
-use crate::sovereign::builder::DefaultBuilder;
+use crate::relayer::handle::{Handle, QueryReq, QueryResp};
+use crate::setup::{setup, wait_for_cosmos_block};
 
-#[tokio::test]
-async fn test_create_client() {
-    let mut sovereign_builder = DefaultBuilder::default();
+#[test(tokio::test)]
+async fn test_create_client_on_sov() {
+    let (rly, mut rollup) = setup(false).await;
 
-    let rly = sovereign_cosmos_setup(&mut sovereign_builder, false).await;
+    let msg_create_client = rly.build_msg_create_client_for_sov();
 
-    let msg_create_client = rly.build_msg_create_client();
+    rollup.apply_msg(vec![msg_create_client]).await;
 
-    rly.src_chain_ctx().send_msg(vec![msg_create_client]);
-
-    let client_counter = rly.src_chain_ctx().query_ibc().client_counter().unwrap();
+    let client_counter = match rly.src_chain_ctx().query(QueryReq::ClientCounter) {
+        QueryResp::ClientCounter(counter) => counter,
+        _ => panic!("Unexpected response"),
+    };
 
     assert_eq!(client_counter, 1);
 
-    assert!(rly
-        .src_chain_ctx()
-        .query_ibc()
-        .client_state(rly.src_client_id())
-        .is_ok());
+    match rly.src_chain_ctx().query(QueryReq::ValueWithProof(
+        Path::ClientState(ClientStatePath(rly.src_client_id().clone())),
+        Height::new(0, 4).unwrap(),
+    )) {
+        QueryResp::ValueWithProof(value, proof) => {
+            let _: ClientState = Protobuf::<RawClientState>::decode(&mut value.as_slice()).unwrap();
+            SparseMerkleProof::<Sha256>::deserialize(&mut proof.as_slice()).unwrap();
+        }
+        _ => panic!("unexpected response"),
+    }
+
+    match rly.src_chain_ctx().query(QueryReq::ValueWithProof(
+        Path::ClientConsensusState(ClientConsensusStatePath {
+            client_id: rly.src_client_id().clone(),
+            revision_number: 0,
+            revision_height: 4,
+        }),
+        Height::new(0, 4).unwrap(),
+    )) {
+        QueryResp::ValueWithProof(value, proof) => {
+            let _: ConsensusState =
+                Protobuf::<RawConsensusState>::decode(&mut value.as_slice()).unwrap();
+            SparseMerkleProof::<Sha256>::deserialize(&mut proof.as_slice()).unwrap();
+        }
+        _ => panic!("unexpected response"),
+    }
 }
 
-#[tokio::test]
-async fn test_update_client() {
-    let mut sovereign_builder = DefaultBuilder::default();
+#[test(tokio::test)]
+async fn test_update_client_on_sov() {
+    let (rly, mut rollup) = setup(false).await;
 
-    let rly = sovereign_cosmos_setup(&mut sovereign_builder, false).await;
+    let msg_create_client = rly.build_msg_create_client_for_sov();
 
-    let msg_create_client = rly.build_msg_create_client();
+    rollup.apply_msg(vec![msg_create_client]).await;
 
-    rly.src_chain_ctx().send_msg(vec![msg_create_client]);
+    wait_for_cosmos_block().await;
 
-    // Waits for the mock cosmos chain to progress a few blocks
-    sleep(Duration::from_secs(1)).await;
-
-    let target_height = rly.dst_chain_ctx().query_ibc().host_height().unwrap();
+    let target_height = match rly.dst_chain_ctx().query(QueryReq::HostHeight) {
+        QueryResp::HostHeight(height) => height,
+        _ => panic!("unexpected response"),
+    };
 
     let msg_update_client = rly.build_msg_update_client_for_sov(target_height);
 
-    rly.src_chain_ctx().send_msg(vec![msg_update_client]);
+    rollup.apply_msg(vec![msg_update_client]).await;
 
-    let client_state = rly
+    let any_client_state = match rly
         .src_chain_ctx()
-        .query_ibc()
-        .client_state(rly.src_client_id())
-        .unwrap();
+        .query(QueryReq::ClientState(rly.src_client_id().clone()))
+    {
+        QueryResp::ClientState(state) => state,
+        _ => panic!("unexpected response"),
+    };
+
+    let client_state = AnyClientState::try_from(any_client_state).unwrap();
 
     assert_eq!(client_state.latest_height(), target_height);
+}
+
+#[test(tokio::test)]
+async fn test_create_client_on_cos() {
+    let (rly, _) = setup(false).await;
+
+    let msg_create_client = rly.build_msg_create_client_for_cos();
+
+    rly.dst_chain_ctx().send_msg(vec![msg_create_client]);
+
+    wait_for_cosmos_block().await;
+
+    let _client_counter = match rly.dst_chain_ctx().query(QueryReq::ClientCounter) {
+        QueryResp::ClientCounter(counter) => counter,
+        _ => panic!("Unexpected response"),
+    };
+
+    let client_state = match rly
+        .dst_chain_ctx()
+        .query(QueryReq::ClientState(rly.dst_client_id().clone()))
+    {
+        QueryResp::ClientState(state) => state,
+        _ => panic!("unexpected response"),
+    };
+
+    let client_state = AnyClientState::try_from(client_state).unwrap();
+
+    let _consensus_state = match rly.dst_chain_ctx().query(QueryReq::ConsensusState(
+        rly.dst_client_id().clone(),
+        client_state.latest_height(),
+    )) {
+        QueryResp::ConsensusState(state) => state,
+        _ => panic!("unexpected response"),
+    };
 }

@@ -36,15 +36,16 @@ tempfile    = "3.5"
 thiserror   = "1.0.38"
 
 # ibc depedenencies
-ibc-core              = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false, features = ["borsh","schema","serde"] }
-ibc-core-client       = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
-ibc-core-host-cosmos  = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
-ibc-client-tendermint = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
-ibc-app-transfer      = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
-ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
-ibc-query             = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
-ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs", rev = "8e9213d", default-features = false }
-ibc-proto             = { version = "0.38.0", default-features = false }
+ibc-core              = { git = "https://github.com/cosmos/ibc-rs", rev = "de2c530", default-features = false, features = ["borsh","schema","serde"] }
+ibc-core-client       = { git = "https://github.com/cosmos/ibc-rs", rev = "de2c530", default-features = false }
+ibc-core-host-cosmos  = { git = "https://github.com/cosmos/ibc-rs", rev = "de2c530", default-features = false }
+ibc-client-tendermint = { git = "https://github.com/cosmos/ibc-rs", rev = "de2c530", default-features = false }
+ibc-app-transfer      = { git = "https://github.com/cosmos/ibc-rs", rev = "de2c530", default-features = false }
+ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs", rev = "de2c530", default-features = false }
+ibc-query             = { git = "https://github.com/cosmos/ibc-rs", rev = "de2c530", default-features = false }
+ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs", rev = "de2c530", default-features = false }
+ibc-proto             = { version = "0.39.1", default-features = false }
+
 
 # cosmos dependencies
 tendermint            = { version = "0.34", default-features = false }
@@ -52,12 +53,13 @@ tendermint-proto      = { version = "0.34", default-features = false }
 tendermint-testgen    = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-bank              = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-chain-state       = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-modules-api       = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-modules-macros    = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-state             = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
-sov-rollup-interface  = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "876eb0b" }
+sov-bank              = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "88b77d6" }
+sov-chain-state       = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "88b77d6" }
+sov-mock-da           = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "88b77d6" }
+sov-modules-api       = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "88b77d6" }
+sov-modules-macros    = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "88b77d6" }
+sov-state             = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "88b77d6" }
+sov-rollup-interface  = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "88b77d6" }
 
 [patch.crates-io]
-ibc-proto = { git = "https://github.com/cosmos/ibc-proto-rs", rev = "6c68e19" }
+ibc-proto = { git = "https://github.com/cosmos/ibc-proto-rs", rev = "6d83891" }

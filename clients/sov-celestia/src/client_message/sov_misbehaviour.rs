@@ -3,11 +3,9 @@
 use alloc::format;
 use alloc::string::String;
 
-use bytes::Buf;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::primitives::proto::Any;
-use prost::Message;
 use tendermint_proto::Protobuf;
 
 use super::sov_header::SovHeader;
@@ -80,18 +78,16 @@ impl TryFrom<Any> for SovMisbehaviour {
     type Error = ClientError;
 
     fn try_from(raw: Any) -> Result<Self, Self::Error> {
-        use core::ops::Deref;
-
-        fn decode_misbehaviour<B: Buf>(buf: B) -> Result<SovMisbehaviour, ClientError> {
-            RawSovMisbehaviour::decode(buf)
-                .map_err(ClientError::Decode)?
-                .try_into()
+        fn decode_misbehaviour(value: &[u8]) -> Result<SovMisbehaviour, ClientError> {
+            let misbehaviour =
+                Protobuf::<RawSovMisbehaviour>::decode(value).map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })?;
+            Ok(misbehaviour)
         }
 
         match raw.type_url.as_str() {
-            SOVEREIGN_MISBEHAVIOUR_TYPE_URL => {
-                decode_misbehaviour(raw.value.deref()).map_err(Into::into)
-            }
+            SOVEREIGN_MISBEHAVIOUR_TYPE_URL => decode_misbehaviour(&raw.value),
             _ => Err(ClientError::Other {
                 description: "".into(),
             }),

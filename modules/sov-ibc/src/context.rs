@@ -22,13 +22,15 @@ use ibc_core::host::types::path::{
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp};
-use sov_modules_api::{Context, DaSpec, WorkingSet};
+use sov_modules_api::{
+    Context, DaSpec, StateMapAccessor, StateValueAccessor, StateVecAccessor, WorkingSet,
+};
 
 use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::Ibc;
 
-/// The SDK doesn't have a concept of a "revision number", so we default to 1
-const HOST_REVISION_NUMBER: u64 = 1;
+/// The SDK doesn't have a concept of a "revision number", so we default to 0
+pub const HOST_REVISION_NUMBER: u64 = 0;
 
 #[derive(Clone)]
 pub struct IbcContext<'a, C, Da>
@@ -143,9 +145,17 @@ where
         &self,
         height: &Height,
     ) -> Result<Self::AnyConsensusState, ContextError> {
-        // TODO: In order to implement this, we need to first define the
-        // `ConsensusState` protobuf definition that SDK chains will use
-        todo!()
+        // TODO: In order to correctly implement this, we need to first define
+        // the `ConsensusState` protobuf definition that SDK chains will use
+        let host_consensus_state = self
+            .ibc
+            .host_consensus_state_map
+            .get(height, *self.working_set.borrow_mut())
+            .ok_or(ClientError::Other {
+                description: "Host consensus state not found".to_string(),
+            })?;
+
+        Ok(host_consensus_state.clone())
     }
 
     fn client_counter(&self) -> Result<u64, ContextError> {
@@ -589,6 +599,23 @@ where
     /// FIXME: To implement this method there should be a way for IBC module to
     /// insert logs into the transaction receipts upon execution
     fn log_message(&mut self, message: String) -> Result<(), ContextError> {
+        Ok(())
+    }
+}
+
+// TODO: to unblock testing, we implement this method, but the correct way to
+// track and update the host chain's consensus should be investigated
+impl<'ws, C: Context, Da: DaSpec> IbcContext<'ws, C, Da> {
+    pub fn store_host_consensus_state(
+        &mut self,
+        height: Height,
+        consensus_state: AnyConsensusState,
+    ) -> Result<(), ContextError> {
+        self.ibc.host_consensus_state_map.set(
+            &height,
+            &consensus_state,
+            *self.working_set.borrow_mut(),
+        );
         Ok(())
     }
 }

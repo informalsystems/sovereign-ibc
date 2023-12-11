@@ -9,17 +9,18 @@ use sov_modules_api::Context;
 use sov_rollup_interface::da::Time;
 
 // The default initial slot height.
-const DEFAULT_INIT_HEIGHT: u64 = 10;
+pub const DEFAULT_INIT_HEIGHT: u64 = 0;
 
 // The default initial balance for each address.
-const DEFAULT_INIT_BALANCE: u64 = 1000;
+pub const DEFAULT_INIT_BALANCE: u64 = 1000;
 
 // The default number of addresses.
-const DEFAULT_ADDRESS_COUNT: u64 = 3;
+pub const DEFAULT_ADDRESS_COUNT: u64 = 3;
 
 // The default token name.
-const DEFAULT_TOKEN_NAME: &str = "sov-demo-token";
+pub const DEFAULT_TOKEN_NAME: &str = "sov-demo-token";
 
+#[derive(Clone)]
 pub struct TestConfig<C: Context> {
     pub chain_state_config: ChainStateConfig,
     pub bank_config: BankConfig<C>,
@@ -79,7 +80,7 @@ pub fn create_chain_state_config(initial_slot_height: u64) -> ChainStateConfig {
 
 /// Creates a bank configuration with the given number of addresses and initial balance
 pub fn create_bank_config<C: Context>(addresses_count: u64, initial_balance: u64) -> BankConfig<C> {
-    let address_and_balances = (0..addresses_count)
+    let address_and_balances: Vec<_> = (0..addresses_count)
         .map(|i| {
             let key = format!("key_{}", i);
             let addr = gen_address_generic::<C>(&key);
@@ -87,14 +88,21 @@ pub fn create_bank_config<C: Context>(addresses_count: u64, initial_balance: u64
         })
         .collect();
 
-    let token_config = TokenConfig {
+    let genuine_token_config = TokenConfig {
         token_name: DEFAULT_TOKEN_NAME.to_owned(),
-        address_and_balances,
+        address_and_balances: address_and_balances.clone(),
+        authorized_minters: vec![],
+        salt: 0,
+    };
+
+    let forged_token_config = TokenConfig {
+        token_name: DEFAULT_TOKEN_NAME.to_owned(),
+        address_and_balances: address_and_balances.clone(),
         authorized_minters: vec![],
         salt: 5,
     };
 
     BankConfig {
-        tokens: vec![token_config],
+        tokens: vec![genuine_token_config, forged_token_config],
     }
 }
