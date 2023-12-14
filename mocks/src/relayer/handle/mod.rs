@@ -2,14 +2,11 @@ mod cosmos;
 #[cfg(feature = "native")]
 mod rollup;
 
-pub use cosmos::*;
 use ibc_core::client::types::Height;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{ChainId, ClientId, Sequence};
 use ibc_core::host::types::path::{Path, SeqSendPath};
 use ibc_core::primitives::proto::Any;
-#[cfg(feature = "native")]
-pub use rollup::*;
 
 /// Defines the interface that empowers a chain context with the ability to
 /// query different states of a chain.

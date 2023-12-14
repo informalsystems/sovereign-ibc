@@ -6,6 +6,7 @@ pub mod setup;
 #[cfg(feature = "native")]
 pub mod sovereign;
 
+#[cfg(feature = "native")]
 pub mod configs;
 
 #[cfg(all(test, feature = "native"))]
