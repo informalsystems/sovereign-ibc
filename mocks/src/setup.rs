@@ -10,12 +10,12 @@ use tracing::info;
 
 use super::cosmos::dummy_signer;
 use super::relayer::DefaultRelayer;
-use crate::configs::TestSetupConfig;
 use crate::cosmos::CosmosBuilder;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
 use crate::relayer::DefaultRollup;
 use crate::sovereign::{MockRollup, Runtime, RuntimeConfig, DEFAULT_INIT_HEIGHT};
+use crate::utils::TestSetupConfig;
 
 /// Initializes a mock rollup and a mock Cosmos chain and sets up the relayer between them.
 pub async fn setup<Da>(
@@ -47,7 +47,7 @@ where
         setup_cfg.da_service,
     );
 
-    rollup.init_chain().await;
+    rollup.init().await;
 
     let sov_client_counter = match rollup.query(QueryReq::ClientCounter).await {
         QueryResp::ClientCounter(counter) => counter,
