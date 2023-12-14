@@ -22,7 +22,7 @@ pub trait Handle {
 
     fn query(&self, request: QueryReq) -> QueryResp;
 
-    fn submit_msg(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent>;
+    fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent>;
 }
 
 impl<Ctx> Handle for Ctx
@@ -35,8 +35,8 @@ where
         Ctx::service(self).query(request)
     }
 
-    fn submit_msg(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent> {
-        Ctx::service(self).submit_msg(msg)
+    fn submit_msgs(&self, msgs: Vec<Self::Message>) -> Vec<IbcEvent> {
+        Ctx::service(self).submit_msgs(msgs)
     }
 }
 

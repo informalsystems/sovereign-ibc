@@ -105,7 +105,7 @@ where
         }
     }
 
-    fn submit_msg(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent> {
+    fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent> {
         self.mempool.lock().unwrap().extend(msg);
         vec![]
     }

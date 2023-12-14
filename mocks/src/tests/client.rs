@@ -27,7 +27,7 @@ async fn test_create_client_on_sov() {
     let msg_create_client = rly.build_msg_create_client_for_sov();
 
     rly.src_chain_ctx()
-        .submit_msg(vec![msg_create_client.into()]);
+        .submit_msgs(vec![msg_create_client.into()]);
 
     wait_for_block().await;
 
@@ -87,7 +87,7 @@ async fn test_update_client_on_sov() {
     let msg_create_client = rly.build_msg_create_client_for_sov();
 
     rly.src_chain_ctx()
-        .submit_msg(vec![msg_create_client.into()]);
+        .submit_msgs(vec![msg_create_client.into()]);
 
     wait_for_block().await;
 
@@ -99,7 +99,7 @@ async fn test_update_client_on_sov() {
     let msg_update_client = rly.build_msg_update_client_for_sov(target_height);
 
     rly.src_chain_ctx()
-        .submit_msg(vec![msg_update_client.into()]);
+        .submit_msgs(vec![msg_update_client.into()]);
 
     wait_for_block().await;
 
@@ -126,7 +126,7 @@ async fn test_create_client_on_cos() {
 
     let msg_create_client = rly.build_msg_create_client_for_cos();
 
-    rly.dst_chain_ctx().submit_msg(vec![msg_create_client]);
+    rly.dst_chain_ctx().submit_msgs(vec![msg_create_client]);
 
     let _client_counter = match rly.dst_chain_ctx().query(QueryReq::ClientCounter) {
         QueryResp::ClientCounter(counter) => counter,

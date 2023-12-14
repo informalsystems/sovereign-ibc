@@ -75,7 +75,7 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
         }
     }
 
-    fn submit_msg(&self, msgs: Vec<Any>) -> Vec<IbcEvent> {
+    fn submit_msgs(&self, msgs: Vec<Any>) -> Vec<IbcEvent> {
         msgs.into_iter()
             .flat_map(|msg| self.app.ibc().process_message(msg).unwrap())
             .collect()

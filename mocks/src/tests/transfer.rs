@@ -42,7 +42,7 @@ async fn test_escrow_unescrow_on_sov() {
     // -----------------------------------------------------------------------
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
-    rly.src_chain_ctx().submit_msg(vec![
+    rly.src_chain_ctx().submit_msgs(vec![
         CallMessage::Transfer(msg_transfer_on_sov.clone()).into()
     ]);
 
@@ -62,7 +62,7 @@ async fn test_escrow_unescrow_on_sov() {
     // -----------------------------------------------------------------------
     // Transfer the same token once again
     // -----------------------------------------------------------------------
-    rly.src_chain_ctx().submit_msg(vec![
+    rly.src_chain_ctx().submit_msgs(vec![
         CallMessage::Transfer(msg_transfer_on_sov.clone()).into()
     ]);
 
@@ -85,7 +85,7 @@ async fn test_escrow_unescrow_on_sov() {
     let fake_token_message = rly.build_msg_create_token(&token);
 
     rly.src_chain_ctx()
-        .submit_msg(vec![fake_token_message.clone().into()]);
+        .submit_msgs(vec![fake_token_message.clone().into()]);
 
     wait_for_block().await;
 
@@ -101,7 +101,7 @@ async fn test_escrow_unescrow_on_sov() {
 
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
-    rly.src_chain_ctx().submit_msg(vec![
+    rly.src_chain_ctx().submit_msgs(vec![
         CallMessage::Transfer(msg_transfer_on_sov.clone()).into()
     ]);
 
@@ -161,7 +161,7 @@ async fn test_mint_burn_on_sov() {
     let fake_token_message = rly.build_msg_create_token(&fake_token);
 
     rly.src_chain_ctx()
-        .submit_msg(vec![fake_token_message.clone().into()]);
+        .submit_msgs(vec![fake_token_message.clone().into()]);
 
     wait_for_block().await;
 
@@ -180,7 +180,7 @@ async fn test_mint_burn_on_sov() {
     let msg_transfer_on_cos = rly.build_msg_transfer_for_cos(&cfg);
 
     rly.dst_chain_ctx()
-        .submit_msg(vec![msg_transfer_on_cos.clone().to_any()]);
+        .submit_msgs(vec![msg_transfer_on_cos.clone().to_any()]);
 
     wait_for_block().await;
 
@@ -198,7 +198,7 @@ async fn test_mint_burn_on_sov() {
         rly.build_msg_recv_packet_for_sov(target_height, msg_transfer_on_cos.clone());
 
     rly.src_chain_ctx()
-        .submit_msg(vec![msg_update_client.into(), msg_recv_packet.into()]);
+        .submit_msgs(vec![msg_update_client.into(), msg_recv_packet.into()]);
 
     wait_for_block().await;
 
@@ -236,7 +236,7 @@ async fn test_mint_burn_on_sov() {
     // Transfer the same token once again
     // -----------------------------------------------------------------------
     rly.dst_chain_ctx()
-        .submit_msg(vec![msg_transfer_on_cos.clone().to_any()]);
+        .submit_msgs(vec![msg_transfer_on_cos.clone().to_any()]);
 
     wait_for_block().await;
 
@@ -251,7 +251,7 @@ async fn test_mint_burn_on_sov() {
         rly.build_msg_recv_packet_for_sov(target_height, msg_transfer_on_cos.clone());
 
     rly.src_chain_ctx()
-        .submit_msg(vec![msg_update_client.into(), msg_recv_packet.into()]);
+        .submit_msgs(vec![msg_update_client.into(), msg_recv_packet.into()]);
 
     wait_for_block().await;
 
@@ -286,7 +286,7 @@ async fn test_mint_burn_on_sov() {
 
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
-    rly.src_chain_ctx().submit_msg(vec![
+    rly.src_chain_ctx().submit_msgs(vec![
         CallMessage::Transfer(msg_transfer_on_sov.clone()).into()
     ]);
 
