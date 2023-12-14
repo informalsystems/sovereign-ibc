@@ -3,14 +3,13 @@ use ibc_core::client::types::proto::v1::{QueryClientStateRequest, QueryConsensus
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
-use ibc_core::primitives::proto::Any;
 use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
 
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::sovereign::MockRollup;
+use crate::sovereign::{MockRollup, RuntimeCall};
 
 impl<C, Da, S> Handle for MockRollup<C, Da, S>
 where
@@ -20,6 +19,8 @@ where
     S: MerkleProofSpec + Clone + 'static,
     <S as MerkleProofSpec>::Hasher: Send,
 {
+    type Message = RuntimeCall<C, Da::Spec>;
+
     fn query(&self, request: QueryReq) -> QueryResp {
         info!("rollup: got query request: {:?}", request);
 
@@ -104,7 +105,8 @@ where
         }
     }
 
-    fn send_msg(&self, _msg: Vec<Any>) -> Vec<IbcEvent> {
-        unimplemented!()
+    fn submit_msg(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent> {
+        self.mempool.lock().unwrap().extend(msg);
+        vec![]
     }
 }

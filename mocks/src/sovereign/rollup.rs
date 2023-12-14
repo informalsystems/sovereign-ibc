@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use ibc_client_tendermint::types::{
@@ -17,7 +18,6 @@ use ibc_core::connection::types::version::Version as ConnectionVersion;
 use ibc_core::connection::types::{
     ConnectionEnd, Counterparty as ConnCounterparty, State as ConnectionState,
 };
-use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{
     ChainId, ChannelId, ClientId, ConnectionId, PortId, Sequence,
 };
@@ -26,24 +26,28 @@ use ibc_core::host::types::path::{
     SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
-use sov_bank::TokenConfig;
-use sov_ibc::call::CallMessage;
+use sov_bank::{get_token_address, CallMessage as BankCallMessage, TokenConfig};
+use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::clients::{AnyClientState, AnyConsensusState};
 use sov_ibc::context::IbcContext;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
 use sov_modules_api::{
-    Context, DispatchCall, Genesis, ModuleInfo, SlotData, StateCheckpoint, WorkingSet,
+    Context, DaSpec, DispatchCall, Genesis, ModuleInfo, SlotData, StateCheckpoint, WorkingSet,
 };
+use sov_rollup_interface::da::BlockHeaderTrait;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tendermint::{Hash, Time};
-use tracing::{debug, info};
+use tokio::time::sleep;
+use tracing::debug;
 
-use super::config::TestConfig;
+use super::config::RuntimeConfig;
 use super::runtime::{GenesisConfig, Runtime};
 use crate::cosmos::dummy_tm_client_state;
 use crate::sovereign::runtime::RuntimeCall;
-use crate::JAN_1_2023;
+
+type Mempool<C, Da> = Vec<RuntimeCall<C, Da>>;
+
 /// Defines a mock rollup structure with default configurations and specs
 #[derive(Clone)]
 pub struct MockRollup<C, Da, S>
@@ -53,25 +57,48 @@ where
     S: MerkleProofSpec,
 {
     chain_id: ChainId,
-    config: TestConfig<C>,
+    config: RuntimeConfig<C>,
     runtime: Runtime<C, Da::Spec>,
-    prover_storage: ProverStorage<S>,
     da_service: Da,
-    rollup_ctx: C,
-    state_root: <ProverStorage<S> as Storage>::Root,
+    prover_storage: ProverStorage<S>,
+    rollup_ctx: Arc<Mutex<C>>,
+    state_root: Arc<Mutex<<ProverStorage<S> as Storage>::Root>>,
+    pub(crate) mempool: Arc<Mutex<Mempool<C, Da::Spec>>>,
+}
+
+impl<C: Context, Da: DaSpec> Clone for RuntimeCall<C, Da> {
+    fn clone(&self) -> Self {
+        match self {
+            RuntimeCall::bank(call) => RuntimeCall::bank(call.clone()),
+            RuntimeCall::chain_state(_) => RuntimeCall::chain_state(()),
+            RuntimeCall::ibc(call) => RuntimeCall::ibc(call.clone()),
+            RuntimeCall::ibc_transfer(_) => RuntimeCall::ibc_transfer(()),
+        }
+    }
+}
+
+impl<C: Context, Da: DaSpec> From<IbcCallMessage> for RuntimeCall<C, Da> {
+    fn from(call: IbcCallMessage) -> Self {
+        RuntimeCall::ibc(call)
+    }
+}
+
+impl<C: Context, Da: DaSpec> From<BankCallMessage<C>> for RuntimeCall<C, Da> {
+    fn from(call: BankCallMessage<C>) -> Self {
+        RuntimeCall::bank(call)
+    }
 }
 
 impl<C, Da, S> MockRollup<C, Da, S>
 where
     C: Context<Storage = ProverStorage<S>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
-    <Da as DaService>::Spec: Clone,
     S: MerkleProofSpec + Clone + 'static,
     <S as MerkleProofSpec>::Hasher: Send,
 {
     pub fn new(
         chain_id: ChainId,
-        config: TestConfig<C>,
+        config: RuntimeConfig<C>,
         runtime: Runtime<C, Da::Spec>,
         prover_storage: ProverStorage<S>,
         rollup_ctx: C,
@@ -81,10 +108,11 @@ where
             chain_id,
             config,
             runtime,
-            prover_storage,
             da_service,
-            rollup_ctx,
-            state_root: jmt::RootHash([0; 32]),
+            prover_storage,
+            rollup_ctx: Arc::new(Mutex::new(rollup_ctx)),
+            state_root: Arc::new(Mutex::new(jmt::RootHash([0; 32]))),
+            mempool: Arc::new(Mutex::new(vec![])),
         }
     }
 
@@ -93,10 +121,10 @@ where
     }
 
     pub fn rollup_ctx(&self) -> C {
-        self.rollup_ctx.clone()
+        self.rollup_ctx.lock().unwrap().clone()
     }
 
-    pub fn config(&self) -> &TestConfig<C> {
+    pub fn config(&self) -> &RuntimeConfig<C> {
         &self.config
     }
 
@@ -106,6 +134,10 @@ where
 
     pub fn prover_storage(&self) -> ProverStorage<S> {
         self.prover_storage.clone()
+    }
+
+    pub fn mempool(&self) -> Vec<RuntimeCall<C, Da::Spec>> {
+        self.mempool.lock().unwrap().clone()
     }
 
     pub fn ibc_ctx<'a>(
@@ -122,6 +154,15 @@ where
         &self.config.bank_config.tokens
     }
 
+    /// Returns the token address for a given token configuration
+    pub fn get_token_address(&self, token_cfg: &TokenConfig<C>) -> C::Address {
+        get_token_address::<C>(
+            &token_cfg.token_name,
+            self.get_relayer_address().as_ref(),
+            token_cfg.salt,
+        )
+    }
+
     /// Returns the address of the relayer. We use the last address in the list
     /// as the relayer address
     pub fn get_relayer_address(&self) -> C::Address {
@@ -135,7 +176,7 @@ where
 
     /// Returns the balance of a user for a given token
     pub fn get_balance_of(&self, user_address: C::Address, token_address: C::Address) -> u64 {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .bank
@@ -145,9 +186,9 @@ where
 
     /// Returns token address of an IBC denom
     pub fn get_minted_token_address(&self, token_denom: String) -> Option<C::Address> {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
-        self.runtime
+        self.runtime()
             .ibc_transfer
             .minted_token(token_denom, &mut working_set)
             .map(|token| token.address)
@@ -157,7 +198,7 @@ where
     /// Searches the transfer module to retrieve the address of the token held
     /// in escrow, based on its token denom.
     pub fn get_escrowed_token_address(&self, token_denom: String) -> Option<C::Address> {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .ibc_transfer
@@ -167,7 +208,7 @@ where
     }
 
     fn set_state_root(&mut self, state_root: <ProverStorage<S> as Storage>::Root) {
-        self.state_root = state_root;
+        *self.state_root.lock().unwrap() = state_root;
     }
 
     /// Sets the host consensus state when processing each block
@@ -183,7 +224,7 @@ where
         let consensus_state = AnyConsensusState::Tendermint(
             TmConsensusState::new(
                 CommitmentRoot::from_bytes(&root_hash.0),
-                Time::from_unix_timestamp(JAN_1_2023 + current_height as i64, 0).unwrap(),
+                Time::now(),
                 Hash::Sha256([
                     0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
                     0x4b, 0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d,
@@ -200,47 +241,9 @@ where
         working_set.checkpoint()
     }
 
-    /// Creates a token with the given configuration
-    pub async fn create_token(&mut self, token: &TokenConfig<C>) -> C::Address {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
-
-        // Temporarily set the relayer address as the sender of rollup context
-
-        self.rollup_ctx = C::new(self.get_relayer_address(), self.rollup_ctx().slot_height());
-
-        let token_address = self
-            .runtime()
-            .bank
-            .create_token(
-                token.token_name.clone(),
-                token.salt,
-                1000,
-                token.address_and_balances[0].0.clone(),
-                vec![self.get_relayer_address()],
-                &self.rollup_ctx(),
-                &mut working_set,
-            )
-            .unwrap();
-
-        // Reset the rollup context to the default address
-        self.rollup_ctx = C::new(
-            self.runtime().ibc_transfer.address().clone(),
-            self.rollup_ctx().slot_height(),
-        );
-
-        self.commit(working_set.checkpoint()).await;
-
-        info!(
-            "rollup: created token {} with address {}",
-            token.token_name, token_address
-        );
-
-        token_address
-    }
-
     /// Initializes the chain with the genesis configuration
     pub async fn init_chain(&mut self) -> StateCheckpoint<C> {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
         let genesis_config = GenesisConfig::new(
             self.config.chain_state_config.clone(),
@@ -249,7 +252,7 @@ where
             self.config.ibc_transfer_config.clone(),
         );
 
-        self.runtime
+        self.runtime()
             .genesis(&genesis_config, &mut working_set)
             .unwrap();
 
@@ -264,19 +267,57 @@ where
 
         debug!("rollup: processing block at height {}", current_height);
 
-        // Dummy transaction to trigger the block generation
-        self.da_service.send_transaction(&[0; 32]).await.unwrap();
+        let height = loop {
+            // Dummy transaction to trigger the block generation
+            self.da_service.send_transaction(&[0; 32]).await.unwrap();
+            sleep(Duration::from_millis(100)).await;
+            match self.da_service.get_last_finalized_block_header().await {
+                Ok(header) => {
+                    debug!("Last finalized height={}", header.height());
+                    if header.height() >= current_height {
+                        break current_height;
+                    }
+                }
+                Err(err) => {
+                    tracing::info!("Error receiving last finalized block header: {:?}", err);
+                }
+            }
+        };
 
-        let block = self.da_service.get_block_at(current_height).await.unwrap();
+        let block = self.da_service.get_block_at(height).await.unwrap();
 
-        self.runtime.begin_slot_hook(
+        let state_root = *self.state_root.lock().unwrap();
+
+        self.runtime().begin_slot_hook(
             block.header(),
             &block.validity_condition(),
-            &self.state_root,
+            &state_root,
             &mut working_set,
         );
 
-        self.set_host_consensus_state(working_set.checkpoint(), self.state_root)
+        self.set_host_consensus_state(working_set.checkpoint(), state_root)
+    }
+
+    pub async fn execute_msg(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
+        let mut working_set = checkpoint.to_revertable();
+
+        for m in self.mempool().into_iter() {
+            let sender_address = match m {
+                // Set the rollup context to the relayer address when processing a bank call
+                RuntimeCall::bank(_) => self.get_relayer_address(),
+                _ => self.runtime().ibc.address().clone(),
+            };
+            *self.rollup_ctx.lock().unwrap() =
+                C::new(sender_address, self.rollup_ctx().slot_height());
+
+            self.runtime()
+                .dispatch_call(m, &mut working_set, &self.rollup_ctx())
+                .unwrap();
+        }
+
+        *self.mempool.lock().unwrap() = vec![];
+
+        working_set.checkpoint()
     }
 
     /// Commits a block by triggering the end slot hook, computing the state
@@ -284,36 +325,38 @@ where
     pub async fn commit(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
         let checkpoint = self.begin_block(checkpoint).await;
 
+        let checkpoint = self.execute_msg(checkpoint).await;
+
         let mut working_set = checkpoint.to_revertable();
 
-        self.runtime.end_slot_hook(&mut working_set);
+        self.runtime().end_slot_hook(&mut working_set);
 
         let mut checkpoint = working_set.checkpoint();
 
         let (cache_log, witness) = checkpoint.freeze();
 
         let (root_hash, state_update) = self
-            .prover_storage
+            .prover_storage()
             .compute_state_update(cache_log, &witness)
             .expect("jellyfish merkle tree update must succeed");
 
         let mut working_set = checkpoint.to_revertable();
 
-        self.runtime
+        self.runtime()
             .finalize_hook(&root_hash, &mut working_set.accessory_state());
 
         let mut checkpoint = working_set.checkpoint();
 
         let accessory_log = checkpoint.freeze_non_provable();
 
-        self.prover_storage.commit(&state_update, &accessory_log);
+        self.prover_storage().commit(&state_update, &accessory_log);
 
         let mut working_set = checkpoint.to_revertable();
 
         let slot_height = self.ibc_ctx(&mut working_set).host_height().unwrap();
 
-        self.rollup_ctx = C::new(
-            self.runtime().ibc_transfer.address().clone(),
+        *self.rollup_ctx.lock().unwrap() = C::new(
+            self.rollup_ctx().sender().clone(),
             slot_height.revision_height(),
         );
 
@@ -325,13 +368,11 @@ where
     /// Runs the rollup chain by initializing the chain and then committing
     /// blocks at a fixed interval
     pub async fn run(&mut self) {
-        self.init_chain().await;
-
         let mut chain = self.clone();
 
         tokio::task::spawn(async move {
             loop {
-                let working_set = WorkingSet::new(chain.prover_storage.clone());
+                let working_set = WorkingSet::new(chain.prover_storage());
 
                 tokio::time::sleep(Duration::from_millis(200)).await;
 
@@ -340,28 +381,12 @@ where
         });
     }
 
-    /// Applies an IBC message to the execution layer
-    pub async fn apply_msg(&mut self, msg: Vec<CallMessage>) -> Vec<IbcEvent> {
-        let mut working_set = WorkingSet::new(self.prover_storage());
-
-        msg.into_iter().for_each(|m| {
-            self.runtime()
-                .dispatch_call(RuntimeCall::ibc(m), &mut working_set, &self.rollup_ctx())
-                .unwrap();
-        });
-
-        let _ = working_set.events();
-
-        self.commit(working_set.checkpoint()).await;
-
-        vec![]
-    }
-
     /// Establishes a tendermint light client on the ibc module
     pub async fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let mut ibc_ctx = self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx: IbcContext<'_, C, <Da as DaService>::Spec> =
+            self.ibc_ctx(&mut working_set);
 
         let client_counter = ibc_ctx.client_counter().unwrap();
 
@@ -369,8 +394,10 @@ where
 
         let client_state_path = ClientStatePath::new(&client_id);
 
+        let current_height = ibc_ctx.host_height().unwrap();
+
         let client_state = AnyClientState::Tendermint(
-            dummy_tm_client_state(client_chain_id.clone(), Height::new(0, 3).unwrap()).into(),
+            dummy_tm_client_state(client_chain_id.clone(), current_height).into(),
         );
 
         let latest_height = client_state.latest_height();
@@ -397,12 +424,18 @@ where
             .store_client_state(client_state_path, client_state)
             .unwrap();
 
-        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 3);
+        let current_height = ibc_ctx.host_height().unwrap();
+
+        let consensus_state_path = ClientConsensusStatePath::new(
+            client_id.clone(),
+            current_height.revision_number(),
+            current_height.revision_height(),
+        );
 
         let consensus_state = AnyConsensusState::Tendermint(
             TmConsensusState::new(
-                vec![].into(),
-                Time::from_unix_timestamp(JAN_1_2023, 0).unwrap(),
+                Vec::new().into(),
+                Time::now(),
                 // Hash for default validator set of CosmosBuilder
                 Hash::Sha256([
                     0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
@@ -428,7 +461,7 @@ where
         client_id: ClientId,
         prefix: CommitmentPrefix,
     ) -> ConnectionId {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -456,7 +489,7 @@ where
 
     /// Establishes a channel on the ibc module with the `Open` state
     pub async fn setup_channel(&mut self, connection_id: ConnectionId) -> (PortId, ChannelId) {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -491,7 +524,7 @@ where
         channel_id: ChannelId,
         seq_number: Sequence,
     ) {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -511,7 +544,7 @@ where
         chan_id: ChannelId,
         seq_number: Sequence,
     ) {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -531,7 +564,7 @@ where
         chan_id: ChannelId,
         seq_number: Sequence,
     ) {
-        let mut working_set = WorkingSet::new(self.prover_storage.clone());
+        let mut working_set = WorkingSet::new(self.prover_storage());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 

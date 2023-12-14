@@ -53,7 +53,6 @@ use tracing::debug;
 use super::helpers::{
     convert_tm_to_ics_merkle_proof, dummy_tm_client_state, genesis_app_state, MutexUtil,
 };
-use crate::JAN_1_2023;
 
 /// Defines a mock Cosmos chain that includes simplified store, application,
 /// consensus layers.
@@ -104,13 +103,10 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let genesis_height = Height::new(chain_id.revision_number(), 1).expect("never fails");
 
-        // This set to Jan 1, 2023 to comply with the genesis time of the mock rollup.
-        let genesis_time = Time::from_unix_timestamp(JAN_1_2023, 0).expect("never fails");
-
         let genesis_block = Self::generate_block(
             &chain_id,
             genesis_height.revision_height(),
-            genesis_time,
+            Time::now(),
             &validators,
             AppHash::default(),
         );
@@ -193,10 +189,8 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         debug!("cosmos: growing chain to height {}", height);
 
-        let time = Time::from_unix_timestamp(JAN_1_2023 + height as i64, 0).unwrap();
-
         let new_tm_light_block =
-            Self::generate_block(&self.chain_id, height, time, &validators, app_hash);
+            Self::generate_block(&self.chain_id, height, Time::now(), &validators, app_hash);
 
         blocks.push(new_tm_light_block);
     }
@@ -206,7 +200,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         let app_state = serde_json::to_vec(&genesis_app_state()).expect("infallible serialization");
 
         let request = InitChain {
-            time: Time::from_unix_timestamp(JAN_1_2023, 0).unwrap(),
+            time: Time::now(),
             chain_id: self.chain_id.to_string(),
             consensus_params: default_consensus_params(),
             validators: vec![],
@@ -314,8 +308,9 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let client_state_path = ClientStatePath::new(&client_id);
 
-        let client_state =
-            dummy_tm_client_state(client_chain_id.clone(), Height::new(0, 3).unwrap());
+        let current_height = self.ibc_ctx().host_height().unwrap();
+
+        let client_state = dummy_tm_client_state(client_chain_id.clone(), current_height);
 
         let latest_height = TmClientState::from(client_state.clone()).latest_height();
 
@@ -341,15 +336,14 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             .store_client_state(client_state_path, client_state.into())
             .unwrap();
 
-        let consensus_state_path = ClientConsensusStatePath::new(client_id.clone(), 0, 3);
+        let consensus_state_path = ClientConsensusStatePath::new(
+            client_id.clone(),
+            current_height.revision_number(),
+            current_height.revision_height(),
+        );
 
         let consensus_state = AnyConsensusState::Tendermint(
-            TmConsensusState::new(
-                vec![].into(),
-                Time::from_unix_timestamp(JAN_1_2023, 0).unwrap(),
-                Hash::None,
-            )
-            .into(),
+            TmConsensusState::new(vec![].into(), Time::now(), Hash::None).into(),
         );
 
         self.ibc_ctx()

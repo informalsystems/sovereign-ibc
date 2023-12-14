@@ -21,21 +21,25 @@ pub trait QueryService {
 
 /// Defines the interface that enables a mock chain to provide query endpoints.
 pub trait Handle {
+    type Message;
+
     fn query(&self, request: QueryReq) -> QueryResp;
 
-    fn send_msg(&self, msg: Vec<Any>) -> Vec<IbcEvent>;
+    fn submit_msg(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent>;
 }
 
 impl<Ctx> Handle for Ctx
 where
     Ctx: QueryService,
 {
+    type Message = <<Ctx as QueryService>::E as Handle>::Message;
+
     fn query(&self, request: QueryReq) -> QueryResp {
         Ctx::service(self).query(request)
     }
 
-    fn send_msg(&self, msg: Vec<Any>) -> Vec<IbcEvent> {
-        Ctx::service(self).send_msg(msg)
+    fn submit_msg(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent> {
+        Ctx::service(self).submit_msg(msg)
     }
 }
 

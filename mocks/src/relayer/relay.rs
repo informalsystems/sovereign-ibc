@@ -21,9 +21,11 @@ use ibc_core::host::types::path::{CommitmentPath, Path, SeqSendPath};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp, ToProto};
 use prost::Message;
+use sov_bank::{CallMessage as BankCallMessage, TokenConfig};
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
 use sov_ibc::context::HOST_REVISION_NUMBER;
+use sov_modules_api::Context;
 
 use super::context::ChainContext;
 use super::handle::{Handle, QueryReq, QueryResp};
@@ -404,6 +406,17 @@ where
             proof_commitment_on_a: merkle_proofs.try_into().expect("no error"),
             proof_height_on_a,
             signer: self.dst_chain_ctx().signer().clone(),
+        }
+    }
+
+    /// Creates a token with the given configuration
+    pub fn build_msg_create_token<C: Context>(&self, token: &TokenConfig<C>) -> BankCallMessage<C> {
+        BankCallMessage::CreateToken {
+            salt: token.salt,
+            token_name: token.token_name.clone(),
+            initial_balance: 1000,
+            minter_address: token.address_and_balances[0].0.clone(),
+            authorized_minters: vec![token.address_and_balances[0].0.clone()],
         }
     }
 }

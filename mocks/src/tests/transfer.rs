@@ -7,19 +7,24 @@ use ibc_core::primitives::ToProto;
 use sov_bank::{get_genesis_token_address, TokenConfig};
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
+use sov_mock_da::{MockAddress, MockDaService};
 use sov_modules_api::default_context::DefaultContext;
 use test_log::test;
 
-use crate::configs::TransferTestConfig;
+use crate::configs::{TestSetupConfig, TransferTestConfig};
 use crate::relayer::handle::{Handle, QueryReq, QueryResp, QueryService};
-use crate::setup::{setup, wait_for_cosmos_block};
+use crate::setup::{setup, wait_for_block};
 
 /// Checks if a transfer initiated on the rollup (`send_transfer`) succeeds by
 /// escrowing the token on the rollup and creating a new token on the Cosmos
 /// chain (`recv_packet`).
 #[test(tokio::test)]
 async fn test_escrow_unescrow_on_sov() {
-    let (rly, mut rollup) = setup(true).await;
+    let da_service = MockDaService::new(MockAddress::default());
+
+    let test_config = TestSetupConfig::builder().da_service(da_service).build();
+
+    let (rly, rollup) = setup(test_config, true).await;
 
     // set transfer parameters
     let token: TokenConfig<DefaultContext> = rollup.get_tokens()[0].clone();
@@ -37,9 +42,11 @@ async fn test_escrow_unescrow_on_sov() {
     // -----------------------------------------------------------------------
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
-    rollup
-        .apply_msg(vec![CallMessage::Transfer(msg_transfer_on_sov.clone())])
-        .await;
+    rly.src_chain_ctx().submit_msg(vec![
+        CallMessage::Transfer(msg_transfer_on_sov.clone()).into()
+    ]);
+
+    wait_for_block().await;
 
     // -----------------------------------------------------------------------
     // Check that the token has been escrowed
@@ -55,9 +62,11 @@ async fn test_escrow_unescrow_on_sov() {
     // -----------------------------------------------------------------------
     // Transfer the same token once again
     // -----------------------------------------------------------------------
-    rollup
-        .apply_msg(vec![CallMessage::Transfer(msg_transfer_on_sov.clone())])
-        .await;
+    rly.src_chain_ctx().submit_msg(vec![
+        CallMessage::Transfer(msg_transfer_on_sov.clone()).into()
+    ]);
+
+    wait_for_block().await;
 
     // -----------------------------------------------------------------------
     // Check the sender balance has been updated correctly
@@ -72,7 +81,15 @@ async fn test_escrow_unescrow_on_sov() {
     // -----------------------------------------------------------------------
     // Transfer another token but with the same name as the previous one
     // -----------------------------------------------------------------------
-    let fake_token_address = rollup.create_token(&token).await;
+
+    let fake_token_message = rly.build_msg_create_token(&token);
+
+    rly.src_chain_ctx()
+        .submit_msg(vec![fake_token_message.clone().into()]);
+
+    wait_for_block().await;
+
+    let fake_token_address = rollup.get_token_address(&token);
 
     cfg.sov_token_address = Some(fake_token_address);
     cfg.amount = 50;
@@ -84,9 +101,11 @@ async fn test_escrow_unescrow_on_sov() {
 
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
-    rollup
-        .apply_msg(vec![CallMessage::Transfer(msg_transfer_on_sov.clone())])
-        .await;
+    rly.src_chain_ctx().submit_msg(vec![
+        CallMessage::Transfer(msg_transfer_on_sov.clone()).into()
+    ]);
+
+    wait_for_block().await;
 
     // -----------------------------------------------------------------------
     // Check that the token has been escrowed as a distinct asset
@@ -121,7 +140,11 @@ async fn test_escrow_unescrow_on_sov() {
 /// succeeds by creating a new token on the rollup (`recv_packet`).
 #[test(tokio::test)]
 async fn test_mint_burn_on_sov() {
-    let (rly, mut rollup) = setup(true).await;
+    let da_service = MockDaService::new(MockAddress::default());
+
+    let test_config = TestSetupConfig::builder().da_service(da_service).build();
+
+    let (rly, rollup) = setup(test_config, true).await;
 
     // set transfer parameters
     let token = rollup.get_tokens()[0].clone();
@@ -135,7 +158,14 @@ async fn test_mint_burn_on_sov() {
         ..token.clone()
     };
 
-    let fake_minted_token_address = rollup.create_token(&fake_token).await;
+    let fake_token_message = rly.build_msg_create_token(&fake_token);
+
+    rly.src_chain_ctx()
+        .submit_msg(vec![fake_token_message.clone().into()]);
+
+    wait_for_block().await;
+
+    let fake_minted_token_address = rollup.get_token_address(&token);
 
     // Store the current balance of the sender to check it later after the transfers
     let initial_sender_balance = rly
@@ -150,9 +180,9 @@ async fn test_mint_burn_on_sov() {
     let msg_transfer_on_cos = rly.build_msg_transfer_for_cos(&cfg);
 
     rly.dst_chain_ctx()
-        .send_msg(vec![msg_transfer_on_cos.clone().to_any()]);
+        .submit_msg(vec![msg_transfer_on_cos.clone().to_any()]);
 
-    wait_for_cosmos_block().await;
+    wait_for_block().await;
 
     // -----------------------------------------------------------------------
     // Send a `MsgRecvPacket` paired with a `MsgUpdateClient` to the rollup
@@ -167,9 +197,10 @@ async fn test_mint_burn_on_sov() {
     let msg_recv_packet =
         rly.build_msg_recv_packet_for_sov(target_height, msg_transfer_on_cos.clone());
 
-    rollup
-        .apply_msg(vec![msg_update_client, msg_recv_packet])
-        .await;
+    rly.src_chain_ctx()
+        .submit_msg(vec![msg_update_client.into(), msg_recv_packet.into()]);
+
+    wait_for_block().await;
 
     // -----------------------------------------------------------------------
     // Check client state has been updated successfully
@@ -205,9 +236,9 @@ async fn test_mint_burn_on_sov() {
     // Transfer the same token once again
     // -----------------------------------------------------------------------
     rly.dst_chain_ctx()
-        .send_msg(vec![msg_transfer_on_cos.clone().to_any()]);
+        .submit_msg(vec![msg_transfer_on_cos.clone().to_any()]);
 
-    wait_for_cosmos_block().await;
+    wait_for_block().await;
 
     let target_height = match rly.dst_chain_ctx().query(QueryReq::HostHeight) {
         QueryResp::HostHeight(height) => height,
@@ -219,9 +250,10 @@ async fn test_mint_burn_on_sov() {
     let msg_recv_packet =
         rly.build_msg_recv_packet_for_sov(target_height, msg_transfer_on_cos.clone());
 
-    rollup
-        .apply_msg(vec![msg_update_client, msg_recv_packet])
-        .await;
+    rly.src_chain_ctx()
+        .submit_msg(vec![msg_update_client.into(), msg_recv_packet.into()]);
+
+    wait_for_block().await;
 
     // -----------------------------------------------------------------------
     // Check the token has been minted on the rollup and escrowed on the Cosmos chain
@@ -254,9 +286,11 @@ async fn test_mint_burn_on_sov() {
 
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
-    rollup
-        .apply_msg(vec![CallMessage::Transfer(msg_transfer_on_sov.clone())])
-        .await;
+    rly.src_chain_ctx().submit_msg(vec![
+        CallMessage::Transfer(msg_transfer_on_sov.clone()).into()
+    ]);
+
+    wait_for_block().await;
 
     // TODO: Uncomment this part when the rollup header can be queried by the relayer
     //

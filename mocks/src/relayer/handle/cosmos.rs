@@ -13,6 +13,8 @@ use crate::cosmos::MockCosmosChain;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 
 impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
+    type Message = Any;
+
     fn query(&self, request: QueryReq) -> QueryResp {
         info!("cosmos: got query request: {:?}", request);
 
@@ -73,7 +75,7 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
         }
     }
 
-    fn send_msg(&self, msgs: Vec<Any>) -> Vec<IbcEvent> {
+    fn submit_msg(&self, msgs: Vec<Any>) -> Vec<IbcEvent> {
         msgs.into_iter()
             .flat_map(|msg| self.app.ibc().process_message(msg).unwrap())
             .collect()
