@@ -39,19 +39,15 @@ impl CosmosBuilder {
         }
     }
 
-    pub fn build_chain<S>(&mut self, store: S) -> MockCosmosChain<S>
+    pub fn build<S>(&mut self, store: S) -> MockCosmosChain<S>
     where
         S: ProvableStore + Debug + Default,
     {
-        let chain = MockCosmosChain::new(
+        MockCosmosChain::new(
             self.runtime.clone(),
             self.chain_id.clone(),
             self.validators.clone(),
             store,
-        );
-
-        chain.run();
-
-        chain
+        )
     }
 }

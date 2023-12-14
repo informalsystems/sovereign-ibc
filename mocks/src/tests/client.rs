@@ -13,7 +13,7 @@ use test_log::test;
 
 use crate::configs::TestSetupConfig;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::setup::{setup, wait_for_block};
+use crate::setup::setup;
 use crate::sovereign::mock_da_service;
 
 #[test(tokio::test)]
@@ -24,14 +24,13 @@ async fn test_create_client_on_sov() {
 
     let (rly, _) = setup(test_config, false).await;
 
-    let msg_create_client = rly.build_msg_create_client_for_sov();
+    let msg_create_client = rly.build_msg_create_client_for_sov().await;
 
     rly.src_chain_ctx()
-        .submit_msgs(vec![msg_create_client.into()]);
+        .submit_msgs(vec![msg_create_client.into()])
+        .await;
 
-    wait_for_block().await;
-
-    let client_counter = match rly.src_chain_ctx().query(QueryReq::ClientCounter) {
+    let client_counter = match rly.src_chain_ctx().query(QueryReq::ClientCounter).await {
         QueryResp::ClientCounter(counter) => counter,
         _ => panic!("Unexpected response"),
     };
@@ -39,6 +38,7 @@ async fn test_create_client_on_sov() {
     let any_client_state = match rly
         .src_chain_ctx()
         .query(QueryReq::ClientState(rly.src_client_id().clone()))
+        .await
     {
         QueryResp::ClientState(state) => state,
         _ => panic!("unexpected response"),
@@ -48,10 +48,14 @@ async fn test_create_client_on_sov() {
 
     assert_eq!(client_counter, 1);
 
-    match rly.src_chain_ctx().query(QueryReq::ValueWithProof(
-        Path::ClientState(ClientStatePath(rly.src_client_id().clone())),
-        client_state.latest_height(),
-    )) {
+    match rly
+        .src_chain_ctx()
+        .query(QueryReq::ValueWithProof(
+            Path::ClientState(ClientStatePath(rly.src_client_id().clone())),
+            client_state.latest_height(),
+        ))
+        .await
+    {
         QueryResp::ValueWithProof(value, proof) => {
             let _: ClientState = Protobuf::<RawClientState>::decode(&mut value.as_slice()).unwrap();
             SparseMerkleProof::<Sha256>::deserialize(&mut proof.as_slice()).unwrap();
@@ -59,14 +63,18 @@ async fn test_create_client_on_sov() {
         _ => panic!("unexpected response"),
     }
 
-    match rly.src_chain_ctx().query(QueryReq::ValueWithProof(
-        Path::ClientConsensusState(ClientConsensusStatePath {
-            client_id: rly.src_client_id().clone(),
-            revision_number: client_state.latest_height().revision_number(),
-            revision_height: client_state.latest_height().revision_height(),
-        }),
-        client_state.latest_height(),
-    )) {
+    match rly
+        .src_chain_ctx()
+        .query(QueryReq::ValueWithProof(
+            Path::ClientConsensusState(ClientConsensusStatePath {
+                client_id: rly.src_client_id().clone(),
+                revision_number: client_state.latest_height().revision_number(),
+                revision_height: client_state.latest_height().revision_height(),
+            }),
+            client_state.latest_height(),
+        ))
+        .await
+    {
         QueryResp::ValueWithProof(value, proof) => {
             let _: ConsensusState =
                 Protobuf::<RawConsensusState>::decode(&mut value.as_slice()).unwrap();
@@ -84,28 +92,27 @@ async fn test_update_client_on_sov() {
 
     let (rly, _) = setup(test_config, false).await;
 
-    let msg_create_client = rly.build_msg_create_client_for_sov();
+    let msg_create_client = rly.build_msg_create_client_for_sov().await;
 
     rly.src_chain_ctx()
-        .submit_msgs(vec![msg_create_client.into()]);
+        .submit_msgs(vec![msg_create_client.into()])
+        .await;
 
-    wait_for_block().await;
-
-    let target_height = match rly.dst_chain_ctx().query(QueryReq::HostHeight) {
+    let target_height = match rly.dst_chain_ctx().query(QueryReq::HostHeight).await {
         QueryResp::HostHeight(height) => height,
         _ => panic!("unexpected response"),
     };
 
-    let msg_update_client = rly.build_msg_update_client_for_sov(target_height);
+    let msg_update_client = rly.build_msg_update_client_for_sov(target_height).await;
 
     rly.src_chain_ctx()
-        .submit_msgs(vec![msg_update_client.into()]);
-
-    wait_for_block().await;
+        .submit_msgs(vec![msg_update_client.into()])
+        .await;
 
     let any_client_state = match rly
         .src_chain_ctx()
         .query(QueryReq::ClientState(rly.src_client_id().clone()))
+        .await
     {
         QueryResp::ClientState(state) => state,
         _ => panic!("unexpected response"),
@@ -124,11 +131,13 @@ async fn test_create_client_on_cos() {
 
     let (rly, _) = setup(test_config, false).await;
 
-    let msg_create_client = rly.build_msg_create_client_for_cos();
+    let msg_create_client = rly.build_msg_create_client_for_cos().await;
 
-    rly.dst_chain_ctx().submit_msgs(vec![msg_create_client]);
+    rly.dst_chain_ctx()
+        .submit_msgs(vec![msg_create_client])
+        .await;
 
-    let _client_counter = match rly.dst_chain_ctx().query(QueryReq::ClientCounter) {
+    let _client_counter = match rly.dst_chain_ctx().query(QueryReq::ClientCounter).await {
         QueryResp::ClientCounter(counter) => counter,
         _ => panic!("Unexpected response"),
     };
@@ -136,6 +145,7 @@ async fn test_create_client_on_cos() {
     let client_state = match rly
         .dst_chain_ctx()
         .query(QueryReq::ClientState(rly.dst_client_id().clone()))
+        .await
     {
         QueryResp::ClientState(state) => state,
         _ => panic!("unexpected response"),
@@ -143,10 +153,14 @@ async fn test_create_client_on_cos() {
 
     let client_state = AnyClientState::try_from(client_state).unwrap();
 
-    let _consensus_state = match rly.dst_chain_ctx().query(QueryReq::ConsensusState(
-        rly.dst_client_id().clone(),
-        client_state.latest_height(),
-    )) {
+    let _consensus_state = match rly
+        .dst_chain_ctx()
+        .query(QueryReq::ConsensusState(
+            rly.dst_client_id().clone(),
+            client_state.latest_height(),
+        ))
+        .await
+    {
         QueryResp::ConsensusState(state) => state,
         _ => panic!("unexpected response"),
     };

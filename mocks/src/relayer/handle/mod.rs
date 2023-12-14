@@ -2,6 +2,9 @@ mod cosmos;
 #[cfg(feature = "native")]
 mod rollup;
 
+use std::sync::Arc;
+
+use async_trait::async_trait;
 use ibc_core::client::types::Height;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{ChainId, ClientId, Sequence};
@@ -10,33 +13,35 @@ use ibc_core::primitives::proto::Any;
 
 /// Defines the interface that empowers a chain context with the ability to
 /// query different states of a chain.
-pub trait QueryService {
+pub trait QueryService: Send + Sync {
     type E: Handle;
 
-    fn service(&self) -> &Self::E;
+    fn service(&self) -> &Arc<Self::E>;
 }
 
 /// Defines the interface that enables a mock chain to provide query endpoints.
-pub trait Handle {
-    type Message;
+#[async_trait]
+pub trait Handle: Send + Sync {
+    type Message: Send + Sync;
 
-    fn query(&self, request: QueryReq) -> QueryResp;
+    async fn query(&self, request: QueryReq) -> QueryResp;
 
-    fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent>;
+    async fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent>;
 }
 
+#[async_trait]
 impl<Ctx> Handle for Ctx
 where
     Ctx: QueryService,
 {
     type Message = <<Ctx as QueryService>::E as Handle>::Message;
 
-    fn query(&self, request: QueryReq) -> QueryResp {
-        Ctx::service(self).query(request)
+    async fn query(&self, request: QueryReq) -> QueryResp {
+        Ctx::service(self).query(request).await
     }
 
-    fn submit_msgs(&self, msgs: Vec<Self::Message>) -> Vec<IbcEvent> {
-        Ctx::service(self).submit_msgs(msgs)
+    async fn submit_msgs(&self, msgs: Vec<Self::Message>) -> Vec<IbcEvent> {
+        Ctx::service(self).submit_msgs(msgs).await
     }
 }
 

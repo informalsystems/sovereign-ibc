@@ -88,13 +88,13 @@ where
     }
 
     /// Builds a create client message wrapped in a `CallMessage`
-    pub fn build_msg_create_client_for_sov(&self) -> CallMessage {
-        let current_height = match self.dst_chain_ctx().query(QueryReq::HostHeight) {
+    pub async fn build_msg_create_client_for_sov(&self) -> CallMessage {
+        let current_height = match self.dst_chain_ctx().query(QueryReq::HostHeight).await {
             QueryResp::HostHeight(height) => height,
             _ => panic!("unexpected query response"),
         };
 
-        let chain_id = match self.dst_chain_ctx().query(QueryReq::ChainId) {
+        let chain_id = match self.dst_chain_ctx().query(QueryReq::ChainId).await {
             QueryResp::ChainId(chain_id) => chain_id,
             _ => panic!("unexpected query response"),
         };
@@ -104,6 +104,7 @@ where
         let consensus_state = match self
             .dst_chain_ctx()
             .query(QueryReq::HostConsensusState(current_height))
+            .await
         {
             QueryResp::HostConsensusState(cons) => cons,
             _ => panic!("unexpected query response"),
@@ -119,13 +120,13 @@ where
     }
 
     /// Builds a create client message of type `Any`
-    pub fn build_msg_create_client_for_cos(&self) -> Any {
-        let current_height = match self.src_chain_ctx().query(QueryReq::HostHeight) {
+    pub async fn build_msg_create_client_for_cos(&self) -> Any {
+        let current_height = match self.src_chain_ctx().query(QueryReq::HostHeight).await {
             QueryResp::HostHeight(height) => height,
             _ => panic!("unexpected query response"),
         };
 
-        let chain_id = match self.src_chain_ctx().query(QueryReq::ChainId) {
+        let chain_id = match self.src_chain_ctx().query(QueryReq::ChainId).await {
             QueryResp::ChainId(chain_id) => chain_id,
             _ => panic!("unexpected query response"),
         };
@@ -135,6 +136,7 @@ where
         let consensus_state = match self
             .src_chain_ctx()
             .query(QueryReq::HostConsensusState(current_height))
+            .await
         {
             QueryResp::HostConsensusState(cons) => cons,
             _ => panic!("unexpected query response"),
@@ -150,8 +152,8 @@ where
     }
 
     /// Builds an update client message wrapped in a `CallMessage`
-    pub fn build_msg_update_client_for_sov(&self, target_height: Height) -> CallMessage {
-        let client_counter = match self.src_chain_ctx().query(QueryReq::ClientCounter) {
+    pub async fn build_msg_update_client_for_sov(&self, target_height: Height) -> CallMessage {
+        let client_counter = match self.src_chain_ctx().query(QueryReq::ClientCounter).await {
             QueryResp::ClientCounter(counter) => counter,
             _ => panic!("unexpected query response"),
         }
@@ -163,6 +165,7 @@ where
         let any_client_state = match self
             .src_chain_ctx()
             .query(QueryReq::ClientState(client_id.clone()))
+            .await
         {
             QueryResp::ClientState(state) => state,
             _ => panic!("unexpected query response"),
@@ -170,10 +173,14 @@ where
 
         let client_state = AnyClientState::try_from(any_client_state).unwrap();
 
-        let header = match self.dst_chain_ctx().query(QueryReq::Header(
-            target_height,
-            client_state.latest_height(),
-        )) {
+        let header = match self
+            .dst_chain_ctx()
+            .query(QueryReq::Header(
+                target_height,
+                client_state.latest_height(),
+            ))
+            .await
+        {
             QueryResp::Header(header) => header,
             _ => panic!("unexpected query response"),
         };
@@ -188,8 +195,8 @@ where
     }
 
     /// Builds an update client message of type `Any`
-    pub fn build_msg_update_client_for_cos(&self, target_height: Height) -> MsgUpdateClient {
-        let client_counter = match self.dst_chain_ctx().query(QueryReq::ClientCounter) {
+    pub async fn build_msg_update_client_for_cos(&self, target_height: Height) -> MsgUpdateClient {
+        let client_counter = match self.dst_chain_ctx().query(QueryReq::ClientCounter).await {
             QueryResp::ClientCounter(counter) => counter,
             _ => panic!("unexpected query response"),
         };
@@ -199,6 +206,7 @@ where
         let any_client_state = match self
             .dst_chain_ctx()
             .query(QueryReq::ClientState(client_id.clone()))
+            .await
         {
             QueryResp::ClientState(state) => state,
             _ => panic!("unexpected query response"),
@@ -206,10 +214,14 @@ where
 
         let client_state = AnyClientState::try_from(any_client_state).unwrap();
 
-        let header = match self.src_chain_ctx().query(QueryReq::Header(
-            target_height,
-            client_state.latest_height(),
-        )) {
+        let header = match self
+            .src_chain_ctx()
+            .query(QueryReq::Header(
+                target_height,
+                client_state.latest_height(),
+            ))
+            .await
+        {
             QueryResp::Header(header) => header,
             _ => panic!("unexpected query response"),
         };
@@ -223,7 +235,7 @@ where
 
     /// Builds a sdk token transfer message wrapped in a `CallMessage` with the given amount
     /// Note: keep the amount value lower than the initial balance of the sender address
-    pub fn build_msg_transfer_for_sov(&self, config: &TransferTestConfig) -> MsgTransfer {
+    pub async fn build_msg_transfer_for_sov(&self, config: &TransferTestConfig) -> MsgTransfer {
         let mut token_address_buf = String::new();
 
         general_purpose::STANDARD_NO_PAD
@@ -249,7 +261,7 @@ where
     }
 
     /// Builds a receive packet message wrapped in a `CallMessage`
-    pub fn build_msg_recv_packet_for_sov(
+    pub async fn build_msg_recv_packet_for_sov(
         &self,
         proof_height_on_a: Height,
         msg_transfer: MsgTransfer,
@@ -259,6 +271,7 @@ where
         let next_seq_send = match self
             .dst_chain_ctx()
             .query(QueryReq::NextSeqSend(seq_send_path.clone()))
+            .await
         {
             QueryResp::NextSeqSend(seq) => seq,
             _ => panic!("unexpected query response"),
@@ -269,10 +282,14 @@ where
         let commitment_path =
             CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
 
-        let (_, proof_bytes) = match self.dst_chain_ctx().query(QueryReq::ValueWithProof(
-            Path::Commitment(commitment_path.clone()),
-            proof_height_on_a,
-        )) {
+        let (_, proof_bytes) = match self
+            .dst_chain_ctx()
+            .query(QueryReq::ValueWithProof(
+                Path::Commitment(commitment_path.clone()),
+                proof_height_on_a,
+            ))
+            .await
+        {
             QueryResp::ValueWithProof(value, proof) => (value, proof),
             _ => panic!("unexpected query response"),
         };
@@ -305,7 +322,7 @@ where
     }
 
     /// Builds a Cosmos chain token transfer message; serialized to Any
-    pub fn build_msg_transfer_for_cos(&self, config: &TransferTestConfig) -> MsgTransfer {
+    pub async fn build_msg_transfer_for_cos(&self, config: &TransferTestConfig) -> MsgTransfer {
         let memo = match config.sov_token_address {
             Some(token_address) => {
                 let mut token_address_buf = String::new();
@@ -339,7 +356,7 @@ where
     }
 
     /// Builds a receive packet message of type `Any`
-    pub fn build_msg_recv_packet_for_cos(
+    pub async fn build_msg_recv_packet_for_cos(
         &self,
         proof_height_on_a: Height,
         msg_transfer: MsgTransfer,
@@ -348,7 +365,8 @@ where
 
         let resp = self
             .src_chain_ctx()
-            .query(QueryReq::NextSeqSend(seq_send_path.clone()));
+            .query(QueryReq::NextSeqSend(seq_send_path.clone()))
+            .await;
 
         let next_seq_send = match resp {
             QueryResp::NextSeqSend(seq) => seq,
@@ -360,10 +378,13 @@ where
         let commitment_path =
             CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
 
-        let resp = self.src_chain_ctx().query(QueryReq::ValueWithProof(
-            Path::Commitment(commitment_path.clone()),
-            proof_height_on_a,
-        ));
+        let resp = self
+            .src_chain_ctx()
+            .query(QueryReq::ValueWithProof(
+                Path::Commitment(commitment_path.clone()),
+                proof_height_on_a,
+            ))
+            .await;
 
         let (_, proof_bytes) = match resp {
             QueryResp::ValueWithProof(value, proof) => (value, proof),
@@ -374,10 +395,13 @@ where
 
         let merkle_proofs = MerkleProof::try_from(commitment_proofs).unwrap();
 
-        let resp = self.dst_chain_ctx().query(QueryReq::ValueWithProof(
-            Path::Commitment(commitment_path.clone()),
-            proof_height_on_a,
-        ));
+        let resp = self
+            .dst_chain_ctx()
+            .query(QueryReq::ValueWithProof(
+                Path::Commitment(commitment_path.clone()),
+                proof_height_on_a,
+            ))
+            .await;
 
         let (_, proof_bytes) = match resp {
             QueryResp::ValueWithProof(value, proof) => (value, proof),

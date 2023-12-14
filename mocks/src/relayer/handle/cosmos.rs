@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use async_trait::async_trait;
 use basecoin_store::context::ProvableStore;
 use ibc_client_tendermint::types::Header;
 use ibc_core::handler::types::events::IbcEvent;
@@ -11,11 +12,13 @@ use tracing::info;
 
 use crate::cosmos::MockCosmosChain;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
+use crate::setup::wait_for_block;
 
+#[async_trait]
 impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
     type Message = Any;
 
-    fn query(&self, request: QueryReq) -> QueryResp {
+    async fn query(&self, request: QueryReq) -> QueryResp {
         info!("cosmos: got query request: {:?}", request);
 
         match request {
@@ -75,9 +78,14 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
         }
     }
 
-    fn submit_msgs(&self, msgs: Vec<Any>) -> Vec<IbcEvent> {
-        msgs.into_iter()
+    async fn submit_msgs(&self, msgs: Vec<Any>) -> Vec<IbcEvent> {
+        let events = msgs
+            .into_iter()
             .flat_map(|msg| self.app.ibc().process_message(msg).unwrap())
-            .collect()
+            .collect();
+
+        wait_for_block().await;
+
+        events
     }
 }

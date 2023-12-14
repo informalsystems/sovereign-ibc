@@ -52,7 +52,7 @@ where
 
     rollup.init_chain().await;
 
-    let sov_client_counter = match rollup.query(QueryReq::ClientCounter) {
+    let sov_client_counter = match rollup.query(QueryReq::ClientCounter).await {
         QueryResp::ClientCounter(counter) => counter,
         _ => panic!("Unexpected response"),
     };
@@ -60,11 +60,9 @@ where
     // TODO: this should be updated when there is a light client for sovereign chains
     let sov_client_id = ClientId::new(tm_client_type(), sov_client_counter).unwrap();
 
-    let mut cos_builder = CosmosBuilder::default();
+    let mut cos_chain = CosmosBuilder::default().build(InMemoryStore::default());
 
-    let mut cos_chain = cos_builder.build_chain(InMemoryStore::default());
-
-    wait_for_block().await;
+    cos_chain.run().await;
 
     info!("cosmos: initialized with chain id {}", cos_chain.chain_id());
 
@@ -98,8 +96,6 @@ where
     }
 
     rollup.run().await;
-
-    wait_for_block().await;
 
     info!("rollup: initialized with chain id {}", rollup.chain_id());
 

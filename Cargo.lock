@@ -4016,6 +4016,7 @@ name = "sov-ibc-mocks"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "base64 0.21.5",
  "basecoin-app",
  "basecoin-store",
