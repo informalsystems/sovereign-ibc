@@ -29,7 +29,7 @@ where
 {
     type E = E;
 
-    fn service(&self) -> &Self::E {
+    fn service(&self) -> &Arc<Self::E> {
         &self.service
     }
 }
