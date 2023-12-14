@@ -12,6 +12,7 @@ publish      = false
 [dependencies]
 # external dependencies
 anyhow        = { workspace = true }
+async-trait   = { version = "0.1.74", default-features = false }
 base64        = { workspace = true }
 borsh         = { workspace = true }
 prost         = { workspace = true }
@@ -45,7 +46,9 @@ tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
 
 # sovereign dependencies
+const-rollup-config  = { workspace = true }
 sov-bank             = { workspace = true }
+sov-celestia-adapter = { workspace = true }
 sov-chain-state      = { workspace = true }
 sov-modules-api      = { workspace = true }
 sov-mock-da          = { workspace = true }
@@ -61,6 +64,7 @@ tracing-subscriber   = { version = "0.3", default-features = false, features = [
 default = ["native"]
 native = [
     "sov-bank/native",
+    "sov-celestia-adapter/native",
     "sov-chain-state/native",
     "sov-modules-api/native",
     "sov-mock-da/native",

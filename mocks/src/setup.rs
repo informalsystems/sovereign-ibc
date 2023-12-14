@@ -1,14 +1,11 @@
-use std::time::Duration;
-
 use basecoin_store::impls::InMemoryStore;
 use ibc_client_tendermint::types::client_type as tm_client_type;
-use ibc_core::host::types::identifiers::{ChainId, ClientId, Sequence};
+use ibc_core::host::types::identifiers::{ClientId, Sequence};
 use ibc_core::host::ValidationContext;
-use sov_mock_da::{MockAddress, MockDaService};
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, ModuleInfo, WorkingSet};
-use sov_state::ProverStorage;
-use tokio::time::sleep;
+use sov_rollup_interface::services::da::DaService;
+use sov_state::{DefaultStorageSpec, ProverStorage};
 use tracing::info;
 
 use super::cosmos::dummy_signer;
@@ -17,13 +14,19 @@ use crate::cosmos::CosmosBuilder;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
 use crate::relayer::DefaultRollup;
-use crate::sovereign::{MockRollup, Runtime, TestConfig, DEFAULT_INIT_HEIGHT};
+use crate::sovereign::{MockRollup, Runtime, RuntimeConfig, DEFAULT_INIT_HEIGHT};
+use crate::utils::TestSetupConfig;
 
 /// Initializes a mock rollup and a mock Cosmos chain and sets up the relayer between them.
-pub async fn setup(with_manual_tao: bool) -> (DefaultRelayer, DefaultRollup) {
-    let rollup_chain_id = ChainId::new("mock-rollup-0").unwrap();
-
-    let config = TestConfig::default();
+pub async fn setup<Da>(
+    setup_cfg: TestSetupConfig<Da>,
+    with_manual_tao: bool,
+) -> (DefaultRelayer<Da>, DefaultRollup<Da>)
+where
+    Da: DaService<Error = anyhow::Error> + Clone,
+    MockRollup<DefaultContext, Da, DefaultStorageSpec>: Handle,
+{
+    let config = RuntimeConfig::default();
 
     let runtime = Runtime::default();
 
@@ -31,26 +34,22 @@ pub async fn setup(with_manual_tao: bool) -> (DefaultRelayer, DefaultRollup) {
     // module, ensuring that the module's address is used for the token creation.
     let rollup_ctx = DefaultContext::new(*runtime.ibc_transfer.address(), DEFAULT_INIT_HEIGHT);
 
-    let da_service = MockDaService::new(MockAddress::default());
-
     let path = tempfile::tempdir().unwrap();
 
     let prover_storage = ProverStorage::with_path(path).unwrap();
 
     let mut rollup = MockRollup::new(
-        rollup_chain_id,
+        setup_cfg.rollup_chain_id,
         config,
         runtime,
         prover_storage,
         rollup_ctx,
-        da_service,
+        setup_cfg.da_service,
     );
 
-    rollup.init_chain().await;
+    rollup.init().await;
 
-    info!("rollup: initialized with chain id {}", rollup.chain_id());
-
-    let sov_client_counter = match rollup.query(QueryReq::ClientCounter) {
+    let sov_client_counter = match rollup.query(QueryReq::ClientCounter).await {
         QueryResp::ClientCounter(counter) => counter,
         _ => panic!("Unexpected response"),
     };
@@ -58,11 +57,9 @@ pub async fn setup(with_manual_tao: bool) -> (DefaultRelayer, DefaultRollup) {
     // TODO: this should be updated when there is a light client for sovereign chains
     let sov_client_id = ClientId::new(tm_client_type(), sov_client_counter).unwrap();
 
-    let mut cos_builder = CosmosBuilder::default();
+    let mut cos_chain = CosmosBuilder::default().build(InMemoryStore::default());
 
-    let mut cos_chain = cos_builder.build_chain(InMemoryStore::default());
-
-    wait_for_cosmos_block().await;
+    cos_chain.run().await;
 
     info!("cosmos: initialized with chain id {}", cos_chain.chain_id());
 
@@ -95,6 +92,10 @@ pub async fn setup(with_manual_tao: bool) -> (DefaultRelayer, DefaultRollup) {
         info!("relayer: manually initialized IBC TAO layers");
     }
 
+    rollup.run().await;
+
+    info!("rollup: initialized with chain id {}", rollup.chain_id());
+
     (
         MockRelayer::new(
             rollup.clone().into(),
@@ -106,9 +107,4 @@ pub async fn setup(with_manual_tao: bool) -> (DefaultRelayer, DefaultRollup) {
         ),
         rollup,
     )
-}
-
-/// Waits for the mock Cosmos chain to generate a few blocks.
-pub async fn wait_for_cosmos_block() {
-    sleep(Duration::from_secs(1)).await;
 }

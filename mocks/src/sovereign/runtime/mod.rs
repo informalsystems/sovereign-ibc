@@ -1,3 +1,6 @@
+//! Contains the runtime implementation for the Sovereign SDK rollup.
+mod config;
+pub use config::*;
 use sov_bank::Bank;
 use sov_chain_state::ChainState;
 use sov_ibc::Ibc;

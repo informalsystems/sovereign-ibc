@@ -1,6 +1,17 @@
+use ibc_core::host::types::identifiers::ChainId;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 use sov_modules_api::Address;
+use sov_rollup_interface::services::da::DaService;
 use typed_builder::TypedBuilder;
+
+#[derive(TypedBuilder, Clone, Debug)]
+pub struct TestSetupConfig<Da: DaService> {
+    /// The chain Id of the rollup.
+    #[builder(default = ChainId::new("mock-rollup-0").unwrap())]
+    pub rollup_chain_id: ChainId,
+    /// The da service.
+    pub da_service: Da,
+}
 
 /// Configuration for the `transfer` tests.
 #[derive(TypedBuilder, Clone, Debug)]

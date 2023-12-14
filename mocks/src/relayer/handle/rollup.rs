@@ -1,26 +1,30 @@
+use async_trait::async_trait;
 use ibc_core::channel::types::proto::v1::QueryPacketCommitmentRequest;
 use ibc_core::client::types::proto::v1::{QueryClientStateRequest, QueryConsensusStateRequest};
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
-use ibc_core::primitives::proto::Any;
 use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
 
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::sovereign::MockRollup;
+use crate::sovereign::{MockRollup, RuntimeCall};
+use crate::utils::wait_for_block;
 
+#[async_trait]
 impl<C, Da, S> Handle for MockRollup<C, Da, S>
 where
     C: Context<Storage = ProverStorage<S>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
     <Da as DaService>::Spec: Clone,
     S: MerkleProofSpec + Clone + 'static,
-    <S as MerkleProofSpec>::Hasher: Send,
+    <S as MerkleProofSpec>::Hasher: Send + Sync,
 {
-    fn query(&self, request: QueryReq) -> QueryResp {
+    type Message = RuntimeCall<C, Da::Spec>;
+
+    async fn query(&self, request: QueryReq) -> QueryResp {
         info!("rollup: got query request: {:?}", request);
 
         let mut working_set = WorkingSet::new(self.prover_storage());
@@ -104,7 +108,11 @@ where
         }
     }
 
-    fn send_msg(&self, _msg: Vec<Any>) -> Vec<IbcEvent> {
-        unimplemented!()
+    async fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent> {
+        self.mempool.lock().unwrap().extend(msg);
+
+        wait_for_block().await;
+
+        vec![]
     }
 }

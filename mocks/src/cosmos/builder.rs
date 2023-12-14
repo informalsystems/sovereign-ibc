@@ -1,3 +1,4 @@
+//! Defines a builder structure for instantiating a mock Cosmos chain
 use std::fmt::Debug;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -9,7 +10,6 @@ use tokio::runtime::Runtime;
 
 use super::app::MockCosmosChain;
 
-/// Defines a builder structure for instantiating a mock Cosmos chain
 pub struct CosmosBuilder {
     pub runtime: Arc<Runtime>,
     pub chain_id: ChainId,
@@ -39,19 +39,15 @@ impl CosmosBuilder {
         }
     }
 
-    pub fn build_chain<S>(&mut self, store: S) -> MockCosmosChain<S>
+    pub fn build<S>(&mut self, store: S) -> MockCosmosChain<S>
     where
         S: ProvableStore + Debug + Default,
     {
-        let chain = MockCosmosChain::new(
+        MockCosmosChain::new(
             self.runtime.clone(),
             self.chain_id.clone(),
             self.validators.clone(),
             store,
-        );
-
-        chain.run();
-
-        chain
+        )
     }
 }
