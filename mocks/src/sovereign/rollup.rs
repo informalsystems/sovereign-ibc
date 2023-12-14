@@ -38,6 +38,7 @@ use sov_rollup_interface::da::BlockHeaderTrait;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tendermint::{Hash, Time};
+use tokio::task::JoinHandle;
 use tokio::time::sleep;
 use tracing::debug;
 
@@ -45,6 +46,7 @@ use super::config::RuntimeConfig;
 use super::runtime::{GenesisConfig, Runtime};
 use crate::cosmos::dummy_tm_client_state;
 use crate::sovereign::runtime::RuntimeCall;
+use crate::utils::wait_for_block;
 
 type Mempool<C, Da> = Vec<RuntimeCall<C, Da>>;
 
@@ -367,10 +369,10 @@ where
 
     /// Runs the rollup chain by initializing the chain and then committing
     /// blocks at a fixed interval
-    pub async fn run(&mut self) {
+    pub async fn run(&mut self) -> JoinHandle<()> {
         let mut chain = self.clone();
 
-        tokio::task::spawn(async move {
+        let handle = tokio::task::spawn(async move {
             loop {
                 let working_set = WorkingSet::new(chain.prover_storage());
 
@@ -379,6 +381,10 @@ where
                 chain.commit(working_set.checkpoint()).await;
             }
         });
+
+        wait_for_block().await;
+
+        handle
     }
 
     /// Establishes a tendermint light client on the ibc module

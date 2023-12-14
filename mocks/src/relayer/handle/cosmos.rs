@@ -12,7 +12,7 @@ use tracing::info;
 
 use crate::cosmos::MockCosmosChain;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::setup::wait_for_block;
+use crate::utils::wait_for_block;
 
 #[async_trait]
 impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {

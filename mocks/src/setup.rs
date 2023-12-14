@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use basecoin_store::impls::InMemoryStore;
 use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::host::types::identifiers::{ClientId, Sequence};
@@ -8,7 +6,6 @@ use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, ModuleInfo, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{DefaultStorageSpec, ProverStorage};
-use tokio::time::sleep;
 use tracing::info;
 
 use super::cosmos::dummy_signer;
@@ -110,9 +107,4 @@ where
         ),
         rollup,
     )
-}
-
-/// Waits for the mock chains to generate a few blocks.
-pub async fn wait_for_block() {
-    sleep(Duration::from_secs(1)).await;
 }

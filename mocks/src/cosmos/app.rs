@@ -46,13 +46,14 @@ use tendermint_testgen::consensus::default_consensus_params;
 use tendermint_testgen::light_block::TmLightBlock;
 use tendermint_testgen::{Generator, Header, LightBlock, Validator};
 use tokio::runtime::Runtime;
+use tokio::task::JoinHandle;
 use tower::Service;
 use tracing::debug;
 
 use super::helpers::{
     convert_tm_to_ics_merkle_proof, dummy_tm_client_state, genesis_app_state, MutexUtil,
 };
-use crate::setup::wait_for_block;
+use crate::utils::wait_for_block;
 
 /// Defines a mock Cosmos chain that includes simplified store, application,
 /// consensus layers.
@@ -252,10 +253,10 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     }
 
     /// Runs the chain in a separate thread.
-    pub async fn run(&self) -> Self {
+    pub async fn run(&self) -> JoinHandle<()> {
         let chain = self.clone();
 
-        self.runtime().spawn(async move {
+        let handle = self.runtime().spawn(async move {
             chain.init().await;
 
             loop {
@@ -269,7 +270,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         wait_for_block().await;
 
-        self.clone()
+        handle
     }
 
     /// Queries the chain for a given path and height.

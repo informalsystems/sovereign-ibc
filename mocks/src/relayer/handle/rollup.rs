@@ -10,8 +10,8 @@ use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
 
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::setup::wait_for_block;
 use crate::sovereign::{MockRollup, RuntimeCall};
+use crate::utils::wait_for_block;
 
 #[async_trait]
 impl<C, Da, S> Handle for MockRollup<C, Da, S>

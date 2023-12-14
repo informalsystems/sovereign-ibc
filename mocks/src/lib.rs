@@ -9,5 +9,7 @@ pub mod sovereign;
 #[cfg(feature = "native")]
 pub mod configs;
 
+pub mod utils;
+
 #[cfg(all(test, feature = "native"))]
 pub mod tests;
