@@ -2,7 +2,9 @@ use const_rollup_config::{ROLLUP_BATCH_NAMESPACE_RAW, ROLLUP_PROOF_NAMESPACE_RAW
 use sov_celestia_adapter::types::Namespace;
 use sov_celestia_adapter::verifier::RollupParams;
 use sov_celestia_adapter::{CelestiaConfig, CelestiaService};
+use sov_mock_da::{MockAddress, MockDaService};
 
+/// Returns a Celestia DA service that can be used for testing.
 pub async fn celestia_da_service() -> CelestiaService {
     /// The rollup stores its data in the namespace b"sov-test" on Celestia
     /// You can change this constant to point your rollup at a different namespace
@@ -29,4 +31,9 @@ pub async fn celestia_da_service() -> CelestiaService {
         },
     )
     .await
+}
+
+/// Returns a mock DA service that can be used for testing.
+pub fn mock_da_service() -> MockDaService {
+    MockDaService::new(MockAddress::default())
 }

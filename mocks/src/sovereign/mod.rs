@@ -1,9 +1,9 @@
-mod celestia;
 mod config;
+mod da_service;
 mod rollup;
 mod runtime;
 
-pub use celestia::*;
 pub use config::*;
+pub use da_service::*;
 pub use rollup::*;
 pub use runtime::*;

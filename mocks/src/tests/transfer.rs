@@ -7,22 +7,22 @@ use ibc_core::primitives::ToProto;
 use sov_bank::{get_genesis_token_address, TokenConfig};
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
-use sov_mock_da::{MockAddress, MockDaService};
 use sov_modules_api::default_context::DefaultContext;
 use test_log::test;
 
 use crate::configs::{TestSetupConfig, TransferTestConfig};
 use crate::relayer::handle::{Handle, QueryReq, QueryResp, QueryService};
 use crate::setup::{setup, wait_for_block};
+use crate::sovereign::mock_da_service;
 
 /// Checks if a transfer initiated on the rollup (`send_transfer`) succeeds by
 /// escrowing the token on the rollup and creating a new token on the Cosmos
 /// chain (`recv_packet`).
 #[test(tokio::test)]
 async fn test_escrow_unescrow_on_sov() {
-    let da_service = MockDaService::new(MockAddress::default());
-
-    let test_config = TestSetupConfig::builder().da_service(da_service).build();
+    let test_config = TestSetupConfig::builder()
+        .da_service(mock_da_service())
+        .build();
 
     let (rly, rollup) = setup(test_config, true).await;
 
@@ -140,9 +140,9 @@ async fn test_escrow_unescrow_on_sov() {
 /// succeeds by creating a new token on the rollup (`recv_packet`).
 #[test(tokio::test)]
 async fn test_mint_burn_on_sov() {
-    let da_service = MockDaService::new(MockAddress::default());
-
-    let test_config = TestSetupConfig::builder().da_service(da_service).build();
+    let test_config = TestSetupConfig::builder()
+        .da_service(mock_da_service())
+        .build();
 
     let (rly, rollup) = setup(test_config, true).await;
 

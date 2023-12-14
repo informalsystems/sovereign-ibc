@@ -9,18 +9,18 @@ use ibc_core::primitives::proto::Protobuf;
 use jmt::proof::SparseMerkleProof;
 use sha2::Sha256;
 use sov_ibc::clients::AnyClientState;
-use sov_mock_da::{MockAddress, MockDaService};
 use test_log::test;
 
 use crate::configs::TestSetupConfig;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::setup::{setup, wait_for_block};
+use crate::sovereign::mock_da_service;
 
 #[test(tokio::test)]
 async fn test_create_client_on_sov() {
-    let da_service = MockDaService::new(MockAddress::default());
-
-    let test_config = TestSetupConfig::builder().da_service(da_service).build();
+    let test_config = TestSetupConfig::builder()
+        .da_service(mock_da_service())
+        .build();
 
     let (rly, _) = setup(test_config, false).await;
 
@@ -78,9 +78,9 @@ async fn test_create_client_on_sov() {
 
 #[test(tokio::test)]
 async fn test_update_client_on_sov() {
-    let da_service = MockDaService::new(MockAddress::default());
-
-    let test_config = TestSetupConfig::builder().da_service(da_service).build();
+    let test_config = TestSetupConfig::builder()
+        .da_service(mock_da_service())
+        .build();
 
     let (rly, _) = setup(test_config, false).await;
 
@@ -118,9 +118,9 @@ async fn test_update_client_on_sov() {
 
 #[test(tokio::test)]
 async fn test_create_client_on_cos() {
-    let da_service = MockDaService::new(MockAddress::default());
-
-    let test_config = TestSetupConfig::builder().da_service(da_service).build();
+    let test_config = TestSetupConfig::builder()
+        .da_service(mock_da_service())
+        .build();
 
     let (rly, _) = setup(test_config, false).await;
 
