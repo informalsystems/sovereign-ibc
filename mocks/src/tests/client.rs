@@ -11,10 +11,10 @@ use sha2::Sha256;
 use sov_ibc::clients::AnyClientState;
 use test_log::test;
 
-use crate::configs::TestSetupConfig;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::setup::setup;
 use crate::sovereign::mock_da_service;
+use crate::utils::TestSetupConfig;
 
 #[test(tokio::test)]
 async fn test_create_client_on_sov() {

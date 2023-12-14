@@ -1,6 +1,7 @@
 pub mod context;
 pub mod handle;
 #[cfg(feature = "native")]
+pub mod msgs;
 pub mod relay;
 
 #[cfg(feature = "native")]
