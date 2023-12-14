@@ -1,3 +1,5 @@
+//! Defines a mock Cosmos chain that includes simplified store, application,
+//! consensus layers.
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 
@@ -22,8 +24,6 @@ use tokio::runtime::Runtime;
 
 use super::helpers::{convert_tm_to_ics_merkle_proof, MutexUtil};
 
-/// Defines a mock Cosmos chain that includes simplified store, application,
-/// consensus layers.
 #[derive(Clone)]
 pub struct MockCosmosChain<S>
 where

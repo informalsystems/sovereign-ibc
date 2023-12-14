@@ -1,3 +1,5 @@
+//! Defines the relayer context for relaying between a mock Sovereign rollup and
+//! a mock Cosmos chain
 use std::sync::Arc;
 
 use ibc_core::host::types::identifiers::ClientId;
@@ -6,8 +8,6 @@ use ibc_core::primitives::Signer;
 use super::context::ChainContext;
 use super::handle::Handle;
 
-/// The relay context for relaying between a mock sovereign chain and a mock
-/// cosmos chain
 #[derive(Clone)]
 pub struct MockRelayer<SrcChain, DstChain>
 where

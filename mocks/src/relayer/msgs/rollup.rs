@@ -1,3 +1,4 @@
+//! Contains rollup specific message builders for the relayer.
 use std::str::FromStr;
 
 use base64::engine::general_purpose;
