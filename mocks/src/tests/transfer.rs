@@ -10,8 +10,8 @@ use sov_ibc::clients::AnyClientState;
 use sov_modules_api::default_context::DefaultContext;
 use test_log::test;
 
+use crate::configs::TransferTestConfig;
 use crate::relayer::{Handle, QueryReq, QueryResp, QueryService, RelayerBuilder};
-use crate::utils::TransferTestConfig;
 
 /// Checks if a transfer initiated on the rollup (`send_transfer`) succeeds by
 /// escrowing the token on the rollup and creating a new token on the Cosmos

@@ -25,6 +25,9 @@ pub struct TestSetupConfig<C: Context, Da: DaService> {
     pub rollup_runtime_config: RuntimeConfig<C>,
     /// The da service.
     pub da_service: Da,
+    /// Sets whether to use manual IBC TAO or not.
+    #[builder(default = false)]
+    pub with_manual_tao: bool,
 }
 
 impl<C: Context, Da: DaService> TestSetupConfig<C, Da> {

@@ -25,10 +25,10 @@ use ibc_testkit::testapp::ibc::clients::AnyClientState;
 use prost::Message;
 use sov_ibc::context::HOST_REVISION_NUMBER;
 
+use crate::configs::TransferTestConfig;
 use crate::cosmos::dummy_tm_client_state;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
-use crate::utils::TransferTestConfig;
 
 impl<SrcChain, DstChain> MockRelayer<SrcChain, DstChain>
 where

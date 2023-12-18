@@ -4,7 +4,7 @@ use sov_celestia_adapter::verifier::RollupParams;
 use sov_celestia_adapter::{CelestiaConfig, CelestiaService};
 use sov_mock_da::{MockAddress, MockDaService};
 
-use crate::utils::from_toml_path;
+use crate::configs::from_toml_path;
 
 /// Returns a Celestia DA service that can be used for testing.
 pub async fn celestia_da_service() -> CelestiaService {

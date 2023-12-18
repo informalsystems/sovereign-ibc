@@ -9,11 +9,11 @@ use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
 
 use super::DefaultRelayer;
+use crate::configs::{default_config_with_mock_da, TestSetupConfig};
 use crate::cosmos::{dummy_signer, CosmosBuilder};
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
 use crate::sovereign::{MockRollup, Runtime, DEFAULT_INIT_HEIGHT};
-use crate::utils::{default_config_with_mock_da, TestSetupConfig};
 
 #[derive(Clone)]
 pub struct RelayerBuilder<C, Da>
@@ -22,14 +22,12 @@ where
     Da: DaService,
 {
     setup_cfg: TestSetupConfig<C, Da>,
-    with_manual_tao: bool,
 }
 
 impl Default for RelayerBuilder<DefaultContext, MockDaService> {
     fn default() -> Self {
         Self {
             setup_cfg: default_config_with_mock_da(),
-            with_manual_tao: false,
         }
     }
 }
@@ -40,10 +38,7 @@ where
     Da: DaService,
 {
     pub fn new(setup_cfg: TestSetupConfig<C, Da>) -> Self {
-        Self {
-            setup_cfg,
-            with_manual_tao: false,
-        }
+        Self { setup_cfg }
     }
 
     /// Returns the setup configuration
@@ -53,7 +48,7 @@ where
 
     /// Sets up the relayer with a manual IBC TAO
     pub fn with_manual_tao(mut self) -> Self {
-        self.with_manual_tao = true;
+        self.setup_cfg.with_manual_tao = true;
         self
     }
 
@@ -105,7 +100,7 @@ where
 
         let cos_client_id = ClientId::new(tm_client_type(), cos_client_counter).unwrap();
 
-        if self.with_manual_tao {
+        if self.setup_cfg.with_manual_tao {
             let sov_client_id = rollup.setup_client(cos_chain.chain_id()).await;
             let cos_client_id = cos_chain.setup_client(rollup.chain_id());
 
