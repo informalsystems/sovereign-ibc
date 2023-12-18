@@ -25,10 +25,10 @@ use ibc_testkit::testapp::ibc::clients::AnyClientState;
 use prost::Message;
 use sov_ibc::context::HOST_REVISION_NUMBER;
 
+use crate::configs::TransferTestConfig;
 use crate::cosmos::dummy_tm_client_state;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
-use crate::utils::TransferTestConfig;
 
 impl<SrcChain, DstChain> MockRelayer<SrcChain, DstChain>
 where
@@ -68,7 +68,7 @@ where
     }
 
     /// Builds an update client message of type `Any`
-    pub async fn build_msg_update_client_for_cos(&self, target_height: Height) -> MsgUpdateClient {
+    pub async fn build_msg_update_client_for_cos(&self, target_height: Height) -> Any {
         let client_counter = match self.dst_chain_ctx().query(QueryReq::ClientCounter).await {
             QueryResp::ClientCounter(counter) => counter,
             _ => panic!("unexpected query response"),
@@ -104,6 +104,7 @@ where
             client_message: header,
             signer: self.dst_chain_ctx().signer().clone(),
         }
+        .to_any()
     }
 
     /// Builds a Cosmos chain token transfer message; serialized to Any

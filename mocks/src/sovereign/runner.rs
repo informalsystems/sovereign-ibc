@@ -11,11 +11,11 @@ use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
-use tracing::debug;
+use tracing::{debug, info};
 
-use super::MockRollup;
-use crate::sovereign::{GenesisConfig, RuntimeCall};
-use crate::utils::wait_for_block;
+use super::{MockRollup, RuntimeCall};
+use crate::sovereign::GenesisConfig;
+use crate::utils::{wait_for_block, MutexUtil};
 
 impl<C, Da, S> MockRollup<C, Da, S>
 where
@@ -25,18 +25,14 @@ where
     <S as MerkleProofSpec>::Hasher: Send,
 {
     /// Initializes the chain with the genesis configuration
-    pub async fn init(&mut self) -> StateCheckpoint<C> {
+    pub async fn init(
+        &mut self,
+        genesis_config: &GenesisConfig<C, Da::Spec>,
+    ) -> StateCheckpoint<C> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let genesis_config = GenesisConfig::new(
-            self.config().chain_state_config.clone(),
-            self.config().bank_config.clone(),
-            self.config().ibc_config.clone(),
-            self.config().ibc_transfer_config.clone(),
-        );
-
         self.runtime()
-            .genesis(&genesis_config, &mut working_set)
+            .genesis(genesis_config, &mut working_set)
             .unwrap();
 
         self.commit(working_set.checkpoint()).await
@@ -48,7 +44,7 @@ where
 
         let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);
 
-        debug!("rollup: processing block at height {}", current_height);
+        debug!("rollup: processing block at height {current_height}");
 
         let height = loop {
             // Dummy transaction to trigger the block generation
@@ -62,14 +58,14 @@ where
                     }
                 }
                 Err(err) => {
-                    tracing::info!("Error receiving last finalized block header: {:?}", err);
+                    info!("Error receiving last finalized block header: {err:?}");
                 }
             }
         };
 
         let block = self.da_service().get_block_at(height).await.unwrap();
 
-        let state_root = *self.state_root().lock().unwrap();
+        let state_root = *self.state_root().acquire_mutex();
 
         self.runtime().begin_slot_hook(
             block.header(),
@@ -84,21 +80,25 @@ where
     pub async fn execute_msg(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
         let mut working_set = checkpoint.to_revertable();
 
+        let rollup_ctx = self.rollup_ctx();
+
         for m in self.mempool().into_iter() {
-            let sender_address = match m {
-                // Set the rollup context to the relayer address when processing a bank call
-                RuntimeCall::bank(_) => self.get_relayer_address(),
-                _ => self.runtime().ibc.address().clone(),
-            };
-            *self.rollup_ctx.lock().unwrap() =
-                C::new(sender_address, self.rollup_ctx().slot_height());
+            // Sets the sender address to the address of the 'sov-ibc'
+            // module, ensuring that the module's address is used for the
+            // token creation.
+            if let RuntimeCall::ibc(_) = m {
+                self.set_sender(self.runtime().ibc.address().clone())
+            }
 
             self.runtime()
-                .dispatch_call(m, &mut working_set, &self.rollup_ctx())
+                .dispatch_call(m.clone(), &mut working_set, &self.rollup_ctx())
                 .unwrap();
+
+            // Resets the sender address to the address of the relayer
+            self.set_sender(rollup_ctx.sender().clone());
         }
 
-        *self.mempool.lock().unwrap() = vec![];
+        *self.mempool.acquire_mutex() = vec![];
 
         working_set.checkpoint()
     }
@@ -138,7 +138,7 @@ where
 
         let slot_height = self.ibc_ctx(&mut working_set).host_height().unwrap();
 
-        *self.rollup_ctx.lock().unwrap() = C::new(
+        *self.rollup_ctx.acquire_mutex() = C::new(
             self.rollup_ctx().sender().clone(),
             slot_height.revision_height(),
         );
