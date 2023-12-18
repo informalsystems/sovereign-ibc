@@ -1,14 +1,20 @@
-pub mod context;
-pub mod handle;
 #[cfg(feature = "native")]
-pub mod msgs;
-pub mod relay;
+mod builder;
+mod context;
+mod handle;
+#[cfg(feature = "native")]
+mod msgs;
+mod relay;
 
 #[cfg(feature = "native")]
-pub mod relayer_type {
+pub use builder::*;
+pub use context::*;
+pub use handle::*;
+pub use relay::*;
+
+#[cfg(feature = "native")]
+mod types {
     use basecoin_store::impls::InMemoryStore;
-    use sov_modules_api::default_context::DefaultContext;
-    use sov_state::DefaultStorageSpec;
 
     use super::relay::MockRelayer;
     use crate::cosmos::MockCosmosChain;
@@ -16,14 +22,9 @@ pub mod relayer_type {
 
     /// Default concrete type for the relayer between the mock rollup and the
     /// mock Cosmos chain.
-    pub type DefaultRelayer<Da> = MockRelayer<
-        MockRollup<DefaultContext, Da, DefaultStorageSpec>,
-        MockCosmosChain<InMemoryStore>,
-    >;
-
-    /// Default concrete type for the mock rollup.
-    pub type DefaultRollup<Da> = MockRollup<DefaultContext, Da, DefaultStorageSpec>;
+    pub type DefaultRelayer<C, Da, S> =
+        MockRelayer<MockRollup<C, Da, S>, MockCosmosChain<InMemoryStore>>;
 }
 
 #[cfg(feature = "native")]
-pub use relayer_type::*;
+pub use types::*;

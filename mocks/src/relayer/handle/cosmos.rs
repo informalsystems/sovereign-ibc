@@ -18,8 +18,8 @@ use crate::utils::wait_for_block;
 impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
     type Message = Any;
 
-    async fn query(&self, request: QueryReq) -> QueryResp {
-        info!("cosmos: got query request: {:?}", request);
+    async fn query_app(&self, request: QueryReq) -> QueryResp {
+        info!("cosmos: got query request: {request:?}");
 
         match request {
             QueryReq::ChainId => QueryResp::ChainId(self.chain_id().clone()),
@@ -46,8 +46,14 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
             QueryReq::NextSeqSend(path) => {
                 QueryResp::NextSeqSend(self.ibc_ctx().get_next_sequence_send(&path).unwrap())
             }
+            _ => panic!("unexpected query request"),
+        }
+    }
+
+    async fn query_core(&self, request: QueryReq) -> QueryResp {
+        match request {
             QueryReq::Header(target_height, trusted_height) => {
-                let blocks = self.get_blocks();
+                let blocks = self.core.blocks();
 
                 let revision_height = target_height.revision_height() as usize;
 
@@ -75,13 +81,18 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
 
                 QueryResp::ValueWithProof(value, proof.into())
             }
+            _ => panic!("unexpected query request"),
         }
     }
 
     async fn submit_msgs(&self, msgs: Vec<Any>) -> Vec<IbcEvent> {
         let events = msgs
             .into_iter()
-            .flat_map(|msg| self.app.ibc().process_message(msg).unwrap())
+            .flat_map(|msg| {
+                let events = self.app.ibc().process_message(msg).unwrap();
+                info!("cosmos: executed message with emitted events: {events:?}");
+                events
+            })
             .collect();
 
         wait_for_block().await;

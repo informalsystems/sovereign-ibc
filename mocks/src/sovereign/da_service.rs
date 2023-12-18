@@ -4,6 +4,8 @@ use sov_celestia_adapter::verifier::RollupParams;
 use sov_celestia_adapter::{CelestiaConfig, CelestiaService};
 use sov_mock_da::{MockAddress, MockDaService};
 
+use crate::utils::from_toml_path;
+
 /// Returns a Celestia DA service that can be used for testing.
 pub async fn celestia_da_service() -> CelestiaService {
     /// The rollup stores its data in the namespace b"sov-test" on Celestia
@@ -13,15 +15,7 @@ pub async fn celestia_da_service() -> CelestiaService {
     /// The rollup stores the zk proofs in the namespace b"sov-test-p" on Celestia.
     pub const ROLLUP_PROOF_NAMESPACE: Namespace = Namespace::const_v0(ROLLUP_PROOF_NAMESPACE_RAW);
 
-    let celestia_config = CelestiaConfig {
-        celestia_rpc_auth_token: "".to_string(),
-
-        celestia_rpc_address: "http://127.0.0.1:26658".to_string(),
-
-        max_celestia_response_body_size: 104_857_600,
-
-        celestia_rpc_timeout_seconds: 60,
-    };
+    let celestia_config: CelestiaConfig = from_toml_path("celestia_rollup_config.toml").unwrap();
 
     CelestiaService::new(
         celestia_config,

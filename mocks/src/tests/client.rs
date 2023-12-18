@@ -11,18 +11,11 @@ use sha2::Sha256;
 use sov_ibc::clients::AnyClientState;
 use test_log::test;
 
-use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::setup::setup;
-use crate::sovereign::mock_da_service;
-use crate::utils::TestSetupConfig;
+use crate::relayer::{Handle, QueryReq, QueryResp, RelayerBuilder};
 
 #[test(tokio::test)]
 async fn test_create_client_on_sov() {
-    let test_config = TestSetupConfig::builder()
-        .da_service(mock_da_service())
-        .build();
-
-    let (rly, _) = setup(test_config, false).await;
+    let rly = RelayerBuilder::default().setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_sov().await;
 
@@ -30,14 +23,14 @@ async fn test_create_client_on_sov() {
         .submit_msgs(vec![msg_create_client.into()])
         .await;
 
-    let client_counter = match rly.src_chain_ctx().query(QueryReq::ClientCounter).await {
+    let client_counter = match rly.src_chain_ctx().query_app(QueryReq::ClientCounter).await {
         QueryResp::ClientCounter(counter) => counter,
         _ => panic!("Unexpected response"),
     };
 
     let any_client_state = match rly
         .src_chain_ctx()
-        .query(QueryReq::ClientState(rly.src_client_id().clone()))
+        .query_app(QueryReq::ClientState(rly.src_client_id().clone()))
         .await
     {
         QueryResp::ClientState(state) => state,
@@ -50,7 +43,7 @@ async fn test_create_client_on_sov() {
 
     match rly
         .src_chain_ctx()
-        .query(QueryReq::ValueWithProof(
+        .query_app(QueryReq::ValueWithProof(
             Path::ClientState(ClientStatePath(rly.src_client_id().clone())),
             client_state.latest_height(),
         ))
@@ -65,7 +58,7 @@ async fn test_create_client_on_sov() {
 
     match rly
         .src_chain_ctx()
-        .query(QueryReq::ValueWithProof(
+        .query_app(QueryReq::ValueWithProof(
             Path::ClientConsensusState(ClientConsensusStatePath {
                 client_id: rly.src_client_id().clone(),
                 revision_number: client_state.latest_height().revision_number(),
@@ -86,11 +79,7 @@ async fn test_create_client_on_sov() {
 
 #[test(tokio::test)]
 async fn test_update_client_on_sov() {
-    let test_config = TestSetupConfig::builder()
-        .da_service(mock_da_service())
-        .build();
-
-    let (rly, _) = setup(test_config, false).await;
+    let rly = RelayerBuilder::default().setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_sov().await;
 
@@ -98,7 +87,7 @@ async fn test_update_client_on_sov() {
         .submit_msgs(vec![msg_create_client.into()])
         .await;
 
-    let target_height = match rly.dst_chain_ctx().query(QueryReq::HostHeight).await {
+    let target_height = match rly.dst_chain_ctx().query_app(QueryReq::HostHeight).await {
         QueryResp::HostHeight(height) => height,
         _ => panic!("unexpected response"),
     };
@@ -111,7 +100,7 @@ async fn test_update_client_on_sov() {
 
     let any_client_state = match rly
         .src_chain_ctx()
-        .query(QueryReq::ClientState(rly.src_client_id().clone()))
+        .query_app(QueryReq::ClientState(rly.src_client_id().clone()))
         .await
     {
         QueryResp::ClientState(state) => state,
@@ -125,11 +114,7 @@ async fn test_update_client_on_sov() {
 
 #[test(tokio::test)]
 async fn test_create_client_on_cos() {
-    let test_config = TestSetupConfig::builder()
-        .da_service(mock_da_service())
-        .build();
-
-    let (rly, _) = setup(test_config, false).await;
+    let rly = RelayerBuilder::default().setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_cos().await;
 
@@ -137,14 +122,14 @@ async fn test_create_client_on_cos() {
         .submit_msgs(vec![msg_create_client])
         .await;
 
-    let _client_counter = match rly.dst_chain_ctx().query(QueryReq::ClientCounter).await {
+    let _client_counter = match rly.dst_chain_ctx().query_app(QueryReq::ClientCounter).await {
         QueryResp::ClientCounter(counter) => counter,
         _ => panic!("Unexpected response"),
     };
 
     let client_state = match rly
         .dst_chain_ctx()
-        .query(QueryReq::ClientState(rly.dst_client_id().clone()))
+        .query_app(QueryReq::ClientState(rly.dst_client_id().clone()))
         .await
     {
         QueryResp::ClientState(state) => state,
@@ -155,7 +140,7 @@ async fn test_create_client_on_cos() {
 
     let _consensus_state = match rly
         .dst_chain_ctx()
-        .query(QueryReq::ConsensusState(
+        .query_app(QueryReq::ConsensusState(
             rly.dst_client_id().clone(),
             client_state.latest_height(),
         ))

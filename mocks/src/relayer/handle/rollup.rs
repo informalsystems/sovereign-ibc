@@ -11,7 +11,7 @@ use tracing::info;
 
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::sovereign::{MockRollup, RuntimeCall};
-use crate::utils::wait_for_block;
+use crate::utils::{wait_for_block, MutexUtil};
 
 #[async_trait]
 impl<C, Da, S> Handle for MockRollup<C, Da, S>
@@ -24,8 +24,8 @@ where
 {
     type Message = RuntimeCall<C, Da::Spec>;
 
-    async fn query(&self, request: QueryReq) -> QueryResp {
-        info!("rollup: got query request: {:?}", request);
+    async fn query_app(&self, request: QueryReq) -> QueryResp {
+        info!("rollup: got query request: {request:?}");
 
         let mut working_set = WorkingSet::new(self.prover_storage());
 
@@ -51,9 +51,6 @@ where
                     .unwrap()
                     .into(),
             ),
-            QueryReq::Header(_, _) => {
-                unimplemented!()
-            }
             QueryReq::NextSeqSend(path) => {
                 QueryResp::NextSeqSend(ibc_ctx.get_next_sequence_send(&path).unwrap())
             }
@@ -105,11 +102,21 @@ where
                 }
                 _ => panic!("not implemented"),
             },
+            _ => panic!("unexpected query request"),
+        }
+    }
+
+    async fn query_core(&self, request: QueryReq) -> QueryResp {
+        match request {
+            QueryReq::Header(_, _) => {
+                unimplemented!();
+            }
+            _ => panic!("unexpected query request"),
         }
     }
 
     async fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent> {
-        self.mempool.lock().unwrap().extend(msg);
+        self.mempool.acquire_mutex().extend(msg);
 
         wait_for_block().await;
 
