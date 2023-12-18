@@ -96,8 +96,6 @@ where
 
             // Resets the sender address to the address of the relayer
             self.set_sender(rollup_ctx.sender().clone());
-
-            info!("rollup: executed message {m:?}");
         }
 
         *self.mempool.acquire_mutex() = vec![];

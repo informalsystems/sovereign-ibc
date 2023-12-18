@@ -25,7 +25,7 @@ where
     type Message = RuntimeCall<C, Da::Spec>;
 
     async fn query_app(&self, request: QueryReq) -> QueryResp {
-        info!("rollup: got query request: {request:?}");
+        info!("rollup: querying app with {:?}", request);
 
         let mut working_set = WorkingSet::new(self.prover_storage());
 
@@ -107,6 +107,8 @@ where
     }
 
     async fn query_core(&self, request: QueryReq) -> QueryResp {
+        info!("rollup: querying core with {:?}", request);
+
         match request {
             QueryReq::Header(_, _) => {
                 unimplemented!();
@@ -116,6 +118,8 @@ where
     }
 
     async fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent> {
+        info!("rollup: submitting messages {:?}", msg);
+
         self.mempool.acquire_mutex().extend(msg);
 
         wait_for_block().await;
