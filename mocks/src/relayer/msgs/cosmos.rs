@@ -37,12 +37,12 @@ where
 {
     /// Builds a create client message of type `Any`
     pub async fn build_msg_create_client_for_cos(&self) -> Any {
-        let current_height = match self.src_chain_ctx().query_app(QueryReq::HostHeight).await {
+        let current_height = match self.src_chain_ctx().query(QueryReq::HostHeight).await {
             QueryResp::HostHeight(height) => height,
             _ => panic!("unexpected query response"),
         };
 
-        let chain_id = match self.src_chain_ctx().query_app(QueryReq::ChainId).await {
+        let chain_id = match self.src_chain_ctx().query(QueryReq::ChainId).await {
             QueryResp::ChainId(chain_id) => chain_id,
             _ => panic!("unexpected query response"),
         };
@@ -51,7 +51,7 @@ where
 
         let consensus_state = match self
             .src_chain_ctx()
-            .query_app(QueryReq::HostConsensusState(current_height))
+            .query(QueryReq::HostConsensusState(current_height))
             .await
         {
             QueryResp::HostConsensusState(cons) => cons,
@@ -71,7 +71,7 @@ where
     pub async fn build_msg_update_client_for_cos(&self, target_height: Height) -> Any {
         let client_counter = match self
             .dst_chain_ctx()
-            .query_app(QueryReq::ClientCounter)
+            .query(QueryReq::ClientCounter)
             .await
         {
             QueryResp::ClientCounter(counter) => counter,
@@ -82,7 +82,7 @@ where
 
         let any_client_state = match self
             .dst_chain_ctx()
-            .query_app(QueryReq::ClientState(client_id.clone()))
+            .query(QueryReq::ClientState(client_id.clone()))
             .await
         {
             QueryResp::ClientState(state) => state,
@@ -93,7 +93,7 @@ where
 
         let header = match self
             .src_chain_ctx()
-            .query_core(QueryReq::Header(
+            .query(QueryReq::Header(
                 target_height,
                 client_state.latest_height(),
             ))
@@ -155,7 +155,7 @@ where
 
         let resp = self
             .src_chain_ctx()
-            .query_app(QueryReq::NextSeqSend(seq_send_path.clone()))
+            .query(QueryReq::NextSeqSend(seq_send_path.clone()))
             .await;
 
         let next_seq_send = match resp {
@@ -170,7 +170,7 @@ where
 
         let resp = self
             .src_chain_ctx()
-            .query_core(QueryReq::ValueWithProof(
+            .query(QueryReq::ValueWithProof(
                 Path::Commitment(commitment_path.clone()),
                 proof_height_on_a,
             ))
@@ -187,7 +187,7 @@ where
 
         let resp = self
             .dst_chain_ctx()
-            .query_core(QueryReq::ValueWithProof(
+            .query(QueryReq::ValueWithProof(
                 Path::Commitment(commitment_path.clone()),
                 proof_height_on_a,
             ))

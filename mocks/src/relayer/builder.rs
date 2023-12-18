@@ -84,7 +84,7 @@ where
 
         rollup.init(&self.setup_cfg.rollup_genesis_config()).await;
 
-        let sov_client_counter = match rollup.query_app(QueryReq::ClientCounter).await {
+        let sov_client_counter = match rollup.query(QueryReq::ClientCounter).await {
             QueryResp::ClientCounter(counter) => counter,
             _ => panic!("Unexpected response"),
         };

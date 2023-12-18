@@ -178,7 +178,7 @@ async fn test_mint_burn_on_sov() {
     // -----------------------------------------------------------------------
     // Send a `MsgRecvPacket` paired with a `MsgUpdateClient` to the rollup
     // -----------------------------------------------------------------------
-    let target_height = match rly.dst_chain_ctx().query_app(QueryReq::HostHeight).await {
+    let target_height = match rly.dst_chain_ctx().query(QueryReq::HostHeight).await {
         QueryResp::HostHeight(height) => height,
         _ => panic!("unexpected response"),
     };
@@ -198,7 +198,7 @@ async fn test_mint_burn_on_sov() {
     // -----------------------------------------------------------------------
     let any_client_state = match rly
         .src_chain_ctx()
-        .query_app(QueryReq::ClientState(rly.src_client_id().clone()))
+        .query(QueryReq::ClientState(rly.src_client_id().clone()))
         .await
     {
         QueryResp::ClientState(client_state) => client_state,
@@ -231,7 +231,7 @@ async fn test_mint_burn_on_sov() {
         .submit_msgs(vec![msg_transfer_on_cos.clone().to_any()])
         .await;
 
-    let target_height = match rly.dst_chain_ctx().query_app(QueryReq::HostHeight).await {
+    let target_height = match rly.dst_chain_ctx().query(QueryReq::HostHeight).await {
         QueryResp::HostHeight(height) => height,
         _ => panic!("unexpected response"),
     };

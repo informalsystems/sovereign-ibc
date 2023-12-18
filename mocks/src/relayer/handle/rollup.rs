@@ -24,7 +24,7 @@ where
 {
     type Message = RuntimeCall<C, Da::Spec>;
 
-    async fn query_app(&self, request: QueryReq) -> QueryResp {
+    async fn query(&self, request: QueryReq) -> QueryResp {
         info!("rollup: querying app with {:?}", request);
 
         let mut working_set = WorkingSet::new(self.prover_storage());
@@ -51,6 +51,9 @@ where
                     .unwrap()
                     .into(),
             ),
+            QueryReq::Header(_, _) => {
+                unimplemented!()
+            }
             QueryReq::NextSeqSend(path) => {
                 QueryResp::NextSeqSend(ibc_ctx.get_next_sequence_send(&path).unwrap())
             }
@@ -102,18 +105,6 @@ where
                 }
                 _ => panic!("not implemented"),
             },
-            _ => panic!("unexpected query request"),
-        }
-    }
-
-    async fn query_core(&self, request: QueryReq) -> QueryResp {
-        info!("rollup: querying core with {:?}", request);
-
-        match request {
-            QueryReq::Header(_, _) => {
-                unimplemented!();
-            }
-            _ => panic!("unexpected query request"),
         }
     }
 

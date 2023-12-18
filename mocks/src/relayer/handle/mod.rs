@@ -24,13 +24,8 @@ pub trait QueryService: Send + Sync {
 pub trait Handle: Send + Sync {
     type Message: Send + Sync;
 
-    /// Queries states by connecting to the execution layer of chains whether it
-    /// is an ABCI application or a rollup
-    async fn query_app(&self, request: QueryReq) -> QueryResp;
-
-    /// Queries states by connecting to the core layer of chains responsible for
-    /// block production.
-    async fn query_core(&self, request: QueryReq) -> QueryResp;
+    /// Queries states of the chain
+    async fn query(&self, request: QueryReq) -> QueryResp;
 
     /// Submits messages
     async fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent>;
@@ -43,12 +38,8 @@ where
 {
     type Message = <<Ctx as QueryService>::E as Handle>::Message;
 
-    async fn query_app(&self, request: QueryReq) -> QueryResp {
-        Ctx::service(self).query_app(request).await
-    }
-
-    async fn query_core(&self, request: QueryReq) -> QueryResp {
-        Ctx::service(self).query_core(request).await
+    async fn query(&self, request: QueryReq) -> QueryResp {
+        Ctx::service(self).query(request).await
     }
 
     async fn submit_msgs(&self, msgs: Vec<Self::Message>) -> Vec<IbcEvent> {

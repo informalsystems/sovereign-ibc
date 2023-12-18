@@ -23,14 +23,14 @@ async fn test_create_client_on_sov() {
         .submit_msgs(vec![msg_create_client.into()])
         .await;
 
-    let client_counter = match rly.src_chain_ctx().query_app(QueryReq::ClientCounter).await {
+    let client_counter = match rly.src_chain_ctx().query(QueryReq::ClientCounter).await {
         QueryResp::ClientCounter(counter) => counter,
         _ => panic!("Unexpected response"),
     };
 
     let any_client_state = match rly
         .src_chain_ctx()
-        .query_app(QueryReq::ClientState(rly.src_client_id().clone()))
+        .query(QueryReq::ClientState(rly.src_client_id().clone()))
         .await
     {
         QueryResp::ClientState(state) => state,
@@ -43,7 +43,7 @@ async fn test_create_client_on_sov() {
 
     match rly
         .src_chain_ctx()
-        .query_app(QueryReq::ValueWithProof(
+        .query(QueryReq::ValueWithProof(
             Path::ClientState(ClientStatePath(rly.src_client_id().clone())),
             client_state.latest_height(),
         ))
@@ -58,7 +58,7 @@ async fn test_create_client_on_sov() {
 
     match rly
         .src_chain_ctx()
-        .query_app(QueryReq::ValueWithProof(
+        .query(QueryReq::ValueWithProof(
             Path::ClientConsensusState(ClientConsensusStatePath {
                 client_id: rly.src_client_id().clone(),
                 revision_number: client_state.latest_height().revision_number(),
@@ -87,7 +87,7 @@ async fn test_update_client_on_sov() {
         .submit_msgs(vec![msg_create_client.into()])
         .await;
 
-    let target_height = match rly.dst_chain_ctx().query_app(QueryReq::HostHeight).await {
+    let target_height = match rly.dst_chain_ctx().query(QueryReq::HostHeight).await {
         QueryResp::HostHeight(height) => height,
         _ => panic!("unexpected response"),
     };
@@ -100,7 +100,7 @@ async fn test_update_client_on_sov() {
 
     let any_client_state = match rly
         .src_chain_ctx()
-        .query_app(QueryReq::ClientState(rly.src_client_id().clone()))
+        .query(QueryReq::ClientState(rly.src_client_id().clone()))
         .await
     {
         QueryResp::ClientState(state) => state,
@@ -122,14 +122,14 @@ async fn test_create_client_on_cos() {
         .submit_msgs(vec![msg_create_client])
         .await;
 
-    let _client_counter = match rly.dst_chain_ctx().query_app(QueryReq::ClientCounter).await {
+    let _client_counter = match rly.dst_chain_ctx().query(QueryReq::ClientCounter).await {
         QueryResp::ClientCounter(counter) => counter,
         _ => panic!("Unexpected response"),
     };
 
     let client_state = match rly
         .dst_chain_ctx()
-        .query_app(QueryReq::ClientState(rly.dst_client_id().clone()))
+        .query(QueryReq::ClientState(rly.dst_client_id().clone()))
         .await
     {
         QueryResp::ClientState(state) => state,
@@ -140,7 +140,7 @@ async fn test_create_client_on_cos() {
 
     let _consensus_state = match rly
         .dst_chain_ctx()
-        .query_app(QueryReq::ConsensusState(
+        .query(QueryReq::ConsensusState(
             rly.dst_client_id().clone(),
             client_state.latest_height(),
         ))

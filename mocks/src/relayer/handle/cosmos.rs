@@ -18,7 +18,7 @@ use crate::utils::wait_for_block;
 impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
     type Message = Any;
 
-    async fn query_app(&self, request: QueryReq) -> QueryResp {
+    async fn query(&self, request: QueryReq) -> QueryResp {
         info!("cosmos: querying app with {:?}", request);
 
         match request {
@@ -46,14 +46,6 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
             QueryReq::NextSeqSend(path) => {
                 QueryResp::NextSeqSend(self.ibc_ctx().get_next_sequence_send(&path).unwrap())
             }
-            _ => panic!("unexpected query request"),
-        }
-    }
-
-    async fn query_core(&self, request: QueryReq) -> QueryResp {
-        info!("cosmos: querying core with {:?}", request);
-
-        match request {
             QueryReq::Header(target_height, trusted_height) => {
                 let blocks = self.core.blocks();
 
@@ -83,7 +75,6 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
 
                 QueryResp::ValueWithProof(value, proof.into())
             }
-            _ => panic!("unexpected query request"),
         }
     }
 
