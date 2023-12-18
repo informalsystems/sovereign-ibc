@@ -67,11 +67,7 @@ where
 
     /// Builds an update client message wrapped in a `CallMessage`
     pub async fn build_msg_update_client_for_sov(&self, target_height: Height) -> CallMessage {
-        let client_counter = match self
-            .src_chain_ctx()
-            .query(QueryReq::ClientCounter)
-            .await
-        {
+        let client_counter = match self.src_chain_ctx().query(QueryReq::ClientCounter).await {
             QueryResp::ClientCounter(counter) => counter,
             _ => panic!("unexpected query response"),
         }

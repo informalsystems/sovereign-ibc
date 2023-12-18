@@ -69,11 +69,7 @@ where
 
     /// Builds an update client message of type `Any`
     pub async fn build_msg_update_client_for_cos(&self, target_height: Height) -> Any {
-        let client_counter = match self
-            .dst_chain_ctx()
-            .query(QueryReq::ClientCounter)
-            .await
-        {
+        let client_counter = match self.dst_chain_ctx().query(QueryReq::ClientCounter).await {
             QueryResp::ClientCounter(counter) => counter,
             _ => panic!("unexpected query response"),
         };
