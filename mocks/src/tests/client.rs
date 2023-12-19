@@ -11,18 +11,11 @@ use sha2::Sha256;
 use sov_ibc::clients::AnyClientState;
 use test_log::test;
 
-use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::setup::setup;
-use crate::sovereign::mock_da_service;
-use crate::utils::TestSetupConfig;
+use crate::relayer::{Handle, QueryReq, QueryResp, RelayerBuilder};
 
 #[test(tokio::test)]
 async fn test_create_client_on_sov() {
-    let test_config = TestSetupConfig::builder()
-        .da_service(mock_da_service())
-        .build();
-
-    let (rly, _) = setup(test_config, false).await;
+    let rly = RelayerBuilder::default().setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_sov().await;
 
@@ -86,11 +79,7 @@ async fn test_create_client_on_sov() {
 
 #[test(tokio::test)]
 async fn test_update_client_on_sov() {
-    let test_config = TestSetupConfig::builder()
-        .da_service(mock_da_service())
-        .build();
-
-    let (rly, _) = setup(test_config, false).await;
+    let rly = RelayerBuilder::default().setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_sov().await;
 
@@ -125,11 +114,7 @@ async fn test_update_client_on_sov() {
 
 #[test(tokio::test)]
 async fn test_create_client_on_cos() {
-    let test_config = TestSetupConfig::builder()
-        .da_service(mock_da_service())
-        .build();
-
-    let (rly, _) = setup(test_config, false).await;
+    let rly = RelayerBuilder::default().setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_cos().await;
 

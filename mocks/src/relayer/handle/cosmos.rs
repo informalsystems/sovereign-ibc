@@ -19,7 +19,7 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
     type Message = Any;
 
     async fn query(&self, request: QueryReq) -> QueryResp {
-        info!("cosmos: got query request: {:?}", request);
+        info!("cosmos: querying app with {:?}", request);
 
         match request {
             QueryReq::ChainId => QueryResp::ChainId(self.chain_id().clone()),
@@ -47,7 +47,7 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
                 QueryResp::NextSeqSend(self.ibc_ctx().get_next_sequence_send(&path).unwrap())
             }
             QueryReq::Header(target_height, trusted_height) => {
-                let blocks = self.get_blocks();
+                let blocks = self.core.blocks();
 
                 let revision_height = target_height.revision_height() as usize;
 
@@ -79,6 +79,8 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
     }
 
     async fn submit_msgs(&self, msgs: Vec<Any>) -> Vec<IbcEvent> {
+        info!("cosmos: submitting messages: {msgs:?}");
+
         let events = msgs
             .into_iter()
             .flat_map(|msg| self.app.ibc().process_message(msg).unwrap())

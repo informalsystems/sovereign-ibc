@@ -8,7 +8,7 @@ use ibc_client_tendermint::types::ConsensusState as TmConsensusState;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::host::types::identifiers::ChainId;
-use sov_bank::{get_token_address, CallMessage as BankCallMessage, TokenConfig};
+use sov_bank::CallMessage as BankCallMessage;
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;
@@ -18,7 +18,8 @@ use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tendermint::{Hash, Time};
 
 use crate::sovereign::runtime::RuntimeCall;
-use crate::sovereign::{Runtime, RuntimeConfig};
+use crate::sovereign::Runtime;
+use crate::utils::MutexUtil;
 
 type Mempool<C, Da> = Vec<RuntimeCall<C, Da>>;
 
@@ -30,7 +31,6 @@ where
     S: MerkleProofSpec,
 {
     chain_id: ChainId,
-    config: RuntimeConfig<C>,
     runtime: Runtime<C, Da::Spec>,
     da_service: Da,
     prover_storage: ProverStorage<S>,
@@ -71,7 +71,6 @@ where
 {
     pub fn new(
         chain_id: ChainId,
-        config: RuntimeConfig<C>,
         runtime: Runtime<C, Da::Spec>,
         prover_storage: ProverStorage<S>,
         rollup_ctx: C,
@@ -79,7 +78,6 @@ where
     ) -> Self {
         Self {
             chain_id,
-            config,
             runtime,
             da_service,
             prover_storage,
@@ -94,19 +92,15 @@ where
     }
 
     pub fn rollup_ctx(&self) -> C {
-        self.rollup_ctx.lock().unwrap().clone()
-    }
-
-    pub fn config(&self) -> &RuntimeConfig<C> {
-        &self.config
+        self.rollup_ctx.acquire_mutex().clone()
     }
 
     pub fn runtime(&self) -> &Runtime<C, Da::Spec> {
         &self.runtime
     }
 
-    pub fn da_service(&self) -> Da {
-        self.da_service.clone()
+    pub fn da_service(&self) -> &Da {
+        &self.da_service
     }
 
     pub fn prover_storage(&self) -> ProverStorage<S> {
@@ -118,7 +112,7 @@ where
     }
 
     pub fn mempool(&self) -> Vec<RuntimeCall<C, Da::Spec>> {
-        self.mempool.lock().unwrap().clone()
+        self.mempool.acquire_mutex().clone()
     }
 
     pub fn ibc_ctx<'a>(
@@ -128,31 +122,6 @@ where
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         IbcContext::new(&self.runtime.ibc, shared_working_set.clone())
-    }
-
-    /// Returns list of tokens in the bank configuration
-    pub fn get_tokens(&self) -> &Vec<TokenConfig<C>> {
-        &self.config.bank_config.tokens
-    }
-
-    /// Returns the token address for a given token configuration
-    pub fn get_token_address(&self, token_cfg: &TokenConfig<C>) -> C::Address {
-        get_token_address::<C>(
-            &token_cfg.token_name,
-            self.get_relayer_address().as_ref(),
-            token_cfg.salt,
-        )
-    }
-
-    /// Returns the address of the relayer. We use the last address in the list
-    /// as the relayer address
-    pub fn get_relayer_address(&self) -> C::Address {
-        self.config.bank_config.tokens[0]
-            .address_and_balances
-            .last()
-            .unwrap()
-            .0
-            .clone()
     }
 
     /// Returns the balance of a user for a given token
@@ -189,7 +158,11 @@ where
     }
 
     pub(crate) fn set_state_root(&mut self, state_root: <ProverStorage<S> as Storage>::Root) {
-        *self.state_root.lock().unwrap() = state_root;
+        *self.state_root.acquire_mutex() = state_root;
+    }
+
+    pub(crate) fn set_sender(&mut self, sender_address: C::Address) {
+        *self.rollup_ctx.acquire_mutex() = C::new(sender_address, self.rollup_ctx().slot_height());
     }
 
     /// Sets the host consensus state when processing each block

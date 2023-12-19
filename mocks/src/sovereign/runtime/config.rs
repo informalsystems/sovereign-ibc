@@ -20,7 +20,7 @@ pub const DEFAULT_ADDRESS_COUNT: u64 = 3;
 // The default token name.
 pub const DEFAULT_TOKEN_NAME: &str = "sov-demo-token";
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RuntimeConfig<C: Context> {
     pub chain_state_config: ChainStateConfig,
     pub bank_config: BankConfig<C>,

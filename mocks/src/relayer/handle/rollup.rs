@@ -11,7 +11,7 @@ use tracing::info;
 
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::sovereign::{MockRollup, RuntimeCall};
-use crate::utils::wait_for_block;
+use crate::utils::{wait_for_block, MutexUtil};
 
 #[async_trait]
 impl<C, Da, S> Handle for MockRollup<C, Da, S>
@@ -25,7 +25,7 @@ where
     type Message = RuntimeCall<C, Da::Spec>;
 
     async fn query(&self, request: QueryReq) -> QueryResp {
-        info!("rollup: got query request: {:?}", request);
+        info!("rollup: querying app with {:?}", request);
 
         let mut working_set = WorkingSet::new(self.prover_storage());
 
@@ -109,7 +109,9 @@ where
     }
 
     async fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent> {
-        self.mempool.lock().unwrap().extend(msg);
+        info!("rollup: submitting messages {:?}", msg);
+
+        self.mempool.acquire_mutex().extend(msg);
 
         wait_for_block().await;
 

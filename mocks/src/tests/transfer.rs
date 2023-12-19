@@ -10,24 +10,20 @@ use sov_ibc::clients::AnyClientState;
 use sov_modules_api::default_context::DefaultContext;
 use test_log::test;
 
-use crate::relayer::handle::{Handle, QueryReq, QueryResp, QueryService};
-use crate::setup::setup;
-use crate::sovereign::mock_da_service;
-use crate::utils::{TestSetupConfig, TransferTestConfig};
+use crate::configs::TransferTestConfig;
+use crate::relayer::{Handle, QueryReq, QueryResp, QueryService, RelayerBuilder};
 
 /// Checks if a transfer initiated on the rollup (`send_transfer`) succeeds by
 /// escrowing the token on the rollup and creating a new token on the Cosmos
 /// chain (`recv_packet`).
 #[test(tokio::test)]
 async fn test_escrow_unescrow_on_sov() {
-    let test_config = TestSetupConfig::builder()
-        .da_service(mock_da_service())
-        .build();
+    let relayer_builder = RelayerBuilder::default();
 
-    let (rly, rollup) = setup(test_config, true).await;
+    let rly = relayer_builder.clone().with_manual_tao().setup().await;
 
     // set transfer parameters
-    let token: TokenConfig<DefaultContext> = rollup.get_tokens()[0].clone();
+    let token: TokenConfig<DefaultContext> = relayer_builder.setup_cfg().get_tokens()[0].clone();
     let token_address = get_genesis_token_address::<DefaultContext>(&token.token_name, token.salt);
     let mut cfg = TransferTestConfig::builder()
         .sov_denom(token.token_name.clone())
@@ -88,7 +84,7 @@ async fn test_escrow_unescrow_on_sov() {
         .submit_msgs(vec![fake_token_message.clone().into()])
         .await;
 
-    let fake_token_address = rollup.get_token_address(&token);
+    let fake_token_address = relayer_builder.setup_cfg().get_token_address(&token);
 
     cfg.sov_token_address = Some(fake_token_address);
     cfg.amount = 50;
@@ -139,14 +135,12 @@ async fn test_escrow_unescrow_on_sov() {
 /// succeeds by creating a new token on the rollup (`recv_packet`).
 #[test(tokio::test)]
 async fn test_mint_burn_on_sov() {
-    let test_config = TestSetupConfig::builder()
-        .da_service(mock_da_service())
-        .build();
+    let relayer_builder = RelayerBuilder::default();
 
-    let (rly, rollup) = setup(test_config, true).await;
+    let rly = relayer_builder.clone().with_manual_tao().setup().await;
 
     // set transfer parameters
-    let token = rollup.get_tokens()[0].clone();
+    let token = relayer_builder.setup_cfg().get_tokens()[0].clone();
     let mut cfg = TransferTestConfig::builder()
         .sov_denom(token.token_name.clone())
         .sov_address(token.address_and_balances[0].0)
@@ -163,7 +157,7 @@ async fn test_mint_burn_on_sov() {
         .submit_msgs(vec![fake_token_message.clone().into()])
         .await;
 
-    let fake_minted_token_address = rollup.get_token_address(&token);
+    let fake_minted_token_address = relayer_builder.setup_cfg().get_token_address(&token);
 
     // Store the current balance of the sender to check it later after the transfers
     let initial_sender_balance = rly

@@ -24,8 +24,10 @@ pub trait QueryService: Send + Sync {
 pub trait Handle: Send + Sync {
     type Message: Send + Sync;
 
+    /// Queries states of the chain
     async fn query(&self, request: QueryReq) -> QueryResp;
 
+    /// Submits messages
     async fn submit_msgs(&self, msg: Vec<Self::Message>) -> Vec<IbcEvent>;
 }
 

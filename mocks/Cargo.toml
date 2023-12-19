@@ -20,6 +20,7 @@ sha2          = { version = "0.10.6", default-features = false }
 serde         = { workspace = true }
 serde_json    = { workspace = true }
 tokio         = { version = "1", features = ["full"] }
+toml          = "0.8.0"
 tower-abci    = "0.11"
 tower         = { version = "0.4", features = ["full"] }
 tempfile      = { workspace = true }

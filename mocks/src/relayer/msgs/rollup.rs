@@ -23,10 +23,10 @@ use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
 use sov_modules_api::Context;
 
+use crate::configs::TransferTestConfig;
 use crate::cosmos::dummy_tm_client_state;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
-use crate::utils::TransferTestConfig;
 
 impl<SrcChain, DstChain> MockRelayer<SrcChain, DstChain>
 where

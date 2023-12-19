@@ -4279,6 +4279,7 @@ dependencies = [
  "tendermint-testgen",
  "test-log",
  "tokio",
+ "toml 0.8.8",
  "tower",
  "tower-abci",
  "tracing",

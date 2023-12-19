@@ -1,8 +1,8 @@
 pub mod cosmos;
 
-pub mod relayer;
 #[cfg(feature = "native")]
-pub mod setup;
+pub mod configs;
+pub mod relayer;
 #[cfg(feature = "native")]
 pub mod sovereign;
 
