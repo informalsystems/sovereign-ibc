@@ -14,7 +14,7 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::proto::Any;
-use sov_celestia_client::client_message::ClientMessage;
+use sov_celestia_client::types::client_message::ClientMessage;
 
 use crate::contexts::{ContextMut, ContextRef};
 use crate::types::error::ContractError;

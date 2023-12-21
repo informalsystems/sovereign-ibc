@@ -40,6 +40,9 @@ where
 
     /// Begins a block by setting the host consensus state and triggering the slot hook
     pub async fn begin_block(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
+        self.da_core
+            .grow_blocks(self.state_root.lock().unwrap().as_ref().to_vec());
+
         let mut working_set = checkpoint.to_revertable();
 
         let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);

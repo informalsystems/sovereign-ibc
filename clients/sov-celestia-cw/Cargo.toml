@@ -17,30 +17,35 @@ crate-type = ["cdylib", "rlib"]
 derive_more = { workspace = true }
 prost 		= { workspace = true, default-features = false }
 serde 		= { workspace = true, features = ["derive"] }
-serde_json  = { package = "serde-json-wasm", version = "1.0.0" , default-features = false, optional = true }
 thiserror 	= { version = "1.0.31" }
+tracing     = { version = "0.1.40" }
 
 # ibc dependencies
 ibc-core   			  = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-proto  			  = { workspace = true, features = ["json-schema"] }
-ics08-wasm 			  = { path = "../ics08-wasm", default-features = false, features = ["cosmwasm"] }
+ibc-client-wasm-types = { path = "../ics08-wasm/types", default-features = false, features = ["cosmwasm"] }
 sov-celestia-client   = { path = "../sov-celestia", default-features = false, features = ["serde"] }
-tendermint-proto      = { git = "https://github.com/eigerco/celestia-tendermint-rs.git", rev = "1f8b574" }
 
 # cosmwasm dependencies
 cosmwasm-schema = "1.4.1"
 cosmwasm-std 	= "1.4.1"
+
+[dev-dependencies]
+cosmwasm-vm = "1.4.1"
+test-log             = { version = "0.2.14", default-features = false, features = ["trace"] }
+tracing-subscriber   = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
+
 
 [features]
 default = ["std"]
 std = [
 	"ibc-core/std",
 	"ibc-proto/std",
-	"ics08-wasm/std",
+	"ibc-client-wasm-types/std",
+	"sov-celestia-client/std",
 	"prost/std",
 	"serde/std",
-	"serde_json/std",
 ]
 test = [
   "std"

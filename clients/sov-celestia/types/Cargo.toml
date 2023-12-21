@@ -1,27 +1,30 @@
 [package]
-name = "sov-celestia-client"
+name = "sov-celestia-client-types"
 authors = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 rust-version = { workspace = true }
 version = { workspace = true }
-readme = "README.md"
+readme = "./../README.md"
 publish = false
 
 [dependencies]
 # external dependencies
+base64 = { workspace = true, features = ["alloc"] }
+bytes = { workspace = true }
 derive_more = { workspace = true }
 prost = { workspace = true, default-features = false }
 schemars = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
-typed-builder = { version = "0.18.0", optional = true }
 
 # ibc dependencies
 ibc-core   = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-sov-celestia-client-types = { path = "./types", default-features = false }
+ibc-proto  = { workspace = true }
 ics23 	   = {version = "0.11", default-features = false }
+ibc-client-wasm-types = { path = "../../ics08-wasm/types", default-features = false, features = ["cosmwasm"] }
+
 
 # DA layer dependencies
 # tendermint = { git = "https://github.com/eigerco/celestia-tendermint-rs.git", rev = "1f8b574", default-features = false }
@@ -44,7 +47,8 @@ default = ["std"]
 std = [
 	"ibc-core/std",
 	"ibc-client-tendermint/std",
-	"sov-celestia-client-types/std",
+	"ibc-client-wasm-types/std",
+	"ibc-proto/std",
 	"ics23/std",
 	"prost/std",
 	"serde/std",
@@ -53,12 +57,14 @@ std = [
 serde = [
 	"ibc-core/serde",
 	"ibc-client-tendermint/serde",
-	"sov-celestia-client-types/serde",
+	"ibc-client-wasm-types/serde",
+	"ibc-proto/serde",
 	"ics23/serde",
 	"dep:serde",
 ]
 json-schema = [
 	"ibc-core/schema",
+	"ibc-client-tendermint/schema",
+	"ibc-proto/json-schema",
 	"dep:schemars",
 ]
-test-utils = ["dep:typed-builder"]

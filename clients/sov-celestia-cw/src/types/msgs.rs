@@ -2,6 +2,8 @@ use alloc::vec::Vec;
 use std::str::FromStr;
 
 use cosmwasm_schema::cw_serde;
+use ibc_client_wasm_types::client_state::ClientState as WasmClientState;
+use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::{CommitmentPrefix, CommitmentProofBytes};
@@ -10,15 +12,13 @@ use ibc_core::host::types::path::Path;
 use ibc_core::primitives::proto::Any;
 use ibc_proto::ibc::core::client::v1::Height as RawHeight;
 use ibc_proto::ibc::lightclients::wasm::v1::ClientMessage as RawClientMessage;
-use ics08_wasm::client_state::ClientState as WasmClientState;
-use ics08_wasm::consensus_state::ConsensusState as WasmConsensusState;
 use prost::Message;
-use sov_celestia_client::client_message::{
-    ClientMessage, SovHeader, SovMisbehaviour, SOVEREIGN_HEADER_TYPE_URL,
-    SOVEREIGN_MISBEHAVIOUR_TYPE_URL,
+use sov_celestia_client::types::client_message::{
+    ClientMessage, SovHeader, SovMisbehaviour, SovTmClientMessage, SOV_TENDERMINT_HEADER_TYPE_URL,
+    SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL,
 };
-use sov_celestia_client::serializer::Base64;
-use sov_celestia_client::Bytes;
+use sov_celestia_client::types::serializer::Base64;
+use sov_celestia_client::types::Bytes;
 
 use super::error::ContractError;
 
@@ -170,7 +170,7 @@ pub struct VerifyClientMessageMsgRaw {
 }
 
 pub struct VerifyClientMessageMsg {
-    pub client_message: ClientMessage,
+    pub client_message: SovTmClientMessage,
 }
 
 impl TryFrom<VerifyClientMessageMsgRaw> for VerifyClientMessageMsg {
@@ -183,9 +183,9 @@ impl TryFrom<VerifyClientMessageMsgRaw> for VerifyClientMessageMsg {
 }
 
 impl VerifyClientMessageMsg {
-    fn decode_client_message(raw: RawClientMessage) -> Result<ClientMessage, ContractError> {
+    fn decode_client_message(raw: RawClientMessage) -> Result<SovTmClientMessage, ContractError> {
         let maybe_any_header = Any {
-            type_url: SOVEREIGN_HEADER_TYPE_URL.to_string(),
+            type_url: SOV_TENDERMINT_HEADER_TYPE_URL.to_string(),
             value: raw.data.clone(),
         };
 
@@ -194,7 +194,7 @@ impl VerifyClientMessageMsg {
         }
 
         let maybe_any_misbehaviour = Any {
-            type_url: SOVEREIGN_MISBEHAVIOUR_TYPE_URL.to_string(),
+            type_url: SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL.to_string(),
             value: raw.data,
         };
 
@@ -214,7 +214,7 @@ pub struct CheckForMisbehaviourMsgRaw {
 }
 
 pub struct CheckForMisbehaviourMsg {
-    pub client_message: ClientMessage,
+    pub client_message: SovTmClientMessage,
 }
 
 impl TryFrom<CheckForMisbehaviourMsgRaw> for CheckForMisbehaviourMsg {
@@ -232,7 +232,7 @@ pub struct UpdateStateOnMisbehaviourMsgRaw {
 }
 
 pub struct UpdateStateOnMisbehaviourMsg {
-    pub client_message: ClientMessage,
+    pub client_message: SovTmClientMessage,
 }
 
 impl TryFrom<UpdateStateOnMisbehaviourMsgRaw> for UpdateStateOnMisbehaviourMsg {
@@ -250,7 +250,7 @@ pub struct UpdateStateMsgRaw {
 }
 
 pub struct UpdateStateMsg {
-    pub client_message: ClientMessage,
+    pub client_message: SovTmClientMessage,
 }
 
 impl TryFrom<UpdateStateMsgRaw> for UpdateStateMsg {

@@ -1,9 +1,11 @@
 use async_trait::async_trait;
+use ibc_client_tendermint::types::Header;
 use ibc_core::channel::types::proto::v1::QueryPacketCommitmentRequest;
 use ibc_core::client::types::proto::v1::{QueryClientStateRequest, QueryConsensusStateRequest};
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
+use sov_celestia_client::types::client_message::{AggregatedProof, PublicInput, SovTmHeader};
 use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
@@ -51,8 +53,42 @@ where
                     .unwrap()
                     .into(),
             ),
-            QueryReq::Header(_, _) => {
-                unimplemented!()
+            QueryReq::Header(target_height, trusted_height) => {
+                let blocks = self.da_core.blocks();
+
+                let revision_height = target_height.revision_height() as usize;
+
+                if revision_height > blocks.len() {
+                    panic!("block index out of bounds");
+                }
+
+                let target_block = blocks[revision_height - 1].clone();
+
+                let header = Header {
+                    signed_header: target_block.signed_header,
+                    validator_set: target_block.validators,
+                    trusted_height,
+                    trusted_next_validator_set: target_block.next_validators,
+                };
+
+                let public_input = PublicInput {
+                    initial_da_block_hash: vec![0],
+                    final_da_block_hash: vec![0],
+                    input_state_root: vec![0],
+                    post_state_root: vec![0],
+                };
+
+                let aggregated_proof = AggregatedProof {
+                    public_input,
+                    proof: vec![0],
+                };
+
+                let sov_header = SovTmHeader {
+                    core_header: header,
+                    aggregated_proof,
+                };
+
+                QueryResp::Header(sov_header.into())
             }
             QueryReq::NextSeqSend(path) => {
                 QueryResp::NextSeqSend(ibc_ctx.get_next_sequence_send(&path).unwrap())

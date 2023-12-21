@@ -198,7 +198,7 @@ async fn test_mint_burn_on_sov() {
     // -----------------------------------------------------------------------
     let any_client_state = match rly
         .src_chain_ctx()
-        .query(QueryReq::ClientState(rly.src_client_id().clone()))
+        .query(QueryReq::ClientState(rly.dst_client_id().clone()))
         .await
     {
         QueryResp::ClientState(client_state) => client_state,

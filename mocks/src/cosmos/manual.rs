@@ -43,9 +43,10 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let current_height = self.ibc_ctx().host_height().unwrap();
 
-        let client_state = dummy_tm_client_state(client_chain_id.clone(), current_height);
+        let client_state: TmClientState =
+            dummy_tm_client_state(client_chain_id.clone(), current_height).into();
 
-        let latest_height = TmClientState::from(client_state.clone()).latest_height();
+        let latest_height = client_state.latest_height();
 
         self.ibc_ctx()
             .store_update_time(

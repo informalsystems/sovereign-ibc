@@ -1,6 +1,7 @@
 use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::host::types::identifiers::{ClientId, Sequence};
 use ibc_core::host::ValidationContext;
+use sov_celestia_client::types::client_state::sov_client_type;
 use sov_mock_da::MockDaService;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, WorkingSet};
@@ -10,7 +11,7 @@ use tracing::info;
 
 use super::DefaultRelayer;
 use crate::configs::{default_config_with_mock_da, TestSetupConfig};
-use crate::cosmos::{dummy_signer, CosmosBuilder};
+use crate::cosmos::{dummy_signer, CosmosBuilder, MockTendermint};
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
 use crate::sovereign::{MockRollup, Runtime, DEFAULT_INIT_HEIGHT};
@@ -70,10 +71,12 @@ where
         let prover_storage = ProverStorage::with_path(path).unwrap();
 
         let mut rollup = MockRollup::new(
-            self.setup_cfg.rollup_chain_id.clone(),
             runtime,
             prover_storage,
             rollup_ctx,
+            MockTendermint::builder()
+                .chain_id(self.setup_cfg.da_chain_id.clone())
+                .build(),
             self.setup_cfg.da_service.clone(),
         );
 
@@ -84,8 +87,7 @@ where
             _ => panic!("Unexpected response"),
         };
 
-        // TODO: this should be updated when there is a light client for sovereign chains
-        let sov_client_id = ClientId::new(tm_client_type(), sov_client_counter).unwrap();
+        let sov_client_id = ClientId::new(sov_client_type(), sov_client_counter).unwrap();
 
         let mut cos_chain = CosmosBuilder::default().build();
 

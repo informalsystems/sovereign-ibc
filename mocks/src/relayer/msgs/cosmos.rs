@@ -4,10 +4,11 @@ use std::str::FromStr;
 
 use base64::engine::general_purpose;
 use base64::Engine;
+use basecoin_app::modules::ibc::AnyClientState;
 use ibc_app_transfer::types::msgs::transfer::MsgTransfer;
 use ibc_app_transfer::types::packet::PacketData;
 use ibc_app_transfer::types::{Coin, Memo, PrefixedDenom};
-use ibc_client_tendermint::types::client_type as tm_client_type;
+use ibc_client_tendermint::client_state::ClientState;
 use ibc_core::channel::types::msgs::MsgRecvPacket;
 use ibc_core::channel::types::packet::Packet;
 use ibc_core::channel::types::timeout::TimeoutHeight;
@@ -17,12 +18,13 @@ use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentProofBytes;
 use ibc_core::commitment_types::merkle::MerkleProof;
 use ibc_core::commitment_types::proto::ics23::CommitmentProof;
-use ibc_core::host::types::identifiers::{ChannelId, ClientId, PortId};
+use ibc_core::host::types::identifiers::{ChainId, ChannelId, PortId};
 use ibc_core::host::types::path::{CommitmentPath, Path, SeqSendPath};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp, ToProto};
-use ibc_testkit::testapp::ibc::clients::AnyClientState;
 use prost::Message;
+use sov_celestia_client::client_state::ClientState as SovTmClientState;
+use sov_celestia_client::types::client_state::RollupClientState;
 use sov_ibc::context::HOST_REVISION_NUMBER;
 
 use crate::configs::TransferTestConfig;
@@ -47,7 +49,16 @@ where
             _ => panic!("unexpected query response"),
         };
 
-        let tm_client_state = dummy_tm_client_state(chain_id, current_height);
+        let tm_client_state: ClientState = dummy_tm_client_state(chain_id, current_height).into();
+
+        let rollup_client_state = RollupClientState {
+            rollup_id: ChainId::new("rollup-1").unwrap(),
+            post_root_state: vec![0],
+        };
+
+        let sov_client_state = SovTmClientState::new(tm_client_state.clone(), rollup_client_state);
+
+        let any_client_state = AnyClientState::from(sov_client_state.clone());
 
         let consensus_state = match self
             .src_chain_ctx()
@@ -59,7 +70,7 @@ where
         };
 
         let msg_create_client = MsgCreateClient {
-            client_state: tm_client_state.into(),
+            client_state: any_client_state.into(),
             consensus_state,
             signer: self.src_chain_ctx().signer().clone(),
         };
@@ -69,12 +80,7 @@ where
 
     /// Builds an update client message of type `Any`
     pub async fn build_msg_update_client_for_cos(&self, target_height: Height) -> Any {
-        let client_counter = match self.dst_chain_ctx().query(QueryReq::ClientCounter).await {
-            QueryResp::ClientCounter(counter) => counter,
-            _ => panic!("unexpected query response"),
-        };
-
-        let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
+        let client_id = self.src_client_id().clone();
 
         let any_client_state = match self
             .dst_chain_ctx()
@@ -179,7 +185,7 @@ where
 
         let commitment_proofs = CommitmentProofBytes::try_from(proof_bytes).unwrap();
 
-        let merkle_proofs = MerkleProof::try_from(commitment_proofs).unwrap();
+        let merkle_proofs = MerkleProof::try_from(&commitment_proofs).unwrap();
 
         let resp = self
             .dst_chain_ctx()

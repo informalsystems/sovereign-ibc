@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use ibc_client_tendermint::types::proto::v1::ConsensusState as RawTmConsensusState;
 use ibc_core::channel::types::channel::ChannelEnd;
 use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
 use ibc_core::channel::types::packet::Receipt;
@@ -15,17 +16,15 @@ use ibc_core::host::types::path::{
     CommitmentPath, ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
-use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::{Signer, Timestamp};
-use sov_celestia_client::client_state::{AnyClientState, SOVEREIGN_CLIENT_STATE_TYPE_URL};
-use sov_celestia_client::consensus_state::AnyConsensusState;
-use sov_celestia_client::proto::{
-    ClientState as RawSovClientState, ConsensusState as RawSovConsensusState,
-};
-use tendermint_proto::Protobuf;
+use sov_celestia_client::types::client_state::SOV_TENDERMINT_CLIENT_STATE_TYPE_URL;
+use sov_celestia_client::types::proto::SovTmClientState as RawTmClientState;
 
 use super::definition::ContextMut;
 use super::{ContextRef, StorageRef};
+use crate::client_state::AnyClientState;
+use crate::consensus_state::AnyConsensusState;
 
 impl ValidationContext for ContextMut<'_> {
     type V = Self;
@@ -380,6 +379,115 @@ impl ValidationContext for ContextRef<'_> {
     }
 }
 
+impl ExecutionContext for ContextRef<'_> {
+    fn get_client_execution_context(&mut self) -> &mut Self::E {
+        todo!()
+    }
+
+    fn increase_client_counter(&mut self) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn store_connection(
+        &mut self,
+        _connection_path: &ConnectionPath,
+        _connection_end: ConnectionEnd,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn store_connection_to_client(
+        &mut self,
+        _client_connection_path: &ClientConnectionPath,
+        _conn_id: ConnectionId,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn increase_connection_counter(&mut self) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn store_packet_commitment(
+        &mut self,
+        _commitment_path: &CommitmentPath,
+        _commitment: PacketCommitment,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn delete_packet_commitment(
+        &mut self,
+        _commitment_path: &CommitmentPath,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn store_packet_receipt(
+        &mut self,
+        _receipt_path: &ReceiptPath,
+        _receipt: Receipt,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn store_packet_acknowledgement(
+        &mut self,
+        _ack_path: &AckPath,
+        _ack_commitment: AcknowledgementCommitment,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn delete_packet_acknowledgement(&mut self, _ack_path: &AckPath) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn store_channel(
+        &mut self,
+        _channel_end_path: &ChannelEndPath,
+        _channel_end: ChannelEnd,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn store_next_sequence_send(
+        &mut self,
+        _seq_send_path: &SeqSendPath,
+        _seq: Sequence,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn store_next_sequence_recv(
+        &mut self,
+        _seq_recv_path: &SeqRecvPath,
+        _seq: Sequence,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn store_next_sequence_ack(
+        &mut self,
+        _seq_ack_path: &SeqAckPath,
+        _seq: Sequence,
+    ) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn increase_channel_counter(&mut self) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn emit_ibc_event(&mut self, _event: IbcEvent) -> Result<(), ContextError> {
+        todo!()
+    }
+
+    fn log_message(&mut self, _message: String) -> Result<(), ContextError> {
+        todo!()
+    }
+}
+
 pub fn client_state<Ctx>(ctx: &Ctx, client_id: &ClientId) -> Result<AnyClientState, ContextError>
 where
     Ctx: ValidationContext + StorageRef,
@@ -393,7 +501,7 @@ where
                 description: "Client state not found".to_string(),
             })?;
 
-    let sov_client_state = Protobuf::<RawSovClientState>::decode(client_state_value.as_slice())
+    let sov_client_state = Protobuf::<RawTmClientState>::decode(client_state_value.as_slice())
         .map_err(|e| ClientError::Other {
             description: e.to_string(),
         })?;
@@ -406,8 +514,8 @@ where
     Ctx: ValidationContext + StorageRef,
 {
     match client_state.type_url.as_str() {
-        SOVEREIGN_CLIENT_STATE_TYPE_URL => {
-            let sov_client_state = Protobuf::<RawSovClientState>::decode(
+        SOV_TENDERMINT_CLIENT_STATE_TYPE_URL => {
+            let sov_client_state = Protobuf::<RawTmClientState>::decode(
                 client_state.value.as_slice(),
             )
             .map_err(|e| ClientError::Other {
@@ -437,12 +545,10 @@ where
             description: "Consensus state not found".to_string(),
         })?;
 
-    let consensus_state = Protobuf::<RawSovConsensusState>::decode(
-        consensus_state_value.as_slice(),
-    )
-    .map_err(|e| ClientError::Other {
-        description: e.to_string(),
-    })?;
+    let consensus_state = Protobuf::<RawTmConsensusState>::decode(consensus_state_value.as_slice())
+        .map_err(|e| ClientError::Other {
+            description: e.to_string(),
+        })?;
 
     Ok(AnyConsensusState::Sovereign(consensus_state))
 }

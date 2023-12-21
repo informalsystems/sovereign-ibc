@@ -171,7 +171,7 @@ where
 
         let commitment_proofs = CommitmentProofBytes::try_from(proof_bytes).unwrap();
 
-        let merkle_proofs = MerkleProof::try_from(commitment_proofs).unwrap();
+        let merkle_proofs = MerkleProof::try_from(&commitment_proofs).unwrap();
 
         assert_eq!(merkle_proofs.proofs.len(), 2);
 

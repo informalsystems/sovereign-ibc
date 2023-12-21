@@ -11,16 +11,11 @@
 
 extern crate alloc;
 
-use alloc::vec::Vec;
-
-pub mod client_message;
 pub mod client_state;
 pub mod consensus_state;
-pub mod context;
-pub mod error;
-pub mod proto;
 
-#[cfg(feature = "serde")]
-pub mod serializer;
-
-pub type Bytes = Vec<u8>;
+/// Re-export of Sovereign light client data structures from `sov-celestia-client-types` crate.
+pub mod types {
+    #[doc(inline)]
+    pub use sov_celestia_client_types::*;
+}

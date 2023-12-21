@@ -1,11 +1,8 @@
 //! Defines Sovereign's `ConsensusState` type
 
-use alloc::vec::Vec;
-
-use ibc_core::client::context::consensus_state::ConsensusState as ConsensusStateTrait;
+use ibc_client_tendermint::types::proto::v1::ConsensusState as RawConsensusState;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
-use ibc_core::primitives::Timestamp;
 use ibc_proto::google::protobuf::Any;
 use tendermint::hash::Algorithm;
 use tendermint::time::Time;
@@ -13,11 +10,10 @@ use tendermint::Hash;
 use tendermint_proto::google::protobuf as tpb;
 use tendermint_proto::Protobuf;
 
-use crate::client_message::SovHeader;
-use crate::proto::ConsensusState as RawConsensusState;
+use crate::client_message::SovTmHeader;
 
-pub const SOVEREIGN_CONSENSUS_STATE_TYPE_URL: &str =
-    "/ibc.lightclients.sovereign.v1.ConsensusState";
+pub const SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL: &str =
+    "/ibc.lightclients.sovereign.tendermint.v1.ConsensusState";
 
 /// Defines the Sovereign light client's consensus state
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -104,7 +100,7 @@ impl TryFrom<Any> for ConsensusState {
         }
 
         match raw.type_url.as_str() {
-            SOVEREIGN_CONSENSUS_STATE_TYPE_URL => decode_consensus_state(&raw.value),
+            SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL => decode_consensus_state(&raw.value),
             _ => Err(ClientError::UnknownConsensusStateType {
                 consensus_state_type: raw.type_url,
             }),
@@ -115,8 +111,8 @@ impl TryFrom<Any> for ConsensusState {
 impl From<ConsensusState> for Any {
     fn from(consensus_state: ConsensusState) -> Self {
         Any {
-            type_url: SOVEREIGN_CONSENSUS_STATE_TYPE_URL.to_string(),
-            value: Protobuf::<RawConsensusState>::encode_vec(&consensus_state).unwrap(),
+            type_url: SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL.to_string(),
+            value: Protobuf::<RawConsensusState>::encode_vec(consensus_state),
         }
     }
 }
@@ -131,9 +127,9 @@ impl From<tendermint::block::Header> for ConsensusState {
     }
 }
 
-impl From<SovHeader> for ConsensusState {
-    fn from(header: SovHeader) -> Self {
-        let tm_header = header.da_header.extended_header.header;
+impl From<SovTmHeader> for ConsensusState {
+    fn from(header: SovTmHeader) -> Self {
+        let tm_header = header.core_header.signed_header.header;
 
         Self {
             root: CommitmentRoot::from_bytes(tm_header.app_hash.as_ref()),
@@ -143,24 +139,9 @@ impl From<SovHeader> for ConsensusState {
     }
 }
 
-impl ConsensusStateTrait for ConsensusState {
-    fn root(&self) -> &CommitmentRoot {
-        &self.root
-    }
-
-    fn timestamp(&self) -> Timestamp {
-        let time = self.timestamp.unix_timestamp_nanos();
-        Timestamp::from_nanoseconds(time as u64).expect("invalid timestamp")
-    }
-
-    fn encode_vec(self) -> Vec<u8> {
-        <Self as Protobuf<Any>>::encode_vec(&self).unwrap()
-    }
-}
-
 #[cfg(any(test, feature = "test-utils"))]
 pub mod test_util {
-    use ics08_wasm::consensus_state::ConsensusState as WasmConsensusState;
+    use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
 
     use super::*;
 

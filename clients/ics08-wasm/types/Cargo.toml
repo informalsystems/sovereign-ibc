@@ -1,5 +1,5 @@
 [package]
-name = "ics08-wasm"
+name = "ibc-client-wasm-types"
 version 	 = { workspace = true }
 authors 	 = { workspace = true }
 license 	 = { workspace = true }

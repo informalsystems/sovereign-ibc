@@ -1,19 +1,19 @@
+use ibc_client_tendermint::context::{CommonContext, ValidationContext};
+use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::host::ValidationContext as CoreValidationContext;
 use ibc_core::primitives::Timestamp;
-use sov_celestia_client::consensus_state::AnyConsensusState;
-use sov_celestia_client::context::{CommonContext, ValidationContext};
-use sov_celestia_client::error::Error;
 
 use super::definition::ContextMut;
 use super::{ContextRef, StorageRef};
+use crate::consensus_state::AnyConsensusState;
 use crate::types::processed_states::ReadonlyProcessedStates;
 
 impl CommonContext for ContextMut<'_> {
-    type ConversionError = Error;
+    type ConversionError = ClientError;
     type AnyConsensusState = AnyConsensusState;
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
@@ -29,6 +29,10 @@ impl CommonContext for ContextMut<'_> {
         client_cons_state_path: &ClientConsensusStatePath,
     ) -> Result<Self::AnyConsensusState, ContextError> {
         CoreValidationContext::consensus_state(self, client_cons_state_path)
+    }
+
+    fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
+        todo!()
     }
 }
 
@@ -73,7 +77,7 @@ impl ValidationContext for ContextMut<'_> {
 }
 
 impl CommonContext for ContextRef<'_> {
-    type ConversionError = Error;
+    type ConversionError = ClientError;
     type AnyConsensusState = AnyConsensusState;
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
@@ -89,6 +93,10 @@ impl CommonContext for ContextRef<'_> {
         client_cons_state_path: &ClientConsensusStatePath,
     ) -> Result<Self::AnyConsensusState, ContextError> {
         CoreValidationContext::consensus_state(self, client_cons_state_path)
+    }
+
+    fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
+        unimplemented!()
     }
 }
 

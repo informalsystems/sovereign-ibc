@@ -11,8 +11,15 @@
 
 extern crate alloc;
 
+use alloc::vec::Vec;
+
+pub mod client_message;
 pub mod client_state;
 pub mod consensus_state;
-pub mod contexts;
-pub mod entrypoints;
-pub mod types;
+pub mod error;
+pub mod proto;
+
+#[cfg(feature = "serde")]
+pub mod serializer;
+
+pub type Bytes = Vec<u8>;

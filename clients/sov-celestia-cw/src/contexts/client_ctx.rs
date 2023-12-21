@@ -7,11 +7,11 @@ use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::Timestamp;
-use sov_celestia_client::client_state::AnyClientState;
-use sov_celestia_client::consensus_state::AnyConsensusState;
 
 use super::definition::{ContextMut, StorageMut};
 use super::{ContextRef, StorageRef};
+use crate::client_state::AnyClientState;
+use crate::consensus_state::AnyConsensusState;
 use crate::types::processed_states::{ProcessedStates, ReadonlyProcessedStates};
 
 impl ClientValidationContext for ContextMut<'_> {
