@@ -15,7 +15,7 @@ use ibc_core::client::types::msgs::{MsgCreateClient, MsgUpdateClient};
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentProofBytes;
 use ibc_core::commitment_types::merkle::MerkleProof;
-use ibc_core::host::types::identifiers::{ChannelId, ClientId, PortId};
+use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use ibc_core::host::types::path::{CommitmentPath, Path, SeqSendPath};
 use ibc_core::primitives::{Signer, Timestamp, ToProto};
 use sov_bank::{CallMessage as BankCallMessage, TokenConfig};
@@ -74,7 +74,7 @@ where
         .checked_sub(1)
         .unwrap();
 
-        let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
+        let client_id = tm_client_type().build_client_id(client_counter);
 
         let any_client_state = match self
             .src_chain_ctx()
@@ -171,7 +171,7 @@ where
 
         let commitment_proofs = CommitmentProofBytes::try_from(proof_bytes).unwrap();
 
-        let merkle_proofs = MerkleProof::try_from(commitment_proofs).unwrap();
+        let merkle_proofs = MerkleProof::try_from(&commitment_proofs).unwrap();
 
         assert_eq!(merkle_proofs.proofs.len(), 2);
 

@@ -1,5 +1,5 @@
 use ibc_client_tendermint::types::client_type as tm_client_type;
-use ibc_core::host::types::identifiers::{ClientId, Sequence};
+use ibc_core::host::types::identifiers::Sequence;
 use ibc_core::host::ValidationContext;
 use sov_mock_da::MockDaService;
 use sov_modules_api::default_context::DefaultContext;
@@ -85,7 +85,7 @@ where
         };
 
         // TODO: this should be updated when there is a light client for sovereign chains
-        let sov_client_id = ClientId::new(tm_client_type(), sov_client_counter).unwrap();
+        let sov_client_id = tm_client_type().build_client_id(sov_client_counter);
 
         let mut cos_chain = CosmosBuilder::default().build();
 
@@ -98,7 +98,7 @@ where
 
         let cos_client_counter = cos_chain.ibc_ctx().client_counter().unwrap();
 
-        let cos_client_id = ClientId::new(tm_client_type(), cos_client_counter).unwrap();
+        let cos_client_id = tm_client_type().build_client_id(cos_client_counter);
 
         if self.setup_cfg.with_manual_tao {
             let sov_client_id = rollup.setup_client(cos_chain.chain_id()).await;

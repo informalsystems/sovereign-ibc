@@ -2,7 +2,6 @@ use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::channel::types::channel::IdentifiedChannelEnd;
 use ibc_core::channel::types::error::ChannelError;
 use ibc_core::channel::types::packet::PacketState;
-use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::connection::types::error::ConnectionError;
 use ibc_core::connection::types::IdentifiedConnectionEnd;
@@ -49,9 +48,7 @@ where
 
         for i in 0..client_counter {
             // ibc-rs already only supports the Tendermint client
-            let client_id =
-                ClientId::new(tm_client_type(), i).map_err(ClientError::InvalidClientIdentifier)?;
-
+            let client_id = tm_client_type().build_client_id(i);
             let cs = self.client_state(&client_id)?;
             client_states.push((client_id, cs));
         }
