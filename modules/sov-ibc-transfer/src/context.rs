@@ -194,8 +194,8 @@ where
 
         if coin.amount > sender_balance {
             return Err(TokenTransferError::InsufficientFunds {
-                send_attempt: sender_balance,
-                available_funds: coin.amount,
+                send_attempt: sender_balance.to_string(),
+                available_funds: coin.amount.to_string(),
             });
         }
 
@@ -249,8 +249,8 @@ where
 
         if coin.amount > sender_balance {
             return Err(TokenTransferError::InsufficientFunds {
-                send_attempt: sender_balance,
-                available_funds: coin.amount,
+                send_attempt: sender_balance.to_string(),
+                available_funds: coin.amount.to_string(),
             });
         }
 
@@ -308,8 +308,8 @@ where
 
         if coin.amount > escrow_balance {
             return Err(TokenTransferError::InsufficientFunds {
-                send_attempt: coin.amount,
-                available_funds: escrow_balance,
+                send_attempt: coin.amount.to_string(),
+                available_funds: escrow_balance.to_string(),
             });
         }
 
