@@ -49,7 +49,7 @@ where
 
         let client_counter = ibc_ctx.client_counter().unwrap();
 
-        let client_id = ClientId::new(tm_client_type(), client_counter).unwrap();
+        let client_id = tm_client_type().build_client_id(client_counter);
 
         let client_state_path = ClientStatePath::new(&client_id);
 
