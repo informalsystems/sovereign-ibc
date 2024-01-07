@@ -1,7 +1,6 @@
 [workspace]
 resolver = "2"
 members = [
-    "clients/ics08-wasm/types",
     "clients/sov-celestia/types",
     "clients/sov-celestia",
     "clients/sov-celestia-cw",
