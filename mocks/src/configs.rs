@@ -17,14 +17,17 @@ use crate::sovereign::{celestia_da_service, mock_da_service, GenesisConfig, Runt
 
 #[derive(TypedBuilder, Clone, Debug)]
 pub struct TestSetupConfig<C: Context, Da: DaService> {
+    /// The chain Id of the DA chain.
+    #[builder(default = ChainId::new("mock-celestia-0").unwrap())]
+    pub da_chain_id: ChainId,
+    /// The da service.
+    pub da_service: Da,
     /// The chain Id of the rollup.
     #[builder(default = ChainId::new("mock-rollup-0").unwrap())]
     pub rollup_chain_id: ChainId,
     /// The runtime configuration.
     #[builder(default = RuntimeConfig::default())]
     pub rollup_runtime_config: RuntimeConfig<C>,
-    /// The da service.
-    pub da_service: Da,
     /// Sets whether to use manual IBC TAO or not.
     #[builder(default = false)]
     pub with_manual_tao: bool,

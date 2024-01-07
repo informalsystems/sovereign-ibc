@@ -17,6 +17,7 @@ use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tendermint::{Hash, Time};
 
+use crate::cosmos::MockTendermint;
 use crate::sovereign::runtime::RuntimeCall;
 use crate::sovereign::Runtime;
 use crate::utils::MutexUtil;
@@ -30,10 +31,10 @@ where
     Da: DaService<Error = anyhow::Error> + Clone,
     S: MerkleProofSpec,
 {
-    chain_id: ChainId,
     runtime: Runtime<C, Da::Spec>,
     da_service: Da,
     prover_storage: ProverStorage<S>,
+    pub(crate) da_core: MockTendermint,
     pub(crate) rollup_ctx: Arc<Mutex<C>>,
     pub(crate) state_root: Arc<Mutex<<ProverStorage<S> as Storage>::Root>>,
     pub(crate) mempool: Arc<Mutex<Mempool<C, Da::Spec>>>,
@@ -70,14 +71,14 @@ where
     <S as MerkleProofSpec>::Hasher: Send,
 {
     pub fn new(
-        chain_id: ChainId,
         runtime: Runtime<C, Da::Spec>,
         prover_storage: ProverStorage<S>,
         rollup_ctx: C,
+        da_core: MockTendermint,
         da_service: Da,
     ) -> Self {
         Self {
-            chain_id,
+            da_core,
             runtime,
             da_service,
             prover_storage,
@@ -88,7 +89,7 @@ where
     }
 
     pub fn chain_id(&self) -> &ChainId {
-        &self.chain_id
+        self.da_core.chain_id()
     }
 
     pub fn rollup_ctx(&self) -> C {

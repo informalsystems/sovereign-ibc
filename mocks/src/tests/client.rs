@@ -1,3 +1,4 @@
+use basecoin_app::modules::ibc::AnyClientState;
 use borsh::BorshDeserialize;
 use ibc_client_tendermint::types::proto::v1::{
     ClientState as RawClientState, ConsensusState as RawConsensusState,
@@ -8,7 +9,6 @@ use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath, Pat
 use ibc_core::primitives::proto::Protobuf;
 use jmt::proof::SparseMerkleProof;
 use sha2::Sha256;
-use sov_ibc::clients::AnyClientState;
 use test_log::test;
 
 use crate::relayer::{Handle, QueryReq, QueryResp, RelayerBuilder};
@@ -30,7 +30,7 @@ async fn test_create_client_on_sov() {
 
     let any_client_state = match rly
         .src_chain_ctx()
-        .query(QueryReq::ClientState(rly.src_client_id().clone()))
+        .query(QueryReq::ClientState(rly.dst_client_id().clone()))
         .await
     {
         QueryResp::ClientState(state) => state,
@@ -44,7 +44,7 @@ async fn test_create_client_on_sov() {
     match rly
         .src_chain_ctx()
         .query(QueryReq::ValueWithProof(
-            Path::ClientState(ClientStatePath(rly.src_client_id().clone())),
+            Path::ClientState(ClientStatePath(rly.dst_client_id().clone())),
             client_state.latest_height(),
         ))
         .await
@@ -60,7 +60,7 @@ async fn test_create_client_on_sov() {
         .src_chain_ctx()
         .query(QueryReq::ValueWithProof(
             Path::ClientConsensusState(ClientConsensusStatePath {
-                client_id: rly.src_client_id().clone(),
+                client_id: rly.dst_client_id().clone(),
                 revision_number: client_state.latest_height().revision_number(),
                 revision_height: client_state.latest_height().revision_height(),
             }),
@@ -100,7 +100,7 @@ async fn test_update_client_on_sov() {
 
     let any_client_state = match rly
         .src_chain_ctx()
-        .query(QueryReq::ClientState(rly.src_client_id().clone()))
+        .query(QueryReq::ClientState(rly.dst_client_id().clone()))
         .await
     {
         QueryResp::ClientState(state) => state,
@@ -129,7 +129,7 @@ async fn test_create_client_on_cos() {
 
     let client_state = match rly
         .dst_chain_ctx()
-        .query(QueryReq::ClientState(rly.dst_client_id().clone()))
+        .query(QueryReq::ClientState(rly.src_client_id().clone()))
         .await
     {
         QueryResp::ClientState(state) => state,
@@ -141,7 +141,7 @@ async fn test_create_client_on_cos() {
     let _consensus_state = match rly
         .dst_chain_ctx()
         .query(QueryReq::ConsensusState(
-            rly.dst_client_id().clone(),
+            rly.src_client_id().clone(),
             client_state.latest_height(),
         ))
         .await
@@ -149,4 +149,44 @@ async fn test_create_client_on_cos() {
         QueryResp::ConsensusState(state) => state,
         _ => panic!("unexpected response"),
     };
+}
+
+#[test(tokio::test)]
+async fn test_update_client_on_cos() {
+    let rly = RelayerBuilder::default().setup().await;
+
+    let msg_create_client = rly.build_msg_create_client_for_cos().await;
+
+    rly.dst_chain_ctx()
+        .submit_msgs(vec![msg_create_client])
+        .await;
+
+    let target_height = match rly.src_chain_ctx().query(QueryReq::HostHeight).await {
+        QueryResp::HostHeight(height) => height,
+        _ => panic!("unexpected response"),
+    };
+
+    let msg_update_client = rly
+        .build_msg_update_client_for_cos(target_height.decrement().unwrap())
+        .await;
+
+    rly.dst_chain_ctx()
+        .submit_msgs(vec![msg_update_client])
+        .await;
+
+    let any_client_state = match rly
+        .dst_chain_ctx()
+        .query(QueryReq::ClientState(rly.src_client_id().clone()))
+        .await
+    {
+        QueryResp::ClientState(state) => state,
+        _ => panic!("unexpected response"),
+    };
+
+    let client_state = AnyClientState::try_from(any_client_state).unwrap();
+
+    assert_eq!(
+        client_state.latest_height(),
+        target_height.decrement().unwrap()
+    );
 }

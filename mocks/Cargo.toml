@@ -28,8 +28,9 @@ tracing       = "0.1.36"
 typed-builder = "0.18.0"
 
 # internal dependencies
-sov-ibc          = { path = "../modules/sov-ibc" }
-sov-ibc-transfer = { path = "../modules/sov-ibc-transfer" }
+sov-ibc               = { path = "../modules/sov-ibc" }
+sov-ibc-transfer      = { path = "../modules/sov-ibc-transfer" }
+sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "5ea4289" }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
@@ -40,8 +41,8 @@ ibc-query             = { workspace = true }
 ibc-testkit           = { workspace = true }
 
 # cosmos dependencies
-basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "25d86e6" }
-basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "25d86e6" }
+basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "cedae04" }
+basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "cedae04" }
 
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
