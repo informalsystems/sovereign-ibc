@@ -24,7 +24,7 @@ tracing     = { version = "0.1.40" }
 ibc-core   			  = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-proto  			  = { workspace = true, features = ["json-schema"] }
-ibc-client-wasm-types = { path = "../ics08-wasm/types", default-features = false, features = ["cosmwasm"] }
+ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 sov-celestia-client   = { path = "../sov-celestia", default-features = false, features = ["serde"] }
 
 # cosmwasm dependencies

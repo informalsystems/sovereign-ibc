@@ -22,7 +22,7 @@ pub struct ClientState {
     pub data: Bytes,
     #[cfg_attr(feature = "cosmwasm", schemars(with = "String"))]
     #[cfg_attr(feature = "cosmwasm", serde(with = "Base64", default))]
-    pub code_hash: Bytes,
+    pub checksum: Bytes,
     pub latest_height: Height,
 }
 
@@ -32,7 +32,7 @@ impl From<ClientState> for RawClientState {
     fn from(value: ClientState) -> Self {
         Self {
             data: value.data,
-            code_hash: value.code_hash,
+            checksum: value.checksum,
             latest_height: Some(value.latest_height.into()),
         }
     }
@@ -53,7 +53,7 @@ impl TryFrom<RawClientState> for ClientState {
             })?;
         Ok(Self {
             data: raw.data,
-            code_hash: raw.code_hash,
+            checksum: raw.checksum,
             latest_height,
         })
     }

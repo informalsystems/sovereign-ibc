@@ -163,10 +163,10 @@ pub mod test_util {
     }
 
     impl SovTmClientState {
-        pub fn into_wasm(&self, code_hash: Bytes) -> WasmClientState {
+        pub fn into_wasm(&self, checksum: Bytes) -> WasmClientState {
             WasmClientState {
                 data: Any::from(self.clone()).value,
-                code_hash,
+                checksum,
                 latest_height: self.da_client_state.latest_height,
             }
         }
