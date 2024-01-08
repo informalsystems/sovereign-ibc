@@ -5,8 +5,7 @@ members = [
     "clients/sov-celestia",
     "clients/sov-celestia-cw",
     "modules/sov-ibc-transfer",
-    "modules/sov-ibc",
-    "mocks",
+    "modules/sov-ibc", 
 ]
 
 [workspace.package]
@@ -23,7 +22,7 @@ repository   = "https://github.com/informalsystems/sovereign-ibc"
 anyhow      = "1.0.68"
 base64      = { version = "0.21", default-features = false }
 borsh       = { version = "0.10.3", features = ["rc", "bytes"] }
-bytes       = "1.2.1"
+bytes       = { version = "1.2.1", default-features = false }
 derive_more = { version = "0.99.11", features = ["from", "try_into"] }
 digest      = "0.10.6"
 hex         = "0.4.3"
@@ -64,7 +63,5 @@ sov-modules-macros    = { git = "https://github.com/informalsystems/sovereign-sd
 sov-state             = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "6e22b4c" }
 sov-rollup-interface  = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "6e22b4c" }
 
-[patch.crates-io]
-ibc-proto = { git = "https://github.com/cosmos/ibc-proto-rs", rev = "6d83891" }
 
 

@@ -1,46 +1,38 @@
 [package]
-name = "sov-celestia-client-types"
-authors = { workspace = true }
-edition = { workspace = true }
-license = { workspace = true }
-repository = { workspace = true }
+name         = "sov-celestia-client-types"
+authors      = { workspace = true }
+edition      = { workspace = true }
+license      = { workspace = true }
+repository   = { workspace = true }
 rust-version = { workspace = true }
-version = { workspace = true }
-readme = "./../README.md"
-publish = false
+version      = { workspace = true }
+readme       = "./../README.md"
+publish      = false
 
 [dependencies]
 # external dependencies
-base64 = { workspace = true, features = ["alloc"] }
-bytes = { workspace = true }
+base64      = { workspace = true, features = ["alloc"] }
+bytes       = { workspace = true }
 derive_more = { workspace = true }
-prost = { workspace = true, default-features = false }
-schemars = { workspace = true, optional = true }
-serde = { workspace = true, features = ["derive"], optional = true }
+prost       = { workspace = true, default-features = false }
+schemars    = { workspace = true, optional = true }
+serde       = { workspace = true, features = ["derive"], optional = true }
 
 # ibc dependencies
-ibc-core   = { workspace = true }
+ibc-core              = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-ibc-proto  = { workspace = true }
-ics23 	   = {version = "0.11", default-features = false }
+ibc-proto             = { workspace = true }
+ics23 	              = {version = "0.11", default-features = false }
 ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 
-
 # DA layer dependencies
-# tendermint = { git = "https://github.com/eigerco/celestia-tendermint-rs.git", rev = "1f8b574", default-features = false }
-# tendermint-proto = { git = "https://github.com/eigerco/celestia-tendermint-rs.git", rev = "1f8b574" }
-# tendermint-light-client-verifier = { git = "https://github.com/eigerco/celestia-tendermint-rs.git", rev = "1f8b574" }
-
-tendermint = { workspace = true }
-tendermint-proto = { workspace = true }
+tendermint                       = { workspace = true }
+tendermint-proto                 = { workspace = true }
 tendermint-light-client-verifier = { workspace = true }
-
-# celestia-proto = { git = "https://github.com/eigerco/celestia-node-rs.git", rev = "1fa61eb" }
-# celestia-types = { git = "https://github.com/eigerco/celestia-node-rs.git", rev = "1fa61eb", default-features = false }
 
 [dev-dependencies]
 typed-builder = "0.18.0"
-hex = "0.4.3"
+hex           = "0.4.3"
 
 [features]
 default = ["std"]
@@ -50,6 +42,7 @@ std = [
 	"ibc-client-wasm-types/std",
 	"ibc-proto/std",
 	"ics23/std",
+	"bytes/std",
 	"prost/std",
 	"serde/std",
 	"tendermint/std"

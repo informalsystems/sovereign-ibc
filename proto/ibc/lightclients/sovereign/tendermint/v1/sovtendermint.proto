@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package ibc.lightclients.sovereign.tendermint.v1;
+
+import "ibc/lightclients/tendermint/v1/tendermint.proto";
+
+// SovTmClientState defines the client state for the Sovereign SDK rollups
+// integrated with Tendermint-based data availability layer.
+message SovTmClientState {
+    // tendermint client state
+    ibc.lightclients.tendermint.v1.ClientState da_client_state = 1;
+    // rollup client state
+    RollupClientState rollup_client_state = 2;
+}
+
+// RollupClientState defines the client state for the Sovereign SDK rollups.
+message RollupClientState {
+    // rollup client state
+    string rollup_id = 1;
+    // root state of the rollup chain
+    bytes post_root_state = 2;
+}
+
+// SovTendermintHeader defines the header for the Sovereign SDK rollups with
+// Tendermint-based data availability layer.
+message SovTendermintHeader {
+    // Tendermint header
+    ibc.lightclients.tendermint.v1.Header da_header = 1;
+    // Sovereign SDK rollup aggregated proof
+    AggregatedProof aggregated_proof = 2;
+}
+
+// AggregatedProof defines the aggregated proof structure for the Sovereign SDK
+// rollups.
+message AggregatedProof {
+    // rollup public input
+    PublicInput public_input = 1;
+    // rollup aggregated proof
+    bytes proof = 2;
+}
+
+// PublicInput defines the public properties of the AggregatedProof for the
+// Sovereign SDK rollups.
+message PublicInput {
+    // initial DA layer block hash
+    bytes initial_da_block_hash = 1;
+    // final DA layer block hash
+    bytes final_da_block_hash = 2;
+    // initial rollup state root
+    bytes inital_state_root = 3;
+    // final rollup state root
+    bytes post_state_root = 4;
+
+}
+
+// SovTendermintMisbehaviour defines the misbehaviour for the Sovereign SDK
+// rollups with Tendermint-based data availability layer.
+message SovTendermintMisbehaviour {
+    // client id
+    string client_id = 1;
+    // The header_1 of the Sovereign SDK rollup with Tendermint-based DA layer
+    SovTendermintHeader header_1 = 2;
+    // The header_2 of the Sovereign SDK rollup with Tendermint-based DA layer
+    SovTendermintHeader header_2 = 3;
+} 

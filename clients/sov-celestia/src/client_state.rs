@@ -1,4 +1,4 @@
-//! Implements the core [`ClientState`](crate::core::ics02_client::client_state::ClientState) trait
+//! Implements the core [`ClientState`](ibc_core::client::context::client_state::ClientState) trait
 //! for the Sovereign light client.
 use alloc::vec::Vec;
 use core::convert::{TryFrom, TryInto};
