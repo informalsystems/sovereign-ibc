@@ -1,8 +1,7 @@
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::Protobuf;
-
-use crate::proto::RollupClientState as RawRollupClientState;
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::RollupClientState as RawRollupClientState;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]

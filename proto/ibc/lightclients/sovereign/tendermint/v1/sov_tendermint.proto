@@ -47,7 +47,7 @@ message PublicInput {
     // final DA layer block hash
     bytes final_da_block_hash = 2;
     // initial rollup state root
-    bytes inital_state_root = 3;
+    bytes initial_state_root = 3;
     // final rollup state root
     bytes post_state_root = 4;
 

@@ -6,11 +6,11 @@ use ibc_client_tendermint::types::{Header as TmHeader, Misbehaviour};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::primitives::proto::Any;
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::SovTendermintMisbehaviour as RawSovTmMisbehaviour;
 use tendermint_proto::Protobuf;
 
 use super::sov_header::{SovHeader, SovTmHeader};
 use crate::error::Error;
-use crate::proto::SovTendermintMisbehaviour as RawSovTmMisbehaviour;
 
 pub const SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL: &str =
     "/ibc.lightclients.sovereign.tendermint.v1.Misbehaviour";
@@ -53,8 +53,8 @@ impl SovTmMisbehaviour {
         self.header1.validate_basic()?;
         self.header2.validate_basic()?;
 
-        if self.header1.core_header.signed_header.header.chain_id
-            != self.header2.core_header.signed_header.header.chain_id
+        if self.header1.da_header.signed_header.header.chain_id
+            != self.header2.da_header.signed_header.header.chain_id
         {
             return Err(Error::invalid("headers must have identical chain_ids"));
         }
@@ -73,8 +73,8 @@ impl SovTmMisbehaviour {
     pub fn into_tendermint_misbehaviour(&self) -> Misbehaviour {
         Misbehaviour::new(
             self.client_id.clone(),
-            self.header1.core_header.clone(),
-            self.header2.core_header.clone(),
+            self.header1.da_header.clone(),
+            self.header2.da_header.clone(),
         )
     }
 }
@@ -86,9 +86,9 @@ impl core::fmt::Display for SovTmMisbehaviour {
             "{} h1: {}-{} h2: {}-{}",
             self.client_id,
             self.header1.height(),
-            self.header1.core_header,
+            self.header1.da_header,
             self.header2.height(),
-            self.header2.core_header,
+            self.header2.da_header,
         )
     }
 }

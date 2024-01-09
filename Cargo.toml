@@ -63,5 +63,3 @@ sov-modules-macros    = { git = "https://github.com/informalsystems/sovereign-sd
 sov-state             = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "6e22b4c" }
 sov-rollup-interface  = { git = "https://github.com/informalsystems/sovereign-sdk.git", rev = "6e22b4c" }
 
-
-

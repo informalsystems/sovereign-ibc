@@ -9,14 +9,14 @@ pub use aggregated_proof::*;
 use ibc_client_tendermint::types::Header as TmHeader;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Any;
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::{
+    SovTendermintHeader as RawSovHeader, SovTendermintMisbehaviour as RawSovTmMisbehaviour,
+};
 pub use sov_header::*;
 pub use sov_misbehaviour::*;
 use tendermint_proto::Protobuf;
 
 use crate::error::Error;
-use crate::proto::{
-    SovTendermintHeader as RawSovHeader, SovTendermintMisbehaviour as RawSovTmMisbehaviour,
-};
 
 /// Defines the union ClientMessage type allowing to submit all possible
 /// messages for updating clients or reporting misbehaviour.

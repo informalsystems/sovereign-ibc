@@ -84,7 +84,7 @@ where
                 };
 
                 let sov_header = SovTmHeader {
-                    core_header: header,
+                    da_header: header,
                     aggregated_proof,
                 };
 

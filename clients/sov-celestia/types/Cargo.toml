@@ -21,7 +21,7 @@ serde       = { workspace = true, features = ["derive"], optional = true }
 # ibc dependencies
 ibc-core              = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-ibc-proto             = { workspace = true }
+ibc-proto             = { git = "https://github.com/cosmos/ibc-proto-rs.git", rev = "69fff9d", default-features = false }
 ics23 	              = {version = "0.11", default-features = false }
 ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 

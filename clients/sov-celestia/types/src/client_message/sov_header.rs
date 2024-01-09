@@ -5,19 +5,19 @@ use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::Timestamp;
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::SovTendermintHeader as RawSovTmHeader;
 use tendermint_proto::Protobuf;
 
 use super::aggregated_proof::AggregatedProof;
 use crate::client_message::pretty::PrettyAggregatedProof;
 use crate::error::Error;
-use crate::proto::SovTendermintHeader as RawSovTmHeader;
 
 pub const SOV_TENDERMINT_HEADER_TYPE_URL: &str = "/ibc.lightclients.sovereign.tendermint.v1.Header";
 
 #[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SovHeader<H: Clone> {
-    pub core_header: H,
+    pub da_header: H,
     pub aggregated_proof: AggregatedProof,
 }
 
@@ -31,8 +31,8 @@ impl<H: Clone + Display> Display for SovHeader<H> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "SovHeader {{ core_header: {}, aggregated_proof: {} }}",
-            &self.core_header,
+            "SovHeader {{ da_header: {}, aggregated_proof: {} }}",
+            &self.da_header,
             PrettyAggregatedProof(&self.aggregated_proof)
         )
     }
@@ -44,22 +44,22 @@ pub type SovTmHeader = SovHeader<TmHeader>;
 
 impl SovTmHeader {
     pub fn timestamp(&self) -> Timestamp {
-        self.core_header.timestamp()
+        self.da_header.timestamp()
     }
 
     pub fn height(&self) -> Height {
-        self.core_header.height()
+        self.da_header.height()
     }
 
     pub fn verify_chain_id_version_matches_height(&self, chain_id: &ChainId) -> Result<(), Error> {
-        self.core_header
+        self.da_header
             .verify_chain_id_version_matches_height(chain_id)
             .map_err(Error::source)
     }
 
     /// Checks if the fields of a given header are consistent with the trusted fields of this header.
     pub fn validate_basic(&self) -> Result<(), Error> {
-        self.core_header.validate_basic().map_err(Error::source)
+        self.da_header.validate_basic().map_err(Error::source)
     }
 }
 
@@ -69,11 +69,11 @@ impl TryFrom<RawSovTmHeader> for SovTmHeader {
     type Error = Error;
 
     fn try_from(value: RawSovTmHeader) -> Result<Self, Self::Error> {
-        let core_header = value
-            .core_header
+        let da_header = value
+            .da_header
             .ok_or(Error::missing("missing core header"))?;
 
-        let core_header = TmHeader::try_from(core_header).map_err(Error::source)?;
+        let da_header = TmHeader::try_from(da_header).map_err(Error::source)?;
 
         let aggregate_snark = value
             .aggregated_proof
@@ -82,7 +82,7 @@ impl TryFrom<RawSovTmHeader> for SovTmHeader {
             .map_err(Error::source)?;
 
         Ok(SovHeader {
-            core_header,
+            da_header,
             aggregated_proof: aggregate_snark,
         })
     }
@@ -91,7 +91,7 @@ impl TryFrom<RawSovTmHeader> for SovTmHeader {
 impl From<SovTmHeader> for RawSovTmHeader {
     fn from(value: SovTmHeader) -> RawSovTmHeader {
         RawSovTmHeader {
-            core_header: Some(value.core_header.into()),
+            da_header: Some(value.da_header.into()),
             aggregated_proof: Some(value.aggregated_proof.into()),
         }
     }

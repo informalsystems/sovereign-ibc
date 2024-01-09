@@ -129,7 +129,7 @@ impl From<tendermint::block::Header> for ConsensusState {
 
 impl From<SovTmHeader> for ConsensusState {
     fn from(header: SovTmHeader) -> Self {
-        let tm_header = header.core_header.signed_header.header;
+        let tm_header = header.da_header.signed_header.header;
 
         Self {
             root: CommitmentRoot::from_bytes(tm_header.app_hash.as_ref()),

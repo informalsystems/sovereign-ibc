@@ -1,11 +1,11 @@
 use ibc_client_tendermint::types::ClientState as TmClientState;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::primitives::proto::Any;
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::SovTmClientState as RawSovTmClientState;
 use tendermint_proto::Protobuf;
 
 use super::RollupClientState;
 use crate::error::Error;
-use crate::proto::SovTmClientState as RawSovTmClientState;
 
 pub const SOV_TENDERMINT_CLIENT_STATE_TYPE_URL: &str =
     "/ibc.lightclients.sovereign.tendermint.v1.ClientState";

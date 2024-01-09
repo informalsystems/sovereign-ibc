@@ -1,7 +1,10 @@
 use alloc::vec::Vec;
 
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::{
+    AggregatedProof as RawAggregatedProof, PublicInput as RawPublicInput,
+};
+
 use crate::error::Error;
-use crate::proto::{AggregatedProof as RawAggregatedProof, PublicInput as RawPublicInput};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -47,18 +50,10 @@ impl TryFrom<RawPublicInput> for PublicInput {
 
     fn try_from(raw: RawPublicInput) -> Result<Self, Self::Error> {
         Ok(Self {
-            initial_da_block_hash: raw
-                .initial_da_block_hash
-                .ok_or(Error::missing("initial_da_block_hash"))?,
-            final_da_block_hash: raw
-                .final_da_block_hash
-                .ok_or(Error::missing("final_da_block_hash"))?,
-            input_state_root: raw
-                .initial_state_root
-                .ok_or(Error::missing("input_state_root"))?,
-            post_state_root: raw
-                .post_state_root
-                .ok_or(Error::missing("post_state_root"))?,
+            initial_da_block_hash: raw.initial_da_block_hash,
+            final_da_block_hash: raw.final_da_block_hash,
+            input_state_root: raw.inital_state_root,
+            post_state_root: raw.post_state_root,
         })
     }
 }
@@ -66,10 +61,10 @@ impl TryFrom<RawPublicInput> for PublicInput {
 impl From<PublicInput> for RawPublicInput {
     fn from(value: PublicInput) -> Self {
         Self {
-            initial_da_block_hash: Some(value.initial_da_block_hash),
-            final_da_block_hash: Some(value.final_da_block_hash),
-            initial_state_root: Some(value.input_state_root),
-            post_state_root: Some(value.post_state_root),
+            initial_da_block_hash: value.initial_da_block_hash,
+            final_da_block_hash: value.final_da_block_hash,
+            inital_state_root: value.input_state_root,
+            post_state_root: value.post_state_root,
         }
     }
 }

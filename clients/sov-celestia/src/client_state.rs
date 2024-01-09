@@ -176,7 +176,7 @@ where
             UpdateKind::UpdateClient => {
                 let header = SovHeader::try_from(client_message)?;
                 self.da_client_state
-                    .verify_header(ctx, client_id, header.core_header)
+                    .verify_header(ctx, client_id, header.da_header)
             }
             UpdateKind::SubmitMisbehaviour => {
                 let misbehaviour = SovMisbehaviour::try_from(client_message)?;
@@ -202,7 +202,7 @@ where
                 self.da_client_state.check_for_misbehaviour_update_client(
                     ctx,
                     client_id,
-                    header.core_header,
+                    header.da_header,
                 )
             }
             UpdateKind::SubmitMisbehaviour => {
@@ -283,12 +283,12 @@ where
             let host_timestamp = CommonContext::host_timestamp(ctx)?;
             let host_height = CommonContext::host_height(ctx)?;
 
-            let new_consensus_state = ConsensusStateType::from(header.core_header.clone());
+            let new_consensus_state = ConsensusStateType::from(header.da_header.clone());
             let new_da_client_state = self
                 .da_client_state
                 .inner()
                 .clone()
-                .with_header(header.core_header)?;
+                .with_header(header.da_header)?;
 
             let new_client_state = ClientState::new(
                 new_da_client_state.clone().into(),
