@@ -19,7 +19,7 @@ use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::{Signer, Timestamp};
 use sov_celestia_client::types::client_state::SOV_TENDERMINT_CLIENT_STATE_TYPE_URL;
-use sov_celestia_client::types::proto::SovTmClientState as RawTmClientState;
+use sov_celestia_client::types::proto::tendermint::v1::SovTmClientState as RawTmClientState;
 
 use super::definition::ContextMut;
 use super::{ContextRef, StorageRef};

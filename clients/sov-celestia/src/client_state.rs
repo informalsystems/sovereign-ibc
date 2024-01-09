@@ -26,7 +26,7 @@ use sov_celestia_client_types::client_message::{SovHeader, SovMisbehaviour};
 use sov_celestia_client_types::client_state::{
     sov_client_type, RollupClientState, SovTmClientState, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
 };
-use sov_celestia_client_types::proto::SovTmClientState as RawSovTmClientState;
+use sov_celestia_client_types::proto::tendermint::v1::SovTmClientState as RawSovTmClientState;
 
 /// Newtype wrapper exists so that we can bypass Rust's orphan rules and
 /// implement traits from `ibc::core::client::context` on the `ClientState`

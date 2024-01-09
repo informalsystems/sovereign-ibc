@@ -52,7 +52,7 @@ impl TryFrom<RawPublicInput> for PublicInput {
         Ok(Self {
             initial_da_block_hash: raw.initial_da_block_hash,
             final_da_block_hash: raw.final_da_block_hash,
-            input_state_root: raw.inital_state_root,
+            input_state_root: raw.initial_state_root,
             post_state_root: raw.post_state_root,
         })
     }
@@ -63,7 +63,7 @@ impl From<PublicInput> for RawPublicInput {
         Self {
             initial_da_block_hash: value.initial_da_block_hash,
             final_da_block_hash: value.final_da_block_hash,
-            inital_state_root: value.input_state_root,
+            initial_state_root: value.input_state_root,
             post_state_root: value.post_state_root,
         }
     }
