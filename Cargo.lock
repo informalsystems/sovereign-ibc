@@ -396,7 +396,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=bbd25a3#bbd25a3efde39aa8f97f2ac57f48895b3c81e061"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=17b7ce3#17b7ce3ec6fbfa540ef46afe53f131c91e50a785"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
@@ -405,7 +405,7 @@ dependencies = [
  "derive_more",
  "displaydoc",
  "ibc",
- "ibc-proto 0.41.0",
+ "ibc-proto",
  "ibc-query",
  "ics23",
  "primitive-types",
@@ -414,7 +414,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.10.8",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=5ea4289)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=00231af)",
  "tendermint 0.34.0",
  "tendermint-proto 0.34.0",
  "tendermint-rpc",
@@ -431,7 +431,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=bbd25a3#bbd25a3efde39aa8f97f2ac57f48895b3c81e061"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=17b7ce3#17b7ce3ec6fbfa540ef46afe53f131c91e50a785"
 dependencies = [
  "base64 0.21.7",
  "derive_more",
@@ -1295,7 +1295,6 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
- "strsim",
  "syn 2.0.48",
 ]
 
@@ -2154,10 +2153,10 @@ source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e
 dependencies = [
  "ibc-apps",
  "ibc-clients",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-core",
  "ibc-core-host-cosmos",
- "ibc-derive 0.5.0 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-derive",
+ "ibc-primitives",
 ]
 
 [[package]]
@@ -2166,7 +2165,7 @@ version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
  "ibc-app-transfer-types",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-core",
  "serde-json-wasm 1.0.0",
 ]
 
@@ -2178,8 +2177,8 @@ dependencies = [
  "borsh",
  "derive_more",
  "displaydoc",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-core",
+ "ibc-proto",
  "primitive-types",
  "schemars",
  "serde",
@@ -2197,30 +2196,14 @@ dependencies = [
 [[package]]
 name = "ibc-client-tendermint"
 version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "ibc-client-tendermint-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "serde",
- "tendermint 0.34.0",
- "tendermint-light-client-verifier",
-]
-
-[[package]]
-name = "ibc-client-tendermint"
-version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
- "ibc-client-tendermint-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-client-tendermint-types",
+ "ibc-core-client",
+ "ibc-core-commitment-types",
+ "ibc-core-handler-types",
+ "ibc-core-host",
+ "ibc-primitives",
  "serde",
  "tendermint 0.34.0",
  "tendermint-light-client-verifier",
@@ -2229,50 +2212,18 @@ dependencies = [
 [[package]]
 name = "ibc-client-tendermint-types"
 version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "displaydoc",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-proto 0.40.0",
- "serde",
- "tendermint 0.34.0",
- "tendermint-light-client-verifier",
- "tendermint-proto 0.34.0",
-]
-
-[[package]]
-name = "ibc-client-tendermint-types"
-version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
  "displaydoc",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-core-client-types",
+ "ibc-core-commitment-types",
+ "ibc-core-host-types",
+ "ibc-primitives",
+ "ibc-proto",
  "serde",
  "tendermint 0.34.0",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.0",
-]
-
-[[package]]
-name = "ibc-client-wasm-types"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "base64 0.21.7",
- "bytes",
- "cosmwasm-schema",
- "displaydoc",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-proto 0.40.0",
- "serde",
 ]
 
 [[package]]
@@ -2283,10 +2234,10 @@ dependencies = [
  "base64 0.21.7",
  "cosmwasm-schema",
  "displaydoc",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-core-client",
+ "ibc-core-host-types",
+ "ibc-primitives",
+ "ibc-proto",
  "serde",
 ]
 
@@ -2295,23 +2246,8 @@ name = "ibc-clients"
 version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
- "ibc-client-tendermint 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-client-wasm-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
-]
-
-[[package]]
-name = "ibc-core"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "ibc-core-channel 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-connection 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-handler 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-router 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
+ "ibc-client-tendermint",
+ "ibc-client-wasm-types",
 ]
 
 [[package]]
@@ -2319,30 +2255,15 @@ name = "ibc-core"
 version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
- "ibc-core-channel 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-connection 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-handler 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-router 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-derive 0.5.0 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
-]
-
-[[package]]
-name = "ibc-core-channel"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "ibc-core-channel-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-connection 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-router 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
+ "ibc-core-channel",
+ "ibc-core-client",
+ "ibc-core-commitment-types",
+ "ibc-core-connection",
+ "ibc-core-handler",
+ "ibc-core-host",
+ "ibc-core-router",
+ "ibc-derive",
+ "ibc-primitives",
 ]
 
 [[package]]
@@ -2350,35 +2271,14 @@ name = "ibc-core-channel"
 version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
- "ibc-core-channel-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-connection 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-router 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
-]
-
-[[package]]
-name = "ibc-core-channel-types"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "borsh",
- "derive_more",
- "displaydoc",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-connection-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-proto 0.40.0",
- "schemars",
- "serde",
- "sha2 0.10.8",
- "subtle-encoding",
- "tendermint 0.34.0",
+ "ibc-core-channel-types",
+ "ibc-core-client",
+ "ibc-core-commitment-types",
+ "ibc-core-connection",
+ "ibc-core-handler-types",
+ "ibc-core-host",
+ "ibc-core-router",
+ "ibc-primitives",
 ]
 
 [[package]]
@@ -2389,12 +2289,12 @@ dependencies = [
  "borsh",
  "derive_more",
  "displaydoc",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-connection-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-core-client-types",
+ "ibc-core-commitment-types",
+ "ibc-core-connection-types",
+ "ibc-core-host-types",
+ "ibc-primitives",
+ "ibc-proto",
  "schemars",
  "serde",
  "sha2 0.10.8",
@@ -2405,44 +2305,14 @@ dependencies = [
 [[package]]
 name = "ibc-core-client"
 version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "ibc-core-client-context 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
-]
-
-[[package]]
-name = "ibc-core-client"
-version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
- "ibc-core-client-context 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
-]
-
-[[package]]
-name = "ibc-core-client-context"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "derive_more",
- "displaydoc",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-derive 0.5.0 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "subtle-encoding",
- "tendermint 0.34.0",
+ "ibc-core-client-context",
+ "ibc-core-client-types",
+ "ibc-core-commitment-types",
+ "ibc-core-handler-types",
+ "ibc-core-host",
+ "ibc-primitives",
 ]
 
 [[package]]
@@ -2452,29 +2322,11 @@ source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e
 dependencies = [
  "derive_more",
  "displaydoc",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "subtle-encoding",
- "tendermint 0.34.0",
-]
-
-[[package]]
-name = "ibc-core-client-types"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "borsh",
- "derive_more",
- "displaydoc",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-proto 0.40.0",
- "schemars",
- "serde",
+ "ibc-core-client-types",
+ "ibc-core-commitment-types",
+ "ibc-core-handler-types",
+ "ibc-core-host-types",
+ "ibc-primitives",
  "subtle-encoding",
  "tendermint 0.34.0",
 ]
@@ -2487,30 +2339,14 @@ dependencies = [
  "borsh",
  "derive_more",
  "displaydoc",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-core-commitment-types",
+ "ibc-core-host-types",
+ "ibc-primitives",
+ "ibc-proto",
  "schemars",
  "serde",
  "subtle-encoding",
  "tendermint 0.34.0",
-]
-
-[[package]]
-name = "ibc-core-commitment-types"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "borsh",
- "derive_more",
- "displaydoc",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-proto 0.40.0",
- "ics23",
- "schemars",
- "serde",
- "subtle-encoding",
 ]
 
 [[package]]
@@ -2521,8 +2357,8 @@ dependencies = [
  "borsh",
  "derive_more",
  "displaydoc",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-primitives",
+ "ibc-proto",
  "ics23",
  "schemars",
  "serde",
@@ -2532,44 +2368,13 @@ dependencies = [
 [[package]]
 name = "ibc-core-connection"
 version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-connection-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
-]
-
-[[package]]
-name = "ibc-core-connection"
-version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-connection-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
-]
-
-[[package]]
-name = "ibc-core-connection-types"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "borsh",
- "derive_more",
- "displaydoc",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-proto 0.40.0",
- "schemars",
- "serde",
- "subtle-encoding",
- "tendermint 0.34.0",
+ "ibc-core-client",
+ "ibc-core-connection-types",
+ "ibc-core-handler-types",
+ "ibc-core-host",
+ "ibc-primitives",
 ]
 
 [[package]]
@@ -2580,30 +2385,15 @@ dependencies = [
  "borsh",
  "derive_more",
  "displaydoc",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-core-client-types",
+ "ibc-core-commitment-types",
+ "ibc-core-host-types",
+ "ibc-primitives",
+ "ibc-proto",
  "schemars",
  "serde",
  "subtle-encoding",
  "tendermint 0.34.0",
-]
-
-[[package]]
-name = "ibc-core-handler"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "ibc-core-channel 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-connection 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-router 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
 ]
 
 [[package]]
@@ -2611,36 +2401,14 @@ name = "ibc-core-handler"
 version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
- "ibc-core-channel 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-connection 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-router 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
-]
-
-[[package]]
-name = "ibc-core-handler-types"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "borsh",
- "derive_more",
- "displaydoc",
- "ibc-core-channel-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-connection-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-router-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-proto 0.40.0",
- "schemars",
- "serde",
- "subtle-encoding",
- "tendermint 0.34.0",
+ "ibc-core-channel",
+ "ibc-core-client",
+ "ibc-core-commitment-types",
+ "ibc-core-connection",
+ "ibc-core-handler-types",
+ "ibc-core-host",
+ "ibc-core-router",
+ "ibc-primitives",
 ]
 
 [[package]]
@@ -2651,14 +2419,14 @@ dependencies = [
  "borsh",
  "derive_more",
  "displaydoc",
- "ibc-core-channel-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-connection-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-router-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-core-channel-types",
+ "ibc-core-client-types",
+ "ibc-core-commitment-types",
+ "ibc-core-connection-types",
+ "ibc-core-host-types",
+ "ibc-core-router-types",
+ "ibc-primitives",
+ "ibc-proto",
  "schemars",
  "serde",
  "subtle-encoding",
@@ -2668,36 +2436,18 @@ dependencies = [
 [[package]]
 name = "ibc-core-host"
 version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "derive_more",
- "displaydoc",
- "ibc-core-channel-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-client-context 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-connection-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "subtle-encoding",
-]
-
-[[package]]
-name = "ibc-core-host"
-version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
  "derive_more",
  "displaydoc",
- "ibc-core-channel-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client-context 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-connection-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-core-channel-types",
+ "ibc-core-client-context",
+ "ibc-core-client-types",
+ "ibc-core-commitment-types",
+ "ibc-core-connection-types",
+ "ibc-core-handler-types",
+ "ibc-core-host-types",
+ "ibc-primitives",
  "subtle-encoding",
 ]
 
@@ -2709,15 +2459,15 @@ dependencies = [
  "derive_more",
  "displaydoc",
  "ibc-app-transfer-types",
- "ibc-client-tendermint 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client-context 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-client-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-commitment-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-connection-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-handler-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-client-tendermint",
+ "ibc-core-client-context",
+ "ibc-core-client-types",
+ "ibc-core-commitment-types",
+ "ibc-core-connection-types",
+ "ibc-core-handler-types",
+ "ibc-core-host-types",
+ "ibc-primitives",
+ "ibc-proto",
  "serde",
  "sha2 0.10.8",
  "subtle-encoding",
@@ -2727,41 +2477,14 @@ dependencies = [
 [[package]]
 name = "ibc-core-host-types"
 version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "borsh",
- "derive_more",
- "displaydoc",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "schemars",
- "serde",
-]
-
-[[package]]
-name = "ibc-core-host-types"
-version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
  "borsh",
  "derive_more",
  "displaydoc",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-primitives",
  "schemars",
  "serde",
-]
-
-[[package]]
-name = "ibc-core-router"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "derive_more",
- "displaydoc",
- "ibc-core-channel-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core-router-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "subtle-encoding",
 ]
 
 [[package]]
@@ -2771,28 +2494,11 @@ source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e
 dependencies = [
  "derive_more",
  "displaydoc",
- "ibc-core-channel-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core-router-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-core-channel-types",
+ "ibc-core-host-types",
+ "ibc-core-router-types",
+ "ibc-primitives",
  "subtle-encoding",
-]
-
-[[package]]
-name = "ibc-core-router-types"
-version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "borsh",
- "derive_more",
- "displaydoc",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-proto 0.40.0",
- "schemars",
- "serde",
- "subtle-encoding",
- "tendermint 0.34.0",
 ]
 
 [[package]]
@@ -2803,24 +2509,13 @@ dependencies = [
  "borsh",
  "derive_more",
  "displaydoc",
- "ibc-core-host-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-primitives 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-core-host-types",
+ "ibc-primitives",
+ "ibc-proto",
  "schemars",
  "serde",
  "subtle-encoding",
  "tendermint 0.34.0",
-]
-
-[[package]]
-name = "ibc-derive"
-version = "0.5.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "darling",
- "proc-macro2",
- "quote",
- "syn 2.0.48",
 ]
 
 [[package]]
@@ -2836,51 +2531,17 @@ dependencies = [
 [[package]]
 name = "ibc-primitives"
 version = "0.49.1"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=23e6983#23e69839044ee27e5b8f92e1d75f7a0953f2a7b9"
-dependencies = [
- "borsh",
- "derive_more",
- "displaydoc",
- "ibc-proto 0.40.0",
- "prost",
- "schemars",
- "serde",
- "tendermint 0.34.0",
- "time",
-]
-
-[[package]]
-name = "ibc-primitives"
-version = "0.49.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e661ceaf30d962b512080b12"
 dependencies = [
  "borsh",
  "derive_more",
  "displaydoc",
- "ibc-proto 0.41.0",
+ "ibc-proto",
  "prost",
  "schemars",
  "serde",
  "tendermint 0.34.0",
  "time",
-]
-
-[[package]]
-name = "ibc-proto"
-version = "0.40.0"
-source = "git+https://github.com/cosmos/ibc-proto-rs.git?rev=aecfe0d#aecfe0de5983f20fcc3af8f2e2b73384319b89a8"
-dependencies = [
- "base64 0.21.7",
- "borsh",
- "bytes",
- "flex-error",
- "ics23",
- "informalsystems-pbjson 0.7.0",
- "prost",
- "schemars",
- "serde",
- "subtle-encoding",
- "tendermint-proto 0.34.0",
 ]
 
 [[package]]
@@ -2909,7 +2570,7 @@ source = "git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f#f516e3f4a1cfe3a5e
 dependencies = [
  "displaydoc",
  "ibc",
- "ibc-proto 0.41.0",
+ "ibc-proto",
  "tonic",
 ]
 
@@ -2921,7 +2582,7 @@ dependencies = [
  "derive_more",
  "displaydoc",
  "ibc",
- "ibc-proto 0.41.0",
+ "ibc-proto",
  "parking_lot",
  "subtle-encoding",
  "tendermint 0.34.0",
@@ -4938,8 +4599,8 @@ version = "0.1.0"
 dependencies = [
  "derive_more",
  "hex",
- "ibc-client-tendermint 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-client-tendermint",
+ "ibc-core",
  "ics23",
  "prost",
  "schemars",
@@ -4954,15 +4615,15 @@ dependencies = [
 [[package]]
 name = "sov-celestia-client"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=5ea4289#5ea4289ebce6422c07023960e0c943fe4f7ed55f"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=00231af#00231af641c2425656ed042e628fb7240ee0bfd7"
 dependencies = [
  "derive_more",
- "ibc-client-tendermint 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
+ "ibc-client-tendermint",
+ "ibc-core",
  "ics23",
  "prost",
  "serde",
- "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=5ea4289)",
+ "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=00231af)",
  "tendermint 0.34.0",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.0",
@@ -4976,10 +4637,10 @@ dependencies = [
  "cosmwasm-std",
  "cosmwasm-vm",
  "derive_more",
- "ibc-client-tendermint 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-client-wasm-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-client-tendermint",
+ "ibc-client-wasm-types",
+ "ibc-core",
+ "ibc-proto",
  "prost",
  "serde",
  "sov-celestia-client 0.1.0",
@@ -4997,10 +4658,10 @@ dependencies = [
  "bytes",
  "derive_more",
  "hex",
- "ibc-client-tendermint 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-client-wasm-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-proto 0.41.0",
+ "ibc-client-tendermint",
+ "ibc-client-wasm-types",
+ "ibc-core",
+ "ibc-proto",
  "ics23",
  "prost",
  "schemars",
@@ -5014,15 +4675,15 @@ dependencies = [
 [[package]]
 name = "sov-celestia-client-types"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=5ea4289#5ea4289ebce6422c07023960e0c943fe4f7ed55f"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=00231af#00231af641c2425656ed042e628fb7240ee0bfd7"
 dependencies = [
  "base64 0.21.7",
  "bytes",
  "derive_more",
- "ibc-client-tendermint 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-client-wasm-types 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=23e6983)",
- "ibc-proto 0.40.0",
+ "ibc-client-tendermint",
+ "ibc-client-wasm-types",
+ "ibc-core",
+ "ibc-proto",
  "ics23",
  "prost",
  "serde",
@@ -5070,8 +4731,8 @@ dependencies = [
  "borsh",
  "derive_more",
  "ibc-app-transfer",
- "ibc-client-tendermint 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-client-tendermint",
+ "ibc-core",
  "ibc-query",
  "jsonrpsee",
  "prost",
@@ -5100,8 +4761,8 @@ dependencies = [
  "borsh",
  "const-rollup-config",
  "ibc-app-transfer",
- "ibc-client-tendermint 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-client-tendermint",
+ "ibc-core",
  "ibc-core-host-cosmos",
  "ibc-query",
  "ibc-testkit",
@@ -5112,7 +4773,7 @@ dependencies = [
  "sha2 0.10.8",
  "sov-bank",
  "sov-celestia-adapter",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=5ea4289)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=00231af)",
  "sov-chain-state",
  "sov-ibc",
  "sov-ibc-transfer",
@@ -5141,7 +4802,7 @@ dependencies = [
  "base64 0.21.7",
  "borsh",
  "ibc-app-transfer",
- "ibc-core 0.49.1 (git+https://github.com/cosmos/ibc-rs.git?rev=f516e3f)",
+ "ibc-core",
  "jsonrpsee",
  "prost",
  "schemars",

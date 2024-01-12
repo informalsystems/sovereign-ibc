@@ -23,7 +23,6 @@ ibc-core              = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-proto             = { workspace = true }
 ics23 	              = { version = "0.11", default-features = false }
-ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 
 # DA layer dependencies
 tendermint                       = { workspace = true }
@@ -33,13 +32,13 @@ tendermint-light-client-verifier = { workspace = true }
 [dev-dependencies]
 typed-builder = "0.18.0"
 hex           = "0.4.3"
+ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 
 [features]
 default = ["std"]
 std = [
 	"ibc-core/std",
 	"ibc-client-tendermint/std",
-	"ibc-client-wasm-types/std",
 	"ibc-proto/std",
 	"ics23/std",
 	"bytes/std",
@@ -50,7 +49,6 @@ std = [
 serde = [
 	"ibc-core/serde",
 	"ibc-client-tendermint/serde",
-	"ibc-client-wasm-types/serde",
 	"ibc-proto/serde",
 	"ics23/serde",
 	"dep:serde",
