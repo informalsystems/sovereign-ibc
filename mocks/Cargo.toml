@@ -41,8 +41,8 @@ ibc-query             = { workspace = true }
 ibc-testkit           = { workspace = true }
 
 # cosmos dependencies
-basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "cedae04" }
-basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "cedae04" }
+basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "bbd25a3" }
+basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "bbd25a3" }
 
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
