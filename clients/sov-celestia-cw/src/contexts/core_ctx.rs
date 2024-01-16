@@ -23,8 +23,7 @@ use sov_celestia_client::types::proto::tendermint::v1::SovTmClientState as RawTm
 
 use super::definition::ContextMut;
 use super::{ContextRef, StorageRef};
-use crate::client_state::AnyClientState;
-use crate::consensus_state::AnyConsensusState;
+use crate::types::{AnyClientState, AnyConsensusState};
 
 impl ValidationContext for ContextMut<'_> {
     type V = Self;
@@ -52,13 +51,13 @@ impl ValidationContext for ContextMut<'_> {
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        let host_height = Height::new(0, self.env.block.height)?;
+        let host_height = Height::new(0, self.env().block.height)?;
 
         Ok(host_height)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        let time = self.env.block.time;
+        let time = self.env().block.time;
         let host_timestamp = Timestamp::from_nanoseconds(time.nanos()).expect("invalid timestamp");
 
         Ok(host_timestamp)
@@ -283,13 +282,13 @@ impl ValidationContext for ContextRef<'_> {
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        let host_height = Height::new(0, self.env.block.height)?;
+        let host_height = Height::new(0, self.env().block.height)?;
 
         Ok(host_height)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        let time = self.env.block.time;
+        let time = self.env().block.time;
         let host_timestamp = Timestamp::from_nanoseconds(time.nanos()).expect("invalid timestamp");
 
         Ok(host_timestamp)

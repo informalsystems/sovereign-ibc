@@ -24,7 +24,4 @@ pub mod proto {
     pub use ibc_proto::ibc::lightclients::sovereign::*;
 }
 
-#[cfg(feature = "serde")]
-pub mod serializer;
-
 pub type Bytes = Vec<u8>;

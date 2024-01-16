@@ -4,6 +4,7 @@ use std::str::FromStr;
 use cosmwasm_schema::cw_serde;
 use ibc_client_wasm_types::client_state::ClientState as WasmClientState;
 use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
+use ibc_client_wasm_types::serializer::Base64;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::{CommitmentPrefix, CommitmentProofBytes};
@@ -17,7 +18,6 @@ use sov_celestia_client::types::client_message::{
     ClientMessage, SovHeader, SovMisbehaviour, SovTmClientMessage, SOV_TENDERMINT_HEADER_TYPE_URL,
     SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL,
 };
-use sov_celestia_client::types::serializer::Base64;
 use sov_celestia_client::types::Bytes;
 
 use super::error::ContractError;
@@ -29,7 +29,17 @@ pub struct GenesisMetadata {
 }
 
 #[cw_serde]
-pub struct InstantiateMsg {}
+pub struct InstantiateMsg {
+    #[schemars(with = "String")]
+    #[serde(with = "Base64", default)]
+    pub client_state: Bytes,
+    #[schemars(with = "String")]
+    #[serde(with = "Base64", default)]
+    pub consensus_state: Bytes,
+    #[schemars(with = "String")]
+    #[serde(with = "Base64", default)]
+    pub checksum: Bytes,
+}
 
 #[cw_serde]
 pub enum ExecuteMsg {
@@ -202,7 +212,7 @@ impl VerifyClientMessageMsg {
             return Ok(ClientMessage::Misbehaviour(Box::new(misbehaviour)));
         }
 
-        Err(ContractError::Celestia(
+        Err(ContractError::InvalidMsg(
             "Unknown client message type".to_string(),
         ))
     }

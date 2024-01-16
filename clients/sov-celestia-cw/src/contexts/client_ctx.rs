@@ -10,9 +10,7 @@ use ibc_core::primitives::Timestamp;
 
 use super::definition::{ContextMut, StorageMut};
 use super::{ContextRef, StorageRef};
-use crate::client_state::AnyClientState;
-use crate::consensus_state::AnyConsensusState;
-use crate::types::processed_states::{ProcessedStates, ReadonlyProcessedStates};
+use crate::types::{AnyClientState, AnyConsensusState, ProcessedStates, ReadonlyProcessedStates};
 
 impl ClientValidationContext for ContextMut<'_> {
     fn client_update_time(

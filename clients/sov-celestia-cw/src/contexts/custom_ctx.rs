@@ -9,8 +9,7 @@ use ibc_core::primitives::Timestamp;
 
 use super::definition::ContextMut;
 use super::{ContextRef, StorageRef};
-use crate::consensus_state::AnyConsensusState;
-use crate::types::processed_states::ReadonlyProcessedStates;
+use crate::types::{AnyConsensusState, ReadonlyProcessedStates};
 
 impl CommonContext for ContextMut<'_> {
     type ConversionError = ClientError;

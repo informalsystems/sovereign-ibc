@@ -11,8 +11,6 @@
 
 extern crate alloc;
 
-pub mod client_state;
-pub mod consensus_state;
 pub mod contexts;
 pub mod entrypoints;
 pub mod types;
