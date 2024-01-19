@@ -136,6 +136,8 @@ rollup node:
 - Used for adjusting rollup parameters that the relayer may need for setting
   configurations and basic checks, like the namespaces, max batch size, max tx
   size, max gas fees, etc.
+- Used to retrieve the rollup code commitment, essential for the aggregated
+  proof verification.
 - Only used once, at relayer startup during health check.
 - Usually not needed for IBC relaying strictly speaking.
 
