@@ -2,17 +2,19 @@
 
 ## Changelog
 
-- 2024-01-17: Initial requirements
+- 2024-01-17: Drafted initial requirements
+- 2024-01-18: Applied review feedback
 
 ## Context
 
 The following endpoints (or equivalent) are necessary for operating the relayer.
-An optimal approach involves encapsulating these endpoints as methods on the
-unified clients designed to manage RPC or WebSocket requests and responses. For
-each section, we provide a list of the endpoints and the latest status of that
-endpoint, as far as we could investigate in the Sovereign SDK codebase. They are
-ordered from highest to lowest impact roughly, i.e., the last endpoint in the
-list is the least important and least frequently required.
+An optimal approach involves exposing these endpoints as methods on the unified
+client designed to manage requests and responses by various RPC or WebSocket
+connections. For each section, we provide a comprehensive list of the endpoints,
+**their priority for the initial phase of implementation** and latest
+availability status, as far as we could investigate in the Sovereign SDK
+codebase. They are ordered from highest to lowest impact roughly, i.e., the last
+endpoint in the list is the least important and least frequently required.
 
 ## Table of Contents
 
@@ -21,166 +23,213 @@ list is the least important and least frequently required.
   - [Context](#context)
   - [Table of Contents](#table-of-contents)
   - [Sequencer RPC](#sequencer-rpc)
-    - [`/send_transactions`](#send_transactions)
-    - [`tx_status`](#tx_status)
-    - [`/send_evidence`](#send_evidence)
+    - [`/sequencer_submitTxs`](#sequencer_submittxs)
+    - [`sequencer_txStatus`](#sequencer_txstatus)
     - [`/sequencer_health`](#sequencer_health)
+    - [`/sequencer_submitEvidence`](#sequencer_submitevidence)
   - [Rollup RPC](#rollup-rpc)
-    - [`/transaction_search`](#transaction_search)
-    - [`/aggregated_proof_search`](#aggregated_proof_search)
-    - [`/rollup_params`](#rollup_params)
-    - [`/status`](#status)
+    - [`/ledger_searchTx`](#ledger_searchtx)
+    - [`/prover_aggregatedProof*`](#prover_aggregatedproof)
+    - [`/ledger_rollupParams`](#ledger_rollupparams)
+    - [`/ledger_rollupStatus`](#ledger_rollupstatus)
     - [`/rollup_health`](#rollup_health)
   - [IBC modules RPC](#ibc-modules-rpc)
     - [Channel endpoints](#channel-endpoints)
     - [Client endpoints](#client-endpoints)
     - [Connection endpoints](#connection-endpoints)
   - [Rollup WebSocket](#rollup-websocket)
-    - [`/subscribe_aggregated_proofs`](#subscribe_aggregated_proofs)
-    - [`/subscribe_events`](#subscribe_events)
+    - [`/ledger_subscribeAggregatedProof`](#ledger_subscribeaggregatedproof)
+    - [`/ledger_subscribeSlots`](#ledger_subscribeslots)
 
 ## Sequencer RPC
 
-### `/send_transactions`
+### `/sequencer_submitTxs`
 
-- For submitting batch of transactions into the mempool.
-- It can simulate transaction sending and conduct basic pre-send checks on
-  factors like transaction size and gas fees, etc.
+- Objective:
+  - For submitting batch of transactions into the mempool.
+  - To simulate transaction sending and conduct basic pre-send
+    checks on factors like transaction size and gas fees, etc.
+
+- Priority: High
 
 - Status:
-  - available as a method on the sequencer client, and also as
+  - Nothing available to handle (accept and submit) a batch of transactions in
+    one go.
+  - There is a [`sequencer_acceptTx`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/190863c29835af9090e38d79284b24406c33758c/full-node/sov-sequencer/src/lib.rs#L56-L64) method, which stores a transaction into the mempool.
+  - Also
   [`sequencer_publishBatch`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/cca1729445741aadbec2490c14ca2090afdc878b/full-node/sov-sequencer/src/lib.rs#L74-L90)
-  RPC method, though both works in an async fashion.
+  method for submitting batch of transactions to the DA layer which works in an
+  async fashion.
 
-### `tx_status`
+### `sequencer_txStatus`
 
-- Used to check the submission and commitment status of pending transactions on
-  the DA layer.
+- Objective:
+  - Used to check the submission and commitment status of pending transactions
+    on the DA layer, so can decide on transaction re-submission if necessary.
 
-- Status: Nothing available yet.
-
-### `/send_evidence`
-
-- Used for submitting evidence of DA layer misbehavior.
+- Priority: Low
 
 - Status: Nothing available yet.
 
 ### `/sequencer_health`
 
-- Needed for basic check to assess the health of sequencer node.
-- Only used once, at relayer startup during health check.
+- Objective:
+  - Needed for basic check to assess the health of sequencer node.
+  - Only used once, at relayer startup during health check.
   
+- Priority: Low
+
 - Status: Available as the
   [`/health`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/1adbfc963bb930edfa0efe6030262dfb70acf199/module-system/sov-modules-macros/src/rpc/rpc_gen.rs#L339-L343)
   method to check the health of the RPC server.
 
+### `/sequencer_submitEvidence`
+
+- Objective:
+  - Used for submitting evidence of DA layer misbehavior.
+
+- Priority: Nice to have
+
+- Status: Nothing available yet.
+
+- Remark:
+  - Should determine what exactly misbehavior cases could be and how to handle
+    them.
+
 ## Rollup RPC
 
-### `/transaction_search`
+### `/ledger_searchTx`
 
-- Used In the four following situations:
+- Objective:
+  1. To obtain packet events that occurred during a range of heights at or
+     before a specified height. Required because rollup state does not store the
+     full packet data which is needed to build and relay the packet messages.
+     - Pattern:
+       - Used relatively often, on start and then for every `z` blocks, where
+         `clear_interval = z` (default `z = 100`).
+       - `send_packet.packet_src_channel == X &&
+       send_packet.packet_src_port == X && send_packet.packet_dst_channel == X
+       && send_packet.packet_dst_port == X && send_packet.packet_sequence ==
+       X`. Also for `write_acknowledgement` packet events.
+       - `height > initial_state_height && height <= final_state_height`
+     - Priority: High
 
-1. Query to obtain transaction events, for confirming if packets are committed
-   to the rollup.
-   - Not needed on the critical path of packet relaying. Used very often as
-     part of packet confirmation.
-   - Pattern: `tx.hash == XYZ`
+  2. To obtain client update events: (a) for the misbehavior detection task, and
+     (b) for relaying packets on connections that have non-zero delay. (Not
+     priority)
+     - Used rarely in practice because all connections have 0 delay and often
+       misbehavior detection is disabled.
+     - Pattern:
+       - `update_client.client_id == client_id && update_client.consensus_height == X-Y`
+       - `height > initial_state_height && height <= final_state_height`
+     - Priority: Low
 
-2. Query for the success/error status of a transaction immediately after it was
-   broadcast.
-   - Used rarely: at bootstrap (to register counterparty payee
-         address for fees) or when transactions need to be sent sequentially.
-   - Used on all transactions when `tx_confirmation` config is enabled.
-   - Pattern: `tx.hash == XYZ`
+  3. To obtain transaction events, for confirming if packets are committed to
+     the rollup.
+     - Not needed on the critical path of packet relaying. Used very often as
+       part of packet confirmation.
+     - Pattern: `tx.hash == XYZ`
+     - Priority: Nice to have
 
-3. Query to obtain packet events that occurred at or before a specified height.
-   Required because rollup state does not store the full packet data which is
-   needed to build and relay the packet messages.
-   - Pattern: `send_packet.packet_src_channel == X &&
-     send_packet.packet_src_port == X && send_packet.packet_dst_channel == X
-     && send_packet.packet_dst_port == X && send_packet.packet_sequence ==
-     X`. Also for `write_acknowledgement` packet events.
-   - Used relatively often, on start and then for every `z` blocks, where
-     `clear_interval = z` (default `z = 100`).
-
-4. Query to obtain client update events: (a) for the misbehavior detection task,
-   and (b) for relaying packets on connections that have non-zero delay.
-   - Used rarely in practice because all connections have 0 delay and often
-     misbehavior detection is disabled.
-   - Pattern: `update_client.client_id == client_id &&
-     update_client.consensus_height == X-Y`
+  4. For the success/error status of a transaction immediately after it was
+     broadcast.
+     - Used rarely at bootstrap (to register counterparty payee address for
+       fees) or when transactions need to be sent sequentially.
+     - Used on all transactions when `tx_confirmation` config is enabled. (At
+       initial phase would be set to false)
+     - Pattern: `tx.hash == XYZ`
+     - Priority: Nice to have
 
 - Status:
+  - Regarding the 1st and 2nd situations, nothing straightforward available yet
+    to search for all the events with particular key, where events might have been
+    emitted by the same transaction.
   - The `ledger_getTransactions` RPC method enables search for txs using the
     hash. This method returns a list of all the events emitted by that tx.
   - There is also a `ledger_getTransactionsRange` method. Each transaction has a
     monotonically increasing ID. So this could be used as a range query if we
     know the ID of the start or end transaction.
   - The `ledger_getEvents` RPC method enables search for a single event using
-  the provided
-  [`EventIdentifier`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/main/rollup-interface/src/node/rpc/mod.rs#L80-L92),
-  which can be a transaction ID but not a transaction hash.
-  - Regarding the 3rd and 4th situations, nothing straightforward available yet
-  to search for all the events with particular key, where events might have been
-  emitted by different transactions.
+    the provided
+    [`EventIdentifier`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/main/rollup-interface/src/node/rpc/mod.rs#L80-L92),
+    which can be a transaction ID but not a transaction hash.
 
-### `/aggregated_proof_search`
+- Remark:
+  - Ideally the endpoint should support a query language, enabling the inclusion
+    of ANDed conditions to facilitate event searches
 
-Here is a list of the essential RPC methods for obtaining an aggregated proof
-and its relevant data. It should be noted that the relayer needs to operate on
-rollup data that has been proven. These methods may be accessed either through
-the DA layer or the rollup node:
+### `/prover_aggregatedProof*`
 
-- `/prover_aggregatedProofData`: Used to construct the IBC header for passing
-  into the rollup clients, so they can verify aggregated proof and update their
-  client state. By default, it returns the latest published aggregated proof,
-  but we should be able to query for a specific height by passing e.g.
-  `proofIdentifier`.
+- Objective:
+  - To obtain an aggregated proof and its relevant data. The relayer must
+    operate on rollup data that has been proven. These methods may be exposed
+    either by the DA layer or the rollup node, including:
 
-- `/prover_latestProofDataInfo`: Used as a cheaper convenient endpoint for
-  catching up the relayer to the latest executed DA block and for status checks.
+  - `/prover_aggregatedProofData`: Used to construct the IBC header for passing
+    into the rollup clients, so they can verify aggregated proof and update their
+    client state. By default, it returns the latest published aggregated proof,
+    but we should be able to query for a specific height by passing e.g.
+    `proofIdentifier`.
 
-- status: Nothing available yet.
+  - `/prover_latestProofDataInfo`: Used as a cheaper convenient endpoint for
+    catching up the relayer to the latest executed DA block and for status checks.
 
-### `/rollup_params`
-
-- Used for adjusting rollup parameters that the relayer may need for setting
-  configurations and basic checks, like the namespaces, max batch size, max tx
-  size, max gas fees, etc.
-- Used to retrieve the rollup code commitment, essential for the aggregated
-  proof verification.
-- Only used once, at relayer startup during health check.
-- Usually not needed for IBC relaying strictly speaking.
+- Priority: High
 
 - Status: Nothing available yet.
 
-### `/status`
+- Remark:
+  - When clearing packets for a height range beyond a single proof's coverage,
+    it is unclear whether we can rely solely on the latest proof for
+    constructing an update client message and send it along with the rest of
+    packets to the counterparty chain.
 
-- Needed to get rollup status including node info, latest DA block hash, rollup
-  state root, height (slot number) and time.
-- Assuming the `/status` returns similar
-  [`Response`](https://github.com/informalsystems/tendermint-rs/blob/main/rpc/src/endpoint/status.rs#L26-L37)
-  type to Cosmos chains, The response used in two situations:
-  1. At relayer startup to fetch `node_info.id`, for initializing the light
-     client component.
-      - Also at startup to fetch `node_info.other.tx_index`, during health
-        check.
-      - Also at startup to fetch `node_info.network`, i.e., the network
-        identifier, during health check.
-      - Also at startup to assert that `sync_info.catching_up` is false, during
-        health check.
-  2. To fetch the rollup latest time and height used in many methods, often
-    alongside `node_info.network`, for example:
-      - As a dependency, because the latest height is necessary in calling the
-        `/rollup_params` RPC, during health check.
-      - Needed in channel handshake (open try, ack, confirm; close confirm).
-      - In connection handshake (open try, ack, confirm), for both the source
-        chain (to update client), and destination chain (to construct proofs).
-      - Note: It seems like we bombard the node with `/status` queries, but most
-        of the queries hit the Hermes in-process cache.
-      - For updating clients during everyday IBC relaying. In case there is
-        non-zero connection delay, we again bombard the node with `/status`
-        queries.
+### `/ledger_rollupParams`
+
+- Objective:
+  - Used for adjusting rollup parameters that the relayer may need for setting
+    configurations and basic checks, like the namespaces, max batch size or max
+    tx size, max gas fees, etc.
+  - Used to retrieve the rollup code commitment, essential for the aggregated
+    proof verification.
+  - Usually used once, at relayer startup during health check.
+  - Usually not needed for IBC relaying strictly speaking.
+
+- Priority: Low
+
+- Status: Nothing available yet.
+
+- Remark:
+  - The exact parameters that the relayer needs to retrieve from the rollup
+    node should be determined.
+  - The frequency of updating the code commitment and where this update should
+    happen is unclear.
+
+### `/ledger_rollupStatus`
+
+- Objective:
+  - Needed to get rollup status including node info, latest DA block hash,
+    rollup state root, height (slot number) and time.
+  - Assuming the `/status` returns similar
+    [`Response`](https://github.com/informalsystems/tendermint-rs/blob/main/rpc/src/endpoint/status.rs#L26-L37)
+    type to Cosmos chains, The response used in two situations:
+    1. At relayer startup to fetch `node_info.id`, for initializing the light
+       client component and verify the relayer Chain ID is the same as the full
+       node network, so ensure we connect to the right chain or/and rollup.
+    2. To fetch the rollup latest time and height used in many methods, often
+      alongside `node_info.network`, for example:
+        - As a dependency, because the latest height is necessary in calling the
+          `/ledger_rollupParams` RPC, during health check.
+        - Needed in channel handshake (open try, ack, confirm; close confirm).
+        - In connection handshake (open try, ack, confirm), for both the source
+          chain (to update client), and destination chain (to construct proofs).
+        - Note: It seems like we bombard the node with `/*_status` queries, but most
+          of the queries hit the Hermes in-process cache.
+        - For updating clients during everyday IBC relaying. In case there is
+          non-zero connection delay, we again bombard the node with `/*_status`
+          queries.
+
+- Priority: Low
 
 - Status: Nothing available yet, but part of the needed data can be gathered
   from different endpoints like `ledger_getHead` or
@@ -188,10 +237,13 @@ the DA layer or the rollup node:
 
 ### `/rollup_health`
 
-- Needed for basic check to assess the health of the rollup nodes.
-- Only used once, at relayer startup during health check.
-- Not needed for IBC relaying strictly speaking.
-- In case of Cosmos chains, it returns empty result (200 OK) on success.
+- Objective:
+  - Needed for basic check to assess the health of the rollup nodes.
+  - Only used once, at relayer startup during health check.
+  - Not needed for IBC relaying strictly speaking.
+  - In case of Cosmos chains, it returns empty result (200 OK) on success.
+
+- Priority: Low
 
 - Status: Available as a
   [`/health`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/1adbfc963bb930edfa0efe6030262dfb70acf199/module-system/sov-modules-macros/src/rpc/rpc_gen.rs#L339-L343)
@@ -199,10 +251,13 @@ the DA layer or the rollup node:
 
 ## IBC modules RPC
 
-- Queries client, connection and channel-associated data and states.
-- Used to retrieve commitment proofs for every IBC message relayed
-- To obtain the client upgraded state, while the relayer is handling chain
-  upgrades.
+- Objective:
+  - Queries client, connection and channel-associated data and states.
+  - Used to retrieve commitment proofs for every IBC message relayed
+  - To obtain the client upgraded state, while the relayer is handling chain
+    upgrades.
+
+- Priority: High
 
 - Status: RPC methods Implemented expect for the upgraded client state query.
 
@@ -245,21 +300,31 @@ Requests the unreceived packet sequences associated with a specified channel.
 
 ## Rollup WebSocket
 
-### `/subscribe_aggregated_proofs`
+### `/ledger_subscribeAggregatedProof`
 
-- Subscribe to the rollup node's websocket and listen to aggregated proofs every
-  time a proof is written for the rollup.
+- Objective:
+  - Subscribe to the rollup node's websocket and listen to aggregated proofs every
+    time a proof is generated and committed on the DA layer.
+  - Can obtain the latest DA height number (slot number) from the aggregated
+    proof.
+
+- Priority: TBD
 
 - Status: Nothing available yet.
 
-### `/subscribe_events`
+### `/ledger_subscribeSlots`
 
-- (Nice to have) Connect to the rollup node's websocket and subscribes to the
-  ibc events.
+- Objective:
+  - Connect to the rollup node's websocket and subscribes to the ibc events.
+
+- Priority: Low
 
 - Status: The `ledger_subscribeSlots` endpoint provides a stream of
   [`SlotResponse`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/bd469c70fc1227a7785fb177a34de21bb6d5eb08/rollup-interface/src/node/rpc/mod.rs#L136-L149)
-  type, encompassing the processed batches. Within this, we gain access to a
-  list of transactions and so on related events. However, for obtaining IBC
-  events, it is necessary to implement a filter on the SlotResponse type to
-  exclude non-IBC batches, txs and events.
+  type, encompassing the processed batches.
+
+- Remark:
+  - Within this endpoint, we gain access to a list of transactions and so on
+    related events. However, for obtaining IBC events, it is necessary to
+    implement a filter on the `SlotResponse` type to exclude non-IBC batches,
+    txs and events.
