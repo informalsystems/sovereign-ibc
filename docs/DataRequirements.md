@@ -90,6 +90,7 @@ list is the least important and least frequently required.
    broadcast.
    - Used rarely: at bootstrap (to register counterparty payee
          address for fees) or when transactions need to be sent sequentially.
+   - Used on all transactions when `tx_confirmation` config is enabled.
    - Pattern: `tx.hash == XYZ`
 
 3. Query to obtain packet events that occurred at or before a specified height.
@@ -112,6 +113,9 @@ list is the least important and least frequently required.
 - Status:
   - The `ledger_getTransactions` RPC method enables search for txs using the
     hash. This method returns a list of all the events emitted by that tx.
+  - There is also a `ledger_getTransactionsRange` method. Each transaction has a
+    monotonically increasing ID. So this could be used as a range query if we
+    know the ID of the start or end transaction.
   - The `ledger_getEvents` RPC method enables search for a single event using
   the provided
   [`EventIdentifier`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/main/rollup-interface/src/node/rpc/mod.rs#L80-L92),
@@ -122,9 +126,10 @@ list is the least important and least frequently required.
 
 ### `/aggregated_proof_search`
 
-Here is a list of the essential RPC methods to acquire aggregated proof and
-related data. These methods may be accessed either through the DA layer or the
-rollup node:
+Here is a list of the essential RPC methods for obtaining an aggregated proof
+and its relevant data. It should be noted that the relayer needs to operate on
+rollup data that has been proven. These methods may be accessed either through
+the DA layer or the rollup node:
 
 - `/prover_aggregatedProofData`: Used to construct the IBC header for passing
   into the rollup clients, so they can verify aggregated proof and update their
@@ -134,11 +139,6 @@ rollup node:
 
 - `/prover_latestProofDataInfo`: Used as a cheaper convenient endpoint for
   catching up the relayer to the latest executed DA block and for status checks.
-
-- `/prover_aggregatedProofsData`: Used to create update client messages,
-  specifically in situations where updating a client for a range of slots or
-  heights surpasses the coverage provided by a single proof, therefore it
-  requires the submission of a list of aggregated proofs.
 
 - status: Nothing available yet.
 
