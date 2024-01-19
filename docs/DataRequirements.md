@@ -22,6 +22,7 @@ list is the least important and least frequently required.
   - [Table of Contents](#table-of-contents)
   - [Sequencer RPC](#sequencer-rpc)
     - [`/send_transactions`](#send_transactions)
+    - [`tx_status`](#tx_status)
     - [`/send_evidence`](#send_evidence)
     - [`/sequencer_health`](#sequencer_health)
   - [Rollup RPC](#rollup-rpc)
@@ -50,6 +51,13 @@ list is the least important and least frequently required.
   - available as a method on the sequencer client, and also as
   [`sequencer_publishBatch`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/cca1729445741aadbec2490c14ca2090afdc878b/full-node/sov-sequencer/src/lib.rs#L74-L90)
   RPC method, though both works in an async fashion.
+
+### `tx_status`
+
+- Used to check the submission and commitment status of pending transactions on
+  the DA layer.
+
+- Status: Nothing available yet.
 
 ### `/send_evidence`
 
