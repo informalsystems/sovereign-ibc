@@ -1,4 +1,4 @@
-# Hermes IBC Relayer Data Requirements
+# Hermes IBC Relayer Data Availability Requirements
 
 ## Changelog
 
@@ -16,7 +16,7 @@ list is the least important and least frequently required.
 
 ## Table of Contents
 
-- [Hermes IBC Relayer Data Requirements](#hermes-ibc-relayer-data-requirements)
+- [Hermes IBC Relayer Data Availability Requirements](#hermes-ibc-relayer-data-availability-requirements)
   - [Changelog](#changelog)
   - [Context](#context)
   - [Table of Contents](#table-of-contents)
@@ -46,13 +46,14 @@ list is the least important and least frequently required.
 - It can simulate transaction sending and conduct basic pre-send checks on
   factors like transaction size and gas fees, etc.
 
-- Status: available as a method on the sequencer client, and also as
+- Status:
+  - available as a method on the sequencer client, and also as
   [`sequencer_publishBatch`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/cca1729445741aadbec2490c14ca2090afdc878b/full-node/sov-sequencer/src/lib.rs#L74-L90)
   RPC method, though both works in an async fashion.
 
 ### `/send_evidence`
 
-- Used for submitting evidence of a rollup misbehaving.
+- Used for submitting evidence of DA layer misbehavior.
 
 - Status: Nothing available yet.
 
@@ -61,7 +62,9 @@ list is the least important and least frequently required.
 - Needed for basic check to assess the health of sequencer node.
 - Only used once, at relayer startup during health check.
   
-- Status: Available as the `/health` method on RPC client.
+- Status: Available as the
+  [`/health`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/1adbfc963bb930edfa0efe6030262dfb70acf199/module-system/sov-modules-macros/src/rpc/rpc_gen.rs#L339-L343)
+  method to check the health of the RPC server.
 
 ## Rollup RPC
 
@@ -95,7 +98,7 @@ list is the least important and least frequently required.
    and (b) for relaying packets on connections that have non-zero delay.
    - Used rarely in practice because all connections have 0 delay and often
      misbehavior detection is disabled.
-   - Pattern: `update_client.client_id == NUM-rollup-X &&
+   - Pattern: `update_client.client_id == client_id &&
      update_client.consensus_height == X-Y`
 
 - Status:
@@ -145,8 +148,8 @@ rollup node:
 
 ### `/status`
 
-- Needed to get rollup status including node info, pubkey, latest DA block hash,
-  rollup state root, height (slot number) and time.
+- Needed to get rollup status including node info, latest DA block hash, rollup
+  state root, height (slot number) and time.
 - Assuming the `/status` returns similar
   [`Response`](https://github.com/informalsystems/tendermint-rs/blob/main/rpc/src/endpoint/status.rs#L26-L37)
   type to Cosmos chains, The response used in two situations:
@@ -182,7 +185,9 @@ rollup node:
 - Not needed for IBC relaying strictly speaking.
 - In case of Cosmos chains, it returns empty result (200 OK) on success.
 
-- Status: Available as a `/health` method on RPC client
+- Status: Available as a
+  [`/health`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/1adbfc963bb930edfa0efe6030262dfb70acf199/module-system/sov-modules-macros/src/rpc/rpc_gen.rs#L339-L343)
+  method to check the health of the RPC server.
 
 ## IBC modules RPC
 
