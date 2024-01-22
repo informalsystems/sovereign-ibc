@@ -26,7 +26,6 @@ endpoint in the list is the least important and least frequently required.
     - [`/sequencer_submitTxs`](#sequencer_submittxs)
     - [`sequencer_txStatus`](#sequencer_txstatus)
     - [`/sequencer_health`](#sequencer_health)
-    - [`/sequencer_submitEvidence`](#sequencer_submitevidence)
   - [Rollup RPC](#rollup-rpc)
     - [`/ledger_searchTx`](#ledger_searchtx)
     - [`/prover_aggregatedProof*`](#prover_aggregatedproof)
@@ -82,19 +81,6 @@ endpoint in the list is the least important and least frequently required.
 - Status: Available as the
   [`/health`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/1adbfc963bb930edfa0efe6030262dfb70acf199/module-system/sov-modules-macros/src/rpc/rpc_gen.rs#L339-L343)
   method to check the health of the RPC server.
-
-### `/sequencer_submitEvidence`
-
-- Objective:
-  - Used for submitting evidence of DA layer misbehavior.
-
-- Priority: Nice to have
-
-- Status: Nothing available yet.
-
-- Remark:
-  - Should determine what exactly misbehavior cases could be and how to handle
-    them.
 
 ## Rollup RPC
 
@@ -156,7 +142,7 @@ endpoint in the list is the least important and least frequently required.
 
 - Remark:
   - Ideally the endpoint should support a query language, enabling the inclusion
-    of ANDed conditions to facilitate event searches
+    of ANDed conditions to facilitate event searches.
 
 ### `/prover_aggregatedProof*`
 
@@ -305,10 +291,10 @@ Requests the unreceived packet sequences associated with a specified channel.
 - Objective:
   - Subscribe to the rollup node's websocket and listen to aggregated proofs every
     time a proof is generated and committed on the DA layer.
-  - Can obtain the latest DA height number (slot number) from the aggregated
-    proof.
+  - Can obtain the height of latest committed DA block (slot number) from the
+    aggregated proof data.
 
-- Priority: TBD
+- Priority: Low
 
 - Status: Nothing available yet.
 
