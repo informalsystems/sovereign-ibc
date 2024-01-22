@@ -32,10 +32,10 @@ endpoint in the list is the least important and least frequently required.
     - [`/ledger_rollupParams`](#ledger_rollupparams)
     - [`/ledger_rollupStatus`](#ledger_rollupstatus)
     - [`/rollup_health`](#rollup_health)
-  - [IBC modules RPC](#ibc-modules-rpc)
-    - [Channel endpoints](#channel-endpoints)
-    - [Client endpoints](#client-endpoints)
-    - [Connection endpoints](#connection-endpoints)
+    - [IBC modules RPC](#ibc-modules-rpc)
+      - [Channel endpoints](#channel-endpoints)
+      - [Client endpoints](#client-endpoints)
+      - [Connection endpoints](#connection-endpoints)
   - [Rollup WebSocket](#rollup-websocket)
     - [`/ledger_subscribeAggregatedProof`](#ledger_subscribeaggregatedproof)
     - [`/ledger_subscribeSlots`](#ledger_subscribeslots)
@@ -235,7 +235,7 @@ endpoint in the list is the least important and least frequently required.
   [`/health`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/1adbfc963bb930edfa0efe6030262dfb70acf199/module-system/sov-modules-macros/src/rpc/rpc_gen.rs#L339-L343)
   method to check the health of the RPC server.
 
-## IBC modules RPC
+### IBC modules RPC
 
 - Objective:
   - Queries client, connection and channel-associated data and states.
@@ -247,7 +247,7 @@ endpoint in the list is the least important and least frequently required.
 
 - Status: RPC methods Implemented expect for the upgraded client state query.
 
-### Channel endpoints
+#### Channel endpoints
 
 - `ibc_channelClientState`: Requests the client state associated with a
   specified channel.
@@ -269,7 +269,7 @@ Requests the unreceived packet sequences associated with a specified channel.
 > where an empty vector is passed, the queries will simply return all
 > acknowledgements for all outstanding packet commitments.
 
-### Client endpoints
+#### Client endpoints
 
 - `ibc_clientStates`: Requests all client states associated with the chain.
 - `ibc_ConsensusStates`: Requests all the consensus states associated with a
@@ -279,7 +279,7 @@ Requests the unreceived packet sequences associated with a specified channel.
 - `ibc_upgradedClientState`: Requests the upgraded client state associated with a
   specified client.
 
-### Connection endpoints
+#### Connection endpoints
 
 - `ibc_clientConnections`: Requests all connections associated with a specified client.
 - ‍`ibc_connections`: Requests all connections associated with the chain.
