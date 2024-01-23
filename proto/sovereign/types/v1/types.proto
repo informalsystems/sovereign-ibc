@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package sovereign.types.v1;
+
+// AggregatedProofData is the overarching structure, encompassing public input,
+// proof data information, and aggregated proof bytes.
+message AggregatedProofData {
+  // the public input
+  PublicInput public_input = 1;
+  // the proof data info
+  ProofDataInfo proof_data_info = 2;
+  // the aggregated proof bytes
+  AggregatedProof aggregated_proof = 3;
+}
+
+// PublicInput defines the public properties of the AggregatedProof for the
+// Sovereign SDK rollups, utilized for verifying the proof.
+message PublicInput {
+  // the initial DA block hash
+  bytes initial_da_block_hash = 1;
+  // the final DA block hash
+  bytes final_da_block_hash = 2;
+  // the initial state root
+  bytes initial_state_root = 3;
+  // the final state root
+  bytes final_state_root = 4;
+}
+
+// ProofDataInfo contains additional information about the proof.
+message ProofDataInfo {
+  // the initial height of the DA block from which the proof covers the updating
+  // of the initial state root.
+  uint64 initial_state_height = 1;
+  // the last height of the DA block, up to which the proof captures the
+  // rollup's transition to the final state root.
+  uint64 final_state_height = 2;
+}
+
+// AggregatedProof defines the aggregated proof structure for the Sovereign SDK
+// rollups.
+message AggregatedProof {
+  // the rollup aggregated proof bytes covering a range of DA blocks
+  bytes proof = 1;
+}
