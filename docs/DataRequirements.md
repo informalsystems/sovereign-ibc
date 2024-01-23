@@ -29,6 +29,7 @@ endpoint in the list is the least important and least frequently required.
   - [Rollup RPC](#rollup-rpc)
     - [`/ledger_searchTx`](#ledger_searchtx)
     - [`/prover_aggregatedProof*`](#prover_aggregatedproof)
+    - [`/accounts_getAccount`](#accounts_getaccount)
     - [`/ledger_rollupParams`](#ledger_rollupparams)
     - [`/ledger_rollupStatus`](#ledger_rollupstatus)
     - [`/rollup_health`](#rollup_health)
@@ -169,6 +170,20 @@ endpoint in the list is the least important and least frequently required.
     it is unclear whether we can rely solely on the latest proof for
     constructing an update client message and send it along with the rest of
     packets to the counterparty chain.
+
+### `/accounts_getAccount`
+
+- Objective:
+  - Used to retrieve the account information such as the address and the
+    sequence number, primarily used for building and signing transactions.
+
+- Priority: High
+
+- Status:
+  - There is an
+    [`accounts_getAccount`](https://github.com/informalsystems/sovereign-sdk/blob/d42e289f26b9824b5ed54dbfbda94007dee305b2/module-system/module-implementations/sov-accounts/src/query.rs#L26-L45)
+    RPC endpoint which appears to perform the same job as `/query_account` on
+    Cosmos chains.
 
 ### `/ledger_rollupParams`
 
