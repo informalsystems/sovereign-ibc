@@ -23,8 +23,8 @@ endpoint in the list is the least important and least frequently required.
   - [Context](#context)
   - [Table of Contents](#table-of-contents)
   - [Sequencer RPC](#sequencer-rpc)
-    - [`/sequencer_submitTxs`](#sequencer_submittxs)
-    - [`sequencer_txStatus`](#sequencer_txstatus)
+    - [`/sequencer_publishBatch`](#sequencer_publishbatch)
+    - [`/sequencer_txStatus`](#sequencer_txstatus)
     - [`/sequencer_health`](#sequencer_health)
   - [Rollup RPC](#rollup-rpc)
     - [`/ledger_searchTx`](#ledger_searchtx)
@@ -43,7 +43,7 @@ endpoint in the list is the least important and least frequently required.
 
 ## Sequencer RPC
 
-### `/sequencer_submitTxs`
+### `/sequencer_publishBatch`
 
 - Objective:
   - For submitting batch of transactions into the mempool.
@@ -53,15 +53,17 @@ endpoint in the list is the least important and least frequently required.
 - Priority: High
 
 - Status:
-  - Nothing available to handle (accept and submit) a batch of transactions in
-    one go.
-  - There is a [`sequencer_acceptTx`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/190863c29835af9090e38d79284b24406c33758c/full-node/sov-sequencer/src/lib.rs#L56-L64) method, which stores a transaction into the mempool.
-  - Also
-  [`sequencer_publishBatch`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/cca1729445741aadbec2490c14ca2090afdc878b/full-node/sov-sequencer/src/lib.rs#L74-L90)
-  method for submitting batch of transactions to the DA layer which works in an
-  async fashion.
+  - The
+    [`sequencer_publishBatch`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/cca1729445741aadbec2490c14ca2090afdc878b/full-node/sov-sequencer/src/lib.rs#L74-L90)
+    method works for this purpose. It takes an optional parameter where we can
+    put a list of transactions, and then it will (1) insert all the transactions
+    into the mempool, and (2) trigger the mempool to create a batch and post it
+    on the DA layer.
+  - There is also a
+    [`sequencer_acceptTx`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/190863c29835af9090e38d79284b24406c33758c/full-node/sov-sequencer/src/lib.rs#L56-L64)
+    method, which stores a single transaction into the mempool.
 
-### `sequencer_txStatus`
+### `/sequencer_txStatus`
 
 - Objective:
   - Used to check the submission and commitment status of pending transactions
@@ -69,7 +71,9 @@ endpoint in the list is the least important and least frequently required.
 
 - Priority: Low
 
-- Status: Nothing available yet.
+- Status: There is a [web socket
+  mechanism](https://github.com/sovereign-labs/sovereign-sdk-wip/blob/41779c30bf1b4b9dd3f6408a174d942f30bb401a/full-node/sov-sequencer/tests/tx_status_subscription_rpc.rs#L52)
+  allows us to subscribe for tx status, but no RPC method available yet.
 
 ### `/sequencer_health`
 
@@ -129,8 +133,8 @@ endpoint in the list is the least important and least frequently required.
 
 - Status:
   - Regarding the 1st and 2nd situations, nothing straightforward available yet
-    to search for all the events with particular key, where events might have been
-    emitted by the same transaction.
+    to search for all the events with particular key, where events might have
+    been emitted by the same transaction.
   - The `ledger_getTransactions` RPC method enables search for txs using the
     hash. This method returns a list of all the events emitted by that tx.
   - There is also a `ledger_getTransactionsRange` method. Each transaction has a
@@ -152,14 +156,17 @@ endpoint in the list is the least important and least frequently required.
     operate on rollup data that has been proven. These methods may be exposed
     either by the DA layer or the rollup node, including:
 
-  - `/prover_aggregatedProofData`: Used to construct the IBC header for passing
-    into the rollup clients, so they can verify aggregated proof and update their
-    client state. By default, it returns the latest published aggregated proof,
-    but we should be able to query for a specific height by passing e.g.
-    `proofIdentifier`.
+  - `/prover_aggregatedProofData`:
+    - Returns the proof of `AggregatedProofData` type.
+    - Used to construct the IBC header for passing into the rollup clients, so
+      they can verify aggregated proof and update their client state. By
+      default, it returns the latest published aggregated proof, but we should
+      be able to query for a specific height by passing e.g. `proofIdentifier`.
 
-  - `/prover_latestProofDataInfo`: Used as a cheaper convenient endpoint for
-    catching up the relayer to the latest executed DA block and for status checks.
+  - `/prover_latestProofDataInfo`:
+    - Returns the information of `ProofDataInfo` type.
+    - Used as a cheaper convenient endpoint for catching up the relayer to the
+      latest executed DA block and for status checks.
 
 - Priority: High
 
