@@ -34,6 +34,12 @@ use crate::context::{CommonContext, ValidationContext as TmValidationContext};
 #[derive(Clone, Debug, PartialEq, derive_more::From)]
 pub struct ClientState(ClientStateType);
 
+impl ClientState {
+    pub fn inner(&self) -> &ClientStateType {
+        &self.0
+    }
+}
+
 impl Protobuf<RawSovTmClientState> for ClientState {}
 
 impl TryFrom<RawSovTmClientState> for ClientState {
