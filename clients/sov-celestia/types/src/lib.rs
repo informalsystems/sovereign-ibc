@@ -21,7 +21,8 @@ pub mod error;
 /// Re-exports Sovereign SDK rollup light clients proto types from
 /// `ibc_proto-rs`
 pub mod proto {
-    pub use ibc_proto::ibc::lightclients::sovereign::*;
+    pub use ibc_proto::ibc::lightclients::sovereign::tendermint::*;
+    pub use ibc_proto::sovereign::*;
 }
 
 pub type Bytes = Vec<u8>;

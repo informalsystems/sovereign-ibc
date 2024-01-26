@@ -3,44 +3,43 @@ use core::fmt::{Display, Error as FmtError, Formatter};
 use ibc_client_tendermint::types::Header as TmHeader;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
-use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
-use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::SovTendermintHeader as RawSovTmHeader;
-use tendermint_proto::Protobuf;
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::Header as RawSovTmHeader;
 
-use super::aggregated_proof::AggregatedProof;
-use crate::client_message::pretty::PrettyAggregatedProof;
+use super::aggregated_proof::AggregatedProofData;
+use crate::client_message::pretty::PrettyAggregatedProofData;
 use crate::error::Error;
 
 pub const SOV_TENDERMINT_HEADER_TYPE_URL: &str = "/ibc.lightclients.sovereign.tendermint.v1.Header";
 
 #[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct SovHeader<H: Clone> {
+pub struct Header<H: Clone> {
     pub da_header: H,
-    pub aggregated_proof: AggregatedProof,
+    pub aggregated_proof_data: AggregatedProofData,
 }
 
-impl<H: Clone> core::fmt::Debug for SovHeader<H> {
+impl<H: Clone> core::fmt::Debug for Header<H> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
-        write!(f, " SovHeader {{...}}")
+        write!(f, "Header {{...}}")
     }
 }
 
-impl<H: Clone + Display> Display for SovHeader<H> {
+impl<H: Clone + Display> Display for Header<H> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "SovHeader {{ da_header: {}, aggregated_proof: {} }}",
+            "Header {{ da_header: {}, aggregated_proof_data: {} }}",
             &self.da_header,
-            PrettyAggregatedProof(&self.aggregated_proof)
+            PrettyAggregatedProofData(&self.aggregated_proof_data)
         )
     }
 }
 
 /// Header type alias for the Sovereign SDK rollups operating on the
 /// Tendermint-driven DA layer.
-pub type SovTmHeader = SovHeader<TmHeader>;
+pub type SovTmHeader = Header<TmHeader>;
 
 impl SovTmHeader {
     pub fn timestamp(&self) -> Timestamp {
@@ -76,14 +75,14 @@ impl TryFrom<RawSovTmHeader> for SovTmHeader {
         let da_header = TmHeader::try_from(da_header).map_err(Error::source)?;
 
         let aggregate_snark = value
-            .aggregated_proof
+            .aggregated_proof_data
             .ok_or(Error::missing("missing aggregate_snark"))?
             .try_into()
             .map_err(Error::source)?;
 
-        Ok(SovHeader {
+        Ok(Header {
             da_header,
-            aggregated_proof: aggregate_snark,
+            aggregated_proof_data: aggregate_snark,
         })
     }
 }
@@ -92,7 +91,7 @@ impl From<SovTmHeader> for RawSovTmHeader {
     fn from(value: SovTmHeader) -> RawSovTmHeader {
         RawSovTmHeader {
             da_header: Some(value.da_header.into()),
-            aggregated_proof: Some(value.aggregated_proof.into()),
+            aggregated_proof_data: Some(value.aggregated_proof_data.into()),
         }
     }
 }

@@ -1,10 +1,14 @@
-use ibc_client_tendermint::types::ClientState as TmClientState;
-use ibc_core::client::types::error::ClientError;
-use ibc_core::primitives::proto::Any;
-use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::SovTmClientState as RawSovTmClientState;
-use tendermint_proto::Protobuf;
+use core::cmp::max;
 
-use super::RollupClientState;
+use ibc_client_tendermint::types::{Header as TmHeader, TrustThreshold};
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::Height;
+use ibc_core::host::types::identifiers::ChainId;
+use ibc_core::primitives::proto::{Any, Protobuf};
+use ibc_core::primitives::ZERO_DURATION;
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::ClientState as RawClientState;
+
+use super::TendermintParams;
 use crate::error::Error;
 
 pub const SOV_TENDERMINT_CLIENT_STATE_TYPE_URL: &str =
@@ -13,61 +17,119 @@ pub const SOV_TENDERMINT_CLIENT_STATE_TYPE_URL: &str =
 /// Contains the core implementation of the Sovereign light client
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
-pub struct SovTmClientState {
-    pub da_client_state: TmClientState,
-    pub rollup_client_state: RollupClientState,
+pub struct ClientState {
+    pub rollup_id: ChainId,
+    pub latest_height: Height,
+    pub frozen_height: Option<Height>,
+    pub upgrade_path: Vec<String>,
+    pub tendermint_params: TendermintParams,
 }
 
-impl SovTmClientState {
-    pub fn new(da_client_state: TmClientState, rollup_client_state: RollupClientState) -> Self {
+impl ClientState {
+    pub fn new(
+        rollup_id: ChainId,
+        latest_height: Height,
+        upgrade_path: Vec<String>,
+        tendermint_params: TendermintParams,
+    ) -> Self {
         Self {
-            da_client_state,
-            rollup_client_state,
+            rollup_id,
+            latest_height,
+            frozen_height: None,
+            upgrade_path,
+            tendermint_params,
         }
     }
-}
 
-impl Protobuf<RawSovTmClientState> for SovTmClientState {}
+    pub fn rollup_id(&self) -> &ChainId {
+        &self.rollup_id
+    }
 
-impl TryFrom<RawSovTmClientState> for SovTmClientState {
-    type Error = ClientError;
+    pub fn chain_id(&self) -> &ChainId {
+        &self.tendermint_params.chain_id
+    }
 
-    fn try_from(raw: RawSovTmClientState) -> Result<Self, Self::Error> {
-        let da_client_state = TmClientState::try_from(
-            raw.da_client_state
-                .ok_or(Error::invalid("missing sovereign client state"))?,
-        )?;
+    pub fn latest_height(&self) -> Height {
+        self.latest_height
+    }
 
-        let rollup_client_state = RollupClientState::try_from(
-            raw.rollup_client_state
-                .ok_or(Error::invalid("missing rollup client state"))?,
-        )?;
-
-        Ok(SovTmClientState {
-            da_client_state,
-            rollup_client_state,
+    pub fn with_header(self, header: TmHeader) -> Result<Self, Error> {
+        Ok(Self {
+            latest_height: max(header.height(), self.latest_height),
+            ..self
         })
     }
+
+    pub fn with_frozen_height(self, h: Height) -> Self {
+        Self {
+            frozen_height: Some(h),
+            ..self
+        }
+    }
+
+    // Resets custom fields to zero values (used in `update_client`)
+    pub fn zero_custom_fields(&mut self) {
+        self.frozen_height = None;
+        self.tendermint_params.trusting_period = ZERO_DURATION;
+        self.tendermint_params.trust_level = TrustThreshold::ZERO;
+        self.tendermint_params.max_clock_drift = ZERO_DURATION;
+    }
 }
 
-impl From<SovTmClientState> for RawSovTmClientState {
-    fn from(value: SovTmClientState) -> Self {
-        RawSovTmClientState {
-            da_client_state: Some(value.da_client_state.into()),
-            rollup_client_state: Some(value.rollup_client_state.into()),
+impl Protobuf<RawClientState> for ClientState {}
+
+impl TryFrom<RawClientState> for ClientState {
+    type Error = ClientError;
+
+    fn try_from(raw: RawClientState) -> Result<Self, Self::Error> {
+        let rollup_id = raw.rollup_id.parse().map_err(Error::source)?;
+
+        let latest_height = raw
+            .latest_height
+            .ok_or(Error::missing("latest_height"))?
+            .try_into()?;
+
+        if raw.frozen_height.is_some() {
+            return Err(Error::invalid("frozen_height is not supported"))?;
+        }
+
+        let upgrade_path = raw.upgrade_path;
+
+        let tendermint_params = raw
+            .tendermint_params
+            .ok_or(Error::missing("tendermint_params"))?
+            .try_into()?;
+
+        Ok(Self::new(
+            rollup_id,
+            latest_height,
+            upgrade_path,
+            tendermint_params,
+        ))
+    }
+}
+
+impl From<ClientState> for RawClientState {
+    fn from(value: ClientState) -> Self {
+        Self {
+            rollup_id: value.rollup_id.to_string(),
+            latest_height: Some(value.latest_height.into()),
+            frozen_height: value.frozen_height.map(|h| h.into()),
+            upgrade_path: value.upgrade_path,
+            tendermint_params: Some(value.tendermint_params.into()),
         }
     }
 }
 
-impl Protobuf<Any> for SovTmClientState {}
+impl Protobuf<Any> for ClientState {}
 
-impl TryFrom<Any> for SovTmClientState {
+impl TryFrom<Any> for ClientState {
     type Error = ClientError;
 
     fn try_from(raw: Any) -> Result<Self, Self::Error> {
-        fn decode_client_state(value: &[u8]) -> Result<SovTmClientState, ClientError> {
+        fn decode_client_state(value: &[u8]) -> Result<ClientState, ClientError> {
             let client_state =
-                Protobuf::<RawSovTmClientState>::decode(value).map_err(|e| ClientError::Other {
+                Protobuf::<RawClientState>::decode(value).map_err(|e| ClientError::Other {
                     description: e.to_string(),
                 })?;
 
@@ -83,11 +145,11 @@ impl TryFrom<Any> for SovTmClientState {
     }
 }
 
-impl From<SovTmClientState> for Any {
-    fn from(client_state: SovTmClientState) -> Self {
+impl From<ClientState> for Any {
+    fn from(client_state: ClientState) -> Self {
         Any {
             type_url: SOV_TENDERMINT_CLIENT_STATE_TYPE_URL.to_string(),
-            value: Protobuf::<RawSovTmClientState>::encode_vec(client_state),
+            value: Protobuf::<RawClientState>::encode_vec(client_state),
         }
     }
 }
@@ -96,17 +158,27 @@ impl From<SovTmClientState> for Any {
 pub mod test_util {
     use core::time::Duration;
 
-    use ibc_client_tendermint::types::{AllowUpdate, TrustThreshold};
+    use ibc_client_tendermint::types::TrustThreshold;
     use ibc_client_wasm_types::client_state::ClientState as WasmClientState;
     use ibc_core::client::types::Height;
-    use ibc_core::commitment_types::specs::ProofSpecs;
     use ibc_core::host::types::identifiers::ChainId;
 
     use super::*;
     use crate::Bytes;
 
     #[derive(typed_builder::TypedBuilder, Debug)]
-    pub struct TmClientStateConfig {
+    pub struct ClientStateConfig {
+        pub rollup_id: ChainId,
+        pub latest_height: Height,
+        #[builder(default)]
+        pub frozen_height: Option<Height>,
+        #[builder(default)]
+        pub upgrade_path: Vec<String>,
+        pub tendermint_params: TendermintParams,
+    }
+
+    #[derive(typed_builder::TypedBuilder, Debug)]
+    pub struct TendermintParamsConfig {
         pub chain_id: ChainId,
         #[builder(default)]
         pub trust_level: TrustThreshold,
@@ -118,62 +190,48 @@ pub mod test_util {
         max_clock_drift: Duration,
         pub latest_height: Height,
         #[builder(default)]
-        pub proof_specs: ProofSpecs,
-        #[builder(default)]
         pub upgrade_path: Vec<String>,
-        #[builder(default = AllowUpdate { after_expiry: false, after_misbehaviour: false })]
-        allow_update: AllowUpdate,
     }
 
-    #[derive(typed_builder::TypedBuilder, Debug)]
-    pub struct RollupClientStateConfig {
-        pub rollup_id: ChainId,
-        #[builder(default)]
-        pub post_root_state: Vec<u8>,
-    }
-
-    impl TryFrom<TmClientStateConfig> for TmClientState {
+    impl TryFrom<TendermintParamsConfig> for TendermintParams {
         type Error = Error;
 
-        fn try_from(config: TmClientStateConfig) -> Result<Self, Self::Error> {
-            TmClientState::new(
+        fn try_from(config: TendermintParamsConfig) -> Result<Self, Self::Error> {
+            Ok(Self::new(
                 config.chain_id,
                 config.trust_level,
                 config.trusting_period,
                 config.unbonding_period,
                 config.max_clock_drift,
-                config.latest_height,
-                config.proof_specs,
-                config.upgrade_path,
-                config.allow_update,
-            )
-            .map_err(Error::source)
-        }
-    }
-
-    impl TryFrom<RollupClientStateConfig> for RollupClientState {
-        type Error = Error;
-
-        fn try_from(config: RollupClientStateConfig) -> Result<Self, Self::Error> {
-            Ok(RollupClientState::new(
-                config.rollup_id,
-                config.post_root_state,
             ))
         }
     }
 
-    impl SovTmClientState {
+    impl TryFrom<ClientStateConfig> for ClientState {
+        type Error = Error;
+
+        fn try_from(config: ClientStateConfig) -> Result<Self, Self::Error> {
+            Ok(Self::new(
+                config.rollup_id,
+                config.latest_height,
+                config.upgrade_path,
+                config.tendermint_params,
+            ))
+        }
+    }
+
+    impl ClientState {
         pub fn into_wasm(&self, checksum: Bytes) -> WasmClientState {
             WasmClientState {
                 data: Any::from(self.clone()).value,
                 checksum,
-                latest_height: self.da_client_state.latest_height,
+                latest_height: self.latest_height,
             }
         }
     }
 
     pub fn create_wasm_msg() -> WasmClientState {
-        let tm_client_state: TmClientState = TmClientStateConfig::builder()
+        let tendermint_params: TendermintParams = TendermintParamsConfig::builder()
             .chain_id("testnet".parse().unwrap())
             .latest_height(Height::new(0, 1).unwrap())
             .build()
@@ -184,19 +242,15 @@ pub mod test_util {
             hex::decode("602901fd7018260b063488dd07261fe8f926670223197beb873f91b51ee09f8e")
                 .unwrap();
 
-        let rollup_client_state = RollupClientStateConfig::builder()
+        let client_state: ClientState = ClientStateConfig::builder()
             .rollup_id("rollup".parse().unwrap())
-            .post_root_state(vec![0])
+            .latest_height(Height::new(0, 1).unwrap())
+            .tendermint_params(tendermint_params)
             .build()
             .try_into()
             .unwrap();
 
-        let sov_tm_client_state = SovTmClientState {
-            da_client_state: tm_client_state,
-            rollup_client_state,
-        };
-
-        sov_tm_client_state.into_wasm(code_hash)
+        client_state.into_wasm(code_hash)
     }
 }
 

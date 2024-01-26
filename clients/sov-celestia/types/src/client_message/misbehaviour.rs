@@ -5,11 +5,10 @@ use alloc::format;
 use ibc_client_tendermint::types::{Header as TmHeader, Misbehaviour};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ClientId;
-use ibc_core::primitives::proto::Any;
-use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::SovTendermintMisbehaviour as RawSovTmMisbehaviour;
-use tendermint_proto::Protobuf;
+use ibc_core::primitives::proto::{Any, Protobuf};
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::Misbehaviour as RawSovTmMisbehaviour;
 
-use super::sov_header::{SovHeader, SovTmHeader};
+use super::header::{Header, SovTmHeader};
 use crate::error::Error;
 
 pub const SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL: &str =
@@ -20,8 +19,8 @@ pub const SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL: &str =
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SovMisbehaviour<H: Clone> {
     client_id: ClientId,
-    header1: SovHeader<H>,
-    header2: SovHeader<H>,
+    header1: Header<H>,
+    header2: Header<H>,
 }
 
 /// Misbehaviour type alias for the Sovereign SDK rollups operating on the

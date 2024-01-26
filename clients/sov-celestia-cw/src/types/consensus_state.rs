@@ -1,10 +1,10 @@
-use ibc_client_tendermint::consensus_state::ConsensusState;
-use ibc_client_tendermint::types::TENDERMINT_CONSENSUS_STATE_TYPE_URL;
 use ibc_core::client::types::error::ClientError;
-use ibc_core::derive::ConsensusState;
+use ibc_core::derive::ConsensusState as ConsensusStateDerive;
 use ibc_core::primitives::proto::{Any, Protobuf};
+use sov_celestia_client::consensus_state::ConsensusState;
+use sov_celestia_client::types::consensus_state::SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL;
 
-#[derive(Clone, Debug, derive_more::From, ConsensusState)]
+#[derive(Clone, Debug, derive_more::From, ConsensusStateDerive)]
 pub enum AnyConsensusState {
     Sovereign(ConsensusState),
 }
@@ -23,7 +23,7 @@ impl From<AnyConsensusState> for Any {
     fn from(value: AnyConsensusState) -> Self {
         match value {
             AnyConsensusState::Sovereign(cs) => Any {
-                type_url: TENDERMINT_CONSENSUS_STATE_TYPE_URL.to_string(),
+                type_url: SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL.to_string(),
                 value: Protobuf::<Any>::encode_vec(cs),
             },
         }

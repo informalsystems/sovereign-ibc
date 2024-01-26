@@ -1,15 +1,15 @@
+mod da_params;
 mod definition;
-mod rollup;
 
 use alloc::str::FromStr;
 
+pub use da_params::*;
 pub use definition::*;
 use ibc_core::host::types::identifiers::ClientType;
-pub use rollup::*;
 
-pub const SOVEREIGN_CLIENT_TYPE: &str = "100-sovereign";
+pub const SOV_TENDERMINT_CLIENT_TYPE: &str = "100-sov-tendermint";
 
 /// Returns the `ClientType` for the Sovereign SDK Rollups.
 pub fn sov_client_type() -> ClientType {
-    ClientType::from_str(SOVEREIGN_CLIENT_TYPE).expect("Never fails because it's valid")
+    ClientType::from_str(SOV_TENDERMINT_CLIENT_TYPE).expect("Never fails because it's valid")
 }

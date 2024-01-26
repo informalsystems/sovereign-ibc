@@ -8,11 +8,11 @@ use ibc_core::host::ValidationContext;
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::Timestamp;
 
-use super::definition::{ContextMut, StorageMut};
-use super::{ContextRef, StorageRef};
+use super::definition::StorageMut;
+use super::{Context, StorageRef};
 use crate::types::{AnyClientState, AnyConsensusState, ProcessedStates, ReadonlyProcessedStates};
 
-impl ClientValidationContext for ContextMut<'_> {
+impl ClientValidationContext for Context<'_> {
     fn client_update_time(
         &self,
         client_id: &ClientId,
@@ -30,7 +30,7 @@ impl ClientValidationContext for ContextMut<'_> {
     }
 }
 
-impl ClientExecutionContext for ContextMut<'_> {
+impl ClientExecutionContext for Context<'_> {
     type V = <Self as ValidationContext>::V;
     type AnyClientState = <Self as ValidationContext>::AnyClientState;
     type AnyConsensusState = <Self as ValidationContext>::AnyConsensusState;
@@ -53,101 +53,20 @@ impl ClientExecutionContext for ContextMut<'_> {
 
     fn store_update_time(
         &mut self,
-        _client_id: ClientId,
+        client_id: ClientId,
         height: Height,
         timestamp: Timestamp,
     ) -> Result<(), ContextError> {
-        store_update_time(self, _client_id, height, timestamp)
+        store_update_time(self, client_id, height, timestamp)
     }
 
     fn store_update_height(
         &mut self,
-        _client_id: ClientId,
+        client_id: ClientId,
         height: Height,
         host_height: Height,
     ) -> Result<(), ContextError> {
-        store_update_height(self, _client_id, height, host_height)
-    }
-
-    fn delete_consensus_state(
-        &mut self,
-        _consensus_state_path: ClientConsensusStatePath,
-    ) -> Result<(), ContextError> {
-        todo!()
-    }
-
-    fn delete_update_time(
-        &mut self,
-        _client_id: ClientId,
-        _height: Height,
-    ) -> Result<(), ContextError> {
-        todo!()
-    }
-
-    fn delete_update_height(
-        &mut self,
-        _client_id: ClientId,
-        _height: Height,
-    ) -> Result<(), ContextError> {
-        todo!()
-    }
-}
-
-impl ClientValidationContext for ContextRef<'_> {
-    fn client_update_time(
-        &self,
-        client_id: &ClientId,
-        height: &Height,
-    ) -> Result<Timestamp, ContextError> {
-        client_update_time(self, client_id, height)
-    }
-
-    fn client_update_height(
-        &self,
-        client_id: &ClientId,
-        height: &Height,
-    ) -> Result<Height, ContextError> {
-        client_update_height(self, client_id, height)
-    }
-}
-
-impl ClientExecutionContext for ContextRef<'_> {
-    type V = <Self as ValidationContext>::V;
-    type AnyClientState = <Self as ValidationContext>::AnyClientState;
-    type AnyConsensusState = <Self as ValidationContext>::AnyConsensusState;
-
-    fn store_client_state(
-        &mut self,
-        _client_state_path: ClientStatePath,
-        _client_state: AnyClientState,
-    ) -> Result<(), ContextError> {
-        unimplemented!()
-    }
-
-    fn store_consensus_state(
-        &mut self,
-        _consensus_state_path: ClientConsensusStatePath,
-        _consensus_state: AnyConsensusState,
-    ) -> Result<(), ContextError> {
-        unimplemented!()
-    }
-
-    fn store_update_time(
-        &mut self,
-        _client_id: ClientId,
-        _height: Height,
-        _timestamp: Timestamp,
-    ) -> Result<(), ContextError> {
-        unimplemented!()
-    }
-
-    fn store_update_height(
-        &mut self,
-        _client_id: ClientId,
-        _height: Height,
-        _host_height: Height,
-    ) -> Result<(), ContextError> {
-        unimplemented!()
+        store_update_height(self, client_id, height, host_height)
     }
 
     fn delete_consensus_state(
@@ -182,7 +101,7 @@ fn client_update_time<Ctx>(
 where
     Ctx: ClientValidationContext + StorageRef,
 {
-    let processed_state = ReadonlyProcessedStates::new(ctx.storage());
+    let processed_state = ReadonlyProcessedStates::new(ctx.storage_ref());
     let timestamp = match processed_state.get_processed_time(*height, &mut Vec::new()) {
         Some(time) => {
             Timestamp::from_nanoseconds(time).map_err(ClientError::InvalidPacketTimestamp)?
@@ -203,7 +122,7 @@ fn client_update_height<Ctx>(
 where
     Ctx: ClientValidationContext + StorageRef,
 {
-    let processed_state = ReadonlyProcessedStates::new(ctx.storage());
+    let processed_state = ReadonlyProcessedStates::new(ctx.storage_ref());
 
     let height = match processed_state.get_processed_height(*height, &mut Vec::new()) {
         Some(h) => Height::new(0, h)?,

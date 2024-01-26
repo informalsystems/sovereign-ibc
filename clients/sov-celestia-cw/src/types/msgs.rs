@@ -15,7 +15,7 @@ use ibc_proto::ibc::core::client::v1::Height as RawHeight;
 use ibc_proto::ibc::lightclients::wasm::v1::ClientMessage as RawClientMessage;
 use prost::Message;
 use sov_celestia_client::types::client_message::{
-    ClientMessage, SovHeader, SovMisbehaviour, SovTmClientMessage, SOV_TENDERMINT_HEADER_TYPE_URL,
+    ClientMessage, Header, SovMisbehaviour, SovTmClientMessage, SOV_TENDERMINT_HEADER_TYPE_URL,
     SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL,
 };
 use sov_celestia_client::types::Bytes;
@@ -199,7 +199,7 @@ impl VerifyClientMessageMsg {
             value: raw.data.clone(),
         };
 
-        if let Ok(header) = SovHeader::try_from(maybe_any_header) {
+        if let Ok(header) = Header::try_from(maybe_any_header) {
             return Ok(ClientMessage::Header(Box::new(header)));
         }
 

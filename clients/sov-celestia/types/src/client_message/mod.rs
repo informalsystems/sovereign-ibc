@@ -1,20 +1,19 @@
 mod aggregated_proof;
+mod header;
+mod misbehaviour;
 mod pretty;
-mod sov_header;
-mod sov_misbehaviour;
 
 use core::fmt::Debug;
 
 pub use aggregated_proof::*;
+pub use header::*;
 use ibc_client_tendermint::types::Header as TmHeader;
 use ibc_core::primitives::prelude::*;
-use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::{
-    SovTendermintHeader as RawSovHeader, SovTendermintMisbehaviour as RawSovTmMisbehaviour,
+    Header as RawSovTmHeader, Misbehaviour as RawSovTmMisbehaviour,
 };
-pub use sov_header::*;
-pub use sov_misbehaviour::*;
-use tendermint_proto::Protobuf;
+pub use misbehaviour::*;
 
 use crate::error::Error;
 
@@ -25,7 +24,7 @@ pub enum ClientMessage<H>
 where
     H: Clone + Debug,
 {
-    Header(Box<SovHeader<H>>),
+    Header(Box<Header<H>>),
     Misbehaviour(Box<SovMisbehaviour<H>>),
 }
 
@@ -42,7 +41,7 @@ impl TryFrom<Any> for SovTmClientMessage {
         let msg = match &*any.type_url {
             SOV_TENDERMINT_HEADER_TYPE_URL => {
                 let header =
-                    Protobuf::<RawSovHeader>::decode(&*any.value).map_err(Error::source)?;
+                    Protobuf::<RawSovTmHeader>::decode(&*any.value).map_err(Error::source)?;
                 Self::Header(Box::new(header))
             }
             SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {

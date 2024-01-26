@@ -25,78 +25,35 @@ use crate::types::{
 
 /// Context is a wrapper around the deps and env that gives access to the
 /// methods of the ibc-rs Validation and Execution traits.
-pub struct ContextRef<'a> {
-    deps: Deps<'a>,
+pub struct Context<'a> {
+    deps: Option<Deps<'a>>,
+    deps_mut: Option<DepsMut<'a>>,
     env: Env,
 }
 
-impl<'a> ContextRef<'a> {
-    pub fn new(deps: Deps<'a>, env: Env) -> Self {
-        Self { deps, env }
+impl<'a> Context<'a> {
+    pub fn new_ref(deps: Deps<'a>, env: Env) -> Self {
+        Self {
+            deps: Some(deps),
+            deps_mut: None,
+            env,
+        }
+    }
+
+    pub fn new_mut(deps: DepsMut<'a>, env: Env) -> Self {
+        Self {
+            deps: None,
+            deps_mut: Some(deps),
+            env,
+        }
     }
 
     pub fn env(&self) -> &Env {
         &self.env
     }
 
-    pub fn log(&self, msg: &str) {
-        self.deps.api.debug(msg)
-    }
-
-    pub fn client_id(&self) -> Result<ClientId, IdentifierError> {
-        ClientId::from_str(self.env.contract.address.as_str())
-    }
-
-    pub fn query(&self, msg: QueryMsg) -> Result<Binary, ContractError> {
-        let client_id = self.client_id()?;
-
-        let resp = match msg {
-            QueryMsg::ClientTypeMsg(_) => unimplemented!("ClientTypeMsg"),
-            QueryMsg::GetLatestHeightsMsg(_) => unimplemented!("GetLatestHeightsMsg"),
-            QueryMsg::ExportMetadata(ExportMetadataMsg {}) => {
-                let ro_proceeded_state = ReadonlyProcessedStates::new(self.deps.storage);
-                QueryResponse::genesis_metadata(ro_proceeded_state.get_metadata())
-            }
-            QueryMsg::Status(StatusMsg {}) => {
-                let client_state = self.client_state(&client_id)?;
-
-                match client_state.status(self, &client_id) {
-                    Ok(status) => QueryResponse::status(status.to_string()),
-                    Err(err) => QueryResponse::status(err.to_string()),
-                }
-            }
-        };
-
-        Ok(to_json_binary(&resp)?)
-    }
-}
-
-pub trait StorageRef {
-    fn storage(&self) -> &dyn Storage;
-}
-
-impl StorageRef for ContextRef<'_> {
-    fn storage(&self) -> &dyn Storage {
-        self.deps.storage
-    }
-}
-
-pub struct ContextMut<'a> {
-    deps: DepsMut<'a>,
-    env: Env,
-}
-
-impl<'a> ContextMut<'a> {
-    pub fn new(deps: DepsMut<'a>, env: Env) -> Self {
-        Self { deps, env }
-    }
-
-    pub fn env(&self) -> &Env {
-        &self.env
-    }
-
-    pub fn log(&self, msg: &str) {
-        self.deps.api.debug(msg)
+    pub fn log(&self, msg: &str) -> Option<()> {
+        self.deps.map(|deps| deps.api.debug(msg))
     }
 
     pub fn client_id(&self) -> Result<ClientId, IdentifierError> {
@@ -272,20 +229,53 @@ impl<'a> ContextMut<'a> {
         };
         Ok(to_json_binary(&result)?)
     }
+
+    pub fn query(&self, msg: QueryMsg) -> Result<Binary, ContractError> {
+        let client_id = self.client_id()?;
+
+        let resp = match msg {
+            QueryMsg::ClientTypeMsg(_) => unimplemented!("ClientTypeMsg"),
+            QueryMsg::GetLatestHeightsMsg(_) => unimplemented!("GetLatestHeightsMsg"),
+            QueryMsg::ExportMetadata(ExportMetadataMsg {}) => {
+                let ro_proceeded_state = ReadonlyProcessedStates::new(self.storage_ref());
+                QueryResponse::genesis_metadata(ro_proceeded_state.get_metadata())
+            }
+            QueryMsg::Status(StatusMsg {}) => {
+                let client_state = self.client_state(&client_id)?;
+
+                match client_state.status(self, &client_id) {
+                    Ok(status) => QueryResponse::status(status.to_string()),
+                    Err(err) => QueryResponse::status(err.to_string()),
+                }
+            }
+        };
+
+        Ok(to_json_binary(&resp)?)
+    }
+}
+
+pub trait StorageRef {
+    fn storage_ref(&self) -> &dyn Storage;
+}
+
+impl StorageRef for Context<'_> {
+    fn storage_ref(&self) -> &dyn Storage {
+        match self.deps {
+            Some(ref deps) => deps.storage,
+            None => panic!("storage should be available"),
+        }
+    }
 }
 
 pub trait StorageMut: StorageRef {
     fn storage_mut(&mut self) -> &mut dyn Storage;
 }
 
-impl StorageRef for ContextMut<'_> {
-    fn storage(&self) -> &dyn Storage {
-        self.deps.storage
-    }
-}
-
-impl StorageMut for ContextMut<'_> {
+impl StorageMut for Context<'_> {
     fn storage_mut(&mut self) -> &mut dyn Storage {
-        self.deps.storage
+        match self.deps_mut {
+            Some(ref mut deps) => deps.storage,
+            None => panic!("storage should be available"),
+        }
     }
 }

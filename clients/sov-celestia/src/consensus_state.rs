@@ -1,70 +1,83 @@
-// use sov_celestia_client_types::consensus_state::definition::SOVEREIGN_CONSENSUS_STATE_TYPE_URL;
-// use sov_celestia_client_types::consensus_state::SovConsensusState;
-// use sov_celestia_client_types::proto::ConsensusState as RawSovConsensusState;
+use ibc_core::client::context::consensus_state::ConsensusState as ConsensusStateTrait;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::commitment_types::commitment::CommitmentRoot;
+use ibc_core::primitives::proto::{Any, Protobuf};
+use ibc_core::primitives::Timestamp;
+use sov_celestia_client_types::consensus_state::ConsensusState as ConsensusStateType;
+use sov_celestia_client_types::proto::v1::ConsensusState as RawConsensusState;
+use tendermint::{Hash, Time};
 
-// /// Newtype wrapper around the `ConsensusState` type imported from the
-// /// `ibc-client-tendermint-types` crate. This wrapper exists so that we can
-// /// bypass Rust's orphan rules and implement traits from
-// /// `ibc::core::client::context` on the `ConsensusState` type.
-// #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-// #[derive(Clone, Debug, PartialEq)]
-// pub struct ConsensusState(SovConsensusState);
+/// Newtype wrapper around the `ConsensusState` type imported from the
+/// `ibc-client-tendermint-types` crate. This wrapper exists so that we can
+/// bypass Rust's orphan rules and implement traits from
+/// `ibc::core::client::context` on the `ConsensusState` type.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq)]
+pub struct ConsensusState(ConsensusStateType);
 
-// impl ConsensusState {
-//     pub fn inner(&self) -> &SovConsensusState {
-//         &self.0
-//     }
-// }
+impl ConsensusState {
+    pub fn inner(&self) -> &ConsensusStateType {
+        &self.0
+    }
 
-// impl From<SovConsensusState> for ConsensusState {
-//     fn from(consensus_state: SovConsensusState) -> Self {
-//         Self(consensus_state)
-//     }
-// }
+    pub fn timestamp(&self) -> Time {
+        self.0.timestamp
+    }
 
-// impl Protobuf<RawSovConsensusState> for ConsensusState {}
+    pub fn next_validators_hash(&self) -> Hash {
+        self.0.next_validators_hash
+    }
+}
 
-// impl TryFrom<RawSovConsensusState> for ConsensusState {
-//     type Error = ClientError;
+impl From<ConsensusStateType> for ConsensusState {
+    fn from(consensus_state: ConsensusStateType) -> Self {
+        Self(consensus_state)
+    }
+}
 
-//     fn try_from(raw: RawSovConsensusState) -> Result<Self, Self::Error> {
-//         Ok(Self(SovConsensusState::try_from(raw)?))
-//     }
-// }
+impl Protobuf<RawConsensusState> for ConsensusState {}
 
-// impl From<ConsensusState> for RawSovConsensusState {
-//     fn from(client_state: ConsensusState) -> Self {
-//         client_state.0.into()
-//     }
-// }
+impl TryFrom<RawConsensusState> for ConsensusState {
+    type Error = ClientError;
 
-// impl Protobuf<Any> for ConsensusState {}
+    fn try_from(raw: RawConsensusState) -> Result<Self, Self::Error> {
+        Ok(Self(ConsensusStateType::try_from(raw)?))
+    }
+}
 
-// impl TryFrom<Any> for ConsensusState {
-//     type Error = ClientError;
+impl From<ConsensusState> for RawConsensusState {
+    fn from(client_state: ConsensusState) -> Self {
+        client_state.0.into()
+    }
+}
 
-//     fn try_from(raw: Any) -> Result<Self, Self::Error> {
-//         Ok(Self(SovConsensusState::try_from(raw)?))
-//     }
-// }
+impl Protobuf<Any> for ConsensusState {}
 
-// impl From<ConsensusState> for Any {
-//     fn from(client_state: ConsensusState) -> Self {
-//         client_state.0.into()
-//     }
-// }
+impl TryFrom<Any> for ConsensusState {
+    type Error = ClientError;
 
-// impl ConsensusStateTrait for ConsensusState {
-//     fn root(&self) -> &CommitmentRoot {
-//         &self.0.root
-//     }
+    fn try_from(raw: Any) -> Result<Self, Self::Error> {
+        Ok(Self(ConsensusStateType::try_from(raw)?))
+    }
+}
 
-//     fn timestamp(&self) -> Timestamp {
-//         let time = self.0.timestamp.unix_timestamp_nanos();
-//         Timestamp::from_nanoseconds(time as u64).expect("invalid timestamp")
-//     }
+impl From<ConsensusState> for Any {
+    fn from(client_state: ConsensusState) -> Self {
+        client_state.0.into()
+    }
+}
 
-//     fn encode_vec(self) -> Vec<u8> {
-//         <Self as Protobuf<Any>>::encode_vec(self)
-//     }
-// }
+impl ConsensusStateTrait for ConsensusState {
+    fn root(&self) -> &CommitmentRoot {
+        &self.0.root
+    }
+
+    fn timestamp(&self) -> Timestamp {
+        let time = self.0.timestamp.unix_timestamp_nanos();
+        Timestamp::from_nanoseconds(time as u64).expect("invalid timestamp")
+    }
+
+    fn encode_vec(self) -> Vec<u8> {
+        <Self as Protobuf<Any>>::encode_vec(self)
+    }
+}

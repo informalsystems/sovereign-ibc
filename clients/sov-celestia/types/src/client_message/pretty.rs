@@ -1,6 +1,7 @@
 use core::fmt::{Display, Error as FmtError, Formatter};
 
-use super::aggregated_proof::AggregatedProof;
+use super::aggregated_proof::AggregatedProofData;
+use super::{AggregatedProof, ProofDataInfo};
 use crate::client_message::aggregated_proof::PublicInput;
 pub struct PrettySlice<'a, T>(pub &'a [T]);
 
@@ -19,15 +20,16 @@ impl<'a, T: Display> Display for PrettySlice<'a, T> {
     }
 }
 
-pub struct PrettyAggregatedProof<'a>(pub &'a AggregatedProof);
+pub struct PrettyAggregatedProofData<'a>(pub &'a AggregatedProofData);
 
-impl Display for PrettyAggregatedProof<'_> {
+impl Display for PrettyAggregatedProofData<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "AggregatedProof {{ public_input: {}, proof: {} }}",
+            "AggregatedProofData {{ public_input: {}, proof_data_info: {}, aggregated_proof: {} }}",
             PrettyPublicInput(&self.0.public_input),
-            PrettySlice(&self.0.proof)
+            PrettyProofDataInfo(&self.0.proof_data_info),
+            PrettyAggregatedProof(&self.0.aggregated_proof)
         )
     }
 }
@@ -42,7 +44,27 @@ impl Display for PrettyPublicInput<'_> {
             self.0.initial_da_block_hash,
             self.0.final_da_block_hash,
             self.0.input_state_root,
-            self.0.post_state_root
+            self.0.final_state_root
         )
+    }
+}
+
+pub struct PrettyProofDataInfo<'a>(pub &'a ProofDataInfo);
+
+impl Display for PrettyProofDataInfo<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
+        write!(
+            f,
+            "ProofDataInfo {{ initial_state_height: {}, final_state_height: {} }}",
+            self.0.initial_state_height, self.0.final_state_height
+        )
+    }
+}
+
+pub struct PrettyAggregatedProof<'a>(pub &'a AggregatedProof);
+
+impl Display for PrettyAggregatedProof<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
+        write!(f, "AggregatedProof {{ {:?} }}", self.0)
     }
 }

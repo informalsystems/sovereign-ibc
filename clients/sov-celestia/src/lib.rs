@@ -13,8 +13,10 @@ extern crate alloc;
 
 pub mod client_state;
 pub mod consensus_state;
+pub mod context;
 
-/// Re-export of Sovereign light client data structures from `sov-celestia-client-types` crate.
+/// Re-exports `sov-celestia` light client data structures from the
+/// `sov-celestia-client-types` crate.
 pub mod types {
     #[doc(inline)]
     pub use sov_celestia_client_types::*;

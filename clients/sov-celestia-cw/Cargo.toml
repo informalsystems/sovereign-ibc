@@ -18,23 +18,22 @@ derive_more = { workspace = true }
 prost 		= { workspace = true, default-features = false }
 serde 		= { workspace = true, features = ["derive"] }
 thiserror 	= { version = "1.0.31" }
-tracing     = { version = "0.1.40" }
 
 # ibc dependencies
 ibc-core   			  = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-ibc-proto  			  = { workspace = true, features = ["json-schema"] }
 ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
+ibc-proto  			  = { workspace = true, features = ["json-schema"] }
 sov-celestia-client   = { path = "../sov-celestia", default-features = false, features = ["serde"] }
 
 # cosmwasm dependencies
-cosmwasm-schema = "1.4.1"
-cosmwasm-std 	= "1.4.1"
+cosmwasm-schema       = "1.4.1"
+cosmwasm-std 	      = "1.4.1"
 
 [dev-dependencies]
-cosmwasm-vm = "1.4.1"
-test-log             = { version = "0.2.14", default-features = false, features = ["trace"] }
-tracing-subscriber   = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
+cosmwasm-vm           = "1.4.1"
+test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }
+tracing-subscriber    = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
 
 
 [features]
@@ -43,6 +42,7 @@ std = [
 	"ibc-core/std",
 	"ibc-proto/std",
 	"ibc-client-wasm-types/std",
+	"ibc-client-tendermint/std",
 	"sov-celestia-client/std",
 	"prost/std",
 	"serde/std",

@@ -1,14 +1,13 @@
 //! Defines Sovereign's `ConsensusState` type
 
-use ibc_client_tendermint::types::proto::v1::ConsensusState as RawConsensusState;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
-use ibc_proto::google::protobuf::Any;
+use ibc_core::primitives::proto::{Any, Protobuf};
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::ConsensusState as RawConsensusState;
 use tendermint::hash::Algorithm;
 use tendermint::time::Time;
 use tendermint::Hash;
 use tendermint_proto::google::protobuf as tpb;
-use tendermint_proto::Protobuf;
 
 use crate::client_message::SovTmHeader;
 
@@ -132,7 +131,13 @@ impl From<SovTmHeader> for ConsensusState {
         let tm_header = header.da_header.signed_header.header;
 
         Self {
-            root: CommitmentRoot::from_bytes(tm_header.app_hash.as_ref()),
+            root: CommitmentRoot::from_bytes(
+                header
+                    .aggregated_proof_data
+                    .public_input
+                    .final_state_root
+                    .as_ref(),
+            ),
             timestamp: tm_header.time,
             next_validators_hash: tm_header.next_validators_hash,
         }

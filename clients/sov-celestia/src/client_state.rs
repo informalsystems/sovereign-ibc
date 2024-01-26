@@ -3,15 +3,10 @@
 use alloc::vec::Vec;
 use core::convert::{TryFrom, TryInto};
 
-use ibc_client_tendermint::client_state::ClientState as TmClientState;
-use ibc_client_tendermint::consensus_state::{ConsensusState as TmConsensusState, ConsensusState};
-use ibc_client_tendermint::context::{CommonContext, ValidationContext as TmValidationContext};
-use ibc_client_tendermint::types::{
-    ClientState as ClientStateType, ConsensusState as ConsensusStateType,
-};
 use ibc_core::client::context::client_state::{
     ClientStateCommon, ClientStateExecution, ClientStateValidation,
 };
+use ibc_core::client::context::consensus_state::ConsensusState as ConsensusStateTrait;
 use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::{Height, Status, UpdateKind};
@@ -22,30 +17,22 @@ use ibc_core::host::types::identifiers::{ClientId, ClientType};
 use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath, Path};
 use ibc_core::host::ExecutionContext;
 use ibc_core::primitives::proto::{Any, Protobuf};
-use sov_celestia_client_types::client_message::{SovHeader, SovMisbehaviour};
+use sov_celestia_client_types::client_message::Header;
 use sov_celestia_client_types::client_state::{
-    sov_client_type, RollupClientState, SovTmClientState, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
+    sov_client_type, ClientState as ClientStateType, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
 };
-use sov_celestia_client_types::proto::tendermint::v1::SovTmClientState as RawSovTmClientState;
+use sov_celestia_client_types::consensus_state::ConsensusState as ConsensusStateType;
+use sov_celestia_client_types::proto::v1::ClientState as RawSovTmClientState;
+
+use crate::consensus_state::ConsensusState;
+use crate::context::{CommonContext, ValidationContext as TmValidationContext};
 
 /// Newtype wrapper exists so that we can bypass Rust's orphan rules and
 /// implement traits from `ibc::core::client::context` on the `ClientState`
 /// type.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, derive_more::From)]
-pub struct ClientState {
-    pub da_client_state: TmClientState,
-    pub rollup_client_state: RollupClientState,
-}
-
-impl ClientState {
-    pub fn new(da_client_state: TmClientState, rollup_client_state: RollupClientState) -> Self {
-        Self {
-            da_client_state,
-            rollup_client_state,
-        }
-    }
-}
+pub struct ClientState(ClientStateType);
 
 impl Protobuf<RawSovTmClientState> for ClientState {}
 
@@ -53,21 +40,15 @@ impl TryFrom<RawSovTmClientState> for ClientState {
     type Error = ClientError;
 
     fn try_from(raw: RawSovTmClientState) -> Result<Self, Self::Error> {
-        let sov_client_state = SovTmClientState::try_from(raw)?;
-        Ok(Self {
-            da_client_state: sov_client_state.da_client_state.into(),
-            rollup_client_state: sov_client_state.rollup_client_state,
-        })
+        let sov_client_state = ClientStateType::try_from(raw)?;
+
+        Ok(Self(sov_client_state))
     }
 }
 
 impl From<ClientState> for RawSovTmClientState {
     fn from(client_state: ClientState) -> Self {
-        SovTmClientState {
-            da_client_state: client_state.da_client_state.inner().clone(),
-            rollup_client_state: client_state.rollup_client_state.clone(),
-        }
-        .into()
+        client_state.0.into()
     }
 }
 
@@ -77,12 +58,9 @@ impl TryFrom<Any> for ClientState {
     type Error = ClientError;
 
     fn try_from(raw: Any) -> Result<Self, Self::Error> {
-        let any = SovTmClientState::try_from(raw)?;
+        let any = ClientStateType::try_from(raw)?;
 
-        Ok(Self {
-            da_client_state: any.da_client_state.into(),
-            rollup_client_state: any.rollup_client_state,
-        })
+        Ok(Self(any))
     }
 }
 
@@ -97,7 +75,14 @@ impl From<ClientState> for Any {
 
 impl ClientStateCommon for ClientState {
     fn verify_consensus_state(&self, consensus_state: Any) -> Result<(), ClientError> {
-        self.da_client_state.verify_consensus_state(consensus_state)
+        let tm_consensus_state = ConsensusState::try_from(consensus_state)?;
+        if tm_consensus_state.root().is_empty() {
+            return Err(ClientError::Other {
+                description: "empty commitment root".into(),
+            });
+        };
+
+        Ok(())
     }
 
     fn client_type(&self) -> ClientType {
@@ -105,11 +90,17 @@ impl ClientStateCommon for ClientState {
     }
 
     fn latest_height(&self) -> Height {
-        self.da_client_state.latest_height()
+        self.0.latest_height()
     }
 
     fn validate_proof_height(&self, proof_height: Height) -> Result<(), ClientError> {
-        self.da_client_state.validate_proof_height(proof_height)
+        if self.latest_height() < proof_height {
+            return Err(ClientError::InvalidProofHeight {
+                latest_height: self.latest_height(),
+                proof_height,
+            });
+        }
+        Ok(())
     }
 
     /// Perform client-specific verifications and check all data in the new
@@ -120,42 +111,34 @@ impl ClientStateCommon for ClientState {
     /// guide
     fn verify_upgrade_client(
         &self,
-        upgraded_client_state: Any,
-        upgraded_consensus_state: Any,
-        proof_upgrade_client: CommitmentProofBytes,
-        proof_upgrade_consensus_state: CommitmentProofBytes,
-        root: &CommitmentRoot,
+        _upgraded_client_state: Any,
+        _upgraded_consensus_state: Any,
+        _proof_upgrade_client: CommitmentProofBytes,
+        _proof_upgrade_consensus_state: CommitmentProofBytes,
+        _root: &CommitmentRoot,
     ) -> Result<(), ClientError> {
-        self.da_client_state.verify_upgrade_client(
-            upgraded_client_state,
-            upgraded_consensus_state,
-            proof_upgrade_client,
-            proof_upgrade_consensus_state,
-            root,
-        )
+        unimplemented!()
     }
 
     fn verify_membership(
         &self,
-        prefix: &CommitmentPrefix,
-        proof: &CommitmentProofBytes,
-        root: &CommitmentRoot,
-        path: Path,
-        value: Vec<u8>,
+        _prefix: &CommitmentPrefix,
+        _proof: &CommitmentProofBytes,
+        _root: &CommitmentRoot,
+        _path: Path,
+        _value: Vec<u8>,
     ) -> Result<(), ClientError> {
-        self.da_client_state
-            .verify_membership(prefix, proof, root, path, value)
+        unimplemented!()
     }
 
     fn verify_non_membership(
         &self,
-        prefix: &CommitmentPrefix,
-        proof: &CommitmentProofBytes,
-        root: &CommitmentRoot,
-        path: Path,
+        _prefix: &CommitmentPrefix,
+        _proof: &CommitmentProofBytes,
+        _root: &CommitmentRoot,
+        _path: Path,
     ) -> Result<(), ClientError> {
-        self.da_client_state
-            .verify_non_membership(prefix, proof, root, path)
+        unimplemented!()
     }
 }
 
@@ -167,55 +150,52 @@ where
 {
     fn verify_client_message(
         &self,
-        ctx: &V,
-        client_id: &ClientId,
-        client_message: Any,
-        update_kind: &UpdateKind,
+        _ctx: &V,
+        _client_id: &ClientId,
+        _client_message: Any,
+        _update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
-        match update_kind {
-            UpdateKind::UpdateClient => {
-                let header = SovHeader::try_from(client_message)?;
-                self.da_client_state
-                    .verify_header(ctx, client_id, header.da_header)
-            }
-            UpdateKind::SubmitMisbehaviour => {
-                let misbehaviour = SovMisbehaviour::try_from(client_message)?;
-                self.da_client_state.verify_misbehaviour(
-                    ctx,
-                    client_id,
-                    misbehaviour.into_tendermint_misbehaviour(),
-                )
-            }
-        }
+        // match update_kind {
+        //     UpdateKind::UpdateClient => {
+        //         let header = Header::try_from(client_message)?;
+        //         self.verify_header(ctx, client_id, header.da_header)
+        //     }
+        //     UpdateKind::SubmitMisbehaviour => {
+        //         let misbehaviour = SovMisbehaviour::try_from(client_message)?;
+        //         self.verify_misbehaviour(
+        //             ctx,
+        //             client_id,
+        //             misbehaviour.into_tendermint_misbehaviour(),
+        //         )
+        //     }
+        // }
+        unimplemented!()
     }
 
     fn check_for_misbehaviour(
         &self,
-        ctx: &V,
-        client_id: &ClientId,
-        client_message: Any,
-        update_kind: &UpdateKind,
+        _ctx: &V,
+        _client_id: &ClientId,
+        _client_message: Any,
+        _update_kind: &UpdateKind,
     ) -> Result<bool, ClientError> {
-        match update_kind {
-            UpdateKind::UpdateClient => {
-                let header = SovHeader::try_from(client_message)?;
-                self.da_client_state.check_for_misbehaviour_update_client(
-                    ctx,
-                    client_id,
-                    header.da_header,
-                )
-            }
-            UpdateKind::SubmitMisbehaviour => {
-                let misbehaviour = SovMisbehaviour::try_from(client_message)?;
-                self.da_client_state.check_for_misbehaviour_misbehavior(
-                    &misbehaviour.into_tendermint_misbehaviour(),
-                )
-            }
-        }
+        // match update_kind {
+        //     UpdateKind::UpdateClient => {
+        //         let header = Header::try_from(client_message)?;
+        //         self.check_for_misbehaviour_update_client(ctx, client_id, header.da_header)
+        //     }
+        //     UpdateKind::SubmitMisbehaviour => {
+        //         let misbehaviour = SovMisbehaviour::try_from(client_message)?;
+        //         self.check_for_misbehaviour_misbehavior(
+        //             &misbehaviour.into_tendermint_misbehaviour(),
+        //         )
+        //     }
+        // }
+        unimplemented!()
     }
 
-    fn status(&self, ctx: &V, client_id: &ClientId) -> Result<Status, ClientError> {
-        self.da_client_state.status(ctx, client_id)
+    fn status(&self, _ctx: &V, _client_id: &ClientId) -> Result<Status, ClientError> {
+        unimplemented!()
     }
 }
 
@@ -223,7 +203,6 @@ impl<E> ClientStateExecution<E> for ClientState
 where
     E: ClientExecutionContext + TmValidationContext + ExecutionContext,
     <E as ClientExecutionContext>::AnyClientState: From<ClientState>,
-    <E as ClientExecutionContext>::AnyClientState: From<TmClientState>,
     <E as ClientExecutionContext>::AnyConsensusState: From<ConsensusState>,
 {
     fn initialise(
@@ -241,8 +220,8 @@ where
         ctx.store_consensus_state(
             ClientConsensusStatePath::new(
                 client_id.clone(),
-                self.da_client_state.latest_height().revision_number(),
-                self.da_client_state.latest_height().revision_height(),
+                self.latest_height().revision_number(),
+                self.latest_height().revision_height(),
             ),
             tm_consensus_state.into(),
         )?;
@@ -258,11 +237,10 @@ where
         client_id: &ClientId,
         header: Any,
     ) -> Result<Vec<Height>, ClientError> {
-        let header = SovHeader::try_from(header)?;
+        let header = Header::try_from(header)?;
         let header_height = header.height();
 
-        self.da_client_state
-            .prune_oldest_consensus_state(ctx, client_id)?;
+        // self.prune_oldest_consensus_state(ctx, client_id)?;
 
         let maybe_existing_consensus_state = {
             let path_at_header_height = ClientConsensusStatePath::new(
@@ -283,27 +261,21 @@ where
             let host_timestamp = CommonContext::host_timestamp(ctx)?;
             let host_height = CommonContext::host_height(ctx)?;
 
-            let new_consensus_state = ConsensusStateType::from(header.da_header.clone());
-            let new_da_client_state = self
-                .da_client_state
-                .inner()
-                .clone()
-                .with_header(header.da_header)?;
-
-            let new_client_state = ClientState::new(
-                new_da_client_state.clone().into(),
-                self.rollup_client_state.clone(),
-            );
+            let new_consensus_state = ConsensusStateType::from(header.clone());
+            let new_client_state = self.0.clone().with_header(header.da_header)?;
 
             ctx.store_consensus_state(
                 ClientConsensusStatePath::new(
                     client_id.clone(),
-                    new_da_client_state.latest_height.revision_number(),
-                    new_da_client_state.latest_height.revision_height(),
+                    new_client_state.latest_height.revision_number(),
+                    new_client_state.latest_height.revision_height(),
                 ),
-                TmConsensusState::from(new_consensus_state).into(),
+                ConsensusState::from(new_consensus_state).into(),
             )?;
-            ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
+            ctx.store_client_state(
+                ClientStatePath::new(client_id),
+                ClientState::from(new_client_state).into(),
+            )?;
             ctx.store_update_time(client_id.clone(), header_height, host_timestamp)?;
             ctx.store_update_height(client_id.clone(), header_height, host_height)?;
         }
@@ -318,20 +290,14 @@ where
         _client_message: Any,
         _update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
-        let frozen_client_state = self
-            .da_client_state
-            .inner()
-            .clone()
-            .with_frozen_height(Height::min(0));
+        let frozen_client_state = self.0.clone().with_frozen_height(Height::min(0));
 
-        let frozen_da_client_state = TmClientState::from(frozen_client_state);
+        let wrapped_frozen_client_state = ClientState::from(frozen_client_state);
 
-        let frozen_client_state = ClientState::new(
-            frozen_da_client_state.clone(),
-            self.rollup_client_state.clone(),
-        );
-
-        ctx.store_client_state(ClientStatePath::new(client_id), frozen_client_state.into())?;
+        ctx.store_client_state(
+            ClientStatePath::new(client_id),
+            wrapped_frozen_client_state.into(),
+        )?;
 
         Ok(())
     }
@@ -344,34 +310,20 @@ where
         upgraded_client_state: Any,
         upgraded_consensus_state: Any,
     ) -> Result<Height, ClientError> {
-        let upgraded_tm_client_state = Self::try_from(upgraded_client_state)?;
-        let upgraded_tm_cons_state = TmConsensusState::try_from(upgraded_consensus_state)?;
+        let mut upgraded_client_state = Self::try_from(upgraded_client_state)?;
+        let upgraded_tm_cons_state = ConsensusState::try_from(upgraded_consensus_state)?;
 
-        let mut upgraded_da_client_state = upgraded_tm_client_state.da_client_state.inner().clone();
-
-        let tm_client_state = self.da_client_state.inner();
-
-        upgraded_da_client_state.zero_custom_fields();
+        upgraded_client_state.0.zero_custom_fields();
 
         // Construct new client state and consensus state relayer chosen client
         // parameters are ignored. All chain-chosen parameters come from
         // committed client, all client-chosen parameters come from current
         // client.
-        let new_da_client_state = ClientStateType::new(
-            upgraded_da_client_state.chain_id,
-            tm_client_state.trust_level,
-            tm_client_state.trusting_period,
-            upgraded_da_client_state.unbonding_period,
-            tm_client_state.max_clock_drift,
-            upgraded_da_client_state.latest_height,
-            upgraded_da_client_state.proof_specs,
-            upgraded_da_client_state.upgrade_path,
-            tm_client_state.allow_update,
-        )?;
-
-        let new_client_state = ClientState::new(
-            new_da_client_state.clone().into(),
-            self.rollup_client_state.clone(),
+        let new_client_state = ClientStateType::new(
+            upgraded_client_state.0.rollup_id,
+            upgraded_client_state.0.latest_height,
+            upgraded_client_state.0.upgrade_path,
+            upgraded_client_state.0.tendermint_params,
         );
 
         // The new consensus state is merely used as a trusted kernel against
@@ -394,18 +346,21 @@ where
             upgraded_tm_cons_state.next_validators_hash(),
         );
 
-        let latest_height = new_da_client_state.latest_height;
+        let latest_height = new_client_state.latest_height;
         let host_timestamp = CommonContext::host_timestamp(ctx)?;
         let host_height = CommonContext::host_height(ctx)?;
 
-        ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
+        ctx.store_client_state(
+            ClientStatePath::new(client_id),
+            ClientState::from(new_client_state).into(),
+        )?;
         ctx.store_consensus_state(
             ClientConsensusStatePath::new(
                 client_id.clone(),
                 latest_height.revision_number(),
                 latest_height.revision_height(),
             ),
-            TmConsensusState::from(new_consensus_state).into(),
+            ConsensusState::from(new_consensus_state).into(),
         )?;
         ctx.store_update_time(client_id.clone(), latest_height, host_timestamp)?;
         ctx.store_update_height(client_id.clone(), latest_height, host_height)?;
