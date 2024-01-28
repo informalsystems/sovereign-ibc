@@ -83,7 +83,7 @@ where
                 };
 
                 let proof_data_info = ProofDataInfo {
-                    initial_state_height: Height::new(0, 0).unwrap(),
+                    initial_state_height: Height::new(0, 1).unwrap(),
                     final_state_height: Height::new(0, 10).unwrap(),
                 };
 

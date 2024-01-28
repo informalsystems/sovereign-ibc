@@ -53,6 +53,10 @@ impl ClientState {
         self.latest_height
     }
 
+    pub fn is_frozen(&self) -> bool {
+        self.frozen_height.is_some()
+    }
+
     pub fn with_header(self, header: TmHeader) -> Result<Self, Error> {
         Ok(Self {
             latest_height: max(header.height(), self.latest_height),

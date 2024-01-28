@@ -123,7 +123,7 @@ impl ClientStateCommon for ClientState {
         _proof_upgrade_consensus_state: CommitmentProofBytes,
         _root: &CommitmentRoot,
     ) -> Result<(), ClientError> {
-        unimplemented!()
+        Ok(())
     }
 
     fn verify_membership(
@@ -134,7 +134,7 @@ impl ClientStateCommon for ClientState {
         _path: Path,
         _value: Vec<u8>,
     ) -> Result<(), ClientError> {
-        unimplemented!()
+        Ok(())
     }
 
     fn verify_non_membership(
@@ -144,7 +144,7 @@ impl ClientStateCommon for ClientState {
         _root: &CommitmentRoot,
         _path: Path,
     ) -> Result<(), ClientError> {
-        unimplemented!()
+        Ok(())
     }
 }
 
@@ -161,21 +161,7 @@ where
         _client_message: Any,
         _update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
-        // match update_kind {
-        //     UpdateKind::UpdateClient => {
-        //         let header = Header::try_from(client_message)?;
-        //         self.verify_header(ctx, client_id, header.da_header)
-        //     }
-        //     UpdateKind::SubmitMisbehaviour => {
-        //         let misbehaviour = SovMisbehaviour::try_from(client_message)?;
-        //         self.verify_misbehaviour(
-        //             ctx,
-        //             client_id,
-        //             misbehaviour.into_tendermint_misbehaviour(),
-        //         )
-        //     }
-        // }
-        unimplemented!()
+        Ok(())
     }
 
     fn check_for_misbehaviour(
@@ -185,23 +171,43 @@ where
         _client_message: Any,
         _update_kind: &UpdateKind,
     ) -> Result<bool, ClientError> {
-        // match update_kind {
-        //     UpdateKind::UpdateClient => {
-        //         let header = Header::try_from(client_message)?;
-        //         self.check_for_misbehaviour_update_client(ctx, client_id, header.da_header)
-        //     }
-        //     UpdateKind::SubmitMisbehaviour => {
-        //         let misbehaviour = SovMisbehaviour::try_from(client_message)?;
-        //         self.check_for_misbehaviour_misbehavior(
-        //             &misbehaviour.into_tendermint_misbehaviour(),
-        //         )
-        //     }
-        // }
-        unimplemented!()
+        Ok(false)
     }
 
-    fn status(&self, _ctx: &V, _client_id: &ClientId) -> Result<Status, ClientError> {
-        unimplemented!()
+    fn status(&self, ctx: &V, client_id: &ClientId) -> Result<Status, ClientError> {
+        if self.0.is_frozen() {
+            return Ok(Status::Frozen);
+        }
+
+        let latest_consensus_state: ConsensusState = {
+            let any_latest_consensus_state =
+                match ctx.consensus_state(&ClientConsensusStatePath::new(
+                    client_id.clone(),
+                    self.0.latest_height.revision_number(),
+                    self.0.latest_height.revision_height(),
+                )) {
+                    Ok(cs) => cs,
+                    // if the client state does not have an associated consensus state for its latest height
+                    // then it must be expired
+                    Err(_) => return Ok(Status::Expired),
+                };
+
+            any_latest_consensus_state.try_into()?
+        };
+
+        // Note: if the `duration_since()` is `None`, indicating that the latest
+        // consensus state is in the future, then we don't consider the client
+        // to be expired.
+        let now = ctx.host_timestamp()?;
+        if let Some(elapsed_since_latest_consensus_state) =
+            now.duration_since(&latest_consensus_state.timestamp().into())
+        {
+            if elapsed_since_latest_consensus_state > self.0.tendermint_params.trusting_period {
+                return Ok(Status::Expired);
+            }
+        }
+
+        Ok(Status::Active)
     }
 }
 
