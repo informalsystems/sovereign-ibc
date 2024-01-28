@@ -8,10 +8,12 @@ use ibc_core::client::types::error::ClientError;
 use ibc_core::commitment_types::commitment;
 use ibc_core::primitives;
 use ibc_core::primitives::proto::{Any, Protobuf};
+use sov_celestia_client::consensus_state::ConsensusState as SovConsensusState;
 
 #[derive(Clone, From, TryInto)]
 pub enum AnyConsensusState {
     Tendermint(TmConsensusState),
+    Sovereign(SovConsensusState),
 }
 
 impl TryFrom<Any> for AnyConsensusState {
@@ -28,6 +30,7 @@ impl From<AnyConsensusState> for Any {
     fn from(any_cs: AnyConsensusState) -> Self {
         match any_cs {
             AnyConsensusState::Tendermint(tm_cs) => tm_cs.into(),
+            AnyConsensusState::Sovereign(sov_cs) => sov_cs.into(),
         }
     }
 }
@@ -63,12 +66,14 @@ impl ConsensusState for AnyConsensusState {
     fn root(&self) -> &commitment::CommitmentRoot {
         match self {
             AnyConsensusState::Tendermint(cs) => cs.root(),
+            AnyConsensusState::Sovereign(cs) => cs.root(),
         }
     }
 
     fn timestamp(&self) -> primitives::Timestamp {
         match self {
             AnyConsensusState::Tendermint(cs) => cs.timestamp().into(),
+            AnyConsensusState::Sovereign(cs) => cs.timestamp().into(),
         }
     }
 
@@ -76,6 +81,9 @@ impl ConsensusState for AnyConsensusState {
         match self {
             AnyConsensusState::Tendermint(cs) => {
                 <TmConsensusState as ConsensusState>::encode_vec(cs)
+            }
+            AnyConsensusState::Sovereign(cs) => {
+                <SovConsensusState as ConsensusState>::encode_vec(cs)
             }
         }
     }

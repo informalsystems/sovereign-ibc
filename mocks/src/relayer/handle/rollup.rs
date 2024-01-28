@@ -2,10 +2,14 @@ use async_trait::async_trait;
 use ibc_client_tendermint::types::Header;
 use ibc_core::channel::types::proto::v1::QueryPacketCommitmentRequest;
 use ibc_core::client::types::proto::v1::{QueryClientStateRequest, QueryConsensusStateRequest};
+use ibc_core::client::types::Height;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
-use sov_celestia_client::types::client_message::{AggregatedProof, PublicInput, SovTmHeader};
+use sov_celestia_client::types::client_message::{
+    AggregatedProof, AggregatedProofData, ProofDataInfo, PublicInput, SovTmHeader,
+};
+use sov_celestia_client::types::proto::types::v1::AggregatedProof as RawAggregatedProof;
 use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
@@ -75,17 +79,25 @@ where
                     initial_da_block_hash: vec![0],
                     final_da_block_hash: vec![0],
                     input_state_root: vec![0],
-                    post_state_root: vec![0],
+                    final_state_root: vec![0],
                 };
 
-                let aggregated_proof = AggregatedProof {
+                let proof_data_info = ProofDataInfo {
+                    initial_state_height: Height::new(0, 0).unwrap(),
+                    final_state_height: Height::new(0, 10).unwrap(),
+                };
+
+                let aggregated_proof = AggregatedProof::from(RawAggregatedProof { proof: vec![0] });
+
+                let aggregated_proof_data = AggregatedProofData {
                     public_input,
-                    proof: vec![0],
+                    proof_data_info,
+                    aggregated_proof,
                 };
 
                 let sov_header = SovTmHeader {
                     da_header: header,
-                    aggregated_proof,
+                    aggregated_proof_data,
                 };
 
                 QueryResp::Header(sov_header.into())

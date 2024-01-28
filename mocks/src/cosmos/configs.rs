@@ -1,33 +1,23 @@
-use std::time::Duration;
-
 use basecoin_store::avl::get_proof_spec;
-use ibc_client_tendermint::types::{AllowUpdate, ClientState};
+use ibc_client_tendermint::client_state::ClientState;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::specs::ProofSpecs;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::Signer;
+use ibc_testkit::fixtures::clients::tendermint::ClientStateConfig;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 
 pub fn basecoin_proof_specs() -> ProofSpecs {
     [get_proof_spec(), get_proof_spec()].to_vec().into()
 }
 
-pub fn dummy_tm_client_state(chain_id: ChainId, latest_height: Height) -> ClientState {
-    ClientState::new(
-        chain_id,
-        Default::default(),
-        Duration::from_secs(64000),
-        Duration::from_secs(128000),
-        Duration::from_millis(3000),
-        latest_height,
-        basecoin_proof_specs(),
-        Default::default(),
-        AllowUpdate {
-            after_expiry: false,
-            after_misbehaviour: false,
-        },
-    )
-    .unwrap()
+pub fn dummy_tm_client_state(chain_id: ChainId, current_height: Height) -> ClientState {
+    ClientStateConfig::builder()
+        .chain_id(chain_id)
+        .latest_height(current_height)
+        .build()
+        .try_into()
+        .unwrap()
 }
 
 pub fn genesis_app_state() -> serde_json::Value {

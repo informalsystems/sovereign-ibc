@@ -1,1 +1,0 @@
-# `sov-celestia-client-cw`

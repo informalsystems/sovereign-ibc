@@ -5,7 +5,6 @@ use core::fmt::Debug;
 
 use basecoin_app::modules::ibc::AnyConsensusState;
 use basecoin_store::context::ProvableStore;
-use ibc_client_tendermint::client_state::ClientState as TmClientState;
 use ibc_client_tendermint::types::{
     client_type as tm_client_type, ConsensusState as TmConsensusState,
 };
@@ -43,8 +42,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let current_height = self.ibc_ctx().host_height().unwrap();
 
-        let client_state: TmClientState =
-            dummy_tm_client_state(client_chain_id.clone(), current_height).into();
+        let client_state = dummy_tm_client_state(client_chain_id.clone(), current_height);
 
         let latest_height = client_state.latest_height();
 

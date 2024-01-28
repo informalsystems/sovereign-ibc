@@ -12,7 +12,7 @@ use tendermint::{Hash, Time};
 /// bypass Rust's orphan rules and implement traits from
 /// `ibc::core::client::context` on the `ConsensusState` type.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_more::From)]
 pub struct ConsensusState(ConsensusStateType);
 
 impl ConsensusState {
@@ -26,12 +26,6 @@ impl ConsensusState {
 
     pub fn next_validators_hash(&self) -> Hash {
         self.0.next_validators_hash
-    }
-}
-
-impl From<ConsensusStateType> for ConsensusState {
-    fn from(consensus_state: ConsensusStateType) -> Self {
-        Self(consensus_state)
     }
 }
 

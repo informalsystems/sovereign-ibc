@@ -6,8 +6,12 @@ license 	 = { workspace = true }
 repository   = { workspace = true }
 rust-version = { workspace = true }
 version      = { workspace = true }
-readme       = "README.md"
-publish      = false
+keywords     = ["rollup", "sovereign", "ibc", "light-client"]
+readme       = "./../README.md"
+description  = """
+    Contains the implementation of `sov-celestia` light client, and re-exports 
+	essential data structures and domain types from `ibc-core-client-types` crate.
+"""
 
 [dependencies]
 # external dependencies

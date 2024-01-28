@@ -55,9 +55,10 @@ where
 
         let current_height = ibc_ctx.host_height().unwrap();
 
-        let client_state = AnyClientState::Tendermint(
-            dummy_tm_client_state(client_chain_id.clone(), current_height).into(),
-        );
+        let client_state = AnyClientState::Tendermint(dummy_tm_client_state(
+            client_chain_id.clone(),
+            current_height,
+        ));
 
         let latest_height = client_state.latest_height();
 

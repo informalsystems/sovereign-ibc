@@ -29,6 +29,7 @@ ibc-core              = { workspace = true }
 ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-query             = { workspace = true }
+sov-celestia-client   = { path = "../../clients/sov-celestia" }
 # `tendermint` required to convert IbcEvent to a domain event type without custom conversion.
 tendermint            = { workspace = true }
 
