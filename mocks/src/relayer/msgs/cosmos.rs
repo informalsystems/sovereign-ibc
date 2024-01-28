@@ -22,7 +22,6 @@ use ibc_core::host::types::path::{CommitmentPath, Path, SeqSendPath};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp, ToProto};
 use prost::Message;
-use sov_celestia_client::client_state::ClientState;
 use sov_ibc::context::HOST_REVISION_NUMBER;
 
 use crate::configs::TransferTestConfig;
@@ -47,7 +46,7 @@ where
             _ => panic!("unexpected query response"),
         };
 
-        let sov_client_state: ClientState = dummy_sov_client_state(chain_id, current_height).into();
+        let sov_client_state = dummy_sov_client_state(chain_id, current_height);
 
         let any_client_state = AnyClientState::from(sov_client_state);
 
