@@ -32,6 +32,8 @@ pub enum AnyClientState {
     Sovereign(SovClientState),
 }
 
+impl Protobuf<Any> for AnyClientState {}
+
 impl TryFrom<Any> for AnyClientState {
     type Error = ClientError;
 
@@ -60,8 +62,6 @@ impl From<AnyClientState> for Any {
         }
     }
 }
-
-impl Protobuf<Any> for AnyClientState {}
 
 // Next 3 trait impls are boilerplate
 // We have a `ClientState` macro, but unfortunately it doesn't currently support
@@ -278,6 +278,8 @@ pub enum AnyConsensusState {
     Sovereign(SovConsensusState),
 }
 
+impl Protobuf<Any> for AnyConsensusState {}
+
 impl TryFrom<Any> for AnyConsensusState {
     type Error = ClientError;
 
@@ -306,5 +308,3 @@ impl From<AnyConsensusState> for Any {
         }
     }
 }
-
-impl Protobuf<Any> for AnyConsensusState {}

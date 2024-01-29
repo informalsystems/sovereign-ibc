@@ -6,7 +6,6 @@ use base64::Engine;
 use ibc_app_transfer::types::msgs::transfer::MsgTransfer;
 use ibc_app_transfer::types::packet::PacketData;
 use ibc_app_transfer::types::{Coin, PrefixedDenom};
-use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::channel::types::msgs::MsgRecvPacket;
 use ibc_core::channel::types::packet::Packet;
 use ibc_core::channel::types::timeout::TimeoutHeight;
@@ -67,14 +66,7 @@ where
 
     /// Builds an update client message wrapped in a `CallMessage`
     pub async fn build_msg_update_client_for_sov(&self, target_height: Height) -> CallMessage {
-        let client_counter = match self.src_chain_ctx().query(QueryReq::ClientCounter).await {
-            QueryResp::ClientCounter(counter) => counter,
-            _ => panic!("unexpected query response"),
-        }
-        .checked_sub(1)
-        .unwrap();
-
-        let client_id = tm_client_type().build_client_id(client_counter);
+        let client_id = self.dst_client_id().clone();
 
         let any_client_state = match self
             .src_chain_ctx()
@@ -141,7 +133,8 @@ where
         proof_height_on_a: Height,
         msg_transfer: MsgTransfer,
     ) -> CallMessage {
-        let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
+        let seq_send_path =
+            SeqSendPath::new(&msg_transfer.port_id_on_a, &msg_transfer.chan_id_on_a);
 
         let next_seq_send = match self
             .dst_chain_ctx()
@@ -154,8 +147,11 @@ where
 
         let latest_seq_send = (u64::from(next_seq_send) - 1).into();
 
-        let commitment_path =
-            CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
+        let commitment_path = CommitmentPath::new(
+            &msg_transfer.port_id_on_a,
+            &msg_transfer.chan_id_on_a,
+            latest_seq_send,
+        );
 
         let (_, proof_bytes) = match self
             .dst_chain_ctx()

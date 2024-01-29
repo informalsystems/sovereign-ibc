@@ -17,7 +17,7 @@ pub struct MockTendermint {
     #[builder(default = Arc::new(Runtime::new().unwrap()))]
     runtime: Arc<Runtime>,
     /// Chain identifier
-    #[builder(default = ChainId::from_str("mock-cosmos-chain-0").expect("never fails"))]
+    #[builder(default = ChainId::from_str("mock-cosmos-0").expect("never fails"))]
     chain_id: ChainId,
     /// Chain validators
     #[builder(default = Arc::new(Mutex::new(vec![

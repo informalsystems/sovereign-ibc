@@ -24,7 +24,7 @@ pub struct TestSetupConfig<C: Context, Da: DaService> {
     pub da_service: Da,
     /// The chain Id of the rollup.
     #[builder(default = ChainId::new("mock-rollup-0").unwrap())]
-    pub rollup_chain_id: ChainId,
+    pub rollup_id: ChainId,
     /// The runtime configuration.
     #[builder(default = RuntimeConfig::default())]
     pub rollup_runtime_config: RuntimeConfig<C>,

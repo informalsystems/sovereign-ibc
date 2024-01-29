@@ -6,17 +6,13 @@ use ibc_core::client::types::Height;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
-use sov_celestia_client::types::client_message::{
-    AggregatedProof, AggregatedProofData, ProofDataInfo, PublicInput, SovTmHeader,
-};
-use sov_celestia_client::types::proto::types::v1::AggregatedProof as RawAggregatedProof;
 use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
 
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::sovereign::{MockRollup, RuntimeCall};
+use crate::sovereign::{dummy_sov_header, MockRollup, RuntimeCall};
 use crate::utils::{wait_for_block, MutexUtil};
 
 #[async_trait]
@@ -75,30 +71,11 @@ where
                     trusted_next_validator_set: target_block.next_validators,
                 };
 
-                let public_input = PublicInput {
-                    initial_da_block_hash: vec![0],
-                    final_da_block_hash: vec![0],
-                    input_state_root: vec![0],
-                    final_state_root: vec![0],
-                };
-
-                let proof_data_info = ProofDataInfo {
-                    initial_state_height: Height::new(0, 1).unwrap(),
-                    final_state_height: Height::new(0, 10).unwrap(),
-                };
-
-                let aggregated_proof = AggregatedProof::from(RawAggregatedProof { proof: vec![0] });
-
-                let aggregated_proof_data = AggregatedProofData {
-                    public_input,
-                    proof_data_info,
-                    aggregated_proof,
-                };
-
-                let sov_header = SovTmHeader {
-                    da_header: header,
-                    aggregated_proof_data,
-                };
+                let sov_header = dummy_sov_header(
+                    header,
+                    Height::new(0, 1).unwrap(),
+                    Height::new(0, revision_height as u64).unwrap(),
+                );
 
                 QueryResp::Header(sov_header.into())
             }

@@ -1,4 +1,4 @@
-use core::fmt::{Display, Error as FmtError, Formatter};
+use core::fmt::{Debug, Display, Error as FmtError, Formatter};
 
 use ibc_client_tendermint::types::Header as TmHeader;
 use ibc_core::client::types::Height;
@@ -20,7 +20,7 @@ pub struct Header<H: Clone> {
     pub aggregated_proof_data: AggregatedProofData,
 }
 
-impl<H: Clone> core::fmt::Debug for Header<H> {
+impl<H: Clone> Debug for Header<H> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(f, "Header {{...}}")
     }
@@ -74,15 +74,14 @@ impl TryFrom<RawSovTmHeader> for SovTmHeader {
 
         let da_header = TmHeader::try_from(da_header).map_err(Error::source)?;
 
-        let aggregate_snark = value
+        let aggregated_proof_data = value
             .aggregated_proof_data
-            .ok_or(Error::missing("missing aggregate_snark"))?
-            .try_into()
-            .map_err(Error::source)?;
+            .ok_or(Error::missing("missing aggregated proof"))?
+            .try_into()?;
 
         Ok(Header {
             da_header,
-            aggregated_proof_data: aggregate_snark,
+            aggregated_proof_data,
         })
     }
 }

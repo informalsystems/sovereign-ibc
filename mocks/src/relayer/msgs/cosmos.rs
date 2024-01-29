@@ -48,8 +48,6 @@ where
 
         let sov_client_state = dummy_sov_client_state(chain_id, current_height);
 
-        let any_client_state = AnyClientState::from(sov_client_state);
-
         let consensus_state = match self
             .src_chain_ctx()
             .query(QueryReq::HostConsensusState(current_height))
@@ -60,7 +58,7 @@ where
         };
 
         let msg_create_client = MsgCreateClient {
-            client_state: any_client_state.into(),
+            client_state: sov_client_state.into(),
             consensus_state,
             signer: self.src_chain_ctx().signer().clone(),
         };

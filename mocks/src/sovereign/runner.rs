@@ -40,9 +40,6 @@ where
 
     /// Begins a block by setting the host consensus state and triggering the slot hook
     pub async fn begin_block(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
-        self.da_core
-            .grow_blocks(self.state_root.lock().unwrap().as_ref().to_vec());
-
         let mut working_set = checkpoint.to_revertable();
 
         let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);
@@ -50,6 +47,8 @@ where
         debug!("rollup: processing block at height {current_height}");
 
         let height = loop {
+            self.da_core
+                .grow_blocks(self.state_root.lock().unwrap().as_ref().to_vec());
             // Dummy transaction to trigger the block generation
             self.da_service().send_transaction(&[0; 32]).await.unwrap();
             sleep(Duration::from_millis(100)).await;

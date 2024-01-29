@@ -3,17 +3,12 @@
 
 use core::fmt::Debug;
 
-use basecoin_app::modules::ibc::AnyConsensusState;
 use basecoin_store::context::ProvableStore;
-use ibc_client_tendermint::types::{
-    client_type as tm_client_type, ConsensusState as TmConsensusState,
-};
 use ibc_core::channel::types::channel::{
     ChannelEnd, Counterparty as ChanCounterparty, Order, State as ChannelState,
 };
 use ibc_core::channel::types::Version as ChannelVersion;
-use ibc_core::client::context::client_state::ClientStateCommon;
-use ibc_core::client::context::ClientExecutionContext;
+use ibc_core::client::context::client_state::ClientStateExecution;
 use ibc_core::commitment_types::commitment::CommitmentPrefix;
 use ibc_core::connection::types::version::Version as ConnectionVersion;
 use ibc_core::connection::types::{
@@ -23,64 +18,34 @@ use ibc_core::host::types::identifiers::{
     ChainId, ChannelId, ClientId, ConnectionId, PortId, Sequence,
 };
 use ibc_core::host::types::path::{
-    ChannelEndPath, ClientConsensusStatePath, ClientStatePath, ConnectionPath, SeqAckPath,
-    SeqRecvPath, SeqSendPath,
+    ChannelEndPath, ConnectionPath, SeqAckPath, SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
+use sov_celestia_client::types::client_state::sov_client_type;
+use sov_celestia_client::types::consensus_state::ConsensusState as SovConsensusState;
 use tendermint::{Hash, Time};
 
-use super::{dummy_tm_client_state, MockCosmosChain};
+use super::MockCosmosChain;
+use crate::sovereign::dummy_sov_client_state;
 
 impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     /// Establishes a tendermint light client on the ibc module
     pub fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
         let client_counter = self.ibc_ctx().client_counter().unwrap();
 
-        let client_id = tm_client_type().build_client_id(client_counter);
-
-        let client_state_path = ClientStatePath::new(&client_id);
+        let client_id = sov_client_type().build_client_id(client_counter);
 
         let current_height = self.ibc_ctx().host_height().unwrap();
 
-        let client_state = dummy_tm_client_state(client_chain_id.clone(), current_height);
+        let client_state = dummy_sov_client_state(client_chain_id.clone(), current_height);
 
-        let latest_height = client_state.latest_height();
+        let consensus_state = SovConsensusState::new(Vec::new().into(), Time::now(), Hash::None);
 
-        self.ibc_ctx()
-            .store_update_time(
-                client_id.clone(),
-                latest_height,
-                self.ibc_ctx().host_timestamp().unwrap(),
-            )
-            .unwrap();
-
-        self.ibc_ctx()
-            .store_update_height(
-                client_id.clone(),
-                latest_height,
-                self.ibc_ctx().host_height().unwrap(),
-            )
+        client_state
+            .initialise(&mut self.ibc_ctx(), &client_id, consensus_state.into())
             .unwrap();
 
         self.ibc_ctx().increase_client_counter().unwrap();
-
-        self.ibc_ctx()
-            .store_client_state(client_state_path, client_state.into())
-            .unwrap();
-
-        let consensus_state_path = ClientConsensusStatePath::new(
-            client_id.clone(),
-            current_height.revision_number(),
-            current_height.revision_height(),
-        );
-
-        let consensus_state = AnyConsensusState::Tendermint(
-            TmConsensusState::new(vec![].into(), Time::now(), Hash::None).into(),
-        );
-
-        self.ibc_ctx()
-            .store_consensus_state(consensus_state_path, consensus_state)
-            .unwrap();
 
         client_id
     }

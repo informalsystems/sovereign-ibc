@@ -25,7 +25,7 @@ use sov_celestia_client_types::consensus_state::ConsensusState as ConsensusState
 use sov_celestia_client_types::proto::v1::ClientState as RawSovTmClientState;
 
 use crate::consensus_state::ConsensusState;
-use crate::context::{CommonContext, ValidationContext as TmValidationContext};
+use crate::context::{CommonContext, ValidationContext as SovValidationContext};
 
 /// Newtype wrapper exists so that we can bypass Rust's orphan rules and
 /// implement traits from `ibc::core::client::context` on the `ClientState`
@@ -150,7 +150,7 @@ impl ClientStateCommon for ClientState {
 
 impl<V> ClientStateValidation<V> for ClientState
 where
-    V: ClientValidationContext + TmValidationContext,
+    V: ClientValidationContext + SovValidationContext,
     V::AnyConsensusState: TryInto<ConsensusState>,
     ClientError: From<<V::AnyConsensusState as TryInto<ConsensusState>>::Error>,
 {
@@ -213,7 +213,7 @@ where
 
 impl<E> ClientStateExecution<E> for ClientState
 where
-    E: ClientExecutionContext + TmValidationContext + ExecutionContext,
+    E: ClientExecutionContext + SovValidationContext + ExecutionContext,
     <E as ClientExecutionContext>::AnyClientState: From<ClientState>,
     <E as ClientExecutionContext>::AnyConsensusState: From<ConsensusState>,
 {
@@ -226,7 +226,7 @@ where
         let host_timestamp = CommonContext::host_timestamp(ctx)?;
         let host_height = CommonContext::host_height(ctx)?;
 
-        let tm_consensus_state = ConsensusState::try_from(consensus_state)?;
+        let sov_consensus_state = ConsensusState::try_from(consensus_state)?;
 
         ctx.store_client_state(ClientStatePath::new(client_id), self.clone().into())?;
         ctx.store_consensus_state(
@@ -235,7 +235,7 @@ where
                 self.latest_height().revision_number(),
                 self.latest_height().revision_height(),
             ),
-            tm_consensus_state.into(),
+            sov_consensus_state.into(),
         )?;
         ctx.store_update_time(client_id.clone(), self.latest_height(), host_timestamp)?;
         ctx.store_update_height(client_id.clone(), self.latest_height(), host_height)?;

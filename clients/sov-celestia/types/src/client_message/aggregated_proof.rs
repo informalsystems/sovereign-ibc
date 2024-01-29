@@ -94,12 +94,9 @@ impl TryFrom<RawProofDataInfo> for ProofDataInfo {
     type Error = Error;
 
     fn try_from(raw: RawProofDataInfo) -> Result<Self, Self::Error> {
-        let initial_state_height = Height::new(raw.initial_state_height, 0)?;
-        let final_state_height = Height::new(raw.final_state_height, 0)?;
-
         Ok(Self {
-            initial_state_height,
-            final_state_height,
+            initial_state_height: Height::new(0, raw.initial_state_height)?,
+            final_state_height: Height::new(0, raw.final_state_height)?,
         })
     }
 }

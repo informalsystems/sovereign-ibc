@@ -103,16 +103,16 @@ where
         let cos_client_id = tm_client_type().build_client_id(cos_client_counter);
 
         if self.setup_cfg.with_manual_tao {
-            let sov_client_id = rollup.setup_client(cos_chain.chain_id()).await;
-            let cos_client_id = cos_chain.setup_client(rollup.chain_id());
+            let cos_client_id = rollup.setup_client(cos_chain.chain_id()).await;
+            let sov_client_id = cos_chain.setup_client(rollup.chain_id());
 
             let sov_conn_id = rollup
-                .setup_connection(sov_client_id, cos_chain.ibc_ctx().commitment_prefix())
+                .setup_connection(cos_client_id, cos_chain.ibc_ctx().commitment_prefix())
                 .await;
 
             let mut working_set = WorkingSet::new(rollup.prover_storage());
             let cos_conn_id = cos_chain.setup_connection(
-                cos_client_id,
+                sov_client_id,
                 rollup.ibc_ctx(&mut working_set).commitment_prefix(),
             );
 
