@@ -59,7 +59,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --all-features --release
+          args: --all-features --no-deps --release
     
   clippy_all_features:
     runs-on: ubuntu-latest

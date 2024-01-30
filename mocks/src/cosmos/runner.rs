@@ -8,7 +8,7 @@ use basecoin_store::utils::SharedRwExt;
 use tendermint::abci::request::InitChain;
 use tendermint::block::Height as TmHeight;
 use tendermint::v0_37::abci::Request as AbciRequest;
-use tendermint::{AppHash, Time};
+use tendermint::Time;
 use tendermint_testgen::consensus::default_consensus_params;
 use tokio::task::JoinHandle;
 use tower::Service;
@@ -19,8 +19,6 @@ use crate::utils::wait_for_block;
 impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     /// Initialize the chain with the app state.
     async fn init(&self) {
-        self.core.grow_blocks(AppHash::default().into());
-
         let app_state = serde_json::to_vec(&genesis_app_state()).expect("infallible serialization");
 
         let request = InitChain {

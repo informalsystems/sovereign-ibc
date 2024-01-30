@@ -47,6 +47,8 @@ where
         debug!("rollup: processing block at height {current_height}");
 
         let height = loop {
+            self.da_core
+                .grow_blocks(self.state_root.lock().unwrap().as_ref().to_vec());
             // Dummy transaction to trigger the block generation
             self.da_service().send_transaction(&[0; 32]).await.unwrap();
             sleep(Duration::from_millis(100)).await;
@@ -106,8 +108,6 @@ where
     /// Commits a block by triggering the end slot hook, computing the state
     /// update and committing it to the prover storage
     pub async fn commit(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
-        let checkpoint = self.begin_block(checkpoint).await;
-
         let checkpoint = self.execute_msg(checkpoint).await;
 
         let mut working_set = checkpoint.to_revertable();
@@ -157,9 +157,11 @@ where
             loop {
                 let working_set = WorkingSet::new(chain.prover_storage());
 
+                let checkpoint = chain.begin_block(working_set.checkpoint()).await;
+
                 tokio::time::sleep(Duration::from_millis(200)).await;
 
-                chain.commit(working_set.checkpoint()).await;
+                chain.commit(checkpoint).await;
             }
         });
 

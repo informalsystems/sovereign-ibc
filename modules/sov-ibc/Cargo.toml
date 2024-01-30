@@ -28,7 +28,8 @@ sov-ibc-transfer = { path = "../sov-ibc-transfer" }
 ibc-core              = { workspace = true }
 ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-ibc-query             = { workspace = true }
+ibc-query             = { workspace = true, optional = true }
+sov-celestia-client   = { path = "../../clients/sov-celestia" }
 # `tendermint` required to convert IbcEvent to a domain event type without custom conversion.
 tendermint            = { workspace = true }
 
@@ -51,4 +52,5 @@ native = [
     "sov-state/native",
     "schemars",
     "jsonrpsee",
+    "ibc-query",
 ]

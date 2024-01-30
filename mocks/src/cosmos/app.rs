@@ -17,7 +17,7 @@ use ibc_core::host::types::identifiers::ChainId;
 use tendermint::abci::request::Query as RequestQuery;
 use tendermint::abci::response::Query as ResponseQuery;
 
-use super::helpers::convert_tm_to_ics_merkle_proof;
+use super::utils::convert_tm_to_ics_merkle_proof;
 use super::MockTendermint;
 
 #[derive(Clone)]

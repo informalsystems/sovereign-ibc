@@ -4,11 +4,11 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
-use ibc_client_tendermint::types::ConsensusState as TmConsensusState;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::host::types::identifiers::ChainId;
 use sov_bank::CallMessage as BankCallMessage;
+use sov_celestia_client::types::consensus_state::ConsensusState;
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;
@@ -17,6 +17,7 @@ use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tendermint::{Hash, Time};
 
+use crate::cosmos::MockTendermint;
 use crate::sovereign::runtime::RuntimeCall;
 use crate::sovereign::Runtime;
 use crate::utils::MutexUtil;
@@ -30,10 +31,10 @@ where
     Da: DaService<Error = anyhow::Error> + Clone,
     S: MerkleProofSpec,
 {
-    chain_id: ChainId,
     runtime: Runtime<C, Da::Spec>,
     da_service: Da,
     prover_storage: ProverStorage<S>,
+    pub(crate) da_core: MockTendermint,
     pub(crate) rollup_ctx: Arc<Mutex<C>>,
     pub(crate) state_root: Arc<Mutex<<ProverStorage<S> as Storage>::Root>>,
     pub(crate) mempool: Arc<Mutex<Mempool<C, Da::Spec>>>,
@@ -70,14 +71,14 @@ where
     <S as MerkleProofSpec>::Hasher: Send,
 {
     pub fn new(
-        chain_id: ChainId,
         runtime: Runtime<C, Da::Spec>,
         prover_storage: ProverStorage<S>,
         rollup_ctx: C,
+        da_core: MockTendermint,
         da_service: Da,
     ) -> Self {
         Self {
-            chain_id,
+            da_core,
             runtime,
             da_service,
             prover_storage,
@@ -88,7 +89,7 @@ where
     }
 
     pub fn chain_id(&self) -> &ChainId {
-        &self.chain_id
+        self.da_core.chain_id()
     }
 
     pub fn rollup_ctx(&self) -> C {
@@ -175,18 +176,18 @@ where
 
         let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);
 
-        let consensus_state = AnyConsensusState::Tendermint(
-            TmConsensusState::new(
-                CommitmentRoot::from_bytes(&root_hash.0),
-                Time::now(),
-                Hash::Sha256([
-                    0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
-                    0x4b, 0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d,
-                    0x9e, 0xe1, 0x86, 0x1b, 0xc1, 0x43,
-                ]),
-            )
-            .into(),
-        );
+        let sov_consensus_state = ConsensusState::new(
+            CommitmentRoot::from_bytes(&root_hash.0),
+            Time::now(),
+            Hash::Sha256([
+                0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb, 0x4b,
+                0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d, 0x9e, 0xe1,
+                0x86, 0x1b, 0xc1, 0x43,
+            ]),
+        )
+        .into();
+
+        let consensus_state = AnyConsensusState::Sovereign(sov_consensus_state);
 
         self.ibc_ctx(&mut working_set)
             .store_host_consensus_state(Height::new(0, current_height).unwrap(), consensus_state)

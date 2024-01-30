@@ -1,6 +1,8 @@
 use async_trait::async_trait;
+use ibc_client_tendermint::types::Header;
 use ibc_core::channel::types::proto::v1::QueryPacketCommitmentRequest;
 use ibc_core::client::types::proto::v1::{QueryClientStateRequest, QueryConsensusStateRequest};
+use ibc_core::client::types::Height;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
@@ -10,7 +12,7 @@ use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
 
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
-use crate::sovereign::{MockRollup, RuntimeCall};
+use crate::sovereign::{dummy_sov_header, MockRollup, RuntimeCall};
 use crate::utils::{wait_for_block, MutexUtil};
 
 #[async_trait]
@@ -51,8 +53,31 @@ where
                     .unwrap()
                     .into(),
             ),
-            QueryReq::Header(_, _) => {
-                unimplemented!()
+            QueryReq::Header(target_height, trusted_height) => {
+                let blocks = self.da_core.blocks();
+
+                let revision_height = target_height.revision_height() as usize;
+
+                if revision_height > blocks.len() {
+                    panic!("block index out of bounds");
+                }
+
+                let target_block = blocks[revision_height - 1].clone();
+
+                let header = Header {
+                    signed_header: target_block.signed_header,
+                    validator_set: target_block.validators,
+                    trusted_height,
+                    trusted_next_validator_set: target_block.next_validators,
+                };
+
+                let sov_header = dummy_sov_header(
+                    header,
+                    Height::new(0, 1).unwrap(),
+                    Height::new(0, revision_height as u64).unwrap(),
+                );
+
+                QueryResp::Header(sov_header.into())
             }
             QueryReq::NextSeqSend(path) => {
                 QueryResp::NextSeqSend(ibc_ctx.get_next_sequence_send(&path).unwrap())
@@ -87,7 +112,6 @@ where
 
                     QueryResp::ValueWithProof(resp.consensus_state.unwrap().value, resp.proof)
                 }
-
                 Path::Commitment(path) => {
                     let req = QueryPacketCommitmentRequest {
                         port_id: path.port_id.to_string(),

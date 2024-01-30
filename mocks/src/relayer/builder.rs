@@ -1,6 +1,7 @@
 use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::host::types::identifiers::Sequence;
 use ibc_core::host::ValidationContext;
+use sov_celestia_client::types::client_state::sov_client_type;
 use sov_mock_da::MockDaService;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, WorkingSet};
@@ -10,7 +11,7 @@ use tracing::info;
 
 use super::DefaultRelayer;
 use crate::configs::{default_config_with_mock_da, TestSetupConfig};
-use crate::cosmos::{dummy_signer, CosmosBuilder};
+use crate::cosmos::{dummy_signer, CosmosBuilder, MockTendermint};
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
 use crate::sovereign::{MockRollup, Runtime, DEFAULT_INIT_HEIGHT};
@@ -70,10 +71,12 @@ where
         let prover_storage = ProverStorage::with_path(path).unwrap();
 
         let mut rollup = MockRollup::new(
-            self.setup_cfg.rollup_chain_id.clone(),
             runtime,
             prover_storage,
             rollup_ctx,
+            MockTendermint::builder()
+                .chain_id(self.setup_cfg.da_chain_id.clone())
+                .build(),
             self.setup_cfg.da_service.clone(),
         );
 
@@ -84,8 +87,7 @@ where
             _ => panic!("Unexpected response"),
         };
 
-        // TODO: this should be updated when there is a light client for sovereign chains
-        let sov_client_id = tm_client_type().build_client_id(sov_client_counter);
+        let sov_client_id = sov_client_type().build_client_id(sov_client_counter);
 
         let mut cos_chain = CosmosBuilder::default().build();
 
@@ -101,16 +103,16 @@ where
         let cos_client_id = tm_client_type().build_client_id(cos_client_counter);
 
         if self.setup_cfg.with_manual_tao {
-            let sov_client_id = rollup.setup_client(cos_chain.chain_id()).await;
-            let cos_client_id = cos_chain.setup_client(rollup.chain_id());
+            let cos_client_id = rollup.setup_client(cos_chain.chain_id()).await;
+            let sov_client_id = cos_chain.setup_client(rollup.chain_id());
 
             let sov_conn_id = rollup
-                .setup_connection(sov_client_id, cos_chain.ibc_ctx().commitment_prefix())
+                .setup_connection(cos_client_id, cos_chain.ibc_ctx().commitment_prefix())
                 .await;
 
             let mut working_set = WorkingSet::new(rollup.prover_storage());
             let cos_conn_id = cos_chain.setup_connection(
-                cos_client_id,
+                sov_client_id,
                 rollup.ibc_ctx(&mut working_set).commitment_prefix(),
             );
 

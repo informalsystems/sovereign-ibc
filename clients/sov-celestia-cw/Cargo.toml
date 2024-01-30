@@ -1,0 +1,56 @@
+[package]
+name 		 = "sov-celestia-client-cw"
+authors 	 = { workspace = true }
+edition 	 = { workspace = true }
+license 	 = { workspace = true }
+repository   = { workspace = true }
+rust-version = { workspace = true }
+version 	 = { workspace = true }
+keywords     = ["rollup", "sovereign", "ibc", "light-client", "CosmWasm"]
+readme       = "./../README.md"
+description  = """
+    Contains the CosmWasm contract implementation of the `sov-celesita` light client.
+"""
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# external dependencies
+derive_more = { workspace = true }
+prost 		= { workspace = true, default-features = false }
+serde 		= { workspace = true, features = ["derive"] }
+thiserror 	= { version = "1.0.31" }
+
+# ibc dependencies
+ibc-core   			  = { workspace = true }
+ibc-client-tendermint = { workspace = true }
+ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
+ibc-proto  			  = { workspace = true, features = ["json-schema"] }
+sov-celestia-client   = { path = "../sov-celestia", default-features = false, features = ["serde"] }
+
+# cosmwasm dependencies
+cosmwasm-schema       = "1.4.1"
+cosmwasm-std 	      = "1.4.1"
+
+[dev-dependencies]
+cosmwasm-vm           = "1.4.1"
+test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }
+tracing-subscriber    = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
+
+[features]
+default = ["std"]
+std = [
+	"ibc-core/std",
+	"ibc-proto/std",
+	"ibc-client-wasm-types/std",
+	"ibc-client-tendermint/std",
+	"sov-celestia-client/std",
+	"prost/std",
+	"serde/std",
+]
+test = [
+  "std"
+]
+# use library feature to disable entry points
+library = []

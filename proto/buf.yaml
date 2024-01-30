@@ -1,0 +1,20 @@
+version: v1
+name: buf.build/informalsystems/sovereign-ibc
+deps:
+  - buf.build/cosmos/ibc:c805262eb05540e7a4d8723e8b39108e
+  - buf.build/cosmos/gogo-proto
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
+    - COMMENTS
+    - FILE_LOWER_SNAKE_CASE
+  except:
+    - UNARY_RPC
+    - COMMENT_FIELD
+    - SERVICE_SUFFIX
+    - PACKAGE_VERSION_SUFFIX
+    - RPC_REQUEST_STANDARD_NAME
+    - RPC_RESPONSE_STANDARD_NAME
