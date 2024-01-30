@@ -54,14 +54,6 @@ test-legacy: ## Runs test suite with output from tests printed
 test:  ## Runs test suite using next test
 	@cargo nextest run --workspace --all-features
 
-coverage: ## Coverage in lcov format
-	cargo llvm-cov --locked --lcov --output-path lcov.info
-
-coverage-html: ## Coverage in HTML format
-	cargo llvm-cov --locked --all-features --html
-
 docs:  ## Generates documentation locally
-	cargo doc --open
+	cargo doc --all-features --release --open
 
-dry-run-publish: 
-	yq '.[]' packages_to_publish.yml | xargs -I _ cargo publish --allow-dirty --dry-run -p _

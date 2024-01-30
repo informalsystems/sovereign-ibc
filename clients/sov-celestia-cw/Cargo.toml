@@ -38,7 +38,6 @@ cosmwasm-vm           = "1.4.1"
 test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }
 tracing-subscriber    = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
 
-
 [features]
 default = ["std"]
 std = [
@@ -53,5 +52,5 @@ std = [
 test = [
   "std"
 ]
-# use library feature to disable all instantiate/execute/query exports
+# use library feature to disable entry points
 library = []
