@@ -1,9 +1,7 @@
-pub mod cosmos;
-
 #[cfg(feature = "native")]
 pub mod configs;
+pub mod cosmos;
 pub mod relayer;
-#[cfg(feature = "native")]
 pub mod sovereign;
 
 pub mod utils;

@@ -6,8 +6,11 @@ license 	 = { workspace = true }
 repository   = { workspace = true }
 rust-version = { workspace = true }
 version 	 = { workspace = true }
-readme 	 	 = "./../README.md"
-publish		 = false
+keywords     = ["rollup", "sovereign", "ibc", "light-client", "CosmWasm"]
+readme       = "./../README.md"
+description  = """
+    Contains the CosmWasm contract implementation of the `sov-celesita` light client.
+"""
 
 [lib]
 crate-type = ["cdylib", "rlib"]
