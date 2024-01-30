@@ -15,13 +15,10 @@ use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::client::types::msgs::{MsgCreateClient, MsgUpdateClient};
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentProofBytes;
-use ibc_core::commitment_types::merkle::MerkleProof;
-use ibc_core::commitment_types::proto::ics23::CommitmentProof;
 use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use ibc_core::host::types::path::{CommitmentPath, Path, SeqSendPath};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp, ToProto};
-use prost::Message;
 use sov_ibc::context::HOST_REVISION_NUMBER;
 
 use crate::configs::TransferTestConfig;
@@ -141,7 +138,8 @@ where
         proof_height_on_a: Height,
         msg_transfer: MsgTransfer,
     ) -> MsgRecvPacket {
-        let seq_send_path = SeqSendPath::new(&PortId::transfer(), &ChannelId::default());
+        let seq_send_path =
+            SeqSendPath::new(&msg_transfer.port_id_on_a, &msg_transfer.chan_id_on_a);
 
         let resp = self
             .src_chain_ctx()
@@ -155,8 +153,11 @@ where
 
         let latest_seq_send = (u64::from(next_seq_send) - 1).into();
 
-        let commitment_path =
-            CommitmentPath::new(&seq_send_path.0, &seq_send_path.1, latest_seq_send);
+        let commitment_path = CommitmentPath::new(
+            &msg_transfer.port_id_on_a,
+            &msg_transfer.chan_id_on_a,
+            latest_seq_send,
+        );
 
         let resp = self
             .src_chain_ctx()
@@ -171,28 +172,7 @@ where
             _ => panic!("unexpected query response"),
         };
 
-        let commitment_proofs = CommitmentProofBytes::try_from(proof_bytes).unwrap();
-
-        let merkle_proofs = MerkleProof::try_from(&commitment_proofs).unwrap();
-
-        let resp = self
-            .dst_chain_ctx()
-            .query(QueryReq::ValueWithProof(
-                Path::Commitment(commitment_path.clone()),
-                proof_height_on_a,
-            ))
-            .await;
-
-        let (_, proof_bytes) = match resp {
-            QueryResp::ValueWithProof(value, proof) => (value, proof),
-            _ => panic!("unexpected query response"),
-        };
-
-        let proof_commitment_on_a =
-            CommitmentProof::decode(proof_bytes.as_slice()).expect("no error");
-
-        assert_eq!(merkle_proofs.proofs[0], proof_commitment_on_a);
-        assert_eq!(merkle_proofs.proofs.len(), 2);
+        let proof_commitment_on_a = CommitmentProofBytes::try_from(proof_bytes).unwrap();
 
         let packet = Packet {
             seq_on_a: latest_seq_send,
@@ -207,7 +187,7 @@ where
 
         MsgRecvPacket {
             packet,
-            proof_commitment_on_a: merkle_proofs.try_into().expect("no error"),
+            proof_commitment_on_a,
             proof_height_on_a,
             signer: self.dst_chain_ctx().signer().clone(),
         }

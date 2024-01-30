@@ -251,8 +251,8 @@ impl<'a, C: Context, Da: DaSpec> SovValidationContext for IbcContext<'a, C, Da> 
     }
 }
 
-fn next_consensus_state<'a, C: Context, D: DaSpec>(
-    ctx: &IbcContext<'a, C, D>,
+fn next_consensus_state<C: Context, D: DaSpec>(
+    ctx: &IbcContext<'_, C, D>,
     client_id: &ClientId,
     height: &Height,
 ) -> Result<Option<AnyConsensusState>, ContextError> {
@@ -268,7 +268,7 @@ fn next_consensus_state<'a, C: Context, D: DaSpec>(
         })?;
 
     if height.revision_number() != latest_height.revision_number() {
-        return Err(ClientError::Other {
+        Err(ClientError::Other {
             description: "height revision number must match the chain's revision number"
                 .to_string(),
         })?;
@@ -310,8 +310,8 @@ fn next_consensus_state<'a, C: Context, D: DaSpec>(
     Ok(None)
 }
 
-fn prev_consensus_state<'a, C: Context, D: DaSpec>(
-    ctx: &IbcContext<'a, C, D>,
+fn prev_consensus_state<C: Context, D: DaSpec>(
+    ctx: &IbcContext<'_, C, D>,
     client_id: &ClientId,
     height: &Height,
 ) -> Result<Option<AnyConsensusState>, ContextError> {
@@ -327,7 +327,7 @@ fn prev_consensus_state<'a, C: Context, D: DaSpec>(
         })?;
 
     if height.revision_number() != latest_height.revision_number() {
-        return Err(ClientError::Other {
+        Err(ClientError::Other {
             description: "height revision number must match the chain's revision number"
                 .to_string(),
         })?;

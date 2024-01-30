@@ -108,8 +108,6 @@ where
     /// Commits a block by triggering the end slot hook, computing the state
     /// update and committing it to the prover storage
     pub async fn commit(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
-        let checkpoint = self.begin_block(checkpoint).await;
-
         let checkpoint = self.execute_msg(checkpoint).await;
 
         let mut working_set = checkpoint.to_revertable();
@@ -159,9 +157,11 @@ where
             loop {
                 let working_set = WorkingSet::new(chain.prover_storage());
 
+                let checkpoint = chain.begin_block(working_set.checkpoint()).await;
+
                 tokio::time::sleep(Duration::from_millis(200)).await;
 
-                chain.commit(working_set.checkpoint()).await;
+                chain.commit(checkpoint).await;
             }
         });
 

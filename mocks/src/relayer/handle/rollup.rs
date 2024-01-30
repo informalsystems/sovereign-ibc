@@ -112,7 +112,6 @@ where
 
                     QueryResp::ValueWithProof(resp.consensus_state.unwrap().value, resp.proof)
                 }
-
                 Path::Commitment(path) => {
                     let req = QueryPacketCommitmentRequest {
                         port_id: path.port_id.to_string(),

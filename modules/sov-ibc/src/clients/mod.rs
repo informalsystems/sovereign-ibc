@@ -26,7 +26,7 @@ use sov_modules_api::{Context, DaSpec};
 
 use crate::context::IbcContext;
 
-#[derive(Clone, From, TryInto)]
+#[derive(Clone, Debug, From, TryInto)]
 pub enum AnyClientState {
     Tendermint(TmClientState),
     Sovereign(SovClientState),

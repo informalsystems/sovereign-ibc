@@ -285,17 +285,20 @@ async fn test_mint_burn_on_sov() {
 
     // TODO: Uncomment this part when the rollup header can be queried by the relayer
     //
-    // let target_height = match rly.src_chain_ctx().query(QueryReq::HostHeight) {
+    // let target_height = match rly.src_chain_ctx().query(QueryReq::HostHeight).await {
     //     QueryResp::HostHeight(height) => height,
     //     _ => panic!("unexpected response"),
     // };
 
-    // let msg_update_client = rly.build_msg_update_client_for_cos(target_height);
+    // let msg_update_client = rly.build_msg_update_client_for_cos(target_height).await;
 
-    // let msg_recv_packet = rly.build_msg_recv_packet_for_cos(target_height, msg_transfer_on_sov);
+    // let msg_recv_packet = rly
+    //     .build_msg_recv_packet_for_cos(target_height, msg_transfer_on_sov)
+    //     .await;
 
     // rly.dst_chain_ctx()
-    //     .send_msg(vec![msg_update_client.to_any(), msg_recv_packet.to_any()]);
+    //     .submit_msgs(vec![msg_update_client, msg_recv_packet.to_any()])
+    //     .await;
 
     // -----------------------------------------------------------------------
     // Check the token has been burned on rollup and unescrowed on Cosmos chain

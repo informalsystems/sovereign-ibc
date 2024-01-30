@@ -15,6 +15,7 @@ pub fn dummy_tm_client_state(chain_id: ChainId, latest_height: Height) -> Client
     ClientStateConfig::builder()
         .chain_id(chain_id)
         .latest_height(latest_height)
+        .proof_specs(basecoin_proof_specs())
         .build()
         .try_into()
         .unwrap()
