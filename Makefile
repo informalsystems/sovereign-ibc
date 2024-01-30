@@ -55,5 +55,5 @@ test:  ## Runs test suite using next test
 	@cargo nextest run --workspace --all-features
 
 docs:  ## Generates documentation locally
-	cargo doc --all-features --release --open
+	cargo doc --all-features --no-deps --release --open
 
