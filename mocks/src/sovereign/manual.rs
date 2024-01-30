@@ -1,9 +1,7 @@
 //! Contains helper functions to manually setup the ibc module state
 //! on the mock rollup.
 
-use ibc_client_tendermint::types::{
-    client_type as tm_client_type, ConsensusState as TmConsensusState,
-};
+use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::channel::types::channel::{
     ChannelEnd, Counterparty as ChanCounterparty, Order, State as ChannelState,
 };
@@ -25,10 +23,9 @@ use sov_ibc::context::IbcContext;
 use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
-use tendermint::{Hash, Time};
 
 use super::MockRollup;
-use crate::cosmos::dummy_tm_client_state;
+use crate::cosmos::{dummy_tm_client_state, dummy_tm_consensus_state};
 
 impl<C, Da, S> MockRollup<C, Da, S>
 where
@@ -52,16 +49,7 @@ where
 
         let client_state = dummy_tm_client_state(client_chain_id.clone(), current_height);
 
-        let consensus_state = TmConsensusState::new(
-            Vec::new().into(),
-            Time::now(),
-            // Hash for default validator set
-            Hash::Sha256([
-                0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb, 0x4b,
-                0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d, 0x9e, 0xe1,
-                0x86, 0x1b, 0xc1, 0x43,
-            ]),
-        );
+        let consensus_state = dummy_tm_consensus_state();
 
         client_state
             .initialise(&mut ibc_ctx, &client_id, consensus_state.into())

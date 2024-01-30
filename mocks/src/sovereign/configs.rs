@@ -65,16 +65,6 @@ impl From<TendermintParamsConfig> for TendermintParams {
     }
 }
 
-pub fn dummy_sov_client_state(rollup_id: ChainId, latest_height: Height) -> ClientState {
-    let tendermint_params = TendermintParamsConfig::builder().build();
-
-    ClientStateConfig::builder()
-        .rollup_id(rollup_id)
-        .latest_height(latest_height)
-        .tendermint_params(tendermint_params)
-        .build()
-}
-
 #[derive(typed_builder::TypedBuilder, Debug)]
 #[builder(build_method(into = SovTmHeader))]
 pub struct HeaderConfig {
@@ -183,6 +173,29 @@ pub fn dummy_sov_header(
         .build()
 }
 
+pub fn dummy_sov_client_state(rollup_id: ChainId, latest_height: Height) -> ClientState {
+    let tendermint_params = TendermintParamsConfig::builder().build();
+
+    ClientStateConfig::builder()
+        .rollup_id(rollup_id)
+        .latest_height(latest_height)
+        .tendermint_params(tendermint_params)
+        .build()
+}
+
+pub fn dummy_sov_consensus_state() -> ConsensusState {
+    ConsensusState::new(
+        vec![0].into(),
+        Time::now(),
+        // Hash of default validator set
+        Hash::Sha256([
+            0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb, 0x4b,
+            0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d, 0x9e, 0xe1,
+            0x86, 0x1b, 0xc1, 0x43,
+        ]),
+    )
+}
+
 pub fn dummy_wasm_client_state() -> WasmClientState {
     let tendermint_params = TendermintParamsConfig::builder()
         .chain_id("test-1".parse().unwrap())
@@ -205,18 +218,7 @@ pub fn dummy_wasm_client_state() -> WasmClientState {
 }
 
 pub fn dummy_wasm_consensus_state() -> WasmConsensusState {
-    let sov_consensus_state = ConsensusState::new(
-        vec![0].into(),
-        Time::now(),
-        // Hash for default validator set
-        Hash::Sha256([
-            0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb, 0x4b,
-            0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d, 0x9e, 0xe1,
-            0x86, 0x1b, 0xc1, 0x43,
-        ]),
-    );
-
     WasmConsensusState {
-        data: Any::from(sov_consensus_state).value,
+        data: Any::from(dummy_sov_consensus_state()).value,
     }
 }

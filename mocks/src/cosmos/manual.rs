@@ -22,11 +22,9 @@ use ibc_core::host::types::path::{
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use sov_celestia_client::types::client_state::sov_client_type;
-use sov_celestia_client::types::consensus_state::ConsensusState as SovConsensusState;
-use tendermint::{Hash, Time};
 
 use super::MockCosmosChain;
-use crate::sovereign::dummy_sov_client_state;
+use crate::sovereign::{dummy_sov_client_state, dummy_sov_consensus_state};
 
 impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     /// Establishes a tendermint light client on the ibc module
@@ -39,7 +37,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let client_state = dummy_sov_client_state(client_chain_id.clone(), current_height);
 
-        let consensus_state = SovConsensusState::new(Vec::new().into(), Time::now(), Hash::None);
+        let consensus_state = dummy_sov_consensus_state();
 
         client_state
             .initialise(&mut self.ibc_ctx(), &client_id, consensus_state.into())
