@@ -32,13 +32,13 @@ use ibc_core::connection::types::proto::v1::{
     QueryConnectionResponse, QueryConnectionsRequest, QueryConnectionsResponse,
 };
 use ibc_core::host::types::identifiers::ClientId;
-use ibc_core::host::types::path::ClientConsensusStatePath;
+use ibc_core::host::types::path::{ClientConsensusStatePath, CommitmentPath};
 use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::{
     query_channel, query_channel_client_state, query_channel_consensus_state, query_channels,
     query_connection_channels, query_next_sequence_receive, query_packet_acknowledgement,
-    query_packet_acknowledgements, query_packet_commitment, query_packet_commitments,
-    query_packet_receipt, query_unreceived_acks, query_unreceived_packets,
+    query_packet_acknowledgements, query_packet_commitments, query_packet_receipt,
+    query_unreceived_acks, query_unreceived_packets,
 };
 use ibc_query::core::client::{
     query_client_states, query_client_status, query_consensus_state_heights, query_consensus_states,
@@ -375,12 +375,43 @@ where
         request: QueryPacketCommitmentRequest,
         working_set: &mut WorkingSet<C>,
     ) -> RpcResult<QueryPacketCommitmentResponse> {
+        let prefix = self.packet_commitment_map.prefix();
+
+        let codec = self.packet_commitment_map.codec();
+
+        let commitment_path = CommitmentPath::new(
+            &request.port_id.parse().map_err(to_jsonrpsee_error)?,
+            &request.channel_id.parse().map_err(to_jsonrpsee_error)?,
+            request.sequence.into(),
+        );
+
+        let key = StorageKey::new(prefix, &commitment_path, codec.key_codec());
+
+        let value_with_proof = working_set.get_with_proof(key);
+
+        let storage_value = value_with_proof.value.ok_or_else(|| {
+            to_jsonrpsee_error(format!(
+                "Packet commitment not found for path {commitment_path:?}"
+            ))
+        })?;
+
+        let proof = value_with_proof
+            .proof
+            .try_to_vec()
+            .map_err(to_jsonrpsee_error)?;
+
         let ibc_ctx = IbcContext {
             ibc: self,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
-        query_packet_commitment(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        let current_height = ibc_ctx.host_height().map_err(to_jsonrpsee_error)?;
+
+        Ok(QueryPacketCommitmentResponse {
+            commitment: storage_value.value().to_vec(),
+            proof,
+            proof_height: Some(current_height.into()),
+        })
     }
 
     #[rpc_method(name = "packetCommitments")]
