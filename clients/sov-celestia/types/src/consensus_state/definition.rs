@@ -143,18 +143,3 @@ impl From<SovTmHeader> for ConsensusState {
         }
     }
 }
-
-#[cfg(any(test, feature = "test-utils"))]
-pub mod test_util {
-    use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
-
-    use super::*;
-
-    impl ConsensusState {
-        pub fn into_wasm(&self) -> WasmConsensusState {
-            WasmConsensusState {
-                data: Any::from(self.clone()).value,
-            }
-        }
-    }
-}

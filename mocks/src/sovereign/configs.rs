@@ -1,14 +1,19 @@
 use std::time::Duration;
 
 use ibc_client_tendermint::types::{Header as TmHeader, TrustThreshold};
+use ibc_client_wasm_types::client_state::ClientState as WasmClientState;
+use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
+use ibc_core::primitives::proto::Any;
 use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::types::client_message::{
     AggregatedProof, AggregatedProofData, ProofDataInfo, PublicInput, SovTmHeader,
 };
 use sov_celestia_client::types::client_state::{ClientState as ClientStateType, TendermintParams};
+use sov_celestia_client::types::consensus_state::ConsensusState;
 use sov_celestia_client::types::proto::types::v1::AggregatedProof as RawAggregatedProof;
+use tendermint::{Hash, Time};
 #[derive(typed_builder::TypedBuilder, Debug)]
 #[builder(build_method(into = ClientState))]
 pub struct ClientStateConfig {
@@ -176,4 +181,42 @@ pub fn dummy_sov_header(
         .da_header(da_header)
         .aggregated_proof_data(aggregated_proof_data)
         .build()
+}
+
+pub fn dummy_wasm_client_state() -> WasmClientState {
+    let tendermint_params = TendermintParamsConfig::builder()
+        .chain_id("test-1".parse().unwrap())
+        .build();
+
+    let checksum =
+        hex::decode("2469f43c3ca20d476442bd3d98cbd97a180776ab37332aa7b02cae5a620acfc6").unwrap();
+
+    let client_state = ClientStateConfig::builder()
+        .rollup_id("mock-celestia-0".parse().unwrap())
+        .latest_height(Height::new(0, 1).unwrap())
+        .tendermint_params(tendermint_params)
+        .build();
+
+    WasmClientState {
+        data: Any::from(client_state.clone()).value,
+        checksum,
+        latest_height: client_state.inner().latest_height,
+    }
+}
+
+pub fn dummy_wasm_consensus_state() -> WasmConsensusState {
+    let sov_consensus_state = ConsensusState::new(
+        vec![0].into(),
+        Time::now(),
+        // Hash for default validator set
+        Hash::Sha256([
+            0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb, 0x4b,
+            0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d, 0x9e, 0xe1,
+            0x86, 0x1b, 0xc1, 0x43,
+        ]),
+    );
+
+    WasmConsensusState {
+        data: Any::from(sov_consensus_state).value,
+    }
 }

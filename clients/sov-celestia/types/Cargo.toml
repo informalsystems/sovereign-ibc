@@ -34,11 +34,6 @@ tendermint                       = { workspace = true }
 tendermint-proto                 = { workspace = true }
 tendermint-light-client-verifier = { workspace = true }
 
-[dev-dependencies]
-typed-builder = "0.18.0"
-hex           = "0.4.3"
-ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
-
 [features]
 default = ["std"]
 std = [

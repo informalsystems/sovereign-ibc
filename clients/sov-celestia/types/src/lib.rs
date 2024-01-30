@@ -11,8 +11,6 @@
 
 extern crate alloc;
 
-use alloc::vec::Vec;
-
 pub mod client_message;
 pub mod client_state;
 pub mod consensus_state;
@@ -24,5 +22,3 @@ pub mod proto {
     pub use ibc_proto::ibc::lightclients::sovereign::tendermint::*;
     pub use ibc_proto::sovereign::*;
 }
-
-pub type Bytes = Vec<u8>;

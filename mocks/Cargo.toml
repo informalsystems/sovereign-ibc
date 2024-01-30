@@ -15,6 +15,7 @@ anyhow        = { workspace = true }
 async-trait   = { version = "0.1.74", default-features = false }
 base64        = { workspace = true }
 borsh         = { workspace = true }
+hex           = "0.4.3"
 prost         = { workspace = true }
 sha2          = { version = "0.10.6", default-features = false }
 serde         = { workspace = true }
@@ -36,9 +37,11 @@ sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ib
 ibc-core              = { workspace = true }
 ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
+ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 ibc-core-host-cosmos  = { workspace = true }
 ibc-query             = { workspace = true }
 ibc-testkit           = { workspace = true }
+
 
 # cosmos dependencies
 basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "e51a697" }
@@ -59,8 +62,8 @@ sov-rollup-interface = { workspace = true }
 jmt                  = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 [dev-dependencies]
-test-log             = { version = "0.2.14", default-features = false, features = ["trace"] }
-tracing-subscriber   = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
+test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }
+tracing-subscriber    = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
 
 [features]
 default = ["native"]

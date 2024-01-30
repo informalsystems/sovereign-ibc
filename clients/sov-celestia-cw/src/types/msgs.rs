@@ -18,7 +18,8 @@ use sov_celestia_client::types::client_message::{
     ClientMessage, Header, SovMisbehaviour, SovTmClientMessage, SOV_TENDERMINT_HEADER_TYPE_URL,
     SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL,
 };
-use sov_celestia_client::types::Bytes;
+
+pub type Bytes = Vec<u8>;
 
 use super::error::ContractError;
 

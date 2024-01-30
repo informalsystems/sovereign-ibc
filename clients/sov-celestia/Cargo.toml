@@ -32,10 +32,6 @@ tendermint                       = { workspace = true }
 tendermint-proto 				 = { workspace = true }
 tendermint-light-client-verifier = { workspace = true }
 
-[dev-dependencies]
-typed-builder = "0.18.0"
-hex 		  = "0.4.3"
-
 [features]
 default = ["std"]
 std = [
@@ -58,4 +54,3 @@ json-schema = [
 	"ibc-core/schema",
 	"dep:schemars",
 ]
-test-utils = ["dep:typed-builder"]
