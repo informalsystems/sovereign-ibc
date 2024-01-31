@@ -16,11 +16,11 @@ use crate::context::IbcContext;
 use crate::router::IbcRouter;
 use crate::Ibc;
 
+#[cfg_attr(feature = "native", derive(schemars::JsonSchema))]
 #[cfg_attr(
-    feature = "native",
+    feature = "serde",
     derive(serde::Serialize),
-    derive(serde::Deserialize),
-    derive(schemars::JsonSchema)
+    derive(serde::Deserialize)
 )]
 #[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Clone, Debug, PartialEq)]
 pub enum CallMessage {
