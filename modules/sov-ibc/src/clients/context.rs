@@ -19,42 +19,24 @@ use super::AnyConsensusState;
 use crate::context::IbcContext;
 
 impl<'a, C: Context, Da: DaSpec> ClientValidationContext for IbcContext<'a, C, Da> {
-    fn client_update_time(
+    fn update_meta(
         &self,
         client_id: &ClientId,
         height: &Height,
-    ) -> Result<Timestamp, ContextError> {
-        self.ibc
-            .client_update_host_times_map
+    ) -> Result<(Timestamp, Height), ContextError> {
+        let update_meta = self
+            .ibc
+            .client_update_meta_map
             .get(
                 &(client_id.clone(), *height),
                 *self.working_set.borrow_mut(),
             )
-            .ok_or(
-                ClientError::Other {
-                    description: "Client update time not found".to_string(),
-                }
-                .into(),
-            )
-    }
+            .ok_or(ClientError::UpdateMetaDataNotFound {
+                client_id: client_id.clone(),
+                height: *height,
+            })?;
 
-    fn client_update_height(
-        &self,
-        client_id: &ClientId,
-        height: &Height,
-    ) -> Result<Height, ContextError> {
-        self.ibc
-            .client_update_host_heights_map
-            .get(
-                &(client_id.clone(), *height),
-                *self.working_set.borrow_mut(),
-            )
-            .ok_or(
-                ClientError::Other {
-                    description: "Client update time not found".to_string(),
-                }
-                .into(),
-            )
+        Ok(update_meta)
     }
 }
 
@@ -102,57 +84,34 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         Ok(())
     }
 
-    fn store_update_time(
+    fn store_update_meta(
         &mut self,
         client_id: ClientId,
         height: Height,
-        timestamp: Timestamp,
-    ) -> Result<(), ContextError> {
-        self.ibc.client_update_host_times_map.set(
-            &(client_id, height),
-            &timestamp,
-            *self.working_set.borrow_mut(),
-        );
-        Ok(())
-    }
-
-    fn store_update_height(
-        &mut self,
-        client_id: ClientId,
-        height: Height,
+        host_timestamp: Timestamp,
         host_height: Height,
     ) -> Result<(), ContextError> {
         self.ibc
             .client_update_heights_vec
             .push(&height, *self.working_set.borrow_mut());
 
-        self.ibc.client_update_host_heights_map.set(
-            &(client_id, height),
-            &host_height,
+        self.ibc.client_update_meta_map.set(
+            &(client_id.clone(), height),
+            &(host_timestamp, height),
             *self.working_set.borrow_mut(),
         );
+
         Ok(())
     }
 
-    fn delete_update_time(
+    fn delete_update_meta(
         &mut self,
         client_id: ClientId,
         height: Height,
     ) -> Result<(), ContextError> {
         self.ibc
-            .client_update_host_times_map
-            .remove(&(client_id, height), *self.working_set.borrow_mut());
-        Ok(())
-    }
-
-    fn delete_update_height(
-        &mut self,
-        client_id: ClientId,
-        height: Height,
-    ) -> Result<(), ContextError> {
-        self.ibc
-            .client_update_host_heights_map
-            .remove(&(client_id, height), *self.working_set.borrow_mut());
+            .client_update_meta_map
+            .remove(&(client_id.clone(), height), *self.working_set.borrow_mut());
         Ok(())
     }
 }

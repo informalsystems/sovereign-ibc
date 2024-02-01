@@ -81,10 +81,7 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     client_update_heights_vec: StateVec<Height>,
 
     #[state]
-    client_update_host_times_map: StateMap<(ClientId, Height), Timestamp>,
-
-    #[state]
-    client_update_host_heights_map: StateMap<(ClientId, Height), Height>,
+    client_update_meta_map: StateMap<(ClientId, Height), (Timestamp, Height)>,
 
     // ----------- IBC core connection state maps -------------
     #[state]
