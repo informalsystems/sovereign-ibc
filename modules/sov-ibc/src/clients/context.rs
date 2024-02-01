@@ -97,7 +97,7 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
 
         self.ibc.client_update_meta_map.set(
             &(client_id.clone(), height),
-            &(host_timestamp, height),
+            &(host_timestamp, host_height),
             *self.working_set.borrow_mut(),
         );
 
