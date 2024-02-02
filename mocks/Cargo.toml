@@ -40,7 +40,7 @@ ibc-client-tendermint = { workspace = true }
 ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 ibc-core-host-cosmos  = { workspace = true }
 ibc-query             = { workspace = true }
-ibc-testkit           = { workspace = true }
+ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "5c7cea88d0", default-features = false }
 
 # cosmos dependencies
 basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "8300923" }
@@ -52,12 +52,12 @@ tendermint-testgen   = { workspace = true }
 # sovereign dependencies
 const-rollup-config  = { workspace = true }
 sov-bank             = { workspace = true }
-sov-celestia-adapter = { workspace = true }
 sov-chain-state      = { workspace = true }
 sov-modules-api      = { workspace = true }
 sov-mock-da          = { workspace = true }
 sov-state            = { workspace = true }
 sov-rollup-interface = { workspace = true }
+sov-celestia-adapter = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "6e22b4c" }
 jmt                  = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 [dev-dependencies]
