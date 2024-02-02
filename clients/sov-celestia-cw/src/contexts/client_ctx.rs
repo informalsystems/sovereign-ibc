@@ -13,20 +13,14 @@ use super::{Context, StorageRef};
 use crate::types::{AnyClientState, AnyConsensusState, ProcessedStates, ReadonlyProcessedStates};
 
 impl ClientValidationContext for Context<'_> {
-    fn client_update_time(
+    fn update_meta(
         &self,
         client_id: &ClientId,
         height: &Height,
-    ) -> Result<Timestamp, ContextError> {
-        client_update_time(self, client_id, height)
-    }
-
-    fn client_update_height(
-        &self,
-        client_id: &ClientId,
-        height: &Height,
-    ) -> Result<Height, ContextError> {
-        client_update_height(self, client_id, height)
+    ) -> Result<(Timestamp, Height), ContextError> {
+        let timestamp = client_update_time(self, client_id, height)?;
+        let height = client_update_height(self, client_id, height)?;
+        Ok((timestamp, height))
     }
 }
 
@@ -51,24 +45,6 @@ impl ClientExecutionContext for Context<'_> {
         store_consensus_state(self, consensus_state_path, consensus_state)
     }
 
-    fn store_update_time(
-        &mut self,
-        client_id: ClientId,
-        height: Height,
-        timestamp: Timestamp,
-    ) -> Result<(), ContextError> {
-        store_update_time(self, client_id, height, timestamp)
-    }
-
-    fn store_update_height(
-        &mut self,
-        client_id: ClientId,
-        height: Height,
-        host_height: Height,
-    ) -> Result<(), ContextError> {
-        store_update_height(self, client_id, height, host_height)
-    }
-
     fn delete_consensus_state(
         &mut self,
         _consensus_state_path: ClientConsensusStatePath,
@@ -76,15 +52,18 @@ impl ClientExecutionContext for Context<'_> {
         todo!()
     }
 
-    fn delete_update_time(
+    fn store_update_meta(
         &mut self,
-        _client_id: ClientId,
-        _height: Height,
+        client_id: ClientId,
+        height: Height,
+        host_timestamp: Timestamp,
+        host_height: Height,
     ) -> Result<(), ContextError> {
-        todo!()
+        store_update_time(self, client_id.clone(), height, host_timestamp)?;
+        store_update_height(self, client_id, height, host_height)
     }
 
-    fn delete_update_height(
+    fn delete_update_meta(
         &mut self,
         _client_id: ClientId,
         _height: Height,

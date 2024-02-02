@@ -42,8 +42,9 @@ sov-rollup-interface = { workspace = true }
 
 [features]
 default = []
+serde = ["serde_json"]
 native = [
-    "serde_json",
+    "serde",
     "sov-chain-state/native",
     "sov-ibc-transfer/native",
     "sov-modules-api/native",
