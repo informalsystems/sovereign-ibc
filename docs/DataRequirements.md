@@ -54,13 +54,13 @@ endpoint in the list is the least important and least frequently required.
 
 - Status:
   - The
-    [`sequencer_publishBatch`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/cca1729445741aadbec2490c14ca2090afdc878b/full-node/sov-sequencer/src/lib.rs#L74-L90)
+    [`/sequencer_publishBatch`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/cca1729445741aadbec2490c14ca2090afdc878b/full-node/sov-sequencer/src/lib.rs#L74-L90)
     method works for this purpose. It takes an optional parameter where we can
     put a list of transactions, and then it will (1) insert all the transactions
     into the mempool, and (2) trigger the mempool to create a batch and post it
     on the DA layer.
   - There is also a
-    [`sequencer_acceptTx`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/190863c29835af9090e38d79284b24406c33758c/full-node/sov-sequencer/src/lib.rs#L56-L64)
+    [`/sequencer_acceptTx`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/190863c29835af9090e38d79284b24406c33758c/full-node/sov-sequencer/src/lib.rs#L56-L64)
     method, which stores a single transaction into the mempool.
 
 ### `/sequencer_txStatus`
@@ -135,12 +135,12 @@ endpoint in the list is the least important and least frequently required.
   - Regarding the 1st and 2nd situations, nothing straightforward available yet
     to search for all the events with particular key, where events might have
     been emitted by the same transaction.
-  - The `ledger_getTransactions` RPC method enables search for txs using the
+  - The `/ledger_getTransactions` RPC method enables search for txs using the
     hash. This method returns a list of all the events emitted by that tx.
-  - There is also a `ledger_getTransactionsRange` method. Each transaction has a
+  - There is also a `/ledger_getTransactionsRange` method. Each transaction has a
     monotonically increasing ID. So this could be used as a range query if we
     know the ID of the start or end transaction.
-  - The `ledger_getEvents` RPC method enables search for a single event using
+  - The `/ledger_getEvents` RPC method enables search for a single event using
     the provided
     [`EventIdentifier`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/main/rollup-interface/src/node/rpc/mod.rs#L80-L92),
     which can be a transaction ID but not a transaction hash.
@@ -188,7 +188,7 @@ endpoint in the list is the least important and least frequently required.
 
 - Status:
   - There is an
-    [`accounts_getAccount`](https://github.com/informalsystems/sovereign-sdk/blob/d42e289f26b9824b5ed54dbfbda94007dee305b2/module-system/module-implementations/sov-accounts/src/query.rs#L26-L45)
+    [`/accounts_getAccount`](https://github.com/informalsystems/sovereign-sdk/blob/d42e289f26b9824b5ed54dbfbda94007dee305b2/module-system/module-implementations/sov-accounts/src/query.rs#L26-L45)
     RPC endpoint which appears to perform the same job as `/query_account` on
     Cosmos chains.
 
@@ -240,8 +240,8 @@ endpoint in the list is the least important and least frequently required.
 - Priority: Low
 
 - Status: Nothing available yet, but part of the needed data can be gathered
-  from different endpoints like `ledger_getHead` or
-  `prover_AggregatedProofData`.
+  from different endpoints like `/ledger_getHead` or
+  `/prover_AggregatedProofData`.
 
 ### `/rollup_health`
 
@@ -271,19 +271,31 @@ endpoint in the list is the least important and least frequently required.
 
 #### Channel endpoints
 
-- `ibc_channelClientState`: Requests the client state associated with a
+- `/ibc_channelClientState`: Returns the client state associated with a
   specified channel.
-- `ibc_channels`: Requests all of the channels associated with the chain.
-- `ibc_channelConnections`: Requests the connection associated with a specified
+- `/ibc_channelConsensusState`: Returns the consensus state associated with a
+  specified channel.
+- `/ibc_channels`: Returns all of the channels associated with the chain.
+- `/ibc_channelConnections`: Returns the connection associated with a specified
   channel.
-- `ibc_nextSequenceReceive`: Requests the sequence number of the next receive
+
+- `/ibc_packetCommitment`: Returns the commitment and proof of existence for a
+  single packet on a specified channel and sequence number.
+- `ibc_packetReceipt`: Returns the receipt and proof of existence for a single
+  packet on a specified channel and sequence number.
+- `/ibc_packetAcknowledgement`: Returns the acknowledgment and proof of
+  existence for a single packet on a specified channel and sequence number.
+- `/ibc_nextSequenceReceive`: Returns the sequence number of the next receive
   packet for a specified channel.
-- `ibc_packetCommitments`: Requests the packet commitments associated with a
+
+- `/ibc_packetCommitments`: Returns the packet commitments associated with a
   specified channel.
-- `ibc_packetAcknowledgements`: Requests the packet acknowledgments associated
-  with a specified channel. -`ibc_unreceivedAcks`: Requests the unreceived
-acknowledgments associated with a specified channel. -`ibc_unreceivedPackets`:
-Requests the unreceived packet sequences associated with a specified channel.
+- `/ibc_packetAcknowledgements`: Returns the packet acknowledgments associated
+  with a specified channel.
+- `/ibc_unreceivedAcks`: Returns the unreceived acknowledgments associated with
+a specified channel.
+- `/ibc_unreceivedPackets`: Returns the unreceived packet sequences associated
+with a specified channel.
 
 > _*Note:*_ The `PacketAcknowledgements`, `UnreceivedAcks`, and
 > `UnreceivedPackets` queries each accept a vector of `sequences` in order to
@@ -293,18 +305,22 @@ Requests the unreceived packet sequences associated with a specified channel.
 
 #### Client endpoints
 
-- `ibc_clientStates`: Requests all client states associated with the chain.
-- `ibc_ConsensusStates`: Requests all the consensus states associated with a
+- `/ibc_clientStates`: Returns all client states associated with the chain.
+- `/ibc_consensusStates`: Returns all the consensus states associated with a
   specified client.
-- `ibc_consensusStateHeights`: Requests all the consensus state heights
+- `/ibc_consensusStateHeights`: Returns all the consensus state heights
   associated with a specified client.
-- `ibc_upgradedClientState`: Requests the upgraded client state associated with a
-  specified client.
+- `/ibc_upgradedClientState`: Returns the upgraded client state associated with
+  a specified client.
 
 #### Connection endpoints
 
-- `ibc_clientConnections`: Requests all connections associated with a specified client.
-- ‍`ibc_connections`: Requests all connections associated with the chain.
+- `/ibc_clientConnections`: Returns all connections associated with a specified client.
+- ‍`/ibc_connections`: Returns all connections associated with the chain.
+- `/ibc_connection`: Returns the connection associated with a specified
+  connection identifier.
+- `ibc_connectionParams`: Returns the connection parameters associated with a
+  specified connection.
 
 ## Rollup WebSocket
 
@@ -327,7 +343,7 @@ Requests the unreceived packet sequences associated with a specified channel.
 
 - Priority: Low
 
-- Status: The `ledger_subscribeSlots` endpoint provides a stream of
+- Status: The `/ledger_subscribeSlots` endpoint provides a stream of
   [`SlotResponse`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/bd469c70fc1227a7785fb177a34de21bb6d5eb08/rollup-interface/src/node/rpc/mod.rs#L136-L149)
   type, encompassing the processed batches.
 
