@@ -40,8 +40,9 @@ use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::Timestamp;
 use serde::{Deserialize, Serialize};
 use sov_ibc_transfer::IbcTransfer;
-use sov_modules_api::{Context, DaSpec, Error, StateMap, StateValue, StateVec, WorkingSet};
-use sov_modules_macros::ModuleInfo;
+use sov_modules_api::{
+    Context, DaSpec, Error, ModuleInfo, StateMap, StateValue, StateVec, WorkingSet,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct ExampleModuleConfig {}
