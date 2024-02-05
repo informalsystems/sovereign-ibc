@@ -36,7 +36,6 @@ tendermint            = { workspace = true }
 # sovereign dependencies
 sov-chain-state      = { workspace = true }
 sov-modules-api      = { workspace = true }
-sov-modules-macros   = { workspace = true }
 sov-state            = { workspace = true }
 sov-rollup-interface = { workspace = true }
 
@@ -48,7 +47,6 @@ native = [
     "sov-chain-state/native",
     "sov-ibc-transfer/native",
     "sov-modules-api/native",
-    "sov-modules-macros/native",
     "sov-rollup-interface/native",
     "sov-state/native",
     "schemars",

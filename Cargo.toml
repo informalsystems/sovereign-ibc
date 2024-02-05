@@ -58,6 +58,5 @@ sov-bank              = { git = "https://github.com/Sovereign-Labs/sovereign-sdk
 sov-chain-state       = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "6e22b4c" }
 sov-mock-da           = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "6e22b4c" }
 sov-modules-api       = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "6e22b4c" }
-sov-modules-macros    = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "6e22b4c" }
 sov-state             = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "6e22b4c" }
 sov-rollup-interface  = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "6e22b4c" }
