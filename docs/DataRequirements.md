@@ -29,6 +29,7 @@ endpoint in the list is the least important and least frequently required.
   - [Rollup RPC](#rollup-rpc)
     - [`/ledger_searchTx`](#ledger_searchtx)
     - [`/prover_aggregatedProof*`](#prover_aggregatedproof)
+    - [`/prover_codeCommitment`](#prover_codecommitment)
     - [`/accounts_getAccount`](#accounts_getaccount)
     - [`/ledger_rollupParams`](#ledger_rollupparams)
     - [`/ledger_rollupStatus`](#ledger_rollupstatus)
@@ -177,6 +178,21 @@ endpoint in the list is the least important and least frequently required.
     it is unclear whether we can rely solely on the latest proof for
     constructing an update client message and send it along with the rest of
     packets to the counterparty chain.
+
+### `/prover_codeCommitment`
+
+- Objective:
+  - Used to retrieve the rollup code commitment, essential for the aggregated
+    proof verification by IBC light clients.
+  - Given that the first stab is to go with an on-chain governance proposal for
+    storing the `code_commitment` of a rollup on a counterparty chain, relayers
+    need a convenient endpoint to obtain the commitment and include that in the
+    governance proposal message. This is based on the assumption that the rollup
+    node serves as the most reliable source.
+  
+- Priority: High
+
+- Status: Nothing available yet.
 
 ### `/accounts_getAccount`
 
