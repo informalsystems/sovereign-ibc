@@ -97,12 +97,14 @@ endpoint in the list is the least important and least frequently required.
      before a specified height. Required because rollup state does not store the
      full packet data which is needed to build and relay the packet messages.
      - Pattern:
+       - Should allow specifying `start_height`, `end_height` and `event_key` as
+         params to filter the events out of the following range:
+         - `height > start_height && height <= end_height`
        - Used relatively often, on start and then for every `z` blocks, where
          `clear_interval = z` (default `z = 100`).
        - This is specifically used to index events related to pending packets,
-         utilizing the `packet_key`. This `packet_key` itself is a commitment
-         hash derived from the `send_packet` or `write_acknowledgement` events.
-       - `height > initial_state_height && height <= final_state_height`
+         utilizing a `packet_key`. This `packet_key` itself is a commitment hash
+         derived from the IBC `send_packet` or `write_acknowledgement` events.
      - Priority: High
 
   2. To obtain client update events: (a) for the misbehavior detection task, and
