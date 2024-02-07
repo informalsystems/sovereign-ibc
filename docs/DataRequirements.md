@@ -96,15 +96,16 @@ endpoint in the list is the least important and least frequently required.
   1. To obtain packet events that occurred during a range of heights at or
      before a specified height. Required because rollup state does not store the
      full packet data which is needed to build and relay the packet messages.
+     This endpoint is used to build and relay packet messages, especially for
+     indexing pending packets, where we intend to rely on a `packet_key`. This
+     `packet_key` will be a commitment hash, derived from the IBC `send_packet`
+     or `write_acknowledgement` events.
      - Pattern:
        - Should allow specifying `start_height`, `end_height` and `event_key` as
-         params to filter the events out of the following range:
-         - `height > start_height && height <= end_height`
+         params to filter the events out of the range `height > start_height &&
+         height <= end_height`
        - Used relatively often, on start and then for every `z` blocks, where
          `clear_interval = z` (default `z = 100`).
-       - This is specifically used to index events related to pending packets,
-         utilizing a `packet_key`. This `packet_key` itself is a commitment hash
-         derived from the IBC `send_packet` or `write_acknowledgement` events.
      - Priority: High
 
   2. To obtain client update events: (a) for the misbehavior detection task, and
@@ -117,20 +118,22 @@ endpoint in the list is the least important and least frequently required.
      - Priority: Low
 
 - Status:
-  - Regarding the 2nd situation, nothing straightforward available yet to search
-    for all the events with particular key, specifically where events might have
-    been emitted by the same transaction.
+  - Not available yet.
   - Additionally worth noting there is a `/ledger_getEvents` RPC method enabling
     to search for a single event using the provided
     [`EventIdentifier`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/main/rollup-interface/src/node/rpc/mod.rs#L80-L92),
     which can be a transaction ID but not a transaction hash.
 
 - Remark:
-  - This endpoint works as an interim solution. For now, `sov-ibc` will
-    introduce a few custom-crafted event variants, where the key of these newly
-    defined events being a commitment hash for distinctiveness. But, ideally the
-    endpoint should support a query language, enabling the inclusion of ANDed
-    conditions to facilitate various type of event searches.
+  - For a portion of our indexing needs, this endpoint works as an interim
+    solution. For now, `sov-ibc` will introduce a few custom-crafted event
+    variants, where the key of these newly defined events being a commitment
+    hash (`packet_key`) for distinctiveness. But, ideally the endpoint should
+    support a query language, enabling the inclusion of ANDed conditions to
+    facilitate various type of event searches for cases like:
+    - `send_packet.packet_src_channel == X && send_packet.packet_src_port == X
+       && send_packet.packet_dst_channel == X && send_packet.packet_dst_port ==
+       X && send_packet.packet_sequence == X`
 
 ### `/ledger_getTransactions`
 
