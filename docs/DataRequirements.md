@@ -27,13 +27,13 @@ endpoint in the list is the least important and least frequently required.
     - [`/sequencer_txStatus`](#sequencer_txstatus)
     - [`/sequencer_health`](#sequencer_health)
   - [Rollup RPC](#rollup-rpc)
-    - [`/ledger_searchTx`](#ledger_searchtx)
+    - [`/ledger_getEventsRange`](#ledger_geteventsrange)
+    - [`/ledger_getTransactions`](#ledger_gettransactions)
     - [`/prover_aggregatedProof*`](#prover_aggregatedproof)
     - [`/prover_codeCommitment`](#prover_codecommitment)
     - [`/accounts_getAccount`](#accounts_getaccount)
-    - [`/ledger_rollupParams`](#ledger_rollupparams)
     - [`/ledger_rollupStatus`](#ledger_rollupstatus)
-    - [`/rollup_health`](#rollup_health)
+    - [`/ledger_rollupHealth`](#ledger_rolluphealth)
     - [IBC modules RPC](#ibc-modules-rpc)
       - [Channel endpoints](#channel-endpoints)
       - [Client endpoints](#client-endpoints)
@@ -90,7 +90,7 @@ endpoint in the list is the least important and least frequently required.
 
 ## Rollup RPC
 
-### `/ledger_searchTx`
+### `/ledger_getEventsRange`
 
 - Objective:
   1. To obtain packet events that occurred during a range of heights at or
@@ -99,16 +99,14 @@ endpoint in the list is the least important and least frequently required.
      - Pattern:
        - Used relatively often, on start and then for every `z` blocks, where
          `clear_interval = z` (default `z = 100`).
-       - `send_packet.packet_src_channel == X &&
-       send_packet.packet_src_port == X && send_packet.packet_dst_channel == X
-       && send_packet.packet_dst_port == X && send_packet.packet_sequence ==
-       X`. Also for `write_acknowledgement` packet events.
+       - This is specifically used to index events related to pending packets,
+         utilizing the `packet_key`. This `packet_key` itself is a commitment
+         hash derived from the `send_packet` or `write_acknowledgement` events.
        - `height > initial_state_height && height <= final_state_height`
      - Priority: High
 
   2. To obtain client update events: (a) for the misbehavior detection task, and
-     (b) for relaying packets on connections that have non-zero delay. (Not
-     priority)
+     (b) for relaying packets on connections that have non-zero delay.
      - Used rarely in practice because all connections have 0 delay and often
        misbehavior detection is disabled.
      - Pattern:
@@ -116,14 +114,32 @@ endpoint in the list is the least important and least frequently required.
        - `height > initial_state_height && height <= final_state_height`
      - Priority: Low
 
-  3. To obtain transaction events, for confirming if packets are committed to
+- Status:
+  - Regarding the 2nd situation, nothing straightforward available yet to search
+    for all the events with particular key, specifically where events might have
+    been emitted by the same transaction.
+  - Additionally worth noting there is a `/ledger_getEvents` RPC method enabling
+    to search for a single event using the provided
+    [`EventIdentifier`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/main/rollup-interface/src/node/rpc/mod.rs#L80-L92),
+    which can be a transaction ID but not a transaction hash.
+
+- Remark:
+  - This endpoint works as an interim solution. For now, `sov-ibc` will
+    introduce a few custom-crafted event variants, where the key of these newly
+    defined events being a commitment hash for distinctiveness. But, ideally the
+    endpoint should support a query language, enabling the inclusion of ANDed
+    conditions to facilitate various type of event searches.
+
+### `/ledger_getTransactions`
+
+  1. To obtain transaction events, for confirming if packets are committed to
      the rollup.
      - Not needed on the critical path of packet relaying. Used very often as
        part of packet confirmation.
      - Pattern: `tx.hash == XYZ`
      - Priority: Nice to have
 
-  4. For the success/error status of a transaction immediately after it was
+  2. For the success/error status of a transaction immediately after it was
      broadcast.
      - Used rarely at bootstrap (to register counterparty payee address for
        fees) or when transactions need to be sent sequentially.
@@ -133,22 +149,11 @@ endpoint in the list is the least important and least frequently required.
      - Priority: Nice to have
 
 - Status:
-  - Regarding the 1st and 2nd situations, nothing straightforward available yet
-    to search for all the events with particular key, where events might have
-    been emitted by the same transaction.
   - The `/ledger_getTransactions` RPC method enables search for txs using the
     hash. This method returns a list of all the events emitted by that tx.
-  - There is also a `/ledger_getTransactionsRange` method. Each transaction has a
-    monotonically increasing ID. So this could be used as a range query if we
+  - There is also a `/ledger_getTransactionsRange` method. Each transaction has
+    a monotonically increasing ID. So this could be used as a range query if we
     know the ID of the start or end transaction.
-  - The `/ledger_getEvents` RPC method enables search for a single event using
-    the provided
-    [`EventIdentifier`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/main/rollup-interface/src/node/rpc/mod.rs#L80-L92),
-    which can be a transaction ID but not a transaction hash.
-
-- Remark:
-  - Ideally the endpoint should support a query language, enabling the inclusion
-    of ANDed conditions to facilitate event searches.
 
 ### `/prover_aggregatedProof*`
 
@@ -208,27 +213,6 @@ endpoint in the list is the least important and least frequently required.
     RPC endpoint which appears to perform the same job as `/query_account` on
     Cosmos chains.
 
-### `/ledger_rollupParams`
-
-- Objective:
-  - Used for adjusting rollup parameters that the relayer may need for setting
-    configurations and basic checks, like the namespaces, max batch size or max
-    tx size, max gas fees, etc.
-  - Used to retrieve the rollup code commitment, essential for the aggregated
-    proof verification.
-  - Usually used once, at relayer startup during health check.
-  - Usually not needed for IBC relaying strictly speaking.
-
-- Priority: Low
-
-- Status: Nothing available yet.
-
-- Remark:
-  - The exact parameters that the relayer needs to retrieve from the rollup
-    node should be determined.
-  - The frequency of updating the code commitment and where this update should
-    happen is unclear.
-
 ### `/ledger_rollupStatus`
 
 - Objective:
@@ -243,7 +227,7 @@ endpoint in the list is the least important and least frequently required.
     2. To fetch the rollup latest time and height used in many methods, often
       alongside `node_info.network`, for example:
         - As a dependency, because the latest height is necessary in calling the
-          `/ledger_rollupParams` RPC, during health check.
+          `/ledger_rollupStatus` RPC, during health check.
         - Needed in channel handshake (open try, ack, confirm; close confirm).
         - In connection handshake (open try, ack, confirm), for both the source
           chain (to update client), and destination chain (to construct proofs).
@@ -259,7 +243,7 @@ endpoint in the list is the least important and least frequently required.
   from different endpoints like `/ledger_getHead` or
   `/prover_AggregatedProofData`.
 
-### `/rollup_health`
+### `/ledger_rollupHealth`
 
 - Objective:
   - Needed for basic check to assess the health of the rollup nodes.
