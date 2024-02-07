@@ -59,18 +59,11 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     #[address]
     pub address: C::Address,
 
-    #[module]
-    transfer: IbcTransfer<C>,
-
-    // ----------- Rollup state maps -------------
     #[kernel_module]
     chain_state: sov_chain_state::ChainState<C, Da>,
 
-    #[state]
-    host_height: StateValue<Height>,
-
-    #[state]
-    host_timestamp: StateValue<Timestamp>,
+    #[module]
+    transfer: IbcTransfer<C>,
 
     // ----------- IBC core client state maps -------------
     #[state]

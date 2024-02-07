@@ -39,6 +39,7 @@ where
     Da: DaSpec,
 {
     pub ibc: &'a Ibc<C, Da>,
+    pub context: Option<C>,
     pub working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
 }
 
@@ -49,9 +50,14 @@ where
 {
     pub fn new(
         ibc: &'a Ibc<C, Da>,
+        context: Option<C>,
         working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
     ) -> IbcContext<'a, C, Da> {
-        IbcContext { ibc, working_set }
+        IbcContext {
+            ibc,
+            context,
+            working_set,
+        }
     }
 }
 
@@ -110,27 +116,42 @@ where
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        let host_height = self
-            .ibc
-            .host_height
-            .get(*self.working_set.borrow_mut())
-            .ok_or(ClientError::Other {
-                description: "Host height not found".to_string(),
-            })?;
+        let context = self.context.clone().ok_or(ClientError::Other {
+            description: "Context not found".to_string(),
+        })?;
 
-        Ok(host_height)
+        Ok(Height::new(
+            HOST_REVISION_NUMBER,
+            context.visible_slot_number(),
+        )?)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        let host_timestamp = self
-            .ibc
-            .host_timestamp
-            .get(*self.working_set.borrow_mut())
-            .ok_or(ClientError::Other {
-                description: "Host timestamp not found".to_string(),
-            })?;
+        let context = self.context.clone().ok_or(ClientError::Other {
+            description: "Context not found".to_string(),
+        })?;
 
-        Ok(host_timestamp)
+        let mut working_set = self.working_set.borrow_mut();
+
+        let mut versioned_working_set = working_set.versioned_state(&context);
+
+        let chain_time = self.ibc.chain_state.get_time(&mut versioned_working_set);
+
+        if chain_time.secs() < 0 {
+            // FIXME: at least add a `ContextError::Host` enum variant, and use that here
+            return Err(ContextError::ClientError(ClientError::Other {
+                description: format!("Invalid host chain time: {}", chain_time.secs()),
+            }));
+        }
+
+        let time_in_nanos: u64 =
+            (chain_time.secs() as u64) * 10u64.pow(9) + chain_time.subsec_nanos() as u64;
+
+        // FIXME: at least add a `ContextError::Host` enum variant, and use that here
+        let timestamp = Timestamp::from_nanoseconds(time_in_nanos)
+            .map_err(PacketError::InvalidPacketTimestamp)?;
+
+        Ok(timestamp)
     }
 
     fn host_consensus_state(

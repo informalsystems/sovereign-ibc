@@ -129,7 +129,11 @@ where
     ) -> IbcContext<'a, C, Da::Spec> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
-        IbcContext::new(&self.runtime.ibc, shared_working_set.clone())
+        IbcContext::new(
+            &self.runtime.ibc,
+            Some(self.rollup_ctx.acquire_mutex().clone()),
+            shared_working_set.clone(),
+        )
     }
 
     /// Returns the balance of a user for a given token
@@ -173,7 +177,7 @@ where
         *self.rollup_ctx.acquire_mutex() = C::new(
             sender_address.clone(),
             sender_address,
-            self.rollup_ctx().slot_height(),
+            self.rollup_ctx().visible_slot_number(),
         );
     }
 

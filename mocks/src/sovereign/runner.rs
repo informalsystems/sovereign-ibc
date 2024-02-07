@@ -1,12 +1,11 @@
 //! Contains the implementation of the Sovereign SDK rollup runner.
 use std::time::Duration;
 
-use ibc_core::client::types::Height;
-use ibc_core::host::ValidationContext;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
-use sov_modules_api::runtime::capabilities::Kernel;
+use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    Context, DispatchCall, Genesis, KernelWorkingSet, ModuleInfo, StateCheckpoint, WorkingSet,
+    Context, DispatchCall, Genesis, KernelWorkingSet, ModuleInfo, SlotData, StateCheckpoint,
+    WorkingSet,
 };
 use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::da::BlockHeaderTrait;
@@ -44,18 +43,20 @@ where
             .genesis(runtime_genesis_config, &mut working_set)
             .unwrap();
 
-        self.commit(working_set.checkpoint()).await
+        let checkpoint = self.begin_block(working_set.checkpoint()).await;
+
+        self.commit(checkpoint).await
     }
 
     /// Begins a block by setting the host consensus state and triggering the slot hook
     pub async fn begin_block(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
         let mut working_set = checkpoint.to_revertable();
 
-        let current_height = self.rollup_ctx.acquire_mutex().slot_height();
+        let current_height = self.rollup_ctx.acquire_mutex().visible_slot_number();
 
         debug!("rollup: processing block at height {current_height}");
 
-        loop {
+        let height = loop {
             self.da_core
                 .grow_blocks(self.state_root.lock().unwrap().as_ref().to_vec());
             // Dummy transaction to trigger the block generation
@@ -65,16 +66,25 @@ where
                 Ok(header) => {
                     debug!("Last finalized height={}", header.height());
                     if header.height() >= current_height {
-                        break;
+                        break header.height();
                     }
                 }
                 Err(err) => {
                     info!("Error receiving last finalized block header: {err:?}");
                 }
             }
-        }
+        };
+
+        let block = self.da_service().get_block_at(height).await.unwrap();
 
         let state_root = *self.state_root().acquire_mutex();
+
+        self.kernel().begin_slot_hook(
+            block.header(),
+            &block.validity_condition(),
+            &state_root,
+            &mut working_set,
+        );
 
         self.runtime().begin_slot_hook(
             &state_root,
@@ -117,6 +127,8 @@ where
 
         let mut working_set = checkpoint.to_revertable();
 
+        self.kernel().end_slot_hook(&mut working_set);
+
         self.runtime().end_slot_hook(&mut working_set);
 
         let mut checkpoint = working_set.checkpoint();
@@ -139,18 +151,7 @@ where
 
         self.prover_storage().commit(&state_update, &accessory_log);
 
-        let mut working_set = checkpoint.to_revertable();
-
-        let slot_height = self
-            .ibc_ctx(&mut working_set)
-            .host_height()
-            .unwrap_or(Height::new(0, 1).expect("valid height"));
-
-        *self.rollup_ctx.acquire_mutex() = C::new(
-            self.rollup_ctx().sender().clone(),
-            self.rollup_ctx().sender().clone(),
-            slot_height.revision_height(),
-        );
+        let working_set = checkpoint.to_revertable();
 
         self.set_state_root(root_hash);
 
