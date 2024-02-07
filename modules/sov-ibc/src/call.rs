@@ -5,14 +5,16 @@ use std::rc::Rc;
 use anyhow::{bail, Result};
 use ibc_app_transfer::handler::send_transfer;
 use ibc_app_transfer::types::msgs::transfer::MsgTransfer;
+use ibc_core::client::types::Height;
 use ibc_core::entrypoint::dispatch;
 use ibc_core::handler::types::msgs::MsgEnvelope;
 use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::Timestamp;
 use sov_ibc_transfer::context::IbcTransferContext;
-use sov_modules_api::{CallResponse, Context, DaSpec, WorkingSet};
+use sov_modules_api::{CallResponse, Context, DaSpec, StateValueAccessor, WorkingSet};
 use thiserror::Error;
 
-use crate::context::IbcContext;
+use crate::context::{IbcContext, HOST_REVISION_NUMBER};
 use crate::router::IbcRouter;
 use crate::Ibc;
 
@@ -40,6 +42,25 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
         context: C,
         working_set: &mut WorkingSet<C>,
     ) -> Result<CallResponse> {
+        self.host_height.set(
+            &Height::new(HOST_REVISION_NUMBER, context.visible_slot_number())
+                .expect("valid height"),
+            working_set,
+        );
+
+        let mut versioned_working_set = working_set.versioned_state(&context);
+
+        let chain_time = self.chain_state.get_time(&mut versioned_working_set);
+
+        let time_in_nanos: u64 =
+            (chain_time.secs() as u64) * 10u64.pow(9) + chain_time.subsec_nanos() as u64;
+
+        let timestamp = Timestamp::from_nanoseconds(time_in_nanos).map_err(|_| {
+            anyhow::anyhow!("Failed to convert time to timestamp: {}", time_in_nanos)
+        })?;
+
+        self.host_timestamp.set(&timestamp, working_set);
+
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         let mut execution_context = IbcContext {

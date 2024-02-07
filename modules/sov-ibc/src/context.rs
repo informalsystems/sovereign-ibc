@@ -110,35 +110,27 @@ where
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        let slot_height = self
+        let host_height = self
             .ibc
-            .chain_state
-            .get_slot_height(&mut self.working_set.borrow_mut());
+            .host_height
+            .get(*self.working_set.borrow_mut())
+            .ok_or(ClientError::Other {
+                description: "Host height not found".to_string(),
+            })?;
 
-        Ok(Height::new(HOST_REVISION_NUMBER, slot_height)?)
+        Ok(host_height)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        let chain_time = self
+        let host_timestamp = self
             .ibc
-            .chain_state
-            .get_time(&mut self.working_set.borrow_mut());
+            .host_timestamp
+            .get(*self.working_set.borrow_mut())
+            .ok_or(ClientError::Other {
+                description: "Host timestamp not found".to_string(),
+            })?;
 
-        if chain_time.secs() < 0 {
-            // FIXME: at least add a `ContextError::Host` enum variant, and use that here
-            return Err(ContextError::ClientError(ClientError::Other {
-                description: format!("Invalid host chain time: {}", chain_time.secs()),
-            }));
-        }
-
-        let time_in_nanos: u64 =
-            (chain_time.secs() as u64) * 10u64.pow(9) + chain_time.subsec_nanos() as u64;
-
-        // FIXME: at least add a `ContextError::Host` enum variant, and use that here
-        let timestamp = Timestamp::from_nanoseconds(time_in_nanos)
-            .map_err(PacketError::InvalidPacketTimestamp)?;
-
-        Ok(timestamp)
+        Ok(host_timestamp)
     }
 
     fn host_consensus_state(
@@ -591,7 +583,7 @@ where
 
         self.working_set
             .borrow_mut()
-            .add_event(tm_event.kind.as_str(), event_attribute.join(",").as_str());
+            .add_event(tm_event.kind.as_str(), event_attribute.join(","));
 
         Ok(())
     }

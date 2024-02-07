@@ -10,10 +10,11 @@ use sov_celestia_adapter::CelestiaService;
 use sov_mock_da::MockDaService;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Address, Context};
+use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::services::da::DaService;
 use typed_builder::TypedBuilder;
 
-use crate::sovereign::{celestia_da_service, mock_da_service, GenesisConfig, RuntimeConfig};
+use crate::sovereign::{celestia_da_service, mock_da_service, GenesisConfig, RollupGenesisConfig};
 
 #[derive(TypedBuilder, Clone, Debug)]
 pub struct TestSetupConfig<C: Context, Da: DaService> {
@@ -26,8 +27,8 @@ pub struct TestSetupConfig<C: Context, Da: DaService> {
     #[builder(default = ChainId::new("mock-rollup-0").unwrap())]
     pub rollup_id: ChainId,
     /// The runtime configuration.
-    #[builder(default = RuntimeConfig::default())]
-    pub rollup_runtime_config: RuntimeConfig<C>,
+    #[builder(default = RollupGenesisConfig::default())]
+    pub rollup_genesis_config: RollupGenesisConfig<C>,
     /// Sets whether to use manual IBC TAO or not.
     #[builder(default = false)]
     pub with_manual_tao: bool,
@@ -36,13 +37,13 @@ pub struct TestSetupConfig<C: Context, Da: DaService> {
 impl<C: Context, Da: DaService> TestSetupConfig<C, Da> {
     /// Returns list of tokens in the bank configuration
     pub fn get_tokens(&self) -> &Vec<TokenConfig<C>> {
-        &self.rollup_runtime_config.bank_config.tokens
+        &self.rollup_genesis_config.bank_config.tokens
     }
 
     /// Returns the address of the relayer. We use the last address in the list
     /// as the relayer address
     pub fn get_relayer_address(&self) -> C::Address {
-        self.rollup_runtime_config.bank_config.tokens[0]
+        self.rollup_genesis_config.bank_config.tokens[0]
             .address_and_balances
             .last()
             .unwrap()
@@ -59,12 +60,17 @@ impl<C: Context, Da: DaService> TestSetupConfig<C, Da> {
         )
     }
 
-    pub fn rollup_genesis_config(&self) -> GenesisConfig<C, Da::Spec> {
+    pub fn kernel_genesis_config(&self) -> BasicKernelGenesisConfig<C, Da::Spec> {
+        BasicKernelGenesisConfig {
+            chain_state: self.rollup_genesis_config.chain_state_config.clone(),
+        }
+    }
+
+    pub fn runtime_genesis_config(&self) -> GenesisConfig<C, Da::Spec> {
         GenesisConfig::new(
-            self.rollup_runtime_config.chain_state_config.clone(),
-            self.rollup_runtime_config.bank_config.clone(),
-            self.rollup_runtime_config.ibc_config.clone(),
-            self.rollup_runtime_config.ibc_transfer_config.clone(),
+            self.rollup_genesis_config.bank_config.clone(),
+            self.rollup_genesis_config.ibc_config.clone(),
+            self.rollup_genesis_config.ibc_transfer_config.clone(),
         )
     }
 }
