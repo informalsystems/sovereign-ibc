@@ -25,8 +25,10 @@ use ibc_core::primitives::{Signer, Timestamp};
 use sov_modules_api::{
     Context, DaSpec, StateMapAccessor, StateValueAccessor, StateVecAccessor, WorkingSet,
 };
+use tendermint::abci::Event as TmEvent;
 
 use crate::clients::{AnyClientState, AnyConsensusState};
+use crate::event::process_events;
 use crate::Ibc;
 
 /// The SDK doesn't have a concept of a "revision number", so we default to 0
@@ -575,23 +577,20 @@ where
     }
 
     fn emit_ibc_event(&mut self, event: IbcEvent) -> Result<(), ContextError> {
-        // Note: as an interim solution, we transform IBC events into Tendermint
-        // events to simplify the conversion process, avoiding the need for
-        // converting individual IBC event types into a key-value pair of `&str`
-        let tm_event =
-            tendermint::abci::Event::try_from(event).map_err(|_| ClientError::Other {
-                description: "Failed to convert IBC event to Tendermint event".to_string(),
-            })?;
+        fn add_event<C: Context>(event: TmEvent, working_set: &mut WorkingSet<C>) {
+            let event_attribute: Vec<String> = event
+                .attributes
+                .into_iter()
+                .map(|attr| format!("{attr:?}"))
+                .collect();
+            working_set.add_event(event.kind.as_str(), event_attribute.join(",").as_str());
+        }
 
-        let event_attribute: Vec<String> = tm_event
-            .attributes
-            .into_iter()
-            .map(|attr| format!("{attr:?}"))
-            .collect();
+        let events = process_events(event)?;
 
-        self.working_set
-            .borrow_mut()
-            .add_event(tm_event.kind.as_str(), event_attribute.join(",").as_str());
+        for event in events {
+            add_event(event, *self.working_set.borrow_mut());
+        }
 
         Ok(())
     }

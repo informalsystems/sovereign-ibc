@@ -11,6 +11,7 @@
 pub mod call;
 pub mod clients;
 pub mod codec;
+pub mod event;
 pub mod genesis;
 
 #[cfg(feature = "native")]
