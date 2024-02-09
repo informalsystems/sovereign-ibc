@@ -10,7 +10,7 @@ use ibc_core::client::context::client_state::{
     ClientStateCommon, ClientStateExecution, ClientStateValidation,
 };
 use ibc_core::client::types::error::ClientError;
-use ibc_core::client::types::{Height, Status, UpdateKind};
+use ibc_core::client::types::{Height, Status};
 use ibc_core::commitment_types::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
@@ -185,14 +185,13 @@ where
         ctx: &mut IbcContext<'a, C, Da>,
         client_id: &ClientId,
         client_message: Any,
-        update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => {
-                cs.update_state_on_misbehaviour(ctx, client_id, client_message, update_kind)
+                cs.update_state_on_misbehaviour(ctx, client_id, client_message)
             }
             AnyClientState::Sovereign(cs) => {
-                cs.update_state_on_misbehaviour(ctx, client_id, client_message, update_kind)
+                cs.update_state_on_misbehaviour(ctx, client_id, client_message)
             }
         }
     }
@@ -231,14 +230,13 @@ where
         ctx: &IbcContext<'a, C, Da>,
         client_id: &ClientId,
         client_message: Any,
-        update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => {
-                cs.verify_client_message(ctx, client_id, client_message, update_kind)
+                cs.verify_client_message(ctx, client_id, client_message)
             }
             AnyClientState::Sovereign(cs) => {
-                cs.verify_client_message(ctx, client_id, client_message, update_kind)
+                cs.verify_client_message(ctx, client_id, client_message)
             }
         }
     }
@@ -248,14 +246,13 @@ where
         ctx: &IbcContext<'a, C, Da>,
         client_id: &ClientId,
         client_message: Any,
-        update_kind: &UpdateKind,
     ) -> Result<bool, ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => {
-                cs.check_for_misbehaviour(ctx, client_id, client_message, update_kind)
+                cs.check_for_misbehaviour(ctx, client_id, client_message)
             }
             AnyClientState::Sovereign(cs) => {
-                cs.check_for_misbehaviour(ctx, client_id, client_message, update_kind)
+                cs.check_for_misbehaviour(ctx, client_id, client_message)
             }
         }
     }

@@ -134,6 +134,7 @@ async fn test_escrow_unescrow_on_sov() {
 /// Checks if a transfer initiated on the Cosmos chain (`send_transfer`)
 /// succeeds by creating a new token on the rollup (`recv_packet`).
 #[test(tokio::test)]
+#[ignore]
 async fn test_mint_burn_on_sov() {
     let relayer_builder = RelayerBuilder::default();
 

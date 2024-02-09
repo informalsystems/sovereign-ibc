@@ -143,7 +143,7 @@ dependencies = [
  "ark-std 0.4.0",
  "derivative",
  "digest 0.10.7",
- "itertools",
+ "itertools 0.10.5",
  "num-bigint",
  "num-traits",
  "paste",
@@ -401,7 +401,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=3b80c23#3b80c232fc042aa0c53f0dcb29a6d7b080e8c1a7"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=7614f92#7614f92cc0c28e7dce706dffdda3fab34fe1abd1"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
@@ -419,7 +419,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.10.8",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5)",
  "tendermint 0.34.0",
  "tendermint-proto 0.34.0",
  "tendermint-rpc",
@@ -436,7 +436,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=3b80c23#3b80c232fc042aa0c53f0dcb29a6d7b080e8c1a7"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=7614f92#7614f92cc0c28e7dce706dffdda3fab34fe1abd1"
 dependencies = [
  "displaydoc",
  "ics23",
@@ -585,9 +585,9 @@ dependencies = [
 
 [[package]]
 name = "bnum"
-version = "0.8.1"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab9008b6bb9fc80b5277f2fe481c09e828743d9151203e804583eb4c9e15b31d"
+checksum = "56953345e39537a3e18bdaeba4cb0c58a78c1f61f361dc0fa7c5c7340ae87c5f"
 
 [[package]]
 name = "borsh"
@@ -805,9 +805,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.4.18"
+version = "4.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e578d6ec4194633722ccf9544794b71b1385c3c027efe0c55db226fc880865c"
+checksum = "80c21025abd42669a92efc996ef13cfb2c5c627858421ea58d5c3b331a6c134f"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -815,9 +815,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.4.18"
+version = "4.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4df4df40ec50c46000231c914968278b1eb05098cf8f1b3a518a95030e71d1c7"
+checksum = "458bf1f341769dfcf849846f65dffdf9146daa56bcd2a47cb4e1de9915567c99"
 dependencies = [
  "anstream",
  "anstyle",
@@ -828,9 +828,9 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.4.7"
+version = "4.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf9804afaaf59a91e75b022a30fb7229a7901f60c755489cc61c9b423b836442"
+checksum = "307bc0538d5f0f83b8248db3087aa92fe504e4691294d0c96c0eabc33f47ba47"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -840,9 +840,9 @@ dependencies = [
 
 [[package]]
 name = "clap_lex"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "702fc72eb24e5a1e48ce58027a675bc24edd52096d5397d4aea7c6dd9eca0bd1"
+checksum = "98cc8fbded0c607b7ba9dd60cd98df59af97e84d24e49c8557331cfc26d301ce"
 
 [[package]]
 name = "clru"
@@ -980,9 +980,9 @@ dependencies = [
 
 [[package]]
 name = "cosmwasm-crypto"
-version = "1.5.2"
+version = "1.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ed6aa9f904de106fa16443ad14ec2abe75e94ba003bb61c681c0e43d4c58d2a"
+checksum = "9934c79e58d9676edfd592557dee765d2a6ef54c09d5aa2edb06156b00148966"
 dependencies = [
  "digest 0.10.7",
  "ecdsa",
@@ -1027,9 +1027,9 @@ dependencies = [
 
 [[package]]
 name = "cosmwasm-std"
-version = "1.5.2"
+version = "1.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad011ae7447188e26e4a7dbca2fcd0fc186aa21ae5c86df0503ea44c78f9e469"
+checksum = "ef8666e572a3a2519010dde88c04d16e9339ae751b56b2bb35081fe3f7d6be74"
 dependencies = [
  "base64 0.21.7",
  "bech32",
@@ -1049,9 +1049,9 @@ dependencies = [
 
 [[package]]
 name = "cosmwasm-vm"
-version = "1.5.2"
+version = "1.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90ebdf59ae3b9fe66d1eb845cf69aa537c77107d816452595c5796c332af061f"
+checksum = "011bc44b0d617f440ea509b38e543437511a196c6e2a0ebd3425edd912902fb2"
 dependencies = [
  "bitflags 1.3.2",
  "bytecheck",
@@ -1250,9 +1250,9 @@ dependencies = [
 
 [[package]]
 name = "curve25519-dalek"
-version = "4.1.1"
+version = "4.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e89b8c6a2e4b1f45971ad09761aafb85514a84744b67a95e32c3cc1352d1f65c"
+checksum = "0a677b8922c94e01bdbb12126b0bc852f00447528dee1782229af9c720c3f348"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -1513,7 +1513,7 @@ version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7277392b266383ef8396db7fdeb1e77b6c52fed775f5df15bb24f35b72156980"
 dependencies = [
- "curve25519-dalek 4.1.1",
+ "curve25519-dalek 4.1.2",
  "ed25519",
  "rand_core 0.6.4",
  "serde",
@@ -2173,7 +2173,7 @@ dependencies = [
 [[package]]
 name = "ibc"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-apps",
  "ibc-clients",
@@ -2186,7 +2186,7 @@ dependencies = [
 [[package]]
 name = "ibc-app-nft-transfer"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-app-nft-transfer-types",
  "ibc-core",
@@ -2196,7 +2196,7 @@ dependencies = [
 [[package]]
 name = "ibc-app-nft-transfer-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "base64 0.21.7",
  "borsh",
@@ -2216,7 +2216,7 @@ dependencies = [
 [[package]]
 name = "ibc-app-transfer"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-app-transfer-types",
  "ibc-core",
@@ -2226,7 +2226,7 @@ dependencies = [
 [[package]]
 name = "ibc-app-transfer-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2242,7 +2242,7 @@ dependencies = [
 [[package]]
 name = "ibc-apps"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-app-nft-transfer",
  "ibc-app-transfer",
@@ -2251,7 +2251,7 @@ dependencies = [
 [[package]]
 name = "ibc-client-tendermint"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-client-tendermint-types",
  "ibc-core-client",
@@ -2267,7 +2267,7 @@ dependencies = [
 [[package]]
 name = "ibc-client-tendermint-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "displaydoc",
  "ibc-core-client-types",
@@ -2284,7 +2284,7 @@ dependencies = [
 [[package]]
 name = "ibc-client-wasm-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "base64 0.21.7",
  "cosmwasm-schema",
@@ -2299,7 +2299,7 @@ dependencies = [
 [[package]]
 name = "ibc-clients"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-client-tendermint",
  "ibc-client-wasm-types",
@@ -2308,7 +2308,7 @@ dependencies = [
 [[package]]
 name = "ibc-core"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-core-channel",
  "ibc-core-client",
@@ -2324,7 +2324,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-channel"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-core-channel-types",
  "ibc-core-client",
@@ -2339,7 +2339,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-channel-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2362,7 +2362,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-client"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-core-client-context",
  "ibc-core-client-types",
@@ -2375,7 +2375,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-client-context"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "derive_more",
  "displaydoc",
@@ -2391,7 +2391,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-client-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2411,7 +2411,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-commitment-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2429,7 +2429,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-connection"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-core-client",
  "ibc-core-connection-types",
@@ -2441,7 +2441,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-connection-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2462,7 +2462,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-handler"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "ibc-core-channel",
  "ibc-core-client",
@@ -2477,7 +2477,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-handler-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2501,7 +2501,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-host"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "derive_more",
  "displaydoc",
@@ -2519,7 +2519,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-host-cosmos"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "derive_more",
  "displaydoc",
@@ -2542,7 +2542,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-host-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2557,7 +2557,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-router"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "derive_more",
  "displaydoc",
@@ -2571,7 +2571,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-router-types"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2590,7 +2590,7 @@ dependencies = [
 [[package]]
 name = "ibc-derive"
 version = "0.6.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2600,7 +2600,7 @@ dependencies = [
 [[package]]
 name = "ibc-primitives"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2639,7 +2639,7 @@ dependencies = [
 [[package]]
 name = "ibc-query"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "displaydoc",
  "ibc",
@@ -2650,7 +2650,7 @@ dependencies = [
 [[package]]
 name = "ibc-testkit"
 version = "0.50.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=5c7cea88d0#5c7cea88d0e27ba89476cc515820d5d9669851c9"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=b25d7d8868#b25d7d88687599e7b457471c55965b73d8cbe177"
 dependencies = [
  "derive_more",
  "displaydoc",
@@ -2792,6 +2792,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2808,7 +2817,7 @@ dependencies = [
  "hashbrown 0.13.2",
  "hex",
  "ics23",
- "itertools",
+ "itertools 0.10.5",
  "mirai-annotations",
  "num-derive",
  "num-traits",
@@ -2820,18 +2829,18 @@ dependencies = [
 
 [[package]]
 name = "jobserver"
-version = "0.1.27"
+version = "0.1.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c37f63953c4c63420ed5fd3d6d398c719489b9f872b9fa683262f8edd363c7d"
+checksum = "ab46a6e9526ddef3ae7f787c06f0f2600639ba80ea3eade3d8e670a2230f51d6"
 dependencies = [
  "libc",
 ]
 
 [[package]]
 name = "js-sys"
-version = "0.3.67"
+version = "0.3.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a1d36f1235bc969acba30b7f5990b864423a6068a10f7c90ae8f0112e3a59d1"
+checksum = "406cda4b368d531c842222cf9d2600a9a4acce8d29423695379c6868a143a9ee"
 dependencies = [
  "wasm-bindgen",
 ]
@@ -2999,9 +3008,9 @@ dependencies = [
 
 [[package]]
 name = "k256"
-version = "0.13.3"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "956ff9b67e26e1a6a866cb758f12c6f8746208489e3e4a4b5580802f2f0a587b"
+checksum = "cadb76004ed8e97623117f3df85b17aaa6626ab0b0831e6573f104df16cd1bcc"
 dependencies = [
  "cfg-if",
  "ecdsa",
@@ -3305,6 +3314,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-conv"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51d515d32fb182ee37cda2ccdcb92950d6a3c2893aa280e540671c2cd0f3b1d9"
+
+[[package]]
 name = "num-derive"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3317,19 +3332,18 @@ dependencies = [
 
 [[package]]
 name = "num-integer"
-version = "0.1.45"
+version = "0.1.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "225d3389fb3509a24c93f5c29eb6bde2586b98d9f016636dff58d7c6f7569cd9"
+checksum = "7969661fd2958a5cb096e56c8e1ad0444ac2bbcd0061bd28660485a44879858f"
 dependencies = [
- "autocfg",
  "num-traits",
 ]
 
 [[package]]
 name = "num-traits"
-version = "0.2.17"
+version = "0.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39e3200413f237f41ab11ad6d161bc7239c84dcb631773ccd7de3dfe4b5c267c"
+checksum = "da0df0e5185db44f69b44f26786fe401b6c293d1907744beaa7fa62b2e5a517a"
 dependencies = [
  "autocfg",
  "libm",
@@ -3606,7 +3620,7 @@ version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e8366a6159044a37876a2b9817124296703c586a5c92e2c53751fa06d8d43e8"
 dependencies = [
- "toml_edit 0.20.7",
+ "toml_edit 0.20.2",
 ]
 
 [[package]]
@@ -3690,7 +3704,7 @@ checksum = "c55e02e35260070b6f716a2423c2ff1c3bb1642ddca6f99e1f26d06268a0e2d2"
 dependencies = [
  "bytes",
  "heck",
- "itertools",
+ "itertools 0.11.0",
  "log",
  "multimap",
  "once_cell",
@@ -3711,7 +3725,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "efb6c9a1dd1def8e2124d17e83a20af56f1570d6c2d2bd9e266ccb768df3840e"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.11.0",
  "proc-macro2",
  "quote",
  "syn 2.0.48",
@@ -4693,7 +4707,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-client"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3#36806c348c023c6635bbfe9e136da14cf98c32f8"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5#f6963c5812d043a0b489fcceff65f86aa17209a2"
 dependencies = [
  "derive_more",
  "ibc-client-tendermint",
@@ -4701,7 +4715,7 @@ dependencies = [
  "ics23",
  "prost",
  "serde",
- "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3)",
+ "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5)",
  "tendermint 0.34.0",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.0",
@@ -4749,7 +4763,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-client-types"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3#36806c348c023c6635bbfe9e136da14cf98c32f8"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5#f6963c5812d043a0b489fcceff65f86aa17209a2"
 dependencies = [
  "base64 0.21.7",
  "bytes",
@@ -4827,7 +4841,7 @@ dependencies = [
 [[package]]
 name = "sov-ibc"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3#36806c348c023c6635bbfe9e136da14cf98c32f8"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5#f6963c5812d043a0b489fcceff65f86aa17209a2"
 dependencies = [
  "anyhow",
  "borsh",
@@ -4841,9 +4855,9 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5)",
  "sov-chain-state",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3)",
+ "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5)",
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
@@ -4877,10 +4891,10 @@ dependencies = [
  "sha2 0.10.8",
  "sov-bank",
  "sov-celestia-adapter",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5)",
  "sov-chain-state",
- "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3)",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3)",
+ "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5)",
+ "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5)",
  "sov-mock-da",
  "sov-modules-api",
  "sov-modules-stf-blueprint",
@@ -4925,7 +4939,7 @@ dependencies = [
 [[package]]
 name = "sov-ibc-transfer"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=36806c3#36806c348c023c6635bbfe9e136da14cf98c32f8"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=f6963c5#f6963c5812d043a0b489fcceff65f86aa17209a2"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -5158,9 +5172,9 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strsim"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
+checksum = "5ee073c9e4cd00e28217186dbe12796d692868f432bf2e97ee73bed0c56dfa01"
 
 [[package]]
 name = "subtle"
@@ -5501,11 +5515,12 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.3.31"
+version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f657ba42c3f86e7680e53c8cd3af8abbe56b5491790b46e22e19c0d57463583e"
+checksum = "c8248b6521bb14bc45b4067159b9b6ad792e2d6d754d6c41fb50e29fefe38749"
 dependencies = [
  "deranged",
+ "num-conv",
  "powerfmt",
  "serde",
  "time-core",
@@ -5520,10 +5535,11 @@ checksum = "ef927ca75afb808a4d64dd374f00a2adf8d0fcff8e7b184af886c3c87ec4a3f3"
 
 [[package]]
 name = "time-macros"
-version = "0.2.16"
+version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26197e33420244aeb70c3e8c78376ca46571bc4e701e4791c2cd9f57dcb3a43f"
+checksum = "7ba3a3ef41e6672a2f0f001392bb5dcd3ff0a9992d618ca761a11c3121547774"
 dependencies = [
+ "num-conv",
  "time-core",
 ]
 
@@ -5664,9 +5680,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.20.7"
+version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70f427fce4d84c72b5b732388bf4a9f4531b53f74e2887e3ecb2481f68f66d81"
+checksum = "396e4d48bbb2b7554c944bde63101b5ae446cff6ec4a24227428f15eb72ef338"
 dependencies = [
  "indexmap 2.2.2",
  "toml_datetime",
@@ -6009,9 +6025,9 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.90"
+version = "0.2.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1223296a201415c7fad14792dbefaace9bd52b62d33453ade1c5b5f07555406"
+checksum = "c1e124130aee3fb58c5bdd6b639a0509486b0338acaaae0c84a5124b0f588b7f"
 dependencies = [
  "cfg-if",
  "wasm-bindgen-macro",
@@ -6019,9 +6035,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-backend"
-version = "0.2.90"
+version = "0.2.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcdc935b63408d58a32f8cc9738a0bffd8f05cc7c002086c6ef20b7312ad9dcd"
+checksum = "c9e7e1900c352b609c8488ad12639a311045f40a35491fb69ba8c12f758af70b"
 dependencies = [
  "bumpalo",
  "log",
@@ -6057,9 +6073,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.40"
+version = "0.4.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bde2032aeb86bdfaecc8b261eef3cba735cc426c1f3a3416d1e0791be95fc461"
+checksum = "877b9c3f61ceea0e56331985743b13f3d25c406a7098d45180fb5f09bc19ed97"
 dependencies = [
  "cfg-if",
  "js-sys",
@@ -6069,9 +6085,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.90"
+version = "0.2.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e4c238561b2d428924c49815533a8b9121c664599558a5d9ec51f8a1740a999"
+checksum = "b30af9e2d358182b5c7449424f017eba305ed32a7010509ede96cdc4696c46ed"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -6079,9 +6095,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.90"
+version = "0.2.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bae1abb6806dc1ad9e560ed242107c0f6c84335f1749dd4e8ddb012ebd5e25a7"
+checksum = "642f325be6301eb8107a83d12a8ac6c1e1c54345a7ef1a9261962dfefda09e66"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6092,15 +6108,15 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.90"
+version = "0.2.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d91413b1c31d7539ba5ef2451af3f0b833a005eb27a631cec32bc0635a8602b"
+checksum = "4f186bd2dcf04330886ce82d6f33dd75a7bfcf69ecf5763b89fcde53b6ac9838"
 
 [[package]]
 name = "wasm-bindgen-test"
-version = "0.3.40"
+version = "0.3.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "139bd73305d50e1c1c4333210c0db43d989395b64a237bd35c10ef3832a7f70c"
+checksum = "143ddeb4f833e2ed0d252e618986e18bfc7b0e52f2d28d77d05b2f045dd8eb61"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",
@@ -6112,9 +6128,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-test-macro"
-version = "0.3.40"
+version = "0.3.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70072aebfe5da66d2716002c729a14e4aec4da0e23cc2ea66323dac541c93928"
+checksum = "a5211b7550606857312bba1d978a8ec75692eae187becc5e680444fffc5e6f89"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6294,9 +6310,9 @@ dependencies = [
 
 [[package]]
 name = "web-sys"
-version = "0.3.67"
+version = "0.3.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58cd2333b6e0be7a39605f0e255892fd7418a682d8da8fe042fe25128794d2ed"
+checksum = "96565907687f7aceb35bc5fc03770a8a0471d82e479f25832f54a0e3f4b28446"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -6528,9 +6544,9 @@ checksum = "dff9641d1cd4be8d1a070daf9e3773c5f67e78b4d9d42263020c057706765c04"
 
 [[package]]
 name = "winnow"
-version = "0.5.37"
+version = "0.5.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7cad8365489051ae9f054164e459304af2e7e9bb407c958076c8bf4aef52da5"
+checksum = "5389a154b01683d28c77f8f68f49dea75f0a4da32557a58f68ee51ebba472d29"
 dependencies = [
  "memchr",
 ]
