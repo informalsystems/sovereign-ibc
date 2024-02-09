@@ -1,11 +1,13 @@
 //! Contains the implementation of the Sovereign SDK rollup runner.
 use std::time::Duration;
 
-use ibc_core::host::ValidationContext;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
+use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    Context, DispatchCall, Genesis, ModuleInfo, SlotData, StateCheckpoint, WorkingSet,
+    Context, DispatchCall, Genesis, KernelWorkingSet, ModuleInfo, SlotData, StateCheckpoint,
+    WorkingSet,
 };
+use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::da::BlockHeaderTrait;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
@@ -13,8 +15,7 @@ use tokio::task::JoinHandle;
 use tokio::time::sleep;
 use tracing::{debug, info};
 
-use super::{MockRollup, RuntimeCall};
-use crate::sovereign::GenesisConfig;
+use super::{GenesisConfig, MockRollup, RuntimeCall};
 use crate::utils::{wait_for_block, MutexUtil};
 
 impl<C, Da, S> MockRollup<C, Da, S>
@@ -27,22 +28,31 @@ where
     /// Initializes the chain with the genesis configuration
     pub async fn init(
         &mut self,
-        genesis_config: &GenesisConfig<C, Da::Spec>,
+        kernel_genesis_config: &BasicKernelGenesisConfig<C, Da::Spec>,
+        runtime_genesis_config: &GenesisConfig<C, Da::Spec>,
     ) -> StateCheckpoint<C> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        self.runtime()
-            .genesis(genesis_config, &mut working_set)
+        let mut kernel_working_set = KernelWorkingSet::uninitialized(&mut working_set);
+
+        self.kernel()
+            .genesis(&kernel_genesis_config, &mut kernel_working_set)
             .unwrap();
 
-        self.commit(working_set.checkpoint()).await
+        self.runtime()
+            .genesis(runtime_genesis_config, &mut working_set)
+            .unwrap();
+
+        let checkpoint = self.begin_block(working_set.checkpoint()).await;
+
+        self.commit(checkpoint).await
     }
 
     /// Begins a block by setting the host consensus state and triggering the slot hook
     pub async fn begin_block(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
         let mut working_set = checkpoint.to_revertable();
 
-        let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);
+        let current_height = self.rollup_ctx.acquire_mutex().visible_slot_number();
 
         debug!("rollup: processing block at height {current_height}");
 
@@ -56,7 +66,7 @@ where
                 Ok(header) => {
                     debug!("Last finalized height={}", header.height());
                     if header.height() >= current_height {
-                        break current_height;
+                        break header.height();
                     }
                 }
                 Err(err) => {
@@ -69,11 +79,16 @@ where
 
         let state_root = *self.state_root().acquire_mutex();
 
-        self.runtime().begin_slot_hook(
+        self.kernel().begin_slot_hook(
             block.header(),
             &block.validity_condition(),
             &state_root,
             &mut working_set,
+        );
+
+        self.runtime().begin_slot_hook(
+            &state_root,
+            &mut working_set.versioned_state(&self.rollup_ctx.acquire_mutex()),
         );
 
         self.set_host_consensus_state(working_set.checkpoint(), state_root)
@@ -112,6 +127,8 @@ where
 
         let mut working_set = checkpoint.to_revertable();
 
+        self.kernel().end_slot_hook(&mut working_set);
+
         self.runtime().end_slot_hook(&mut working_set);
 
         let mut checkpoint = working_set.checkpoint();
@@ -134,14 +151,7 @@ where
 
         self.prover_storage().commit(&state_update, &accessory_log);
 
-        let mut working_set = checkpoint.to_revertable();
-
-        let slot_height = self.ibc_ctx(&mut working_set).host_height().unwrap();
-
-        *self.rollup_ctx.acquire_mutex() = C::new(
-            self.rollup_ctx().sender().clone(),
-            slot_height.revision_height(),
-        );
+        let working_set = checkpoint.to_revertable();
 
         self.set_state_root(root_hash);
 

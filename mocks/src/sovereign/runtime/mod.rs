@@ -2,13 +2,13 @@
 mod config;
 pub use config::*;
 use sov_bank::Bank;
-use sov_chain_state::ChainState;
 use sov_ibc::Ibc;
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
 use sov_modules_api::macros::DefaultRuntime;
 use sov_modules_api::{
-    AccessoryWorkingSet, Context, DaSpec, DispatchCall, Genesis, MessageCodec, Spec, WorkingSet,
+    AccessoryWorkingSet, Context, DaSpec, DispatchCall, Genesis, MessageCodec, Spec,
+    VersionedWorkingSet, WorkingSet,
 };
 use sov_state::Storage;
 
@@ -20,44 +20,31 @@ where
     C: Context,
     Da: DaSpec,
 {
-    pub chain_state: ChainState<C, Da>,
     pub bank: Bank<C>,
     pub ibc: Ibc<C, Da>,
     pub ibc_transfer: IbcTransfer<C>,
 }
 
-impl<C: Context, Da: DaSpec> SlotHooks<Da> for Runtime<C, Da> {
+impl<C: Context, Da: DaSpec> SlotHooks for Runtime<C, Da> {
     type Context = C;
 
     fn begin_slot_hook(
         &self,
-        slot_header: &Da::BlockHeader,
-        validity_condition: &Da::ValidityCondition,
-        pre_state_root: &<<Self::Context as Spec>::Storage as Storage>::Root,
-        working_set: &mut WorkingSet<Self::Context>,
+        _pre_state_root: &<<Self::Context as Spec>::Storage as Storage>::Root,
+        _working_set: &mut VersionedWorkingSet<Self::Context>,
     ) {
-        self.chain_state.begin_slot_hook(
-            slot_header,
-            validity_condition,
-            pre_state_root,
-            working_set,
-        );
     }
 
-    fn end_slot_hook(&self, working_set: &mut WorkingSet<C>) {
-        self.chain_state.end_slot_hook(working_set);
-    }
+    fn end_slot_hook(&self, _working_set: &mut WorkingSet<C>) {}
 }
 
-impl<C: Context, Da: DaSpec> FinalizeHook<Da> for Runtime<C, Da> {
+impl<C: Context, Da: DaSpec> FinalizeHook for Runtime<C, Da> {
     type Context = C;
 
     fn finalize_hook(
         &self,
-        root_hash: &<<Self::Context as Spec>::Storage as Storage>::Root,
-        accesorry_working_set: &mut AccessoryWorkingSet<Self::Context>,
+        _root_hash: &<<Self::Context as Spec>::Storage as Storage>::Root,
+        _accesorry_working_set: &mut AccessoryWorkingSet<Self::Context>,
     ) {
-        self.chain_state
-            .finalize_hook(root_hash, accesorry_working_set);
     }
 }

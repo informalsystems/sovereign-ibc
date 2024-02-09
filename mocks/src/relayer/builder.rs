@@ -5,6 +5,7 @@ use sov_celestia_client::types::client_state::sov_client_type;
 use sov_mock_da::MockDaService;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, WorkingSet};
+use sov_prover_storage_manager::new_orphan_storage;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
@@ -64,11 +65,13 @@ where
     {
         let runtime = Runtime::default();
 
-        let rollup_ctx = C::new(self.setup_cfg.get_relayer_address(), DEFAULT_INIT_HEIGHT);
+        let sender_address = self.setup_cfg.get_relayer_address();
 
-        let path = tempfile::tempdir().unwrap();
+        let rollup_ctx = C::new(sender_address.clone(), sender_address, DEFAULT_INIT_HEIGHT);
 
-        let prover_storage = ProverStorage::with_path(path).unwrap();
+        let tmpdir = tempfile::tempdir().unwrap();
+
+        let prover_storage = new_orphan_storage(tmpdir.path()).unwrap();
 
         let mut rollup = MockRollup::new(
             runtime,
@@ -80,7 +83,12 @@ where
             self.setup_cfg.da_service.clone(),
         );
 
-        rollup.init(&self.setup_cfg.rollup_genesis_config()).await;
+        rollup
+            .init(
+                &self.setup_cfg.kernel_genesis_config(),
+                &self.setup_cfg.runtime_genesis_config(),
+            )
+            .await;
 
         let sov_client_counter = match rollup.query(QueryReq::ClientCounter).await {
             QueryResp::ClientCounter(counter) => counter,
