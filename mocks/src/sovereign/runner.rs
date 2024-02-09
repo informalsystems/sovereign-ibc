@@ -36,7 +36,7 @@ where
         let mut kernel_working_set = KernelWorkingSet::uninitialized(&mut working_set);
 
         self.kernel()
-            .genesis(&kernel_genesis_config, &mut kernel_working_set)
+            .genesis(kernel_genesis_config, &mut kernel_working_set)
             .unwrap();
 
         self.runtime()

@@ -126,38 +126,25 @@ impl<'a> Context<'a> {
             ExecuteMsg::VerifyClientMessage(msg) => {
                 let msg = VerifyClientMessageMsg::try_from(msg)?;
 
-                let (update_kind, any_client_msg): (_, Any) = match msg.client_message {
-                    ClientMessage::Header(header) => (UpdateKind::UpdateClient, (*header).into()),
-                    ClientMessage::Misbehaviour(misbehaviour) => {
-                        (UpdateKind::SubmitMisbehaviour, (*misbehaviour).into())
-                    }
+                let any_client_msg: Any = match msg.client_message {
+                    ClientMessage::Header(header) => (*header).into(),
+                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
                 };
 
-                client_state.verify_client_message(
-                    self,
-                    &client_id,
-                    any_client_msg,
-                    &update_kind,
-                )?;
+                client_state.verify_client_message(self, &client_id, any_client_msg)?;
 
                 ContractResult::success()
             }
             ExecuteMsg::CheckForMisbehaviour(msg) => {
                 let msg = CheckForMisbehaviourMsg::try_from(msg)?;
 
-                let (update_kind, any_client_msg): (_, Any) = match msg.client_message {
-                    ClientMessage::Header(header) => (UpdateKind::UpdateClient, (*header).into()),
-                    ClientMessage::Misbehaviour(misbehaviour) => {
-                        (UpdateKind::SubmitMisbehaviour, (*misbehaviour).into())
-                    }
+                let any_client_msg: Any = match msg.client_message {
+                    ClientMessage::Header(header) => (*header).into(),
+                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
                 };
 
-                let result = client_state.check_for_misbehaviour(
-                    self,
-                    &client_id,
-                    any_client_msg,
-                    &update_kind,
-                )?;
+                let result =
+                    client_state.check_for_misbehaviour(self, &client_id, any_client_msg)?;
 
                 ContractResult::success().misbehaviour(result)
             }
@@ -165,19 +152,12 @@ impl<'a> Context<'a> {
                 let msg: UpdateStateOnMisbehaviourMsg =
                     UpdateStateOnMisbehaviourMsg::try_from(msg_raw)?;
 
-                let (update_kind, any_client_msg) = match msg.client_message {
-                    ClientMessage::Header(header) => (UpdateKind::UpdateClient, (*header).into()),
-                    ClientMessage::Misbehaviour(misbehaviour) => {
-                        (UpdateKind::SubmitMisbehaviour, (*misbehaviour).into())
-                    }
+                let any_client_msg = match msg.client_message {
+                    ClientMessage::Header(header) => (*header).into(),
+                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
                 };
 
-                client_state.update_state_on_misbehaviour(
-                    self,
-                    &client_id,
-                    any_client_msg,
-                    &update_kind,
-                )?;
+                client_state.update_state_on_misbehaviour(self, &client_id, any_client_msg)?;
 
                 ContractResult::success()
             }

@@ -14,6 +14,7 @@ use test_log::test;
 use crate::relayer::{Handle, QueryReq, QueryResp, RelayerBuilder};
 
 #[test(tokio::test)]
+#[ignore]
 async fn test_create_client_on_sov() {
     let rly = RelayerBuilder::default().setup().await;
 

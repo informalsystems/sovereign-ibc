@@ -9,7 +9,7 @@ use ibc_core::client::context::client_state::{
 use ibc_core::client::context::consensus_state::ConsensusState as ConsensusStateTrait;
 use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
 use ibc_core::client::types::error::ClientError;
-use ibc_core::client::types::{Height, Status, UpdateKind};
+use ibc_core::client::types::{Height, Status};
 use ibc_core::commitment_types::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
@@ -159,7 +159,6 @@ where
         _ctx: &V,
         _client_id: &ClientId,
         _client_message: Any,
-        _update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
         Ok(())
     }
@@ -169,7 +168,6 @@ where
         _ctx: &V,
         _client_id: &ClientId,
         _client_message: Any,
-        _update_kind: &UpdateKind,
     ) -> Result<bool, ClientError> {
         Ok(false)
     }
@@ -307,7 +305,6 @@ where
         ctx: &mut E,
         client_id: &ClientId,
         _client_message: Any,
-        _update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
         let frozen_client_state = self.0.clone().with_frozen_height(Height::min(0));
 
