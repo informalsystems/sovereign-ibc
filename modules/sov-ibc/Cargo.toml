@@ -34,7 +34,6 @@ sov-celestia-client   = { path = "../../clients/sov-celestia" }
 tendermint            = { workspace = true }
 
 # enforce version so that Risc0 compiles
-ahash = "=0.8.6"
 time = "=0.3.29"
 
 # sovereign dependencies
