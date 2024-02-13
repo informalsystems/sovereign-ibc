@@ -38,7 +38,7 @@ tendermint-proto                 = { workspace = true }
 tendermint-light-client-verifier = { workspace = true }
 
 [features]
-default = ["std", "test-util"]
+default = ["std"]
 std = [
 	"ibc-core/std",
 	"ibc-client-tendermint/std",
