@@ -9,7 +9,7 @@ version      = { workspace = true }
 keywords     = ["rollup", "sovereign", "ibc", "light-client"]
 readme       = "./../README.md"
 description  = """
-    Contains the implementation of `sov-celestia` light client, and re-exports 
+    Contains the implementation of `sov-celestia` light client, and re-exports
 	essential data structures and domain types from `ibc-core-client-types` crate.
 """
 
@@ -54,3 +54,4 @@ json-schema = [
 	"ibc-core/schema",
 	"dep:schemars",
 ]
+test-util = ["sov-celestia-client-types/test-util"]

@@ -31,7 +31,7 @@ typed-builder = "0.18.0"
 # internal dependencies
 sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "7ea1f5e" }
 sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "7ea1f5e" }
-sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "7ea1f5e" }
+sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "7ea1f5e", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }

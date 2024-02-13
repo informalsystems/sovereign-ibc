@@ -4723,7 +4723,9 @@ dependencies = [
  "base64 0.21.7",
  "bytes",
  "derive_more",
+ "hex",
  "ibc-client-tendermint",
+ "ibc-client-wasm-types",
  "ibc-core",
  "ibc-proto",
  "ics23",
@@ -4733,6 +4735,7 @@ dependencies = [
  "tendermint 0.34.0",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.0",
+ "typed-builder",
 ]
 
 [[package]]
