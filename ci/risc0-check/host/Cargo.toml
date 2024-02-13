@@ -8,3 +8,6 @@ methods = { path = "../methods" }
 risc0-zkvm = { version = "0.20.1" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = "1.0"
+
+[net]
+git-fetch-with-cli = true

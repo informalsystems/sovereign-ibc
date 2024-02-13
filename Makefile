@@ -58,4 +58,4 @@ docs:  ## Generates documentation locally
 	cargo doc --all-features --no-deps --release --open
 
 check-risc0:  ## Checks that the project compiles with risc0
-	cd ci/risc0-check && RISC0_DEV_MODE=1 cargo run
+	cd ci/risc0-check && RISC0_DEV_MODE=1 CARGO_NET_GIT_FETCH_WITH_CLI=true cargo run
