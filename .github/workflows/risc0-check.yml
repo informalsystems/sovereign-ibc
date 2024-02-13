@@ -30,7 +30,7 @@ jobs:
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
       - name: Install cargo-risc0
-        run: cargo binstall cargo-risczero
+        run: cargo install cargo-risczero
       - name: Install risc0-zkvm toolchain
         run: cargo risczero install
         env:
