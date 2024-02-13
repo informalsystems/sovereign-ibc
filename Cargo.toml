@@ -5,7 +5,7 @@ members = [
     "clients/sov-celestia",
     "clients/sov-celestia-cw",
     "modules/sov-ibc-transfer",
-    "modules/sov-ibc", 
+    "modules/sov-ibc",
     "mocks",
 ]
 

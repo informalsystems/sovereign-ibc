@@ -33,6 +33,9 @@ sov-celestia-client   = { path = "../../clients/sov-celestia" }
 # `tendermint` required to convert IbcEvent to a domain event type without custom conversion.
 tendermint            = { workspace = true }
 
+# enforce version so that Risc0 compiles
+time = "=0.3.29"
+
 # sovereign dependencies
 sov-chain-state      = { workspace = true }
 sov-modules-api      = { workspace = true }
