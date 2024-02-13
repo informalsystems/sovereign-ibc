@@ -402,7 +402,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=46e2211#46e221132aeaa424513a21a0a3f6bbfee3a72e55"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c2d12cd#c2d12cdd1142c8b3c0478e8c09d008a4427b0912"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
@@ -437,7 +437,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=46e2211#46e221132aeaa424513a21a0a3f6bbfee3a72e55"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c2d12cd#c2d12cdd1142c8b3c0478e8c09d008a4427b0912"
 dependencies = [
  "displaydoc",
  "ics23",
