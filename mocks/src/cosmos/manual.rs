@@ -21,7 +21,11 @@ use ibc_core::host::types::path::{
     ChannelEndPath, ConnectionPath, SeqAckPath, SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
+use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::types::client_state::sov_client_type;
+use sov_celestia_client::types::client_state::test_util::{
+    dummy_sov_client_state, dummy_sov_consensus_state,
+};
 
 use super::MockCosmosChain;
 
@@ -34,7 +38,8 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let current_height = self.ibc_ctx().host_height().unwrap();
 
-        let client_state = dummy_sov_client_state(client_chain_id.clone(), current_height);
+        let client_state: ClientState =
+            dummy_sov_client_state(client_chain_id.clone(), current_height).into();
 
         let consensus_state = dummy_sov_consensus_state();
 

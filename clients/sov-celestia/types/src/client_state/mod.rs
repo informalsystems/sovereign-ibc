@@ -123,16 +123,16 @@ pub mod test_util {
 
     pub fn dummy_wasm_client_state() -> WasmClientState {
         let tendermint_params = TendermintParamsConfig::builder()
-            .chain_id("test-1".parse().unwrap())
+            .chain_id("test-1".parse().expect("Never fails"))
             .build();
 
         let checksum =
             hex::decode("2469f43c3ca20d476442bd3d98cbd97a180776ab37332aa7b02cae5a620acfc6")
-                .unwrap();
+                .expect("Never fails");
 
         let client_state = ClientStateConfig::builder()
-            .rollup_id("mock-celestia-0".parse().unwrap())
-            .latest_height(Height::new(0, 1).unwrap())
+            .rollup_id("mock-celestia-0".parse().expect("Never fails"))
+            .latest_height(Height::new(0, 1).expect("Never fails"))
             .tendermint_params(tendermint_params)
             .build();
 

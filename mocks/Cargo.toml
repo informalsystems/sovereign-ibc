@@ -15,7 +15,6 @@ anyhow        = { workspace = true }
 async-trait   = { version = "0.1.74", default-features = false }
 base64        = { workspace = true }
 borsh         = { workspace = true }
-hex           = "0.4.3"
 prost         = { workspace = true }
 sha2          = { version = "0.10.6", default-features = false }
 serde         = { workspace = true }
@@ -29,22 +28,21 @@ tracing       = "0.1.36"
 typed-builder = "0.18.0"
 
 # internal dependencies
-sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "7ea1f5e" }
-sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "7ea1f5e" }
-sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "7ea1f5e", features = ["test-util"] }
+sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "6b1eedf" }
+sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "6b1eedf" }
+sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "6b1eedf", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
 ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 ibc-core-host-cosmos  = { workspace = true }
 ibc-query             = { workspace = true }
 ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "b25d7d8868", default-features = false }
 
 # cosmos dependencies
-basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "e7c3de2" }
-basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "e7c3de2" }
+basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "ccbea55" }
+basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "ccbea55" }
 
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
