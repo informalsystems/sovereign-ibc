@@ -1,4 +1,4 @@
-name: Check risc0 compatibility
+name: Check Risc0 Compatibility
 on:
   pull_request:
     paths:
