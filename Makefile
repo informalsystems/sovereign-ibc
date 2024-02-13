@@ -18,7 +18,7 @@ build: ## Build the the entire project
 build-sov-celestia-cw: ## Build the WASM file for the sov-celestia-cw light client
 	@echo "Building the WASM file for the sov-celestia-cw light client"
 	@RUSTFLAGS='-C link-arg=-s' cargo build -p sov-celestia-client-cw --target wasm32-unknown-unknown --release --lib --locked
-	@mkdir -p contracts 
+	@mkdir -p contracts
 	@cp target/wasm32-unknown-unknown/release/sov_celestia_client_cw.wasm contracts/
 
 optimize-contracts: ## Optimize WASM files in contracts directory
@@ -27,7 +27,7 @@ optimize-contracts: ## Optimize WASM files in contracts directory
 		optimized_file="contracts/$$(basename $$wasm_file .wasm).opt.wasm"; \
 		wasm-opt "$$wasm_file" -o "$$optimized_file" -Os; \
 	done
-	
+
 clean: ## Cleans compiled
 	@cargo clean
 
@@ -57,3 +57,5 @@ test:  ## Runs test suite using next test
 docs:  ## Generates documentation locally
 	cargo doc --all-features --no-deps --release --open
 
+check-risc0:  ## Checks that the project compiles with risc0
+	cd ci/risc0-check && RISC0_DEV_MODE=1 cargo run

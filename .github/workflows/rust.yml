@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/rust.yml
       - Cargo.toml
+      - clients/**
       - modules/**
       - mocks/**
   push:
@@ -11,6 +12,7 @@ on:
     paths:
       - .github/workflows/rust.yml
       - Cargo.toml
+      - clients/**
       - modules/**
       - mocks/**
 
@@ -35,50 +37,50 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly # Since fmt uses unstable features for organizing imports
           components: rustfmt
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
-  
+
   doc_all_features:
     runs-on: ubuntu-latest
     steps:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SOVEREIGN_DEPLOY_KEY }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: doc
           args: --all-features --no-deps --release
-    
+
   clippy_all_features:
     runs-on: ubuntu-latest
     steps:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SOVEREIGN_DEPLOY_KEY }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: clippy
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -90,14 +92,14 @@ jobs:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SOVEREIGN_DEPLOY_KEY }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: clippy
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -110,13 +112,13 @@ jobs:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SOVEREIGN_DEPLOY_KEY }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: test

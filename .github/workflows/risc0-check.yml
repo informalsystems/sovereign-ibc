@@ -1,0 +1,36 @@
+name: Check risc0 compatibility
+on:
+  pull_request:
+    paths:
+      - .github/workflows/risc0-check.yml
+      - ci/risc0-check/**
+      - '**/Cargo.toml'
+  push:
+    branches: main
+    paths:
+      - .github/workflows/risc0-check.yml
+      - ci/risc0-check/**
+      - '**/Cargo.toml'
+
+env:
+  CARGO_PROFILE_DEV_DEBUG: 1
+  CARGO_PROFILE_RELEASE_DEBUG: 1
+  CARGO_NET_RETRY: 10
+  RUSTUP_MAX_RETRIES: 10
+  RISC0_DEV_MODE: 1
+
+jobs:
+  risc0-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Install cargo-risc0
+        run: cargo install cargo-risczero
+      - name: Install risc0-zkvm toolchain
+        run: cargo risczero install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check risc0 compatibility
+        run: make check-risc0
