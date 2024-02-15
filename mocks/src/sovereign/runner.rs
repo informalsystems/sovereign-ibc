@@ -5,7 +5,7 @@ use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
     Context, DispatchCall, Genesis, KernelWorkingSet, ModuleInfo, SlotData, StateCheckpoint,
-    VersionedStateReadWriter, WorkingSet,
+    VersionedStateReadWriter,
 };
 use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::da::BlockHeaderTrait;
@@ -165,9 +165,8 @@ where
 
         let handle = tokio::task::spawn(async move {
             loop {
-                let working_set = WorkingSet::new(chain.prover_storage());
-
-                let checkpoint = chain.begin_block(working_set.checkpoint().0).await;
+                let checkpoint = StateCheckpoint::new(chain.prover_storage());
+                let checkpoint = chain.begin_block(checkpoint).await;
 
                 tokio::time::sleep(Duration::from_millis(200)).await;
 

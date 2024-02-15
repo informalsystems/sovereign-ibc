@@ -71,8 +71,7 @@ where
     ) -> ConnectionId {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let mut ibc_ctx: IbcContext<'_, C, <Da as DaService>::Spec> =
-            self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
         let connection_id = ConnectionId::new(0);
 
@@ -100,8 +99,7 @@ where
     pub async fn setup_channel(&mut self, connection_id: ConnectionId) -> (PortId, ChannelId) {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let mut ibc_ctx: IbcContext<'_, C, <Da as DaService>::Spec> =
-            self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
         let channel_id = ChannelId::new(0);
 
@@ -136,8 +134,7 @@ where
     ) {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let mut ibc_ctx: IbcContext<'_, C, <Da as DaService>::Spec> =
-            self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
         let seq_send_path = SeqSendPath::new(&port_id, &channel_id);
 
@@ -157,8 +154,7 @@ where
     ) {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let mut ibc_ctx: IbcContext<'_, C, <Da as DaService>::Spec> =
-            self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
         let seq_recv_path = SeqRecvPath::new(&port_id, &chan_id);
 
@@ -178,8 +174,7 @@ where
     ) {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let mut ibc_ctx: IbcContext<'_, C, <Da as DaService>::Spec> =
-            self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
         let seq_ack_path = SeqAckPath::new(&port_id, &chan_id);
 
