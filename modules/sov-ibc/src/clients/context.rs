@@ -53,7 +53,7 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         self.ibc.client_state_map.set(
             &client_state_path.0,
             &client_state,
-            &mut self.working_set.borrow_mut(),
+            *self.working_set.borrow_mut(),
         );
 
         Ok(())
@@ -67,7 +67,7 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
         self.ibc.consensus_state_map.set(
             &consensus_state_path,
             &consensus_state,
-            &mut self.working_set.borrow_mut(),
+            *self.working_set.borrow_mut(),
         );
 
         Ok(())
@@ -79,7 +79,7 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
     ) -> Result<(), ContextError> {
         self.ibc
             .consensus_state_map
-            .remove(&consensus_state_path, &mut self.working_set.borrow_mut());
+            .remove(&consensus_state_path, *self.working_set.borrow_mut());
 
         Ok(())
     }

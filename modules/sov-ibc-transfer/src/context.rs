@@ -92,7 +92,7 @@ impl<'ws, C: Context> IbcTransferContext<'ws, C> {
                 from_account,
                 to_account,
                 coin,
-                &mut self.working_set.borrow_mut(),
+                *self.working_set.borrow_mut(),
             )
             .map_err(|err| TokenTransferError::Other(err.to_string()))?;
 
@@ -166,7 +166,7 @@ where
         let expected_token_address = {
             self.ibc_transfer
                 .minted_tokens
-                .get(&coin.denom.to_string(), &mut self.working_set.borrow_mut())
+                .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
                 .ok_or(TokenTransferError::InvalidCoin {
                     coin: coin.to_string(),
                 })?
@@ -184,7 +184,7 @@ where
             .get_balance_of(
                 account.address.clone(),
                 token_address,
-                &mut self.working_set.borrow_mut(),
+                *self.working_set.borrow_mut(),
             )
             .ok_or(TokenTransferError::InvalidCoin {
                 coin: coin.denom.to_string(),
@@ -239,7 +239,7 @@ where
             .get_balance_of(
                 from_account.address.clone(),
                 token_address.clone(),
-                &mut self.working_set.borrow_mut(),
+                *self.working_set.borrow_mut(),
             )
             .ok_or(TokenTransferError::InvalidCoin {
                 coin: coin.denom.to_string(),
@@ -283,7 +283,7 @@ where
             let token_address = {
                 self.ibc_transfer
                     .escrowed_tokens
-                    .get(&coin.denom.to_string(), &mut self.working_set.borrow_mut())
+                    .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
                     .ok_or(TokenTransferError::InvalidCoin {
                         coin: coin.to_string(),
                     })?
@@ -296,7 +296,7 @@ where
                 .get_balance_of(
                     escrow_address,
                     token_address,
-                    &mut self.working_set.borrow_mut(),
+                    *self.working_set.borrow_mut(),
                 )
                 .ok_or(TokenTransferError::Other(format!(
                     "No escrow account for token {}",
@@ -332,7 +332,7 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
             let maybe_token_address = self
                 .ibc_transfer
                 .minted_tokens
-                .get(&denom, &mut self.working_set.borrow_mut());
+                .get(&denom, *self.working_set.borrow_mut());
 
             match maybe_token_address {
                 Some(token_address) => token_address,
@@ -367,7 +367,7 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
                     self.ibc_transfer.minted_tokens.set(
                         &denom,
                         &new_token_addr,
-                        &mut self.working_set.borrow_mut(),
+                        *self.working_set.borrow_mut(),
                     );
 
                     new_token_addr
@@ -414,7 +414,7 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
         let token_address = {
             self.ibc_transfer
                 .minted_tokens
-                .get(&denom, &mut self.working_set.borrow_mut())
+                .get(&denom, *self.working_set.borrow_mut())
                 .ok_or(TokenTransferError::InvalidCoin {
                     coin: coin.to_string(),
                 })?
@@ -467,7 +467,7 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
         self.ibc_transfer.escrowed_tokens.set(
             &denom,
             &token_address,
-            &mut self.working_set.borrow_mut(),
+            *self.working_set.borrow_mut(),
         );
 
         // 2. transfer coins to escrow account
@@ -496,7 +496,7 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
         let token_address = self
             .ibc_transfer
             .escrowed_tokens
-            .get(&coin.denom.to_string(), &mut self.working_set.borrow_mut())
+            .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
             .ok_or(TokenTransferError::InvalidCoin {
                 coin: coin.to_string(),
             })?;

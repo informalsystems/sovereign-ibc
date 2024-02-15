@@ -7,8 +7,8 @@ use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
 use sov_modules_api::macros::DefaultRuntime;
 use sov_modules_api::{
-    AccessoryWorkingSet, Context, DaSpec, DispatchCall, Genesis, MessageCodec, Spec,
-    VersionedWorkingSet, WorkingSet,
+    AccessoryStateCheckpoint, Context, DaSpec, DispatchCall, Genesis, MessageCodec, Spec,
+    StateCheckpoint, VersionedStateReadWriter,
 };
 use sov_state::Storage;
 
@@ -31,11 +31,11 @@ impl<C: Context, Da: DaSpec> SlotHooks for Runtime<C, Da> {
     fn begin_slot_hook(
         &self,
         _pre_state_root: &<<Self::Context as Spec>::Storage as Storage>::Root,
-        _working_set: &mut VersionedWorkingSet<Self::Context>,
+        _working_set: &mut VersionedStateReadWriter<StateCheckpoint<Self::Context>>,
     ) {
     }
 
-    fn end_slot_hook(&self, _working_set: &mut WorkingSet<C>) {}
+    fn end_slot_hook(&self, _working_set: &mut StateCheckpoint<Self::Context>) {}
 }
 
 impl<C: Context, Da: DaSpec> FinalizeHook for Runtime<C, Da> {
@@ -44,7 +44,7 @@ impl<C: Context, Da: DaSpec> FinalizeHook for Runtime<C, Da> {
     fn finalize_hook(
         &self,
         _root_hash: &<<Self::Context as Spec>::Storage as Storage>::Root,
-        _accesorry_working_set: &mut AccessoryWorkingSet<Self::Context>,
+        _accesorry_working_set: &mut AccessoryStateCheckpoint<Self::Context>,
     ) {
     }
 }

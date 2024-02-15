@@ -28,9 +28,9 @@ tracing       = "0.1.36"
 typed-builder = "0.18.0"
 
 # internal dependencies
-sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "01ed4ee" }
-sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "01ed4ee" }
-sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "01ed4ee", features = ["test-util"] }
+sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "55a1434" }
+sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "55a1434" }
+sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "55a1434", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
@@ -41,8 +41,8 @@ ibc-query             = { workspace = true }
 ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "74c316c36c", default-features = false }
 
 # cosmos dependencies
-basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "4de5278" }
-basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "4de5278" }
+basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "4d2a06a" }
+basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "4d2a06a" }
 
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
@@ -50,7 +50,7 @@ tendermint-testgen   = { workspace = true }
 # sovereign dependencies
 const-rollup-config        = { workspace = true }
 sov-bank                   = { workspace = true }
-sov-celestia-adapter       = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "ba092a2", features = ["native"], optional = true }
+sov-celestia-adapter       = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8", features = ["native"], optional = true }
 sov-chain-state            = { workspace = true }
 sov-modules-api            = { workspace = true }
 sov-modules-stf-blueprint  = { workspace = true }
