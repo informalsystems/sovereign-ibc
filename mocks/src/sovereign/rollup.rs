@@ -13,7 +13,7 @@ use sov_celestia_client::types::consensus_state::ConsensusState;
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;
-use sov_modules_api::{Context, DaSpec, StateCheckpoint, WorkingSet};
+use sov_modules_api::{Context, DaSpec, WorkingSet};
 use sov_modules_stf_blueprint::kernels::basic::BasicKernel;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
@@ -138,7 +138,7 @@ where
 
     /// Returns the balance of a user for a given token
     pub fn get_balance_of(&self, user_address: C::Address, token_address: C::Address) -> u64 {
-        let mut working_set = WorkingSet::new(self.prover_storage());
+        let mut working_set: WorkingSet<C> = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .bank
@@ -184,12 +184,10 @@ where
     /// Sets the host consensus state when processing each block
     pub(crate) fn set_host_consensus_state(
         &mut self,
-        checkpoint: StateCheckpoint<C>,
         root_hash: <ProverStorage<S> as Storage>::Root,
-    ) -> StateCheckpoint<C> {
-        let mut working_set = checkpoint.to_revertable();
-
-        let mut ibc_ctx = self.ibc_ctx(&mut working_set);
+        working_set: &mut WorkingSet<C>,
+    ) {
+        let mut ibc_ctx = self.ibc_ctx(working_set);
 
         let current_height = ibc_ctx
             .host_height()
@@ -211,7 +209,5 @@ where
         ibc_ctx
             .store_host_consensus_state(current_height, consensus_state)
             .unwrap();
-
-        working_set.checkpoint()
     }
 }

@@ -62,6 +62,7 @@ where
         S: MerkleProofSpec + Clone + 'static,
         <S as MerkleProofSpec>::Hasher: Send,
         MockRollup<C, Da, S>: Handle,
+        C::GasUnit: Default,
     {
         let runtime = Runtime::default();
 

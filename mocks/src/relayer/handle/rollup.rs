@@ -24,6 +24,7 @@ where
     <Da as DaService>::Spec: Clone,
     S: MerkleProofSpec + Clone + 'static,
     <S as MerkleProofSpec>::Hasher: Send + Sync,
+    C::GasUnit: Default,
 {
     type Message = RuntimeCall<C, Da::Spec>;
 

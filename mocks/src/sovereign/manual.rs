@@ -33,6 +33,7 @@ where
     Da: DaService<Error = anyhow::Error> + Clone,
     S: MerkleProofSpec + Clone + 'static,
     <S as MerkleProofSpec>::Hasher: Send,
+    C::GasUnit: Default,
 {
     /// Establishes a tendermint light client on the ibc module
     pub async fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
@@ -57,7 +58,7 @@ where
 
         ibc_ctx.increase_client_counter().unwrap();
 
-        self.commit(working_set.checkpoint()).await;
+        self.commit(working_set.checkpoint().0).await;
 
         client_id
     }
@@ -89,7 +90,7 @@ where
             .store_connection(&connection_path, connection_end)
             .unwrap();
 
-        self.commit(working_set.checkpoint()).await;
+        self.commit(working_set.checkpoint().0).await;
 
         connection_id
     }
@@ -119,7 +120,7 @@ where
             .store_channel(&channel_end_path, channel_end)
             .unwrap();
 
-        self.commit(working_set.checkpoint()).await;
+        self.commit(working_set.checkpoint().0).await;
 
         (port_id, channel_id)
     }
@@ -141,7 +142,7 @@ where
             .store_next_sequence_send(&seq_send_path, seq_number)
             .unwrap();
 
-        self.commit(working_set.checkpoint()).await;
+        self.commit(working_set.checkpoint().0).await;
     }
 
     /// Sets the recv sequence number for a given channel and port ids
@@ -161,7 +162,7 @@ where
             .store_next_sequence_recv(&seq_recv_path, seq_number)
             .unwrap();
 
-        self.commit(working_set.checkpoint()).await;
+        self.commit(working_set.checkpoint().0).await;
     }
 
     /// Sets the ack sequence number for a given channel and port ids
@@ -181,6 +182,6 @@ where
             .store_next_sequence_ack(&seq_ack_path, seq_number)
             .unwrap();
 
-        self.commit(working_set.checkpoint()).await;
+        self.commit(working_set.checkpoint().0).await;
     }
 }
