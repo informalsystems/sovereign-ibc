@@ -17,19 +17,20 @@ use ibc_core::host::types::path::{
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::{Signer, Timestamp};
+use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::types::client_state::SOV_TENDERMINT_CLIENT_STATE_TYPE_URL;
 use sov_celestia_client::types::proto::v1::{
     ClientState as RawClientState, ConsensusState as RawConsensusState,
 };
 
 use super::{Context, StorageRef};
-use crate::types::{AnyClientState, AnyConsensusState};
+use crate::types::AnyConsensusState;
 
 impl ValidationContext for Context<'_> {
     type V = Self;
     type E = Self;
     type AnyConsensusState = AnyConsensusState;
-    type AnyClientState = AnyClientState;
+    type AnyClientState = ClientState;
 
     fn get_client_validation_context(&self) -> &Self::V {
         self
@@ -256,11 +257,11 @@ impl ExecutionContext for Context<'_> {
     }
 }
 
-pub fn client_state<Ctx>(ctx: &Ctx, client_id: &ClientId) -> Result<AnyClientState, ContextError>
+pub fn client_state<Ctx>(ctx: &Ctx, client_id: &ClientId) -> Result<ClientState, ContextError>
 where
     Ctx: ValidationContext + StorageRef,
 {
-    let client_state_path = ClientStatePath::new(client_id).to_string();
+    let client_state_path = ClientStatePath::new(client_id.clone()).to_string();
 
     let client_state_value =
         ctx.storage_ref()
@@ -274,10 +275,10 @@ where
             description: e.to_string(),
         })?;
 
-    Ok(AnyClientState::Sovereign(sov_client_state))
+    Ok(sov_client_state)
 }
 
-fn decode_client_state<Ctx>(_ctx: &Ctx, client_state: Any) -> Result<AnyClientState, ContextError>
+fn decode_client_state<Ctx>(_ctx: &Ctx, client_state: Any) -> Result<ClientState, ContextError>
 where
     Ctx: ValidationContext + StorageRef,
 {
@@ -290,7 +291,7 @@ where
                     }
                 })?;
 
-            Ok(AnyClientState::Sovereign(sov_client_state))
+            Ok(sov_client_state)
         }
         _ => Err(ClientError::Other {
             description: "Client state type not supported".to_string(),

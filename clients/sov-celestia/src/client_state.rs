@@ -226,7 +226,7 @@ where
 
         let sov_consensus_state = ConsensusState::try_from(consensus_state)?;
 
-        ctx.store_client_state(ClientStatePath::new(client_id), self.clone().into())?;
+        ctx.store_client_state(ClientStatePath::new(client_id.clone()), self.clone().into())?;
         ctx.store_consensus_state(
             ClientConsensusStatePath::new(
                 client_id.clone(),
@@ -286,7 +286,7 @@ where
                 ConsensusState::from(new_consensus_state).into(),
             )?;
             ctx.store_client_state(
-                ClientStatePath::new(client_id),
+                ClientStatePath::new(client_id.clone()),
                 ClientState::from(new_client_state).into(),
             )?;
             ctx.store_update_meta(
@@ -311,7 +311,7 @@ where
         let wrapped_frozen_client_state = ClientState::from(frozen_client_state);
 
         ctx.store_client_state(
-            ClientStatePath::new(client_id),
+            ClientStatePath::new(client_id.clone()),
             wrapped_frozen_client_state.into(),
         )?;
 
@@ -367,7 +367,7 @@ where
         let host_height = CommonContext::host_height(ctx)?;
 
         ctx.store_client_state(
-            ClientStatePath::new(client_id),
+            ClientStatePath::new(client_id.clone()),
             ClientState::from(new_client_state).into(),
         )?;
         ctx.store_consensus_state(

@@ -118,7 +118,7 @@ where
             .ibc
             .client_connections_map
             .get(
-                &ClientConnectionPath::new(client_id),
+                &ClientConnectionPath::new(client_id.clone()),
                 *self.working_set.borrow_mut(),
             )
             .ok_or(ConnectionError::Other {

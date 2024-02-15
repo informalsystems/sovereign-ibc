@@ -1,10 +1,12 @@
 use std::str::FromStr;
 
 use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, Storage};
+use ibc_client_wasm_types::client_state::ClientState as WasmClientState;
 use ibc_core::client::context::client_state::{
     ClientStateCommon, ClientStateExecution, ClientStateValidation,
 };
 use ibc_core::client::context::consensus_state::ConsensusState as _;
+use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::UpdateKind;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::error::IdentifierError;
@@ -23,12 +25,15 @@ use crate::types::{
     VerifyNonMembershipMsg, VerifyUpgradeAndUpdateStateMsg,
 };
 
+pub type Checksum = Vec<u8>;
+
 /// Context is a wrapper around the deps and env that gives access to the
 /// methods of the ibc-rs Validation and Execution traits.
 pub struct Context<'a> {
     deps: Option<Deps<'a>>,
     deps_mut: Option<DepsMut<'a>>,
     env: Env,
+    checksum: Option<Checksum>,
 }
 
 impl<'a> Context<'a> {
@@ -37,6 +42,7 @@ impl<'a> Context<'a> {
             deps: Some(deps),
             deps_mut: None,
             env,
+            checksum: None,
         }
     }
 
@@ -45,6 +51,7 @@ impl<'a> Context<'a> {
             deps: None,
             deps_mut: Some(deps),
             env,
+            checksum: None,
         }
     }
 
@@ -60,16 +67,40 @@ impl<'a> Context<'a> {
         ClientId::from_str(self.env.contract.address.as_str())
     }
 
-    pub fn instantiate(&mut self, msg: InstantiateMsg) -> Result<Binary, ContractError> {
-        let client_id = self.client_id()?;
+    pub fn set_checksum(&mut self, checksum: Checksum) {
+        self.checksum = Some(checksum);
+    }
 
+    pub fn retrieve(&self, key: impl AsRef<[u8]>) -> Option<Vec<u8>> {
+        self.storage_ref().get(key.as_ref())
+    }
+
+    pub fn insert(&mut self, key: impl AsRef<[u8]>, value: impl AsRef<[u8]>) {
+        self.storage_mut().set(key.as_ref(), value.as_ref());
+    }
+
+    pub fn encode_client_state(&self, client_state: ClientState) -> Result<Vec<u8>, ClientError> {
+        let wasm_client_state = WasmClientState {
+            data: Any::from(client_state.clone()).encode_to_vec(),
+            checksum: self.checksum.clone().ok_or(ClientError::Other {
+                description: "checksum not set".to_string(),
+            })?,
+            latest_height: client_state.latest_height(),
+        };
+
+        Ok(Any::from(wasm_client_state).encode_to_vec())
+    }
+
+    pub fn instantiate(&mut self, msg: InstantiateMsg) -> Result<Binary, ContractError> {
         let any = Any::decode(&mut msg.client_state.as_slice())?;
 
         let client_state = ClientState::try_from(any)?;
 
         let any_consensus_state = Any::decode(&mut msg.consensus_state.as_slice())?;
 
-        client_state.initialise(self, &client_id, any_consensus_state)?;
+        self.set_checksum(msg.checksum);
+
+        client_state.initialise(self, &self.client_id()?, any_consensus_state)?;
 
         Ok(to_json_binary(&ContractResult::success())?)
     }

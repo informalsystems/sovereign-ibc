@@ -1,7 +1,8 @@
 {
     "rust-analyzer.linkedProjects": [
+        "./clients/sov-celestia-cw/Cargo.toml",
         "./ci/risc0-check/methods/guest/Cargo.toml",
-        "./ci/risc0-check/host/Cargo.toml"
+        "./ci/risc0-check/host/Cargo.toml",
     ],
     "cSpell.words": [
         "jsonrpsee",
