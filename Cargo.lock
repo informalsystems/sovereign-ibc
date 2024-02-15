@@ -402,7 +402,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c2d12cd#c2d12cdd1142c8b3c0478e8c09d008a4427b0912"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=ccbea55#ccbea55541e903b3c654c7c394ed2ce3933696e7"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
@@ -420,7 +420,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.10.8",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf)",
  "tendermint 0.34.0",
  "tendermint-proto 0.34.0",
  "tendermint-rpc",
@@ -437,7 +437,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c2d12cd#c2d12cdd1142c8b3c0478e8c09d008a4427b0912"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=ccbea55#ccbea55541e903b3c654c7c394ed2ce3933696e7"
 dependencies = [
  "displaydoc",
  "ics23",
@@ -707,10 +707,11 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.0.85"
+version = "1.0.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b918671670962b48bc23753aef0c51d072dca6f52f01f800854ada6ddb7f7d3"
+checksum = "f1174fb0b6ec23863f8b971027804a42614e347eafb0a95bf0b12cdae21fc4d0"
 dependencies = [
+ "jobserver",
  "libc",
 ]
 
@@ -2039,9 +2040,9 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
 name = "hermit-abi"
-version = "0.3.5"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0c62115964e08cb8039170eb33c1d0e2388a256930279edca206fff675f82c3"
+checksum = "bd5256b483761cd23699d0da46cc6fd2ee3be420bbe6d020ae4a091e70b7e9fd"
 
 [[package]]
 name = "hex"
@@ -2825,6 +2826,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "jobserver"
+version = "0.1.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab46a6e9526ddef3ae7f787c06f0f2600639ba80ea3eade3d8e670a2230f51d6"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "js-sys"
 version = "0.3.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3533,9 +3543,9 @@ dependencies = [
 
 [[package]]
 name = "pkg-config"
-version = "0.3.29"
+version = "0.3.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2900ede94e305130c13ddd391e0ab7cbaeb783945ae07a279c268cb05109c6cb"
+checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
 name = "platforms"
@@ -4683,7 +4693,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-client"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d#961696d9a3d6c6ee5e5a2aeee4414e1e2ae34d68"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf#6b1eedfdd26651cc80c8b98965dd20a14883f9e7"
 dependencies = [
  "derive_more",
  "ibc-client-tendermint",
@@ -4691,7 +4701,7 @@ dependencies = [
  "ics23",
  "prost",
  "serde",
- "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d)",
+ "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf)",
  "tendermint 0.34.0",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.0",
@@ -4724,7 +4734,9 @@ dependencies = [
  "base64 0.21.7",
  "bytes",
  "derive_more",
+ "hex",
  "ibc-client-tendermint",
+ "ibc-client-wasm-types",
  "ibc-core",
  "ibc-proto",
  "ics23",
@@ -4734,17 +4746,20 @@ dependencies = [
  "tendermint 0.34.0",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.0",
+ "typed-builder",
 ]
 
 [[package]]
 name = "sov-celestia-client-types"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d#961696d9a3d6c6ee5e5a2aeee4414e1e2ae34d68"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf#6b1eedfdd26651cc80c8b98965dd20a14883f9e7"
 dependencies = [
  "base64 0.21.7",
  "bytes",
  "derive_more",
+ "hex",
  "ibc-client-tendermint",
+ "ibc-client-wasm-types",
  "ibc-core",
  "ibc-proto",
  "ics23",
@@ -4753,6 +4768,7 @@ dependencies = [
  "tendermint 0.34.0",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.0",
+ "typed-builder",
 ]
 
 [[package]]
@@ -4819,7 +4835,7 @@ dependencies = [
 [[package]]
 name = "sov-ibc"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d#961696d9a3d6c6ee5e5a2aeee4414e1e2ae34d68"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf#6b1eedfdd26651cc80c8b98965dd20a14883f9e7"
 dependencies = [
  "anyhow",
  "borsh",
@@ -4833,9 +4849,9 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf)",
  "sov-chain-state",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d)",
+ "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf)",
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
@@ -4855,10 +4871,8 @@ dependencies = [
  "basecoin-store",
  "borsh",
  "const-rollup-config",
- "hex",
  "ibc-app-transfer",
  "ibc-client-tendermint",
- "ibc-client-wasm-types",
  "ibc-core",
  "ibc-core-host-cosmos",
  "ibc-query",
@@ -4870,10 +4884,10 @@ dependencies = [
  "sha2 0.10.8",
  "sov-bank",
  "sov-celestia-adapter",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf)",
  "sov-chain-state",
- "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d)",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d)",
+ "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf)",
+ "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf)",
  "sov-mock-da",
  "sov-modules-api",
  "sov-modules-stf-blueprint",
@@ -4918,7 +4932,7 @@ dependencies = [
 [[package]]
 name = "sov-ibc-transfer"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=961696d#961696d9a3d6c6ee5e5a2aeee4414e1e2ae34d68"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=6b1eedf#6b1eedfdd26651cc80c8b98965dd20a14883f9e7"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -5642,7 +5656,7 @@ dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "toml_edit 0.22.4",
+ "toml_edit 0.22.5",
 ]
 
 [[package]]
@@ -5662,20 +5676,20 @@ checksum = "70f427fce4d84c72b5b732388bf4a9f4531b53f74e2887e3ecb2481f68f66d81"
 dependencies = [
  "indexmap 2.2.3",
  "toml_datetime",
- "winnow",
+ "winnow 0.5.40",
 ]
 
 [[package]]
 name = "toml_edit"
-version = "0.22.4"
+version = "0.22.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c9ffdf896f8daaabf9b66ba8e77ea1ed5ed0f72821b398aba62352e95062951"
+checksum = "99e68c159e8f5ba8a28c4eb7b0c0c190d77bb479047ca713270048145a9ad28a"
 dependencies = [
  "indexmap 2.2.3",
  "serde",
  "serde_spanned",
  "toml_datetime",
- "winnow",
+ "winnow 0.6.1",
 ]
 
 [[package]]
@@ -6523,6 +6537,15 @@ name = "winnow"
 version = "0.5.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f593a95398737aeed53e489c785df13f3618e41dbcd6718c6addbf1395aa6876"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
+name = "winnow"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d90f4e0f530c4c69f62b80d839e9ef3855edc9cba471a160c4d692deed62b401"
 dependencies = [
  "memchr",
 ]
