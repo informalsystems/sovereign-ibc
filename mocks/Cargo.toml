@@ -15,7 +15,6 @@ anyhow        = { workspace = true }
 async-trait   = { version = "0.1.74", default-features = false }
 base64        = { workspace = true }
 borsh         = { workspace = true }
-hex           = "0.4.3"
 prost         = { workspace = true }
 sha2          = { version = "0.10.6", default-features = false }
 serde         = { workspace = true }
@@ -31,13 +30,12 @@ typed-builder = "0.18.0"
 # internal dependencies
 sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "063fb9c" }
 sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "063fb9c" }
-sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "063fb9c" }
+sov-celestia-client   = { path = "../clients/sov-celestia", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
 ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 ibc-core-host-cosmos  = { workspace = true }
 ibc-query             = { workspace = true }
 ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "74c316c36c", default-features = false }

@@ -70,3 +70,105 @@ impl From<SovTmClientMessage> for Any {
         }
     }
 }
+
+#[cfg(feature = "test-util")]
+pub mod test_util {
+    use ibc_client_tendermint::types::Header as TmHeader;
+    use ibc_core::client::types::Height;
+
+    use super::{AggregatedProof, AggregatedProofData, ProofDataInfo, PublicInput, SovTmHeader};
+    use crate::client_state::test_util::HeaderConfig;
+    use crate::proto::types::v1::AggregatedProof as RawAggregatedProof;
+
+    #[derive(typed_builder::TypedBuilder, Debug)]
+    #[builder(build_method(into = AggregatedProofData))]
+    pub struct AggregatedProofDataConfig {
+        #[builder(default)]
+        pub public_input: PublicInputConfig,
+        pub proof_data_info: ProofDataInfoConfig,
+        #[builder(default)]
+        pub aggregated_proof: AggregatedProofConfig,
+    }
+
+    impl From<AggregatedProofDataConfig> for AggregatedProofData {
+        fn from(config: AggregatedProofDataConfig) -> Self {
+            Self {
+                public_input: config.public_input.into(),
+                proof_data_info: config.proof_data_info.into(),
+                aggregated_proof: config.aggregated_proof.into(),
+            }
+        }
+    }
+
+    #[derive(typed_builder::TypedBuilder, Debug, Default)]
+    pub struct PublicInputConfig {
+        #[builder(default)]
+        pub initial_da_block_hash: Vec<u8>,
+        #[builder(default)]
+        pub final_da_block_hash: Vec<u8>,
+        #[builder(default)]
+        pub input_state_root: Vec<u8>,
+        #[builder(default)]
+        pub final_state_root: Vec<u8>,
+    }
+
+    impl From<PublicInputConfig> for PublicInput {
+        fn from(config: PublicInputConfig) -> Self {
+            Self {
+                initial_da_block_hash: config.initial_da_block_hash,
+                final_da_block_hash: config.final_da_block_hash,
+                input_state_root: config.input_state_root,
+                final_state_root: config.final_state_root,
+            }
+        }
+    }
+
+    #[derive(typed_builder::TypedBuilder, Debug)]
+    pub struct ProofDataInfoConfig {
+        pub initial_state_height: Height,
+        pub final_state_height: Height,
+    }
+
+    impl From<ProofDataInfoConfig> for ProofDataInfo {
+        fn from(config: ProofDataInfoConfig) -> Self {
+            Self {
+                initial_state_height: config.initial_state_height,
+                final_state_height: config.final_state_height,
+            }
+        }
+    }
+
+    #[derive(typed_builder::TypedBuilder, Debug, Default)]
+    pub struct AggregatedProofConfig {
+        #[builder(default)]
+        pub proof: Vec<u8>,
+    }
+
+    impl From<AggregatedProofConfig> for AggregatedProof {
+        fn from(config: AggregatedProofConfig) -> Self {
+            Self::from(RawAggregatedProof {
+                proof: config.proof,
+            })
+        }
+    }
+
+    pub fn dummy_sov_header(
+        da_header: TmHeader,
+        initial_state_height: Height,
+        final_state_height: Height,
+    ) -> SovTmHeader {
+        let aggregated_proof_data = AggregatedProofDataConfig::builder()
+            .proof_data_info(
+                ProofDataInfoConfig::builder()
+                    .initial_state_height(initial_state_height)
+                    .final_state_height(final_state_height)
+                    .build(),
+            )
+            .build();
+
+        HeaderConfig::builder()
+            .da_header(da_header)
+            .aggregated_proof_data(aggregated_proof_data)
+            .build()
+    }
+}

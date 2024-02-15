@@ -16,16 +16,19 @@ description  = """
 
 [dependencies]
 # external dependencies
-base64      = { workspace = true, features = ["alloc"] }
-bytes       = { workspace = true }
-derive_more = { workspace = true }
-prost       = { workspace = true }
-schemars    = { workspace = true, optional = true }
-serde       = { workspace = true, features = ["derive"], optional = true }
+base64        = { workspace = true, features = ["alloc"] }
+bytes         = { workspace = true }
+hex           = { version = "0.4.3", optional = true }
+derive_more   = { workspace = true }
+prost         = { workspace = true }
+schemars      = { workspace = true, optional = true }
+serde         = { workspace = true, features = ["derive"], optional = true }
+typed-builder = { version = "0.18.0", optional = true }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
 ibc-client-tendermint = { workspace = true }
+ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"], optional = true }
 ibc-proto             = { workspace = true }
 ics23 	              = { version = "0.11", default-features = false }
 
@@ -58,4 +61,9 @@ json-schema = [
 	"ibc-client-tendermint/schema",
 	"ibc-proto/json-schema",
 	"dep:schemars",
+]
+test-util = [
+	"hex",
+	"typed-builder",
+	"ibc-client-wasm-types"
 ]
