@@ -15,9 +15,9 @@ use serde::{Deserialize, Serialize};
 use sov_modules_api::{Context, Error, Module, ModuleInfo, StateMap, WorkingSet};
 
 #[cfg(feature = "native")]
-mod query;
+mod rpc;
 #[cfg(feature = "native")]
-pub use query::*;
+pub use rpc::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct TransferConfig {}

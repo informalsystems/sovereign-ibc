@@ -1,4 +1,4 @@
-//! Defines rpc queries exposed by the ibc transfer module
+//! Defines JSON RPC methods exposed by the ibc transfer module
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::types::ErrorObjectOwned;
 use sov_modules_api::macros::rpc_gen;
