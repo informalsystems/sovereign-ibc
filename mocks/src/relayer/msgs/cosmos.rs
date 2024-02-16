@@ -19,12 +19,12 @@ use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use ibc_core::host::types::path::{CommitmentPath, Path, SeqSendPath};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp, ToProto};
+use sov_celestia_client::types::client_state::test_util::dummy_sov_client_state;
 use sov_ibc::context::HOST_REVISION_NUMBER;
 
 use crate::configs::TransferTestConfig;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
-use crate::sovereign::dummy_sov_client_state;
 
 impl<SrcChain, DstChain> MockRelayer<SrcChain, DstChain>
 where

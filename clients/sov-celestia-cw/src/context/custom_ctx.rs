@@ -7,8 +7,8 @@ use ibc_core::host::ValidationContext as CoreValidationContext;
 use ibc_core::primitives::Timestamp;
 use sov_celestia_client::context::{CommonContext, ValidationContext};
 
-use super::{Context, StorageRef};
-use crate::types::{AnyConsensusState, ReadonlyProcessedStates};
+use super::Context;
+use crate::types::{AnyConsensusState, HeightTravel};
 
 impl CommonContext for Context<'_> {
     type ConversionError = ClientError;
@@ -30,7 +30,9 @@ impl CommonContext for Context<'_> {
     }
 
     fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
-        unimplemented!()
+        let heights = self.get_heights()?;
+
+        Ok(heights)
     }
 }
 
@@ -40,13 +42,14 @@ impl ValidationContext for Context<'_> {
         client_id: &ClientId,
         height: &Height,
     ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
-        let processed_state = ReadonlyProcessedStates::new(self.storage_ref());
-        match processed_state.get_next_height(*height) {
-            Some(next_height) => {
+        let next_height = self.get_adjacent_height(height, HeightTravel::Next)?;
+
+        match next_height {
+            Some(h) => {
                 let cons_state_path = ClientConsensusStatePath::new(
                     client_id.clone(),
-                    next_height.revision_number(),
-                    next_height.revision_height(),
+                    h.revision_number(),
+                    h.revision_height(),
                 );
                 CoreValidationContext::consensus_state(self, &cons_state_path).map(Some)
             }
@@ -59,8 +62,9 @@ impl ValidationContext for Context<'_> {
         client_id: &ClientId,
         height: &Height,
     ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
-        let processed_state = ReadonlyProcessedStates::new(self.storage_ref());
-        match processed_state.get_prev_height(*height) {
+        let prev_height = self.get_adjacent_height(height, HeightTravel::Prev)?;
+
+        match prev_height {
             Some(prev_height) => {
                 let cons_state_path = ClientConsensusStatePath::new(
                     client_id.clone(),

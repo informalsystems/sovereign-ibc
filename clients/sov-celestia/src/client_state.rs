@@ -9,7 +9,7 @@ use ibc_core::client::context::client_state::{
 use ibc_core::client::context::consensus_state::ConsensusState as ConsensusStateTrait;
 use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
 use ibc_core::client::types::error::ClientError;
-use ibc_core::client::types::{Height, Status, UpdateKind};
+use ibc_core::client::types::{Height, Status};
 use ibc_core::commitment_types::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
@@ -159,7 +159,6 @@ where
         _ctx: &V,
         _client_id: &ClientId,
         _client_message: Any,
-        _update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
         Ok(())
     }
@@ -169,7 +168,6 @@ where
         _ctx: &V,
         _client_id: &ClientId,
         _client_message: Any,
-        _update_kind: &UpdateKind,
     ) -> Result<bool, ClientError> {
         Ok(false)
     }
@@ -228,7 +226,7 @@ where
 
         let sov_consensus_state = ConsensusState::try_from(consensus_state)?;
 
-        ctx.store_client_state(ClientStatePath::new(client_id), self.clone().into())?;
+        ctx.store_client_state(ClientStatePath::new(client_id.clone()), self.clone().into())?;
         ctx.store_consensus_state(
             ClientConsensusStatePath::new(
                 client_id.clone(),
@@ -288,7 +286,7 @@ where
                 ConsensusState::from(new_consensus_state).into(),
             )?;
             ctx.store_client_state(
-                ClientStatePath::new(client_id),
+                ClientStatePath::new(client_id.clone()),
                 ClientState::from(new_client_state).into(),
             )?;
             ctx.store_update_meta(
@@ -307,14 +305,13 @@ where
         ctx: &mut E,
         client_id: &ClientId,
         _client_message: Any,
-        _update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
         let frozen_client_state = self.0.clone().with_frozen_height(Height::min(0));
 
         let wrapped_frozen_client_state = ClientState::from(frozen_client_state);
 
         ctx.store_client_state(
-            ClientStatePath::new(client_id),
+            ClientStatePath::new(client_id.clone()),
             wrapped_frozen_client_state.into(),
         )?;
 
@@ -370,7 +367,7 @@ where
         let host_height = CommonContext::host_height(ctx)?;
 
         ctx.store_client_state(
-            ClientStatePath::new(client_id),
+            ClientStatePath::new(client_id.clone()),
             ClientState::from(new_client_state).into(),
         )?;
         ctx.store_consensus_state(

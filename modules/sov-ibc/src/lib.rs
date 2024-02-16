@@ -60,7 +60,7 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     #[address]
     pub address: C::Address,
 
-    #[module]
+    #[kernel_module]
     chain_state: sov_chain_state::ChainState<C, Da>,
 
     #[module]

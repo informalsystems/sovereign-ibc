@@ -7,12 +7,14 @@ use std::sync::{Arc, Mutex};
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::host::types::identifiers::ChainId;
+use ibc_core::host::ValidationContext;
 use sov_bank::CallMessage as BankCallMessage;
 use sov_celestia_client::types::consensus_state::ConsensusState;
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;
-use sov_modules_api::{Context, DaSpec, StateCheckpoint, WorkingSet};
+use sov_modules_api::{Context, DaSpec, WorkingSet};
+use sov_modules_stf_blueprint::kernels::basic::BasicKernel;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tendermint::{Hash, Time};
@@ -31,6 +33,7 @@ where
     Da: DaService<Error = anyhow::Error> + Clone,
     S: MerkleProofSpec,
 {
+    kernel: BasicKernel<C, Da::Spec>,
     runtime: Runtime<C, Da::Spec>,
     da_service: Da,
     prover_storage: ProverStorage<S>,
@@ -44,7 +47,6 @@ impl<C: Context, Da: DaSpec> Clone for RuntimeCall<C, Da> {
     fn clone(&self) -> Self {
         match self {
             RuntimeCall::bank(call) => RuntimeCall::bank(call.clone()),
-            RuntimeCall::chain_state(_) => RuntimeCall::chain_state(()),
             RuntimeCall::ibc(call) => RuntimeCall::ibc(call.clone()),
             RuntimeCall::ibc_transfer(_) => RuntimeCall::ibc_transfer(()),
         }
@@ -78,10 +80,11 @@ where
         da_service: Da,
     ) -> Self {
         Self {
-            da_core,
+            kernel: BasicKernel::default(),
             runtime,
             da_service,
             prover_storage,
+            da_core,
             rollup_ctx: Arc::new(Mutex::new(rollup_ctx)),
             state_root: Arc::new(Mutex::new(jmt::RootHash([0; 32]))),
             mempool: Arc::new(Mutex::new(vec![])),
@@ -92,8 +95,8 @@ where
         self.da_core.chain_id()
     }
 
-    pub fn rollup_ctx(&self) -> C {
-        self.rollup_ctx.acquire_mutex().clone()
+    pub fn kernel(&self) -> &BasicKernel<C, Da::Spec> {
+        &self.kernel
     }
 
     pub fn runtime(&self) -> &Runtime<C, Da::Spec> {
@@ -102,6 +105,10 @@ where
 
     pub fn da_service(&self) -> &Da {
         &self.da_service
+    }
+
+    pub fn rollup_ctx(&self) -> C {
+        self.rollup_ctx.acquire_mutex().clone()
     }
 
     pub fn prover_storage(&self) -> ProverStorage<S> {
@@ -122,12 +129,16 @@ where
     ) -> IbcContext<'a, C, Da::Spec> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
-        IbcContext::new(&self.runtime.ibc, shared_working_set.clone())
+        IbcContext::new(
+            &self.runtime.ibc,
+            Some(self.rollup_ctx.acquire_mutex().clone()),
+            shared_working_set.clone(),
+        )
     }
 
     /// Returns the balance of a user for a given token
     pub fn get_balance_of(&self, user_address: C::Address, token_address: C::Address) -> u64 {
-        let mut working_set = WorkingSet::new(self.prover_storage());
+        let mut working_set: WorkingSet<C> = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .bank
@@ -163,18 +174,24 @@ where
     }
 
     pub(crate) fn set_sender(&mut self, sender_address: C::Address) {
-        *self.rollup_ctx.acquire_mutex() = C::new(sender_address, self.rollup_ctx().slot_height());
+        *self.rollup_ctx.acquire_mutex() = C::new(
+            sender_address.clone(),
+            sender_address,
+            self.rollup_ctx().visible_slot_number(),
+        );
     }
 
     /// Sets the host consensus state when processing each block
     pub(crate) fn set_host_consensus_state(
         &mut self,
-        checkpoint: StateCheckpoint<C>,
         root_hash: <ProverStorage<S> as Storage>::Root,
-    ) -> StateCheckpoint<C> {
-        let mut working_set = checkpoint.to_revertable();
+        working_set: &mut WorkingSet<C>,
+    ) {
+        let mut ibc_ctx = self.ibc_ctx(working_set);
 
-        let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);
+        let current_height = ibc_ctx
+            .host_height()
+            .unwrap_or(Height::new(0, 1).expect("valid height"));
 
         let sov_consensus_state = ConsensusState::new(
             CommitmentRoot::from_bytes(&root_hash.0),
@@ -189,10 +206,8 @@ where
 
         let consensus_state = AnyConsensusState::Sovereign(sov_consensus_state);
 
-        self.ibc_ctx(&mut working_set)
-            .store_host_consensus_state(Height::new(0, current_height).unwrap(), consensus_state)
+        ibc_ctx
+            .store_host_consensus_state(current_height, consensus_state)
             .unwrap();
-
-        working_set.checkpoint()
     }
 }

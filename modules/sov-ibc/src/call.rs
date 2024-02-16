@@ -44,6 +44,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
 
         let mut execution_context = IbcContext {
             ibc: self,
+            context: Some(context.clone()),
             working_set: shared_working_set.clone(),
         };
 
@@ -69,6 +70,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
 
         let mut ibc_ctx = IbcContext {
             ibc: self,
+            context: Some(context.clone()),
             working_set: shared_working_set.clone(),
         };
 

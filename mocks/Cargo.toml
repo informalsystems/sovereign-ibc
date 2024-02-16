@@ -15,7 +15,6 @@ anyhow        = { workspace = true }
 async-trait   = { version = "0.1.74", default-features = false }
 base64        = { workspace = true }
 borsh         = { workspace = true }
-hex           = "0.4.3"
 prost         = { workspace = true }
 sha2          = { version = "0.10.6", default-features = false }
 serde         = { workspace = true }
@@ -29,36 +28,38 @@ tracing       = "0.1.36"
 typed-builder = "0.18.0"
 
 # internal dependencies
-sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "c883a37" }
-sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "c883a37" }
-sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "c883a37" }
+sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "2285467" }
+sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "2285467" }
+sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "2285467", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
 ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
 ibc-core-host-cosmos  = { workspace = true }
 ibc-query             = { workspace = true }
-ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "5c7cea88d0", default-features = false }
+ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "74c316c36c", default-features = false }
 
 # cosmos dependencies
-basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "8300923" }
-basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "8300923" }
+basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "706f74c" }
+basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "706f74c" }
 
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
 
 # sovereign dependencies
-const-rollup-config  = { workspace = true }
-sov-bank             = { workspace = true }
-sov-chain-state      = { workspace = true }
-sov-modules-api      = { workspace = true }
-sov-mock-da          = { workspace = true }
-sov-state            = { workspace = true }
-sov-rollup-interface = { workspace = true }
-sov-celestia-adapter = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "6e22b4c" }
-jmt                  = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
+const-rollup-config        = { workspace = true }
+sov-bank                   = { workspace = true }
+sov-celestia-adapter       = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8", features = ["native"], optional = true }
+sov-chain-state            = { workspace = true }
+sov-modules-api            = { workspace = true }
+sov-modules-stf-blueprint  = { workspace = true }
+sov-mock-da                = { workspace = true, features = ["native"], optional = true }
+sov-prover-storage-manager = { workspace = true, features = ["test-utils"] }
+sov-rollup-interface       = { workspace = true }
+sov-state                  = { workspace = true }
+sov-schema-db              = { workspace = true }
+jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 [dev-dependencies]
 test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }
@@ -68,11 +69,12 @@ tracing-subscriber    = { version = "0.3", default-features = false, features = 
 default = ["native"]
 native = [
     "sov-bank/native",
-    "sov-celestia-adapter/native",
+    "sov-celestia-adapter",
     "sov-chain-state/native",
     "sov-modules-api/native",
-    "sov-mock-da/native",
+    "sov-modules-stf-blueprint/native",
     "sov-state/native",
+    "sov-mock-da",
     "sov-rollup-interface/native",
     "sov-ibc/native",
     "sov-ibc-transfer/native",

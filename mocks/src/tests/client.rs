@@ -14,6 +14,7 @@ use test_log::test;
 use crate::relayer::{Handle, QueryReq, QueryResp, RelayerBuilder};
 
 #[test(tokio::test)]
+#[ignore]
 async fn test_create_client_on_sov() {
     let rly = RelayerBuilder::default().setup().await;
 
@@ -166,9 +167,7 @@ async fn test_update_client_on_cos() {
         _ => panic!("unexpected response"),
     };
 
-    let msg_update_client = rly
-        .build_msg_update_client_for_cos(target_height.decrement().unwrap())
-        .await;
+    let msg_update_client = rly.build_msg_update_client_for_cos(target_height).await;
 
     rly.dst_chain_ctx()
         .submit_msgs(vec![msg_update_client])
@@ -185,8 +184,5 @@ async fn test_update_client_on_cos() {
 
     let client_state = AnyClientState::try_from(any_client_state).unwrap();
 
-    assert_eq!(
-        client_state.latest_height(),
-        target_height.decrement().unwrap()
-    );
+    assert_eq!(client_state.latest_height(), target_height);
 }

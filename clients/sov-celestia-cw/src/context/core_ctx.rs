@@ -17,37 +17,69 @@ use ibc_core::host::types::path::{
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::{Signer, Timestamp};
+use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::types::client_state::SOV_TENDERMINT_CLIENT_STATE_TYPE_URL;
 use sov_celestia_client::types::proto::v1::{
     ClientState as RawClientState, ConsensusState as RawConsensusState,
 };
 
-use super::{Context, StorageRef};
-use crate::types::{AnyClientState, AnyConsensusState};
+use super::Context;
+use crate::types::AnyConsensusState;
 
 impl ValidationContext for Context<'_> {
     type V = Self;
     type E = Self;
     type AnyConsensusState = AnyConsensusState;
-    type AnyClientState = AnyClientState;
+    type AnyClientState = ClientState;
 
     fn get_client_validation_context(&self) -> &Self::V {
         self
     }
 
-    fn client_state(&self, client_id: &ClientId) -> Result<Self::AnyClientState, ContextError> {
-        client_state(self, client_id)
+    fn client_state(&self, _client_id: &ClientId) -> Result<Self::AnyClientState, ContextError> {
+        let client_state_value = self.retrieve(ClientStatePath::leaf())?;
+
+        let sov_client_state = Protobuf::<RawClientState>::decode(client_state_value.as_slice())
+            .map_err(|e| ClientError::Other {
+                description: e.to_string(),
+            })?;
+
+        Ok(sov_client_state)
     }
 
     fn decode_client_state(&self, client_state: Any) -> Result<Self::AnyClientState, ContextError> {
-        decode_client_state(self, client_state)
+        match client_state.type_url.as_str() {
+            SOV_TENDERMINT_CLIENT_STATE_TYPE_URL => {
+                let sov_client_state = Protobuf::<RawClientState>::decode(
+                    client_state.value.as_slice(),
+                )
+                .map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })?;
+
+                Ok(sov_client_state)
+            }
+            _ => Err(ClientError::Other {
+                description: "Client state type not supported".to_string(),
+            }
+            .into()),
+        }
     }
 
     fn consensus_state(
         &self,
         client_cons_state_path: &ClientConsensusStatePath,
     ) -> Result<Self::AnyConsensusState, ContextError> {
-        consensus_state(self, client_cons_state_path)
+        let consensus_state_value = self.retrieve(client_cons_state_path.leaf())?;
+
+        let consensus_state = Protobuf::<RawConsensusState>::decode(
+            consensus_state_value.as_slice(),
+        )
+        .map_err(|e| ClientError::Other {
+            description: e.to_string(),
+        })?;
+
+        Ok(AnyConsensusState::Sovereign(consensus_state))
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
@@ -58,6 +90,7 @@ impl ValidationContext for Context<'_> {
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         let time = self.env().block.time;
+
         let host_timestamp = Timestamp::from_nanoseconds(time.nanos()).expect("invalid timestamp");
 
         Ok(host_timestamp)
@@ -254,69 +287,4 @@ impl ExecutionContext for Context<'_> {
     fn log_message(&mut self, _message: String) -> Result<(), ContextError> {
         todo!()
     }
-}
-
-pub fn client_state<Ctx>(ctx: &Ctx, client_id: &ClientId) -> Result<AnyClientState, ContextError>
-where
-    Ctx: ValidationContext + StorageRef,
-{
-    let client_state_path = ClientStatePath::new(client_id).to_string();
-
-    let client_state_value =
-        ctx.storage_ref()
-            .get(client_state_path.as_bytes())
-            .ok_or(ClientError::Other {
-                description: "Client state not found".to_string(),
-            })?;
-
-    let sov_client_state = Protobuf::<RawClientState>::decode(client_state_value.as_slice())
-        .map_err(|e| ClientError::Other {
-            description: e.to_string(),
-        })?;
-
-    Ok(AnyClientState::Sovereign(sov_client_state))
-}
-
-fn decode_client_state<Ctx>(_ctx: &Ctx, client_state: Any) -> Result<AnyClientState, ContextError>
-where
-    Ctx: ValidationContext + StorageRef,
-{
-    match client_state.type_url.as_str() {
-        SOV_TENDERMINT_CLIENT_STATE_TYPE_URL => {
-            let sov_client_state =
-                Protobuf::<RawClientState>::decode(client_state.value.as_slice()).map_err(|e| {
-                    ClientError::Other {
-                        description: e.to_string(),
-                    }
-                })?;
-
-            Ok(AnyClientState::Sovereign(sov_client_state))
-        }
-        _ => Err(ClientError::Other {
-            description: "Client state type not supported".to_string(),
-        }
-        .into()),
-    }
-}
-
-fn consensus_state<Ctx>(
-    ctx: &Ctx,
-    client_cons_state_path: &ClientConsensusStatePath,
-) -> Result<AnyConsensusState, ContextError>
-where
-    Ctx: ValidationContext + StorageRef,
-{
-    let consensus_state_value = ctx
-        .storage_ref()
-        .get(client_cons_state_path.to_string().as_bytes())
-        .ok_or(ClientError::Other {
-            description: "Consensus state not found".to_string(),
-        })?;
-
-    let consensus_state = Protobuf::<RawConsensusState>::decode(consensus_state_value.as_slice())
-        .map_err(|e| ClientError::Other {
-        description: e.to_string(),
-    })?;
-
-    Ok(AnyConsensusState::Sovereign(consensus_state))
 }

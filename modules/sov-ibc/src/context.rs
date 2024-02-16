@@ -41,6 +41,7 @@ where
     Da: DaSpec,
 {
     pub ibc: &'a Ibc<C, Da>,
+    pub context: Option<C>,
     pub working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
 }
 
@@ -51,9 +52,14 @@ where
 {
     pub fn new(
         ibc: &'a Ibc<C, Da>,
+        context: Option<C>,
         working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
     ) -> IbcContext<'a, C, Da> {
-        IbcContext { ibc, working_set }
+        IbcContext {
+            ibc,
+            context,
+            working_set,
+        }
     }
 }
 
@@ -112,19 +118,26 @@ where
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        let slot_height = self
-            .ibc
-            .chain_state
-            .get_slot_height(&mut self.working_set.borrow_mut());
+        let context = self.context.clone().ok_or(ClientError::Other {
+            description: "Context not found".to_string(),
+        })?;
 
-        Ok(Height::new(HOST_REVISION_NUMBER, slot_height)?)
+        Ok(Height::new(
+            HOST_REVISION_NUMBER,
+            context.visible_slot_number(),
+        )?)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        let chain_time = self
-            .ibc
-            .chain_state
-            .get_time(&mut self.working_set.borrow_mut());
+        let context = self.context.clone().ok_or(ClientError::Other {
+            description: "Context not found".to_string(),
+        })?;
+
+        let mut working_set = self.working_set.borrow_mut();
+
+        let mut versioned_working_set = working_set.versioned_state(&context);
+
+        let chain_time = self.ibc.chain_state.get_time(&mut versioned_working_set);
 
         if chain_time.secs() < 0 {
             // FIXME: at least add a `ContextError::Host` enum variant, and use that here

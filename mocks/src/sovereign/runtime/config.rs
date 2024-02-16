@@ -5,7 +5,7 @@ use sov_chain_state::ChainStateConfig;
 use sov_ibc::ExampleModuleConfig;
 use sov_ibc_transfer::TransferConfig;
 use sov_modules_api::utils::generate_address as gen_address_generic;
-use sov_modules_api::Context;
+use sov_modules_api::{Context, GasUnit};
 use sov_rollup_interface::da::Time;
 
 // The default initial slot height.
@@ -21,16 +21,16 @@ pub const DEFAULT_ADDRESS_COUNT: u64 = 3;
 pub const DEFAULT_TOKEN_NAME: &str = "sov-demo-token";
 
 #[derive(Clone, Debug)]
-pub struct RuntimeConfig<C: Context> {
-    pub chain_state_config: ChainStateConfig,
+pub struct RollupGenesisConfig<C: Context> {
+    pub chain_state_config: ChainStateConfig<C>,
     pub bank_config: BankConfig<C>,
     pub ibc_config: ExampleModuleConfig,
     pub ibc_transfer_config: TransferConfig,
 }
 
-impl<C: Context> RuntimeConfig<C> {
+impl<C: Context> RollupGenesisConfig<C> {
     pub fn new(
-        chain_state_config: ChainStateConfig,
+        chain_state_config: ChainStateConfig<C>,
         bank_config: BankConfig<C>,
         ibc_config: ExampleModuleConfig,
         ibc_transfer_config: TransferConfig,
@@ -44,9 +44,9 @@ impl<C: Context> RuntimeConfig<C> {
     }
 }
 
-impl<C: Context> Default for RuntimeConfig<C> {
+impl<C: Context> Default for RollupGenesisConfig<C> {
     fn default() -> Self {
-        let chain_state_config = create_chain_state_config(DEFAULT_INIT_HEIGHT);
+        let chain_state_config = create_chain_state_config();
 
         let bank_config = create_bank_config(DEFAULT_ADDRESS_COUNT, DEFAULT_INIT_BALANCE);
 
@@ -64,7 +64,7 @@ impl<C: Context> Default for RuntimeConfig<C> {
 }
 
 /// Creates a chain state configuration with the given initial slot height
-pub fn create_chain_state_config(initial_slot_height: u64) -> ChainStateConfig {
+pub fn create_chain_state_config<C: Context>() -> ChainStateConfig<C> {
     let now = SystemTime::now();
 
     let seconds = now
@@ -73,8 +73,11 @@ pub fn create_chain_state_config(initial_slot_height: u64) -> ChainStateConfig {
         .as_secs();
 
     ChainStateConfig {
-        initial_slot_height,
         current_time: Time::from_secs(seconds.try_into().unwrap()),
+        gas_price_blocks_depth: 10,
+        gas_price_maximum_elasticity: 1,
+        initial_gas_price: GasUnit::ZEROED,
+        minimum_gas_price: GasUnit::ZEROED,
     }
 }
 

@@ -1,6 +1,7 @@
 use alloc::string::String;
-use std::error::Error as StdError;
+use std::error::Error;
 
+use cosmwasm_std::StdError;
 use derive_more::{Display, From};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::commitment_types::error::CommitmentError;
@@ -10,7 +11,7 @@ use ibc_core::host::types::path::PathError;
 
 #[derive(From, Display, Debug)]
 pub enum ContractError {
-    Std(cosmwasm_std::StdError),
+    Std(StdError),
     #[display(fmt = "invalid message: {_0}")]
     InvalidMsg(String),
     #[display(fmt = "IBC validation/execution context error: {_0}")]
@@ -27,4 +28,10 @@ pub enum ContractError {
     ProtoDecode(prost::DecodeError),
 }
 
-impl StdError for ContractError {}
+impl Error for ContractError {}
+
+impl From<ContractError> for StdError {
+    fn from(err: ContractError) -> StdError {
+        StdError::generic_err(err.to_string())
+    }
+}
