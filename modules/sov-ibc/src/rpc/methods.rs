@@ -1,4 +1,4 @@
-//! Defines rpc queries exposed by the ibc module
+//! Defines JSON RPC methods exposed by the ibc module
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::str::FromStr;
