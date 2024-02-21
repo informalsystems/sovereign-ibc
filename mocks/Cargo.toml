@@ -48,17 +48,18 @@ tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
 
 # sovereign dependencies
-const-rollup-config        = { workspace = true }
 sov-bank                   = { workspace = true }
-sov-celestia-adapter       = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8", features = ["native"], optional = true }
 sov-chain-state            = { workspace = true }
 sov-modules-api            = { workspace = true }
-sov-modules-stf-blueprint  = { workspace = true }
-sov-mock-da                = { workspace = true, features = ["native"], optional = true }
-sov-prover-storage-manager = { workspace = true, features = ["test-utils"] }
 sov-rollup-interface       = { workspace = true }
 sov-state                  = { workspace = true }
-sov-schema-db              = { workspace = true }
+
+sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8", features = ["native"], optional = true }
+sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8", features = ["native"], optional = true }
+sov-modules-stf-blueprint  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8", features = ["test-utils"] }
+sov-schema-db              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
 jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 [dev-dependencies]
