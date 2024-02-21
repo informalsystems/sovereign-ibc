@@ -23,6 +23,7 @@ env:
   RUST_BACKTRACE: short
   CARGO_NET_RETRY: 10
   RUSTUP_MAX_RETRIES: 10
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
 
 jobs:
   cleanup-runs:
