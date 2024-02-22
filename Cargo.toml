@@ -10,8 +10,7 @@ members = [
 ]
 
 exclude = [
-    "ci/risc0-check",
-    "vendor/sovereign-sdk"
+    "ci/risc0-check"
 ]
 
 [workspace.package]
@@ -59,8 +58,8 @@ tendermint-testgen    = { version = "0.34", default-features = false }
 tendermint-light-client-verifier = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-modules-api      = { path = "./vendor/sovereign-sdk/module-system/sov-modules-api" }
-sov-state            = { path = "./vendor/sovereign-sdk/module-system/sov-state" }
-sov-bank             = { path = "./vendor/sovereign-sdk/module-system/module-implementations/sov-bank" }
-sov-chain-state      = { path = "./vendor/sovereign-sdk/module-system/module-implementations/sov-chain-state" }
-sov-rollup-interface = { path = "./vendor/sovereign-sdk/rollup-interface" }
+sov-bank                   = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-chain-state            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-modules-api            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-state                  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-rollup-interface       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }

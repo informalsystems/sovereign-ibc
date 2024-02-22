@@ -18,16 +18,15 @@ env:
   CARGO_PROFILE_RELEASE_DEBUG: 1
   CARGO_NET_RETRY: 10
   RUSTUP_MAX_RETRIES: 10
-  CARGO_NET_GIT_FETCH_WITH_CLI: true
 
 jobs:
   risc0-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SOVEREIGN_DEPLOY_KEY }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
+      - name: Set up Git credentials
+        run:
+          git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
       - name: Install cargo-risc0
