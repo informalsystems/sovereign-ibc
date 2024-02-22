@@ -58,13 +58,8 @@ tendermint-testgen    = { version = "0.34", default-features = false }
 tendermint-light-client-verifier = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-const-rollup-config        = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-bank                   = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-chain-state            = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-mock-da                = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-modules-api            = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-modules-stf-blueprint  = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-state                  = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-schema-db              = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-rollup-interface       = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-prover-storage-manager = { git = "ssh://git@github.com/Sovereign-Labs/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-bank                   = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-chain-state            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-modules-api            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-state                  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-rollup-interface       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
