@@ -75,8 +75,7 @@ message ConsensusState {
   // the state root of rollup at the ConsensusState height
   ibc.core.commitment.v1.MerkleRoot root = 1 [(gogoproto.nullable) = false];
   // the tendermint-specific consensus state parameters
-  TendermintConsensusParams tendermint_params = 2 [(gogoproto.moretags) = "yaml:\"da_params\""];
-
+  TendermintConsensusParams tendermint_params = 2 [(gogoproto.moretags) = "yaml:\"tendermint_params\""];
 }
 
 // TendermintConsensusParams contains the necessary consensus state parameters
@@ -107,8 +106,8 @@ message TendermintConsensusParams {
 // validator set at the TrustedHeight.
 message Header {
   // the Tendermint header
-  ibc.lightclients.tendermint.v1.Header da_header = 1 [(gogoproto.moretags) = "yaml:\"da_header\""];
-  // the rollup header
+  ibc.lightclients.tendermint.v1.Header tendermint_header = 1 [(gogoproto.moretags) = "yaml:\"tendermint_header\""];
+  // the rollup aggregated proof data
   .sovereign.types.v1.AggregatedProofData aggregated_proof_data = 2 [(gogoproto.moretags) = "yaml:\"aggregated_proof_data\""];
 }
 
