@@ -14,6 +14,7 @@ use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::{
     Header as RawSovTmHeader, Misbehaviour as RawSovTmMisbehaviour,
 };
 pub use misbehaviour::*;
+use prost::Message;
 
 use crate::error::Error;
 
@@ -25,12 +26,20 @@ where
     H: Clone + Debug,
 {
     Header(Box<Header<H>>),
-    Misbehaviour(Box<SovMisbehaviour<H>>),
+    Misbehaviour(Box<Misbehaviour<H>>),
 }
 
 /// ClientMessage type alias for the Sovereign SDK rollups operating on the
 /// Tendermint-driven DA layer.
 pub type SovTmClientMessage = ClientMessage<TmHeader>;
+
+impl SovTmClientMessage {
+    /// Decodes a `SovTmClientMessage` from a byte array using the `Any` type.
+    pub fn decode(value: Vec<u8>) -> Result<SovTmClientMessage, Error> {
+        let any = Any::decode(&mut value.as_slice()).map_err(Error::source)?;
+        SovTmClientMessage::try_from(any)
+    }
+}
 
 impl Protobuf<Any> for SovTmClientMessage {}
 

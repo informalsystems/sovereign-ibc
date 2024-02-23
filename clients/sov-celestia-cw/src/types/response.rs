@@ -2,67 +2,72 @@ use alloc::string::String;
 use alloc::vec::Vec;
 
 use cosmwasm_schema::cw_serde;
+use ibc_core::client::types::Height;
 
-use super::msgs::GenesisMetadata;
+#[cw_serde]
+pub struct GenesisMetadata {
+    pub key: Vec<u8>,
+    pub value: Vec<u8>,
+}
 
 #[cw_serde]
 pub struct QueryResponse {
-    pub status: String,
+    pub is_valid: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub genesis_metadata: Option<Vec<GenesisMetadata>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub found_misbehaviour: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timestamp: Option<u64>,
 }
 
 impl QueryResponse {
-    pub fn status(status: String) -> Self {
+    pub fn success() -> Self {
         Self {
-            status,
+            is_valid: true,
+            status: None,
             genesis_metadata: None,
+            found_misbehaviour: None,
+            timestamp: None,
         }
     }
 
-    pub fn genesis_metadata(genesis_metadata: Option<Vec<GenesisMetadata>>) -> Self {
-        Self {
-            status: "".to_string(),
-            genesis_metadata,
-        }
+    pub fn status(mut self, status: String) -> Self {
+        self.status = Some(status);
+        self
+    }
+
+    pub fn genesis_metadata(mut self, genesis_metadata: Option<Vec<GenesisMetadata>>) -> Self {
+        self.genesis_metadata = genesis_metadata;
+        self
+    }
+
+    pub fn misbehaviour(mut self, found_misbehavior: bool) -> Self {
+        self.found_misbehaviour = Some(found_misbehavior);
+        self
+    }
+
+    pub fn timestamp(mut self, timestamp: u64) -> Self {
+        self.timestamp = Some(timestamp);
+        self
     }
 }
 
 #[cw_serde]
 pub struct ContractResult {
-    pub is_valid: bool,
-    pub error_msg: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub data: Option<Vec<u8>>,
-    pub found_misbehaviour: bool,
+    pub heights: Option<Vec<Height>>,
 }
 
 impl ContractResult {
     pub fn success() -> Self {
-        Self {
-            is_valid: true,
-            error_msg: "".to_string(),
-            data: None,
-            found_misbehaviour: false,
-        }
+        Self { heights: None }
     }
 
-    pub fn error(msg: String) -> Self {
-        Self {
-            is_valid: false,
-            error_msg: msg,
-            data: None,
-            found_misbehaviour: false,
-        }
-    }
-
-    pub fn misbehaviour(mut self, found: bool) -> Self {
-        self.found_misbehaviour = found;
-        self
-    }
-
-    pub fn data(mut self, data: Vec<u8>) -> Self {
-        self.data = Some(data);
+    pub fn heights(mut self, heights: Vec<Height>) -> Self {
+        self.heights = Some(heights);
         self
     }
 }

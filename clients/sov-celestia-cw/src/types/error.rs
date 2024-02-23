@@ -8,6 +8,7 @@ use ibc_core::commitment_types::error::CommitmentError;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::error::IdentifierError;
 use ibc_core::host::types::path::PathError;
+use sov_celestia_client::types::error::Error as SovCelestiaClientError;
 
 #[derive(From, Display, Debug)]
 pub enum ContractError {
@@ -16,8 +17,10 @@ pub enum ContractError {
     InvalidMsg(String),
     #[display(fmt = "IBC validation/execution context error: {_0}")]
     Context(ContextError),
-    #[display(fmt = "IBC client error: {_0}")]
-    ClientError(ClientError),
+    #[display(fmt = "IBC 02-client error: {_0}")]
+    Ics02ClientError(ClientError),
+    #[display(fmt = "sov-celestia client error: {_0}")]
+    SovCelestiaClientError(SovCelestiaClientError),
     #[display(fmt = "IBC commitment error: {_0}")]
     Commitment(CommitmentError),
     #[display(fmt = "IBC identifier error: {_0}")]

@@ -3,7 +3,6 @@ use ibc_core::client::context::client_state::{
     ClientStateCommon, ClientStateExecution, ClientStateValidation,
 };
 use ibc_core::client::context::consensus_state::ConsensusState as _;
-use ibc_core::client::types::UpdateKind;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::host::ValidationContext;
 use ibc_proto::google::protobuf::Any;
@@ -13,10 +12,10 @@ use sov_celestia_client::types::client_message::ClientMessage;
 
 use crate::context::Context;
 use crate::types::{
-    CheckForMisbehaviourMsg, ContractError, ContractResult, ExecuteMsg, ExportMetadataMsg,
-    InstantiateMsg, QueryMsg, QueryResponse, StatusMsg, UpdateStateMsg,
-    UpdateStateOnMisbehaviourMsg, VerifyClientMessageMsg, VerifyMembershipMsg,
-    VerifyNonMembershipMsg, VerifyUpgradeAndUpdateStateMsg,
+    CheckForMisbehaviourMsg, ContractError, ContractResult, ExportMetadataMsg, InstantiateMsg,
+    QueryMsg, QueryResponse, StatusMsg, SudoMsg, UpdateStateMsg, UpdateStateOnMisbehaviourMsg,
+    VerifyClientMessageMsg, VerifyMembershipMsg, VerifyNonMembershipMsg,
+    VerifyUpgradeAndUpdateStateMsg,
 };
 
 impl<'a> Context<'a> {
@@ -34,13 +33,38 @@ impl<'a> Context<'a> {
         Ok(to_json_binary(&ContractResult::success())?)
     }
 
-    pub fn execute(&mut self, msg: ExecuteMsg) -> Result<Binary, ContractError> {
+    pub fn execute(&mut self, msg: SudoMsg) -> Result<Binary, ContractError> {
         let client_id = self.client_id();
 
         let client_state = self.client_state(&client_id)?;
 
         let result = match msg {
-            ExecuteMsg::VerifyMembership(msg) => {
+            SudoMsg::UpdateState(msg_raw) => {
+                let msg = UpdateStateMsg::try_from(msg_raw)?;
+
+                let any_client_msg = match msg.client_message {
+                    ClientMessage::Header(header) => (*header).into(),
+                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
+                };
+
+                let heights = client_state.update_state(self, &client_id, any_client_msg)?;
+
+                ContractResult::success().heights(heights)
+            }
+            SudoMsg::UpdateStateOnMisbehaviour(msg_raw) => {
+                let msg: UpdateStateOnMisbehaviourMsg =
+                    UpdateStateOnMisbehaviourMsg::try_from(msg_raw)?;
+
+                let any_client_msg = match msg.client_message {
+                    ClientMessage::Header(header) => (*header).into(),
+                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
+                };
+
+                client_state.update_state_on_misbehaviour(self, &client_id, any_client_msg)?;
+
+                ContractResult::success()
+            }
+            SudoMsg::VerifyMembership(msg) => {
                 let msg = VerifyMembershipMsg::try_from(msg)?;
 
                 let client_cons_state_path = ClientConsensusStatePath::new(
@@ -61,7 +85,7 @@ impl<'a> Context<'a> {
 
                 ContractResult::success()
             }
-            ExecuteMsg::VerifyNonMembership(msg) => {
+            SudoMsg::VerifyNonMembership(msg) => {
                 let msg = VerifyNonMembershipMsg::try_from(msg)?;
 
                 let client_cons_state_path = ClientConsensusStatePath::new(
@@ -81,62 +105,7 @@ impl<'a> Context<'a> {
 
                 ContractResult::success()
             }
-            ExecuteMsg::VerifyClientMessage(msg) => {
-                let msg = VerifyClientMessageMsg::try_from(msg)?;
-
-                let any_client_msg: Any = match msg.client_message {
-                    ClientMessage::Header(header) => (*header).into(),
-                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
-                };
-
-                client_state.verify_client_message(self, &client_id, any_client_msg)?;
-
-                ContractResult::success()
-            }
-            ExecuteMsg::CheckForMisbehaviour(msg) => {
-                let msg = CheckForMisbehaviourMsg::try_from(msg)?;
-
-                let any_client_msg: Any = match msg.client_message {
-                    ClientMessage::Header(header) => (*header).into(),
-                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
-                };
-
-                let result =
-                    client_state.check_for_misbehaviour(self, &client_id, any_client_msg)?;
-
-                ContractResult::success().misbehaviour(result)
-            }
-            ExecuteMsg::UpdateStateOnMisbehaviour(msg_raw) => {
-                let msg: UpdateStateOnMisbehaviourMsg =
-                    UpdateStateOnMisbehaviourMsg::try_from(msg_raw)?;
-
-                let any_client_msg = match msg.client_message {
-                    ClientMessage::Header(header) => (*header).into(),
-                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
-                };
-
-                client_state.update_state_on_misbehaviour(self, &client_id, any_client_msg)?;
-
-                ContractResult::success()
-            }
-            ExecuteMsg::UpdateState(msg_raw) => {
-                let msg = UpdateStateMsg::try_from(msg_raw)?;
-
-                let (_, any_client_msg) = match msg.client_message {
-                    ClientMessage::Header(header) => (UpdateKind::UpdateClient, (*header).into()),
-                    ClientMessage::Misbehaviour(misbehaviour) => {
-                        (UpdateKind::SubmitMisbehaviour, (*misbehaviour).into())
-                    }
-                };
-
-                client_state.update_state(self, &client_id, any_client_msg)?;
-
-                ContractResult::success()
-            }
-            ExecuteMsg::CheckSubstituteAndUpdateState(_) => {
-                ContractResult::error("ibc-rs does no support this feature yet".to_string())
-            }
-            ExecuteMsg::VerifyUpgradeAndUpdateState(msg) => {
+            SudoMsg::VerifyUpgradeAndUpdateState(msg) => {
                 let msg = VerifyUpgradeAndUpdateStateMsg::try_from(msg)?;
 
                 let client_cons_state_path = ClientConsensusStatePath::new(
@@ -164,6 +133,11 @@ impl<'a> Context<'a> {
 
                 ContractResult::success()
             }
+            SudoMsg::MigrateClientStore(_) => {
+                return Err(ContractError::InvalidMsg(
+                    "ibc-rs does no support this feature yet".to_string(),
+                ));
+            }
         };
         Ok(to_json_binary(&result)?)
     }
@@ -171,19 +145,51 @@ impl<'a> Context<'a> {
     pub fn query(&self, msg: QueryMsg) -> Result<Binary, ContractError> {
         let client_id = self.client_id();
 
-        let resp = match msg {
-            QueryMsg::ClientTypeMsg(_) => unimplemented!("ClientTypeMsg"),
-            QueryMsg::GetLatestHeightsMsg(_) => unimplemented!("GetLatestHeightsMsg"),
-            QueryMsg::ExportMetadata(ExportMetadataMsg {}) => {
-                QueryResponse::genesis_metadata(self.get_metadata()?)
-            }
-            QueryMsg::Status(StatusMsg {}) => {
-                let client_state = self.client_state(&client_id)?;
+        let client_state = self.client_state(&client_id)?;
 
-                match client_state.status(self, &client_id) {
-                    Ok(status) => QueryResponse::status(status.to_string()),
-                    Err(err) => QueryResponse::status(err.to_string()),
-                }
+        let resp = match msg {
+            QueryMsg::Status(StatusMsg {}) => match client_state.status(self, &client_id) {
+                Ok(status) => QueryResponse::success().status(status.to_string()),
+                Err(err) => QueryResponse::success().status(err.to_string()),
+            },
+            QueryMsg::ExportMetadata(ExportMetadataMsg {}) => {
+                QueryResponse::success().genesis_metadata(self.get_metadata()?)
+            }
+            QueryMsg::TimestampAtHeight(msg) => {
+                let client_cons_state_path = ClientConsensusStatePath::new(
+                    client_id,
+                    msg.height.revision_number(),
+                    msg.height.revision_height(),
+                );
+
+                let consensus_state = self.consensus_state(&client_cons_state_path)?;
+
+                QueryResponse::success().timestamp(consensus_state.timestamp().nanoseconds())
+            }
+            QueryMsg::VerifyClientMessage(msg) => {
+                let msg = VerifyClientMessageMsg::try_from(msg)?;
+
+                let any_client_msg: Any = match msg.client_message {
+                    ClientMessage::Header(header) => (*header).into(),
+                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
+                };
+
+                client_state.verify_client_message(self, &client_id, any_client_msg)?;
+
+                QueryResponse::success()
+            }
+            QueryMsg::CheckForMisbehaviour(msg) => {
+                let msg = CheckForMisbehaviourMsg::try_from(msg)?;
+
+                let any_client_msg: Any = match msg.client_message {
+                    ClientMessage::Header(header) => (*header).into(),
+                    ClientMessage::Misbehaviour(misbehaviour) => (*misbehaviour).into(),
+                };
+
+                let result =
+                    client_state.check_for_misbehaviour(self, &client_id, any_client_msg)?;
+
+                QueryResponse::success().misbehaviour(result)
             }
         };
 
