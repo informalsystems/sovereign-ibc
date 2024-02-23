@@ -20,10 +20,14 @@ message PublicInput {
   bytes initial_da_block_hash = 1;
   // the final DA block hash
   bytes final_da_block_hash = 2;
+  // the genesis state root
+  bytes genesis_state_root = 3;
   // the initial state root
-  bytes initial_state_root = 3;
+  bytes initial_state_root = 4;
   // the final state root
-  bytes final_state_root = 4;
+  bytes final_state_root = 5;
+  // th code commitment of the aggregated proof circuit
+  bytes code_commitment = 6;
 }
 
 // ProofDataInfo contains additional information about the proof.

@@ -3,7 +3,7 @@ use ibc_core::client::types::error::ClientError;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
-use sov_celestia_client_types::consensus_state::ConsensusState as ConsensusStateType;
+use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 use sov_celestia_client_types::proto::v1::ConsensusState as RawConsensusState;
 use tendermint::{Hash, Time};
 
@@ -13,19 +13,19 @@ use tendermint::{Hash, Time};
 /// `ibc::core::client::context` on the `ConsensusState` type.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, derive_more::From)]
-pub struct ConsensusState(ConsensusStateType);
+pub struct ConsensusState(SovTmConsensusState);
 
 impl ConsensusState {
-    pub fn inner(&self) -> &ConsensusStateType {
+    pub fn inner(&self) -> &SovTmConsensusState {
         &self.0
     }
 
     pub fn timestamp(&self) -> Time {
-        self.0.timestamp
+        self.0.da_params.timestamp
     }
 
     pub fn next_validators_hash(&self) -> Hash {
-        self.0.next_validators_hash
+        self.0.da_params.next_validators_hash
     }
 }
 
@@ -35,7 +35,7 @@ impl TryFrom<RawConsensusState> for ConsensusState {
     type Error = ClientError;
 
     fn try_from(raw: RawConsensusState) -> Result<Self, Self::Error> {
-        Ok(Self(ConsensusStateType::try_from(raw)?))
+        Ok(Self(SovTmConsensusState::try_from(raw)?))
     }
 }
 
@@ -51,7 +51,7 @@ impl TryFrom<Any> for ConsensusState {
     type Error = ClientError;
 
     fn try_from(raw: Any) -> Result<Self, Self::Error> {
-        Ok(Self(ConsensusStateType::try_from(raw)?))
+        Ok(Self(SovTmConsensusState::try_from(raw)?))
     }
 }
 
@@ -67,7 +67,7 @@ impl ConsensusStateTrait for ConsensusState {
     }
 
     fn timestamp(&self) -> Timestamp {
-        let time = self.0.timestamp.unix_timestamp_nanos();
+        let time = self.0.da_params.timestamp.unix_timestamp_nanos();
         Timestamp::from_nanoseconds(time as u64).expect("invalid timestamp")
     }
 
