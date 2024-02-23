@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/rust.yml
       - Cargo.toml
+      - Cargo.lock
       - clients/**
       - modules/**
       - mocks/**
@@ -12,6 +13,7 @@ on:
     paths:
       - .github/workflows/rust.yml
       - Cargo.toml
+      - Cargo.lock
       - clients/**
       - modules/**
       - mocks/**
@@ -36,7 +38,7 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly # Since fmt uses unstable features for organizing imports
@@ -51,7 +53,7 @@ jobs:
   doc_all_features:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Git credentials
         run:
           git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
@@ -69,7 +71,7 @@ jobs:
   clippy_all_features:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Git credentials
         run:
           git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
@@ -88,7 +90,7 @@ jobs:
   clippy_no_default_features:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Git credentials
         run:
           git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
@@ -108,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Git credentials
         run:
           git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
