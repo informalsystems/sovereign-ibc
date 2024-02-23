@@ -3,15 +3,15 @@ use core::time::Duration;
 use ibc_client_tendermint::types::TrustThreshold;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::Protobuf;
-use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::{
-    Fraction, TendermintParams as RawTendermintParams,
-};
+use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::TendermintClientParams as RawTmClientParams;
+use ibc_proto::ibc::lightclients::tendermint::v1::Fraction;
 
 use crate::error::Error;
 
+/// Defines the Tendermint-specific client state parameters
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct TendermintParams {
+pub struct TmClientParams {
     pub chain_id: ChainId,
     pub trust_level: TrustThreshold,
     pub trusting_period: Duration,
@@ -19,7 +19,7 @@ pub struct TendermintParams {
     pub max_clock_drift: Duration,
 }
 
-impl TendermintParams {
+impl TmClientParams {
     pub fn new(
         chain_id: ChainId,
         trust_level: TrustThreshold,
@@ -37,12 +37,12 @@ impl TendermintParams {
     }
 }
 
-impl Protobuf<RawTendermintParams> for TendermintParams {}
+impl Protobuf<RawTmClientParams> for TmClientParams {}
 
-impl TryFrom<RawTendermintParams> for TendermintParams {
+impl TryFrom<RawTmClientParams> for TmClientParams {
     type Error = Error;
 
-    fn try_from(raw: RawTendermintParams) -> Result<Self, Self::Error> {
+    fn try_from(raw: RawTmClientParams) -> Result<Self, Self::Error> {
         let chain_id = raw.chain_id.parse().map_err(Error::source)?;
 
         let trust_level = {
@@ -78,8 +78,8 @@ impl TryFrom<RawTendermintParams> for TendermintParams {
     }
 }
 
-impl From<TendermintParams> for RawTendermintParams {
-    fn from(value: TendermintParams) -> Self {
+impl From<TmClientParams> for RawTmClientParams {
+    fn from(value: TmClientParams) -> Self {
         Self {
             chain_id: value.chain_id.to_string(),
             trust_level: Some(Fraction {
