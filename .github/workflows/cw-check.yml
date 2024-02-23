@@ -36,15 +36,4 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Build sov-celestia CosmWasm contract
         run: make build-sov-celestia-cw
-  cw-optimize:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Cache Cargo registry
-        uses: Swatinem/rust-cache@v2
-      - name: Install wasm-opt
-        run: |
-         cargo install wasm-opt
-      - name: Optimize sov-celestia CosmWasm contract
-        run: make optimize-contracts
+
