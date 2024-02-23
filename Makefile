@@ -11,6 +11,7 @@ install-dev-tools:  ## Installs all necessary cargo helpers
 	cargo install cargo-nextest --locked
 	cargo install cargo-risczero
 	cargo risczero install
+	cargo install wasm-opt
 
 build: ## Build the the entire project
 	@cargo build
