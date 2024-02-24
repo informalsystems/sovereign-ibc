@@ -8,7 +8,7 @@ use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::ZERO_DURATION;
 use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::ClientState as RawClientState;
 
-use super::TendermintParams;
+use super::TmClientParams;
 use crate::error::Error;
 
 pub const SOV_TENDERMINT_CLIENT_STATE_TYPE_URL: &str =
@@ -17,36 +17,32 @@ pub const SOV_TENDERMINT_CLIENT_STATE_TYPE_URL: &str =
 /// Contains the core implementation of the Sovereign light client
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
-pub struct ClientState {
+pub struct ClientState<Da> {
     pub rollup_id: ChainId,
     pub latest_height: Height,
     pub frozen_height: Option<Height>,
     pub upgrade_path: Vec<String>,
-    pub tendermint_params: TendermintParams,
+    pub da_params: Da,
 }
 
-impl ClientState {
+impl<Da> ClientState<Da> {
     pub fn new(
         rollup_id: ChainId,
         latest_height: Height,
         upgrade_path: Vec<String>,
-        tendermint_params: TendermintParams,
+        da_params: Da,
     ) -> Self {
         Self {
             rollup_id,
             latest_height,
             frozen_height: None,
             upgrade_path,
-            tendermint_params,
+            da_params,
         }
     }
 
     pub fn rollup_id(&self) -> &ChainId {
         &self.rollup_id
-    }
-
-    pub fn chain_id(&self) -> &ChainId {
-        &self.tendermint_params.chain_id
     }
 
     pub fn latest_height(&self) -> Height {
@@ -57,6 +53,21 @@ impl ClientState {
         self.frozen_height.is_some()
     }
 
+    pub fn with_frozen_height(self, h: Height) -> Self {
+        Self {
+            frozen_height: Some(h),
+            ..self
+        }
+    }
+}
+
+pub type SovTmClientState = ClientState<TmClientParams>;
+
+impl SovTmClientState {
+    pub fn chain_id(&self) -> &ChainId {
+        &self.da_params.chain_id
+    }
+
     pub fn with_header(self, header: TmHeader) -> Result<Self, Error> {
         Ok(Self {
             latest_height: max(header.height(), self.latest_height),
@@ -64,25 +75,18 @@ impl ClientState {
         })
     }
 
-    pub fn with_frozen_height(self, h: Height) -> Self {
-        Self {
-            frozen_height: Some(h),
-            ..self
-        }
-    }
-
     // Resets custom fields to zero values (used in `update_client`)
     pub fn zero_custom_fields(&mut self) {
         self.frozen_height = None;
-        self.tendermint_params.trusting_period = ZERO_DURATION;
-        self.tendermint_params.trust_level = TrustThreshold::ZERO;
-        self.tendermint_params.max_clock_drift = ZERO_DURATION;
+        self.da_params.trusting_period = ZERO_DURATION;
+        self.da_params.trust_level = TrustThreshold::ZERO;
+        self.da_params.max_clock_drift = ZERO_DURATION;
     }
 }
 
-impl Protobuf<RawClientState> for ClientState {}
+impl Protobuf<RawClientState> for SovTmClientState {}
 
-impl TryFrom<RawClientState> for ClientState {
+impl TryFrom<RawClientState> for SovTmClientState {
     type Error = ClientError;
 
     fn try_from(raw: RawClientState) -> Result<Self, Self::Error> {
@@ -113,25 +117,25 @@ impl TryFrom<RawClientState> for ClientState {
     }
 }
 
-impl From<ClientState> for RawClientState {
-    fn from(value: ClientState) -> Self {
+impl From<SovTmClientState> for RawClientState {
+    fn from(value: SovTmClientState) -> Self {
         Self {
             rollup_id: value.rollup_id.to_string(),
             latest_height: Some(value.latest_height.into()),
             frozen_height: value.frozen_height.map(|h| h.into()),
             upgrade_path: value.upgrade_path,
-            tendermint_params: Some(value.tendermint_params.into()),
+            tendermint_params: Some(value.da_params.into()),
         }
     }
 }
 
-impl Protobuf<Any> for ClientState {}
+impl Protobuf<Any> for SovTmClientState {}
 
-impl TryFrom<Any> for ClientState {
+impl TryFrom<Any> for SovTmClientState {
     type Error = ClientError;
 
     fn try_from(raw: Any) -> Result<Self, Self::Error> {
-        fn decode_client_state(value: &[u8]) -> Result<ClientState, ClientError> {
+        fn decode_client_state(value: &[u8]) -> Result<SovTmClientState, ClientError> {
             let client_state =
                 Protobuf::<RawClientState>::decode(value).map_err(|e| ClientError::Other {
                     description: e.to_string(),
@@ -149,8 +153,8 @@ impl TryFrom<Any> for ClientState {
     }
 }
 
-impl From<ClientState> for Any {
-    fn from(client_state: ClientState) -> Self {
+impl From<SovTmClientState> for Any {
+    fn from(client_state: SovTmClientState) -> Self {
         Any {
             type_url: SOV_TENDERMINT_CLIENT_STATE_TYPE_URL.to_string(),
             value: Protobuf::<RawClientState>::encode_vec(client_state),

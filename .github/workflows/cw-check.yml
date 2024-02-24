@@ -1,0 +1,39 @@
+name: CosmWasm Check
+on:
+  pull_request:
+    paths:
+      - .github/workflows/cw-check.yml
+      - Cargo.toml
+      - Cargo.lock
+      - clients/**
+
+  push:
+    branches: main
+    paths:
+      - .github/workflows/cw-check.yml
+      - Cargo.toml
+      - Cargo.lock
+      - clients/**
+
+jobs:
+  cw-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Git credentials
+        run:
+          git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          profile: minimal
+          override: true
+      - name: Cache Cargo registry
+        uses: Swatinem/rust-cache@v2
+      - name: Build sov-celestia CosmWasm contract
+        run: make build-sov-celestia-cw
+

@@ -1,14 +1,11 @@
-//! Defines Sovereign's `ConsensusState` type
+//! Defines the `ConsensusState` type for the Sovereign SDK rollups
 
 use ibc_core::client::types::error::ClientError;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::ConsensusState as RawConsensusState;
-use tendermint::hash::Algorithm;
-use tendermint::time::Time;
-use tendermint::Hash;
-use tendermint_proto::google::protobuf as tpb;
 
+use super::TmConsensusParams;
 use crate::client_message::SovTmHeader;
 
 pub const SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL: &str =
@@ -17,25 +14,21 @@ pub const SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL: &str =
 /// Defines the Sovereign light client's consensus state
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ConsensusState {
-    pub timestamp: Time,
+pub struct ConsensusState<Da> {
     pub root: CommitmentRoot,
-    pub next_validators_hash: Hash,
+    pub da_params: Da,
 }
 
-impl ConsensusState {
-    pub fn new(root: CommitmentRoot, timestamp: Time, next_validators_hash: Hash) -> Self {
-        Self {
-            timestamp,
-            root,
-            next_validators_hash,
-        }
+impl<Da> ConsensusState<Da> {
+    pub fn new(root: CommitmentRoot, da_params: Da) -> Self {
+        Self { root, da_params }
     }
 }
+pub type SovTmConsensusState = ConsensusState<TmConsensusParams>;
 
-impl Protobuf<RawConsensusState> for ConsensusState {}
+impl Protobuf<RawConsensusState> for SovTmConsensusState {}
 
-impl TryFrom<RawConsensusState> for ConsensusState {
+impl TryFrom<RawConsensusState> for SovTmConsensusState {
     type Error = ClientError;
 
     fn try_from(raw: RawConsensusState) -> Result<Self, Self::Error> {
@@ -46,51 +39,38 @@ impl TryFrom<RawConsensusState> for ConsensusState {
             })?
             .hash;
 
-        let ibc_proto::google::protobuf::Timestamp { seconds, nanos } =
-            raw.timestamp.ok_or(ClientError::Other {
-                description: "missing timestamp".to_string(),
-            })?;
-
-        let proto_timestamp = tpb::Timestamp { seconds, nanos };
-        let timestamp = proto_timestamp.try_into().map_err(|_| ClientError::Other {
-            description: "invalid timestamp".to_string(),
-        })?;
-
-        let next_validators_hash = Hash::from_bytes(Algorithm::Sha256, &raw.next_validators_hash)
-            .map_err(|_| ClientError::Other {
-            description: "invalid next validators hash".to_string(),
-        })?;
+        let da_params = raw
+            .tendermint_params
+            .ok_or(ClientError::Other {
+                description: "missing tendermint params".to_string(),
+            })?
+            .try_into()?;
 
         Ok(Self {
             root: proto_root.into(),
-            timestamp,
-            next_validators_hash,
+            da_params,
         })
     }
 }
 
-impl From<ConsensusState> for RawConsensusState {
-    fn from(value: ConsensusState) -> Self {
-        let tpb::Timestamp { seconds, nanos } = value.timestamp.into();
-        let timestamp = ibc_proto::google::protobuf::Timestamp { seconds, nanos };
-
+impl From<SovTmConsensusState> for RawConsensusState {
+    fn from(value: SovTmConsensusState) -> Self {
         RawConsensusState {
-            timestamp: Some(timestamp),
             root: Some(ibc_proto::ibc::core::commitment::v1::MerkleRoot {
                 hash: value.root.into_vec(),
             }),
-            next_validators_hash: value.next_validators_hash.as_bytes().to_vec(),
+            tendermint_params: Some(value.da_params.into()),
         }
     }
 }
 
-impl Protobuf<Any> for ConsensusState {}
+impl Protobuf<Any> for SovTmConsensusState {}
 
-impl TryFrom<Any> for ConsensusState {
+impl TryFrom<Any> for SovTmConsensusState {
     type Error = ClientError;
 
     fn try_from(raw: Any) -> Result<Self, Self::Error> {
-        fn decode_consensus_state(value: &[u8]) -> Result<ConsensusState, ClientError> {
+        fn decode_consensus_state(value: &[u8]) -> Result<SovTmConsensusState, ClientError> {
             let consensus_state =
                 Protobuf::<RawConsensusState>::decode(value).map_err(|e| ClientError::Other {
                     description: e.to_string(),
@@ -107,8 +87,8 @@ impl TryFrom<Any> for ConsensusState {
     }
 }
 
-impl From<ConsensusState> for Any {
-    fn from(consensus_state: ConsensusState) -> Self {
+impl From<SovTmConsensusState> for Any {
+    fn from(consensus_state: SovTmConsensusState) -> Self {
         Any {
             type_url: SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL.to_string(),
             value: Protobuf::<RawConsensusState>::encode_vec(consensus_state),
@@ -116,17 +96,19 @@ impl From<ConsensusState> for Any {
     }
 }
 
-impl From<tendermint::block::Header> for ConsensusState {
+impl From<tendermint::block::Header> for SovTmConsensusState {
     fn from(header: tendermint::block::Header) -> Self {
         Self {
             root: CommitmentRoot::from_bytes(header.app_hash.as_ref()),
-            timestamp: header.time,
-            next_validators_hash: header.next_validators_hash,
+            da_params: TmConsensusParams {
+                timestamp: header.time,
+                next_validators_hash: header.next_validators_hash,
+            },
         }
     }
 }
 
-impl From<SovTmHeader> for ConsensusState {
+impl From<SovTmHeader> for SovTmConsensusState {
     fn from(header: SovTmHeader) -> Self {
         let tm_header = header.da_header.signed_header.header;
 
@@ -138,8 +120,10 @@ impl From<SovTmHeader> for ConsensusState {
                     .final_state_root
                     .as_ref(),
             ),
-            timestamp: tm_header.time,
-            next_validators_hash: tm_header.next_validators_hash,
+            da_params: TmConsensusParams {
+                timestamp: tm_header.time,
+                next_validators_hash: tm_header.next_validators_hash,
+            },
         }
     }
 }

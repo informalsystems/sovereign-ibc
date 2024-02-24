@@ -15,10 +15,10 @@ pub mod event;
 pub mod genesis;
 
 #[cfg(feature = "native")]
-mod query;
+mod rpc;
 use ibc_core::handler::types::events::IbcEvent;
 #[cfg(feature = "native")]
-pub use query::*;
+pub use rpc::*;
 
 pub mod context;
 mod router;

@@ -3,7 +3,7 @@ use cosmwasm_std::entry_point;
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult};
 
 use crate::context::Context;
-use crate::types::{ContractError, ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::types::{ContractError, InstantiateMsg, QueryMsg, SudoMsg};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -24,7 +24,7 @@ pub fn execute(
     deps: DepsMut<'_>,
     env: Env,
     _info: MessageInfo,
-    msg: ExecuteMsg,
+    msg: SudoMsg,
 ) -> Result<Response, ContractError> {
     let mut ctx = Context::new_mut(deps, env)?;
 

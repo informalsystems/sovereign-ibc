@@ -27,10 +27,10 @@ pub mod test_util {
     use tendermint::{Hash, Time};
 
     use super::*;
-    use crate::consensus_state::ConsensusState;
+    use crate::consensus_state::{SovTmConsensusState, TmConsensusParams};
 
     #[derive(typed_builder::TypedBuilder, Debug)]
-    #[builder(build_method(into = ClientState))]
+    #[builder(build_method(into = SovTmClientState))]
     pub struct ClientStateConfig {
         pub rollup_id: ChainId,
         pub latest_height: Height,
@@ -38,10 +38,10 @@ pub mod test_util {
         pub frozen_height: Option<Height>,
         #[builder(default)]
         pub upgrade_path: Vec<String>,
-        pub tendermint_params: TendermintParams,
+        pub tendermint_params: TmClientParams,
     }
 
-    impl From<ClientStateConfig> for ClientState {
+    impl From<ClientStateConfig> for SovTmClientState {
         fn from(config: ClientStateConfig) -> Self {
             ClientState::new(
                 config.rollup_id,
@@ -53,7 +53,7 @@ pub mod test_util {
     }
 
     #[derive(typed_builder::TypedBuilder, Debug)]
-    #[builder(build_method(into = TendermintParams))]
+    #[builder(build_method(into = TmClientParams))]
     pub struct TendermintParamsConfig {
         #[builder(default = ChainId::new("mock-celestia-0").expect("Never fails"))]
         pub chain_id: ChainId,
@@ -67,7 +67,7 @@ pub mod test_util {
         pub max_clock_drift: Duration,
     }
 
-    impl From<TendermintParamsConfig> for TendermintParams {
+    impl From<TendermintParamsConfig> for TmClientParams {
         fn from(config: TendermintParamsConfig) -> Self {
             Self::new(
                 config.chain_id,
@@ -98,7 +98,7 @@ pub mod test_util {
         }
     }
 
-    pub fn dummy_sov_client_state(rollup_id: ChainId, latest_height: Height) -> ClientState {
+    pub fn dummy_sov_client_state(rollup_id: ChainId, latest_height: Height) -> SovTmClientState {
         let tendermint_params = TendermintParamsConfig::builder().build();
 
         ClientStateConfig::builder()
@@ -108,16 +108,18 @@ pub mod test_util {
             .build()
     }
 
-    pub fn dummy_sov_consensus_state() -> ConsensusState {
-        ConsensusState::new(
+    pub fn dummy_sov_consensus_state() -> SovTmConsensusState {
+        SovTmConsensusState::new(
             vec![0].into(),
-            Time::now(),
-            // Hash of default validator set
-            Hash::Sha256([
-                0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb, 0x4b,
-                0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d, 0x9e, 0xe1,
-                0x86, 0x1b, 0xc1, 0x43,
-            ]),
+            TmConsensusParams::new(
+                Time::now(),
+                // Hash of default validator set
+                Hash::Sha256([
+                    0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
+                    0x4b, 0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d,
+                    0x9e, 0xe1, 0x86, 0x1b, 0xc1, 0x43,
+                ]),
+            ),
         )
     }
 

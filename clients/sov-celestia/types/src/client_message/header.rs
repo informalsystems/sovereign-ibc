@@ -69,7 +69,7 @@ impl TryFrom<RawSovTmHeader> for SovTmHeader {
 
     fn try_from(value: RawSovTmHeader) -> Result<Self, Self::Error> {
         let da_header = value
-            .da_header
+            .tendermint_header
             .ok_or(Error::missing("missing core header"))?;
 
         let da_header = TmHeader::try_from(da_header).map_err(Error::source)?;
@@ -89,7 +89,7 @@ impl TryFrom<RawSovTmHeader> for SovTmHeader {
 impl From<SovTmHeader> for RawSovTmHeader {
     fn from(value: SovTmHeader) -> RawSovTmHeader {
         RawSovTmHeader {
-            da_header: Some(value.da_header.into()),
+            tendermint_header: Some(value.da_header.into()),
             aggregated_proof_data: Some(value.aggregated_proof_data.into()),
         }
     }

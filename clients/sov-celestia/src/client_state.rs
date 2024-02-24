@@ -19,9 +19,11 @@ use ibc_core::host::ExecutionContext;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use sov_celestia_client_types::client_message::Header;
 use sov_celestia_client_types::client_state::{
-    sov_client_type, ClientState as ClientStateType, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
+    sov_client_type, SovTmClientState, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
 };
-use sov_celestia_client_types::consensus_state::ConsensusState as ConsensusStateType;
+use sov_celestia_client_types::consensus_state::{
+    ConsensusState as ConsensusStateType, SovTmConsensusState, TmConsensusParams,
+};
 use sov_celestia_client_types::proto::v1::ClientState as RawSovTmClientState;
 
 use crate::consensus_state::ConsensusState;
@@ -32,10 +34,10 @@ use crate::context::{CommonContext, ValidationContext as SovValidationContext};
 /// type.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, derive_more::From)]
-pub struct ClientState(ClientStateType);
+pub struct ClientState(SovTmClientState);
 
 impl ClientState {
-    pub fn inner(&self) -> &ClientStateType {
+    pub fn inner(&self) -> &SovTmClientState {
         &self.0
     }
 }
@@ -46,7 +48,7 @@ impl TryFrom<RawSovTmClientState> for ClientState {
     type Error = ClientError;
 
     fn try_from(raw: RawSovTmClientState) -> Result<Self, Self::Error> {
-        let sov_client_state = ClientStateType::try_from(raw)?;
+        let sov_client_state = SovTmClientState::try_from(raw)?;
 
         Ok(Self(sov_client_state))
     }
@@ -64,7 +66,7 @@ impl TryFrom<Any> for ClientState {
     type Error = ClientError;
 
     fn try_from(raw: Any) -> Result<Self, Self::Error> {
-        let any = ClientStateType::try_from(raw)?;
+        let any = SovTmClientState::try_from(raw)?;
 
         Ok(Self(any))
     }
@@ -200,7 +202,7 @@ where
         if let Some(elapsed_since_latest_consensus_state) =
             now.duration_since(&latest_consensus_state.timestamp().into())
         {
-            if elapsed_since_latest_consensus_state > self.0.tendermint_params.trusting_period {
+            if elapsed_since_latest_consensus_state > self.0.da_params.trusting_period {
                 return Ok(Status::Expired);
             }
         }
@@ -335,11 +337,11 @@ where
         // parameters are ignored. All chain-chosen parameters come from
         // committed client, all client-chosen parameters come from current
         // client.
-        let new_client_state = ClientStateType::new(
+        let new_client_state = SovTmClientState::new(
             upgraded_client_state.0.rollup_id,
             upgraded_client_state.0.latest_height,
             upgraded_client_state.0.upgrade_path,
-            upgraded_client_state.0.tendermint_params,
+            upgraded_client_state.0.da_params,
         );
 
         // The new consensus state is merely used as a trusted kernel against
@@ -356,10 +358,12 @@ where
         // the root is empty. The next consensus state submitted using update
         // will be usable for packet-verification.
         let sentinel_root = "sentinel_root".as_bytes().to_vec();
-        let new_consensus_state = ConsensusStateType::new(
+        let new_consensus_state = SovTmConsensusState::new(
             sentinel_root.into(),
-            upgraded_tm_cons_state.timestamp(),
-            upgraded_tm_cons_state.next_validators_hash(),
+            TmConsensusParams {
+                timestamp: upgraded_tm_cons_state.timestamp(),
+                next_validators_hash: upgraded_tm_cons_state.next_validators_hash(),
+            },
         );
 
         let latest_height = new_client_state.latest_height;

@@ -2,7 +2,7 @@
 
 use alloc::format;
 
-use ibc_client_tendermint::types::{Header as TmHeader, Misbehaviour};
+use ibc_client_tendermint::types::{Header as TmHeader, Misbehaviour as TmMisbehaviour};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::primitives::proto::{Any, Protobuf};
@@ -17,7 +17,7 @@ pub const SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL: &str =
 /// Sovereign light client's misbehaviour type
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct SovMisbehaviour<H: Clone> {
+pub struct Misbehaviour<H: Clone> {
     client_id: ClientId,
     header1: Header<H>,
     header2: Header<H>,
@@ -25,7 +25,7 @@ pub struct SovMisbehaviour<H: Clone> {
 
 /// Misbehaviour type alias for the Sovereign SDK rollups operating on the
 /// Tendermint-driven DA layer.
-pub type SovTmMisbehaviour = SovMisbehaviour<TmHeader>;
+pub type SovTmMisbehaviour = Misbehaviour<TmHeader>;
 
 impl SovTmMisbehaviour {
     pub fn new(client_id: ClientId, header1: SovTmHeader, header2: SovTmHeader) -> Self {
@@ -69,8 +69,8 @@ impl SovTmMisbehaviour {
         Ok(())
     }
 
-    pub fn into_tendermint_misbehaviour(&self) -> Misbehaviour {
-        Misbehaviour::new(
+    pub fn into_tendermint_misbehaviour(&self) -> TmMisbehaviour {
+        TmMisbehaviour::new(
             self.client_id.clone(),
             self.header1.da_header.clone(),
             self.header2.da_header.clone(),

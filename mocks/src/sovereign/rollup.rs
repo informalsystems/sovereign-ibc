@@ -9,7 +9,7 @@ use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::host::ValidationContext;
 use sov_bank::CallMessage as BankCallMessage;
-use sov_celestia_client::types::consensus_state::ConsensusState;
+use sov_celestia_client::types::consensus_state::{SovTmConsensusState, TmConsensusParams};
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;
@@ -193,14 +193,16 @@ where
             .host_height()
             .unwrap_or(Height::new(0, 1).expect("valid height"));
 
-        let sov_consensus_state = ConsensusState::new(
+        let sov_consensus_state = SovTmConsensusState::new(
             CommitmentRoot::from_bytes(&root_hash.0),
-            Time::now(),
-            Hash::Sha256([
-                0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb, 0x4b,
-                0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d, 0x9e, 0xe1,
-                0x86, 0x1b, 0xc1, 0x43,
-            ]),
+            TmConsensusParams::new(
+                Time::now(),
+                Hash::Sha256([
+                    0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
+                    0x4b, 0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d,
+                    0x9e, 0xe1, 0x86, 0x1b, 0xc1, 0x43,
+                ]),
+            ),
         )
         .into();
 

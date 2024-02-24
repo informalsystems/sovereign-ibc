@@ -53,8 +53,10 @@ impl From<AggregatedProofData> for RawAggregatedProofData {
 pub struct PublicInput {
     pub initial_da_block_hash: Vec<u8>,
     pub final_da_block_hash: Vec<u8>,
+    pub genesis_state_root: Vec<u8>,
     pub input_state_root: Vec<u8>,
     pub final_state_root: Vec<u8>,
+    pub code_commitment: Vec<u8>,
 }
 
 impl TryFrom<RawPublicInput> for PublicInput {
@@ -64,8 +66,10 @@ impl TryFrom<RawPublicInput> for PublicInput {
         Ok(Self {
             initial_da_block_hash: raw.initial_da_block_hash,
             final_da_block_hash: raw.final_da_block_hash,
+            genesis_state_root: raw.genesis_state_root,
             input_state_root: raw.initial_state_root,
             final_state_root: raw.final_state_root,
+            code_commitment: raw.code_commitment,
         })
     }
 }
@@ -75,8 +79,10 @@ impl From<PublicInput> for RawPublicInput {
         Self {
             initial_da_block_hash: value.initial_da_block_hash,
             final_da_block_hash: value.final_da_block_hash,
+            genesis_state_root: value.genesis_state_root,
             initial_state_root: value.input_state_root,
             final_state_root: value.final_state_root,
+            code_commitment: value.code_commitment,
         }
     }
 }
