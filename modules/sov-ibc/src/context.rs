@@ -591,7 +591,7 @@ where
     fn emit_ibc_event(&mut self, event: IbcEvent) -> Result<(), ContextError> {
         self.ibc.emit_event(
             *self.working_set.borrow_mut(),
-            &event.event_type(),
+            event.event_type(),
             event.clone(),
         );
 
