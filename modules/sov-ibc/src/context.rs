@@ -23,12 +23,11 @@ use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp};
 use sov_modules_api::{
-    Context, DaSpec, StateMapAccessor, StateValueAccessor, StateVecAccessor, WorkingSet,
+    Context, DaSpec, Module, StateMapAccessor, StateValueAccessor, StateVecAccessor, WorkingSet,
 };
-use tendermint::abci::Event as TmEvent;
 
 use crate::clients::{AnyClientState, AnyConsensusState};
-use crate::event::process_events;
+use crate::event::helper_packet_events;
 use crate::Ibc;
 
 /// The SDK doesn't have a concept of a "revision number", so we default to 0
@@ -590,19 +589,19 @@ where
     }
 
     fn emit_ibc_event(&mut self, event: IbcEvent) -> Result<(), ContextError> {
-        fn add_event<C: Context>(event: TmEvent, working_set: &mut WorkingSet<C>) {
-            let event_attribute: Vec<String> = event
-                .attributes
-                .into_iter()
-                .map(|attr| format!("{attr:?}"))
-                .collect();
-            working_set.add_event(event.kind.as_str(), event_attribute.join(",").as_str());
-        }
+        self.ibc.emit_event(
+            *self.working_set.borrow_mut(),
+            &event.event_type(),
+            event.clone(),
+        );
 
-        let events = process_events(event)?;
+        let events = helper_packet_events(event)?;
 
-        for event in events {
-            add_event(event, *self.working_set.borrow_mut());
+        if !events.is_empty() {
+            events.into_iter().for_each(|(event_key, event)| {
+                self.ibc
+                    .emit_event(*self.working_set.borrow_mut(), &event_key, event);
+            });
         }
 
         Ok(())

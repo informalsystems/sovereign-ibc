@@ -1,23 +1,22 @@
 //! Contains event processing logic.
 
-use ibc_core::client::types::error::ClientError;
+use std::collections::HashMap;
+
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{ChannelId, PortId, Sequence};
-use tendermint::abci::Event as TmEvent;
 
-/// Processes an IBC event and appends additional packet event with a hashed key
-/// if the event is of `SendPacket` or `ReceivePacket` type.
-pub(crate) fn process_events(event: IbcEvent) -> Result<Vec<TmEvent>, ContextError> {
-    let mut events = Vec::new();
-
-    let mut tm_event = into_tm_event(event.clone())?;
-
-    events.push(tm_event.clone());
+/// Processes an IBC event and generates additional packet event with a hashed
+/// key if the event is of `SendPacket` or `ReceivePacket` type.
+/// These events are indexed by the relayer to process pending packets.
+pub(crate) fn helper_packet_events(
+    event: IbcEvent,
+) -> Result<HashMap<String, IbcEvent>, ContextError> {
+    let mut events = HashMap::new();
 
     match event {
-        IbcEvent::SendPacket(e) => {
-            tm_event.kind = compute_packet_key(
+        IbcEvent::SendPacket(ref e) => {
+            let event_key = compute_packet_key(
                 e.port_id_on_a(),
                 e.chan_id_on_a(),
                 e.port_id_on_b(),
@@ -27,10 +26,10 @@ pub(crate) fn process_events(event: IbcEvent) -> Result<Vec<TmEvent>, ContextErr
             // This event serves as additional convenient event enabling
             // relayers to index the packet date required for processing
             // `unreceived_packets` on the target chain
-            events.push(tm_event);
+            events.insert(event_key, event.clone());
         }
-        IbcEvent::ReceivePacket(e) => {
-            tm_event.kind = compute_packet_key(
+        IbcEvent::ReceivePacket(ref e) => {
+            let event_key = compute_packet_key(
                 e.port_id_on_a(),
                 e.chan_id_on_a(),
                 e.port_id_on_b(),
@@ -41,25 +40,12 @@ pub(crate) fn process_events(event: IbcEvent) -> Result<Vec<TmEvent>, ContextErr
             // This event serves as additional convenient event enabling
             // relayers to index the packet date required for processing
             // `unreceived_acknowledgements` on the target chain
-            events.push(tm_event);
+            events.insert(event_key, event);
         }
         _ => {}
     };
 
     Ok(events)
-}
-
-/// Converts an IBC event into a Tendermint event.
-///
-/// Note: we transform IBC events into Tendermint events as an interim solution
-/// to simplify the conversion process, avoiding the need for converting
-/// individual IBC event types into a key-value pair of `&str`
-pub(crate) fn into_tm_event(event: IbcEvent) -> Result<TmEvent, ContextError> {
-    let tm_event = TmEvent::try_from(event).map_err(|e| ClientError::Other {
-        description: e.to_string(),
-    })?;
-
-    Ok(tm_event)
 }
 
 /// Computes the unique base64-encoded key for either a `SendPacket` or
