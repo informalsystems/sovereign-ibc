@@ -23,8 +23,9 @@ use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp};
 use sov_modules_api::{
-    Context, DaSpec, StateMapAccessor, StateValueAccessor, StateVecAccessor, WorkingSet,
+    Context, DaSpec, ModuleInfo, StateMapAccessor, StateValueAccessor, StateVecAccessor, WorkingSet,
 };
+use sov_state::Prefix;
 
 use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::Ibc;
@@ -208,19 +209,12 @@ where
         Ok(())
     }
 
-    // As modules presently lack direct access to their own prefixes, we
-    // truncate the prefix of a field (e.g. client_counter) in order to derive
-    // the module's prefix.
     fn commitment_prefix(&self) -> CommitmentPrefix {
-        let client_counter_prefix = self.ibc.client_counter.prefix();
+        let module_prefix: Prefix = self.ibc.prefix().into();
 
-        let client_counter_prefix_vec = client_counter_prefix.as_aligned_vec().as_ref();
+        let module_prefix_vec = module_prefix.as_aligned_vec().clone().into_inner();
 
-        let module_prefix_len = client_counter_prefix.len() - b"client_counter/".len();
-
-        let module_prefix = client_counter_prefix_vec[..module_prefix_len].to_vec();
-
-        CommitmentPrefix::try_from(module_prefix).expect("never fails as prefix is not empty")
+        CommitmentPrefix::try_from(module_prefix_vec).expect("never fails as prefix is not empty")
     }
 
     fn connection_counter(&self) -> Result<u64, ContextError> {
