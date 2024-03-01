@@ -56,7 +56,7 @@ impl SovTmHeader {
         Any::from(self).encode_to_vec()
     }
 
-    /// Protobuf decoding of the `SovTmHeader` through the `Any` type.
+    /// Protobuf decoding of the `SovTmHeader` through the `RawSovTmHeader` type.
     pub fn decode_thru_raw(value: Vec<u8>) -> Result<Self, Error> {
         Protobuf::<RawSovTmHeader>::decode(&mut value.as_slice()).map_err(Error::source)
     }

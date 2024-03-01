@@ -48,7 +48,7 @@ impl SovTmMisbehaviour {
         &self.header2
     }
 
-    /// Decodes a protobuf-encoded `SovTmHeader` from a byte array.
+    /// Protobuf decoding of the `SovTmMisbehaviour` through the `RawSovTmMisbehaviour` type.
     pub fn decode_thru_raw(value: Vec<u8>) -> Result<Self, Error> {
         Protobuf::<RawSovTmMisbehaviour>::decode(&mut value.as_slice()).map_err(Error::source)
     }
