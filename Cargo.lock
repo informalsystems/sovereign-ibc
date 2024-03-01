@@ -4722,6 +4722,7 @@ dependencies = [
  "prost",
  "serde",
  "sov-celestia-client 0.1.0",
+ "tendermint-testgen",
  "test-log",
  "thiserror",
  "tracing-subscriber",

@@ -20,15 +20,10 @@ pub fn instantiate(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn execute(
-    deps: DepsMut<'_>,
-    env: Env,
-    _info: MessageInfo,
-    msg: SudoMsg,
-) -> Result<Response, ContractError> {
+pub fn sudo(deps: DepsMut<'_>, env: Env, msg: SudoMsg) -> Result<Response, ContractError> {
     let mut ctx = Context::new_mut(deps, env)?;
 
-    let data = ctx.execute(msg)?;
+    let data = ctx.sudo(msg)?;
 
     Ok(Response::default().set_data(data))
 }

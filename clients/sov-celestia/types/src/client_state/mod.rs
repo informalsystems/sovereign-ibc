@@ -128,10 +128,6 @@ pub mod test_util {
             .chain_id("test-1".parse().expect("Never fails"))
             .build();
 
-        let checksum =
-            hex::decode("2469f43c3ca20d476442bd3d98cbd97a180776ab37332aa7b02cae5a620acfc6")
-                .expect("Never fails");
-
         let client_state = ClientStateConfig::builder()
             .rollup_id("mock-celestia-0".parse().expect("Never fails"))
             .latest_height(Height::new(0, 1).expect("Never fails"))
@@ -140,7 +136,7 @@ pub mod test_util {
 
         WasmClientState {
             data: Any::from(client_state.clone()).value,
-            checksum,
+            checksum: dummy_checksum(),
             latest_height: client_state.latest_height,
         }
     }
@@ -149,5 +145,10 @@ pub mod test_util {
         WasmConsensusState {
             data: Any::from(dummy_sov_consensus_state()).value,
         }
+    }
+
+    pub fn dummy_checksum() -> Vec<u8> {
+        hex::decode("2469f43c3ca20d476442bd3d98cbd97a180776ab37332aa7b02cae5a620acfc6")
+            .expect("Never fails")
     }
 }

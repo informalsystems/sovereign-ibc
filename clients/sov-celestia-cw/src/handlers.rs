@@ -33,7 +33,7 @@ impl<'a> Context<'a> {
         Ok(to_json_binary(&ContractResult::success())?)
     }
 
-    pub fn execute(&mut self, msg: SudoMsg) -> Result<Binary, ContractError> {
+    pub fn sudo(&mut self, msg: SudoMsg) -> Result<Binary, ContractError> {
         let client_id = self.client_id();
 
         let client_state = self.client_state(&client_id)?;

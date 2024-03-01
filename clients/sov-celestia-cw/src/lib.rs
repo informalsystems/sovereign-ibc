@@ -15,3 +15,6 @@ pub mod context;
 pub mod entrypoints;
 pub mod handlers;
 pub mod types;
+
+#[cfg(test)]
+pub mod tests;

@@ -11,9 +11,11 @@ use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{
-    iteration_key, ClientUpdateHeightPath, ClientUpdateTimePath, ITERATE_CONSENSUS_STATE_PREFIX,
+    iteration_key, ClientStatePath, ClientUpdateHeightPath, ClientUpdateTimePath,
+    ITERATE_CONSENSUS_STATE_PREFIX,
 };
 use ibc_proto::google::protobuf::Any;
+use ibc_proto::Protobuf;
 use prost::Message;
 use sov_celestia_client::client_state::ClientState;
 
@@ -183,12 +185,28 @@ impl<'a> Context<'a> {
         Ok(Some(metadata))
     }
 
+    pub fn obtain_checksum(&self) -> Result<Checksum, ClientError> {
+        match &self.checksum {
+            Some(checksum) => Ok(checksum.clone()),
+            None => {
+                let client_state_value = self.retrieve(ClientStatePath::leaf())?;
+
+                let wasm_client_state: WasmClientState =
+                    Protobuf::<Any>::decode(client_state_value.as_slice()).map_err(|e| {
+                        ClientError::Other {
+                            description: e.to_string(),
+                        }
+                    })?;
+
+                Ok(wasm_client_state.checksum)
+            }
+        }
+    }
+
     pub fn encode_client_state(&self, client_state: ClientState) -> Result<Vec<u8>, ClientError> {
         let wasm_client_state = WasmClientState {
-            data: Any::from(client_state.clone()).encode_to_vec(),
-            checksum: self.checksum.clone().ok_or(ClientError::Other {
-                description: "checksum not set".to_string(),
-            })?,
+            data: client_state.inner().clone().encode_thru_any(),
+            checksum: self.obtain_checksum()?,
             latest_height: client_state.latest_height(),
         };
 
@@ -204,7 +222,10 @@ impl StorageRef for Context<'_> {
     fn storage_ref(&self) -> &dyn Storage {
         match self.deps {
             Some(ref deps) => deps.storage,
-            None => panic!("storage should be available"),
+            None => match self.deps_mut {
+                Some(ref deps) => deps.storage,
+                None => panic!("storage should be available"),
+            },
         }
     }
 }

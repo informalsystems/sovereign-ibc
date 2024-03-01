@@ -1,3 +1,4 @@
+use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
 use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
@@ -6,6 +7,8 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{iteration_key, ClientConsensusStatePath, ClientStatePath};
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::Timestamp;
+use ibc_proto::google::protobuf::Any;
+use prost::Message;
 use sov_celestia_client::client_state::ClientState;
 
 use super::Context;
@@ -65,9 +68,15 @@ impl ClientExecutionContext for Context<'_> {
     ) -> Result<(), ContextError> {
         let key = consensus_state_path.leaf().into_bytes();
 
-        let encoded_consensus_state = consensus_state.encode();
+        let encoded_consensus_state = match consensus_state {
+            AnyConsensusState::Sovereign(cs) => cs.inner().clone().encode_thru_any(),
+        };
 
-        self.insert(key, encoded_consensus_state);
+        let wasm_consensus_state = WasmConsensusState {
+            data: encoded_consensus_state,
+        };
+
+        self.insert(key, Any::from(wasm_consensus_state).encode_to_vec());
 
         Ok(())
     }

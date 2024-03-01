@@ -4,6 +4,7 @@ use ibc_core::client::types::error::ClientError;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::ConsensusState as RawConsensusState;
+use prost::Message;
 
 use super::TmConsensusParams;
 use crate::client_message::SovTmHeader;
@@ -25,6 +26,20 @@ impl<Da> ConsensusState<Da> {
     }
 }
 pub type SovTmConsensusState = ConsensusState<TmConsensusParams>;
+
+impl SovTmConsensusState {
+    /// Protobuf encoding of the `SovTmConsensusState` through the `Any` type.
+    pub fn encode_thru_any(self) -> Vec<u8> {
+        Any::from(self).encode_to_vec()
+    }
+
+    /// Protobuf decoding of the `SovTmConsensusState` through the `Any` type.
+    pub fn decode_thru_any(value: Vec<u8>) -> Result<Self, ClientError> {
+        Protobuf::<Any>::decode(&mut value.as_slice()).map_err(|e| ClientError::Other {
+            description: e.to_string(),
+        })
+    }
+}
 
 impl Protobuf<RawConsensusState> for SovTmConsensusState {}
 
