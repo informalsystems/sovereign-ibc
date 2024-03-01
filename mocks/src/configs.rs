@@ -7,6 +7,7 @@ use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 use serde::de::DeserializeOwned;
 use sov_bank::{get_token_address, TokenConfig};
 use sov_celestia_adapter::CelestiaService;
+use sov_consensus_state_tracker::HasConsensusState;
 use sov_mock_da::MockDaService;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Address, Context};
@@ -34,7 +35,10 @@ pub struct TestSetupConfig<C: Context, Da: DaService> {
     pub with_manual_tao: bool,
 }
 
-impl<C: Context, Da: DaService> TestSetupConfig<C, Da> {
+impl<C: Context, Da: DaService> TestSetupConfig<C, Da>
+where
+    Da::Spec: HasConsensusState,
+{
     /// Returns list of tokens in the bank configuration
     pub fn get_tokens(&self) -> &Vec<TokenConfig<C>> {
         &self.rollup_genesis_config.bank_config.tokens

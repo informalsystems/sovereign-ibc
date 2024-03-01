@@ -10,6 +10,7 @@ use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::host::ValidationContext;
 use sov_bank::CallMessage as BankCallMessage;
 use sov_celestia_client::types::consensus_state::{SovTmConsensusState, TmConsensusParams};
+use sov_consensus_state_tracker::{ConsensusStateTracker, HasConsensusState};
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;
@@ -31,9 +32,10 @@ pub struct MockRollup<C, Da, S>
 where
     C: Context,
     Da: DaService<Error = anyhow::Error> + Clone,
+    Da::Spec: HasConsensusState,
     S: MerkleProofSpec,
 {
-    kernel: BasicKernel<C, Da::Spec>,
+    kernel: ConsensusStateTracker<BasicKernel<C, Da::Spec>, C, Da::Spec>,
     runtime: Runtime<C, Da::Spec>,
     da_service: Da,
     prover_storage: ProverStorage<S>,
@@ -43,7 +45,7 @@ where
     pub(crate) mempool: Arc<Mutex<Mempool<C, Da::Spec>>>,
 }
 
-impl<C: Context, Da: DaSpec> Clone for RuntimeCall<C, Da> {
+impl<C: Context, Da: DaSpec + HasConsensusState> Clone for RuntimeCall<C, Da> {
     fn clone(&self) -> Self {
         match self {
             RuntimeCall::bank(call) => RuntimeCall::bank(call.clone()),
@@ -53,13 +55,13 @@ impl<C: Context, Da: DaSpec> Clone for RuntimeCall<C, Da> {
     }
 }
 
-impl<C: Context, Da: DaSpec> From<IbcCallMessage> for RuntimeCall<C, Da> {
+impl<C: Context, Da: DaSpec + HasConsensusState> From<IbcCallMessage> for RuntimeCall<C, Da> {
     fn from(call: IbcCallMessage) -> Self {
         RuntimeCall::ibc(call)
     }
 }
 
-impl<C: Context, Da: DaSpec> From<BankCallMessage<C>> for RuntimeCall<C, Da> {
+impl<C: Context, Da: DaSpec + HasConsensusState> From<BankCallMessage<C>> for RuntimeCall<C, Da> {
     fn from(call: BankCallMessage<C>) -> Self {
         RuntimeCall::bank(call)
     }
@@ -69,6 +71,7 @@ impl<C, Da, S> MockRollup<C, Da, S>
 where
     C: Context<Storage = ProverStorage<S>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
+    Da::Spec: HasConsensusState,
     S: MerkleProofSpec + Clone + 'static,
     <S as MerkleProofSpec>::Hasher: Send,
 {
@@ -80,7 +83,7 @@ where
         da_service: Da,
     ) -> Self {
         Self {
-            kernel: BasicKernel::default(),
+            kernel: ConsensusStateTracker::default(),
             runtime,
             da_service,
             prover_storage,
@@ -95,7 +98,7 @@ where
         self.da_core.chain_id()
     }
 
-    pub fn kernel(&self) -> &BasicKernel<C, Da::Spec> {
+    pub fn kernel(&self) -> &ConsensusStateTracker<BasicKernel<C, Da::Spec>, C, Da::Spec> {
         &self.kernel
     }
 

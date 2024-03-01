@@ -76,7 +76,7 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     consensus_state_map: StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec<Any>>,
 
     #[state]
-    host_consensus_state_map: StateMap<Height, AnyConsensusState, ProtobufCodec<Any>>,
+    pub host_consensus_state_map: StateMap<Height, AnyConsensusState, ProtobufCodec<Any>>,
 
     #[state]
     client_update_heights_vec: StateVec<Height>,

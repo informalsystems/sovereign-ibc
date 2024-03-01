@@ -2,6 +2,7 @@ use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::host::types::identifiers::Sequence;
 use ibc_core::host::ValidationContext;
 use sov_celestia_client::types::client_state::sov_client_type;
+use sov_consensus_state_tracker::HasConsensusState;
 use sov_mock_da::MockDaService;
 use sov_modules_api::default_context::DefaultContext;
 use sov_modules_api::{Context, WorkingSet};
@@ -59,6 +60,7 @@ where
     where
         C: Context<Storage = ProverStorage<S>> + Send + Sync,
         Da: DaService<Error = anyhow::Error> + Clone,
+        Da::Spec: HasConsensusState,
         S: MerkleProofSpec + Clone + 'static,
         <S as MerkleProofSpec>::Hasher: Send,
         MockRollup<C, Da, S>: Handle,

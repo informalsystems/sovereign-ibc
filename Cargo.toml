@@ -60,6 +60,8 @@ tendermint-light-client-verifier = { version = "0.34", default-features = false 
 # sovereign dependencies
 sov-bank                   = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
 sov-chain-state            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
 sov-modules-api            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-modules-core           = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
 sov-state                  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
 sov-rollup-interface       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }

@@ -7,6 +7,7 @@ use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
+use sov_consensus_state_tracker::HasConsensusState;
 use sov_modules_api::{Context, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
@@ -21,6 +22,7 @@ impl<C, Da, S> Handle for MockRollup<C, Da, S>
 where
     C: Context<Storage = ProverStorage<S>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
+    Da::Spec: HasConsensusState,
     <Da as DaService>::Spec: Clone,
     S: MerkleProofSpec + Clone + 'static,
     <S as MerkleProofSpec>::Hasher: Send + Sync,

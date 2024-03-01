@@ -1,6 +1,7 @@
 //! Contains the implementation of the Sovereign SDK rollup runner.
 use std::time::Duration;
 
+use sov_consensus_state_tracker::HasConsensusState;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
@@ -22,6 +23,7 @@ impl<C, Da, S> MockRollup<C, Da, S>
 where
     C: Context<Storage = ProverStorage<S>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
+    Da::Spec: HasConsensusState,
     S: MerkleProofSpec + Clone + 'static,
     <S as MerkleProofSpec>::Hasher: Send,
     C::GasUnit: Default,

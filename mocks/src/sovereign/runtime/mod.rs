@@ -2,6 +2,7 @@
 mod config;
 pub use config::*;
 use sov_bank::Bank;
+use sov_consensus_state_tracker::HasConsensusState;
 use sov_ibc::Ibc;
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
@@ -18,14 +19,14 @@ use sov_state::Storage;
 pub struct Runtime<C, Da>
 where
     C: Context,
-    Da: DaSpec,
+    Da: DaSpec + HasConsensusState,
 {
     pub bank: Bank<C>,
     pub ibc: Ibc<C, Da>,
     pub ibc_transfer: IbcTransfer<C>,
 }
 
-impl<C: Context, Da: DaSpec> SlotHooks for Runtime<C, Da> {
+impl<C: Context, Da: DaSpec + HasConsensusState> SlotHooks for Runtime<C, Da> {
     type Context = C;
 
     fn begin_slot_hook(
@@ -38,7 +39,7 @@ impl<C: Context, Da: DaSpec> SlotHooks for Runtime<C, Da> {
     fn end_slot_hook(&self, _working_set: &mut StateCheckpoint<Self::Context>) {}
 }
 
-impl<C: Context, Da: DaSpec> FinalizeHook for Runtime<C, Da> {
+impl<C: Context, Da: DaSpec + HasConsensusState> FinalizeHook for Runtime<C, Da> {
     type Context = C;
 
     fn finalize_hook(
