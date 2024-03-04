@@ -26,7 +26,6 @@ thiserror 	= { version = "1.0.31" }
 ibc-core   			  = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
-ibc-proto  			  = { workspace = true, features = ["json-schema"] }
 sov-celestia-client   = { path = "../sov-celestia", default-features = false, features = ["serde"] }
 
 # cosmwasm dependencies
@@ -35,6 +34,8 @@ cosmwasm-std 	      = "1.4.1"
 
 [dev-dependencies]
 cosmwasm-vm           = "1.4.1"
+sov-celestia-client   = { path = "../sov-celestia", default-features = false, features = ["test-util"] }
+tendermint-testgen    = { workspace = true }
 test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }
 tracing-subscriber    = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
 
@@ -42,7 +43,6 @@ tracing-subscriber    = { version = "0.3", default-features = false, features = 
 default = ["std"]
 std = [
 	"ibc-core/std",
-	"ibc-proto/std",
 	"ibc-client-wasm-types/std",
 	"ibc-client-tendermint/std",
 	"sov-celestia-client/std",

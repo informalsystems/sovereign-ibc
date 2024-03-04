@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use ibc_client_wasm_types::client_state::ClientState as WasmClientState;
+use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
 use ibc_core::channel::types::channel::ChannelEnd;
 use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
 use ibc_core::channel::types::packet::Receipt;
@@ -18,10 +20,11 @@ use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::{Signer, Timestamp};
 use sov_celestia_client::client_state::ClientState;
-use sov_celestia_client::types::client_state::SOV_TENDERMINT_CLIENT_STATE_TYPE_URL;
-use sov_celestia_client::types::proto::v1::{
-    ClientState as RawClientState, ConsensusState as RawConsensusState,
+use sov_celestia_client::types::client_state::{
+    SovTmClientState, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
 };
+use sov_celestia_client::types::consensus_state::SovTmConsensusState;
+use sov_celestia_client::types::proto::v1::ClientState as RawClientState;
 
 use super::Context;
 use crate::types::AnyConsensusState;
@@ -39,12 +42,14 @@ impl ValidationContext for Context<'_> {
     fn client_state(&self, _client_id: &ClientId) -> Result<Self::AnyClientState, ContextError> {
         let client_state_value = self.retrieve(ClientStatePath::leaf())?;
 
-        let sov_client_state = Protobuf::<RawClientState>::decode(client_state_value.as_slice())
+        let any_wasm: WasmClientState = Protobuf::<Any>::decode(client_state_value.as_slice())
             .map_err(|e| ClientError::Other {
                 description: e.to_string(),
             })?;
 
-        Ok(sov_client_state)
+        let sov_client_state = SovTmClientState::decode_thru_any(any_wasm.data)?;
+
+        Ok(sov_client_state.into())
     }
 
     fn decode_client_state(&self, client_state: Any) -> Result<Self::AnyClientState, ContextError> {
@@ -71,15 +76,16 @@ impl ValidationContext for Context<'_> {
         client_cons_state_path: &ClientConsensusStatePath,
     ) -> Result<Self::AnyConsensusState, ContextError> {
         let consensus_state_value = self.retrieve(client_cons_state_path.leaf())?;
+        let any_wasm: WasmConsensusState =
+            Protobuf::<Any>::decode(consensus_state_value.as_slice()).map_err(|e| {
+                ClientError::Other {
+                    description: e.to_string(),
+                }
+            })?;
 
-        let consensus_state = Protobuf::<RawConsensusState>::decode(
-            consensus_state_value.as_slice(),
-        )
-        .map_err(|e| ClientError::Other {
-            description: e.to_string(),
-        })?;
+        let consensus_state = SovTmConsensusState::decode_thru_any(any_wasm.data)?;
 
-        Ok(AnyConsensusState::Sovereign(consensus_state))
+        Ok(AnyConsensusState::Sovereign(consensus_state.into()))
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
