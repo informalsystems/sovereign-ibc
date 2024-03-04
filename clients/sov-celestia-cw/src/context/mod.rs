@@ -14,8 +14,7 @@ use ibc_core::host::types::path::{
     iteration_key, ClientStatePath, ClientUpdateHeightPath, ClientUpdateTimePath,
     ITERATE_CONSENSUS_STATE_PREFIX,
 };
-use ibc_proto::google::protobuf::Any;
-use ibc_proto::Protobuf;
+use ibc_core::primitives::proto::{Any, Protobuf};
 use prost::Message;
 use sov_celestia_client::client_state::ClientState;
 

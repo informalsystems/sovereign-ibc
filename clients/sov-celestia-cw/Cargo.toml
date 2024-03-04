@@ -26,7 +26,6 @@ thiserror 	= { version = "1.0.31" }
 ibc-core   			  = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"] }
-ibc-proto  			  = { workspace = true, features = ["json-schema"] }
 sov-celestia-client   = { path = "../sov-celestia", default-features = false, features = ["serde"] }
 
 # cosmwasm dependencies
@@ -44,7 +43,6 @@ tracing-subscriber    = { version = "0.3", default-features = false, features = 
 default = ["std"]
 std = [
 	"ibc-core/std",
-	"ibc-proto/std",
 	"ibc-client-wasm-types/std",
 	"ibc-client-tendermint/std",
 	"sov-celestia-client/std",

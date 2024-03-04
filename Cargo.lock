@@ -4718,7 +4718,6 @@ dependencies = [
  "ibc-client-tendermint",
  "ibc-client-wasm-types",
  "ibc-core",
- "ibc-proto",
  "prost",
  "serde",
  "sov-celestia-client 0.1.0",

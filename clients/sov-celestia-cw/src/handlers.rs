@@ -5,7 +5,7 @@ use ibc_core::client::context::client_state::{
 use ibc_core::client::context::consensus_state::ConsensusState as _;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::host::ValidationContext;
-use ibc_proto::google::protobuf::Any;
+use ibc_core::primitives::proto::Any;
 use prost::Message;
 use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::types::client_message::ClientMessage;

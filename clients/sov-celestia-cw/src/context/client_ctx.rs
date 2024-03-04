@@ -6,8 +6,8 @@ use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{iteration_key, ClientConsensusStatePath, ClientStatePath};
 use ibc_core::host::ValidationContext;
+use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::Timestamp;
-use ibc_proto::google::protobuf::Any;
 use prost::Message;
 use sov_celestia_client::client_state::ClientState;
 
