@@ -25,12 +25,25 @@ uint       = "0.9"
 # ibc dependencies
 ibc-app-transfer = { workspace = true, features = ["borsh", "schema"] }
 ibc-core         = { workspace = true }
+tendermint = { workspace = true } # Temporary dependency used for implementing the consensus_state method
 
 # sovereign dependencies
 sov-chain-state      = { workspace = true }
 sov-mock-da          = { workspace = true }
-sov-ibc              = { path = "../sov-ibc" }
 sov-modules-api      = { workspace = true }
 sov-modules-core     = { workspace = true }
 sov-rollup-interface = { workspace = true }
+sov-ibc              = { path = "../sov-ibc" }
+sov-celestia-client  = { path = "../../clients/sov-celestia" }
 
+[features]
+default= ["mock-da"]
+mock-da = ["native"]
+native = [
+    "sov-chain-state/native",
+    "sov-mock-da/native",
+    "sov-modules-api/native",
+    "sov-modules-core/native",
+    "sov-rollup-interface/native",
+    "sov-ibc/native",
+]

@@ -6,6 +6,7 @@ members = [
     "clients/sov-celestia-cw",
     "modules/sov-ibc-transfer",
     "modules/sov-ibc",
+    "modules/sov-consensus-state-tracker",
     "mocks",
 ]
 
