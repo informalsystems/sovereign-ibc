@@ -110,7 +110,6 @@ where
     Da: DaSpec + HasConsensusState,
 {
     type GenesisConfig = K::GenesisConfig;
-    #[cfg(feature = "native")]
     type GenesisPaths = K::GenesisPaths;
 
     fn genesis(
@@ -135,6 +134,7 @@ where
     K: KernelSlotHooks<C, Da>,
     C: Context,
     Da: DaSpec + HasConsensusState,
+    <C as sov_modules_api::Spec>::Storage: Storage,
 {
     fn begin_slot_hook(
         &self,
@@ -148,7 +148,7 @@ where
 
         // Workaround for the fact that zero is not a valid height (No block produced and processed yet)
         if visible_height > 0 {
-            let height = Height::new(HOST_REVISION_NUMBER, visible_height).unwrap();
+            let height = Height::new(HOST_REVISION_NUMBER, visible_height).expect("valid height");
             let consensus_state = Da::consensus_state(slot_header);
             self.ibc_module.host_consensus_state_map.set(
                 &height,
