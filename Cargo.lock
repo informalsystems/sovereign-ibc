@@ -4810,6 +4810,7 @@ version = "0.1.0"
 dependencies = [
  "ahash 0.8.6",
  "anyhow",
+ "base64 0.21.7",
  "borsh",
  "derive_more",
  "ibc-app-transfer",
@@ -4821,13 +4822,13 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
+ "sha2 0.10.8",
  "sov-celestia-client 0.1.0",
  "sov-chain-state",
  "sov-ibc-transfer 0.1.0",
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
- "tendermint 0.34.0",
  "thiserror",
  "time",
 ]
