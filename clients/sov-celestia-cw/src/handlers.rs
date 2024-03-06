@@ -5,7 +5,7 @@ use ibc_core::client::context::client_state::{
 use ibc_core::client::context::consensus_state::ConsensusState as _;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::host::ValidationContext;
-use ibc_proto::google::protobuf::Any;
+use ibc_core::primitives::proto::Any;
 use prost::Message;
 use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::types::client_message::ClientMessage;
@@ -33,7 +33,7 @@ impl<'a> Context<'a> {
         Ok(to_json_binary(&ContractResult::success())?)
     }
 
-    pub fn execute(&mut self, msg: SudoMsg) -> Result<Binary, ContractError> {
+    pub fn sudo(&mut self, msg: SudoMsg) -> Result<Binary, ContractError> {
         let client_id = self.client_id();
 
         let client_state = self.client_state(&client_id)?;

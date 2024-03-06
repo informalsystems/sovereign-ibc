@@ -10,9 +10,6 @@ pub use header::*;
 use ibc_client_tendermint::types::Header as TmHeader;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::{Any, Protobuf};
-use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::{
-    Header as RawSovTmHeader, Misbehaviour as RawSovTmMisbehaviour,
-};
 pub use misbehaviour::*;
 use prost::Message;
 
@@ -49,14 +46,10 @@ impl TryFrom<Any> for SovTmClientMessage {
     fn try_from(any: Any) -> Result<Self, Self::Error> {
         let msg = match &*any.type_url {
             SOV_TENDERMINT_HEADER_TYPE_URL => {
-                let header =
-                    Protobuf::<RawSovTmHeader>::decode(&*any.value).map_err(Error::source)?;
-                Self::Header(Box::new(header))
+                Self::Header(Box::new(SovTmHeader::decode_thru_raw(any.value)?))
             }
             SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
-                let misbehaviour =
-                    Protobuf::<RawSovTmMisbehaviour>::decode(&*any.value).map_err(Error::source)?;
-                Self::Misbehaviour(Box::new(misbehaviour))
+                Self::Misbehaviour(Box::new(SovTmMisbehaviour::decode_thru_raw(any.value)?))
             }
             _ => Err(Error::invalid(format!("Unknown type: {}", any.type_url)))?,
         };

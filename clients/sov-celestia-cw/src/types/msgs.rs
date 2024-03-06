@@ -8,12 +8,12 @@ use ibc_client_wasm_types::client_state::ClientState as WasmClientState;
 use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
 use ibc_client_wasm_types::serializer::Base64;
 use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::proto::v1::Height as RawHeight;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::{CommitmentPrefix, CommitmentProofBytes};
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::path::Path;
 use ibc_core::primitives::proto::Any;
-use ibc_proto::ibc::core::client::v1::Height as RawHeight;
 use prost::Message;
 use sov_celestia_client::types::client_message::SovTmClientMessage;
 

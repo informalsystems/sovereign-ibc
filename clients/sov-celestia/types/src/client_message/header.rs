@@ -6,6 +6,7 @@ use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
 use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::Header as RawSovTmHeader;
+use prost::Message;
 
 use super::aggregated_proof::AggregatedProofData;
 use crate::client_message::pretty::PrettyAggregatedProofData;
@@ -48,6 +49,16 @@ impl SovTmHeader {
 
     pub fn height(&self) -> Height {
         self.da_header.height()
+    }
+
+    /// Protobuf encoding of the `SovTmHeader` through the `Any` type.
+    pub fn encode_thru_any(self) -> Vec<u8> {
+        Any::from(self).encode_to_vec()
+    }
+
+    /// Protobuf decoding of the `SovTmHeader` through the `RawSovTmHeader` type.
+    pub fn decode_thru_raw(value: Vec<u8>) -> Result<Self, Error> {
+        Protobuf::<RawSovTmHeader>::decode(&mut value.as_slice()).map_err(Error::source)
     }
 
     pub fn verify_chain_id_version_matches_height(&self, chain_id: &ChainId) -> Result<(), Error> {

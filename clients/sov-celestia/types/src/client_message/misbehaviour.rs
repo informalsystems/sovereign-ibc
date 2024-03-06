@@ -48,6 +48,11 @@ impl SovTmMisbehaviour {
         &self.header2
     }
 
+    /// Protobuf decoding of the `SovTmMisbehaviour` through the `RawSovTmMisbehaviour` type.
+    pub fn decode_thru_raw(value: Vec<u8>) -> Result<Self, Error> {
+        Protobuf::<RawSovTmMisbehaviour>::decode(&mut value.as_slice()).map_err(Error::source)
+    }
+
     pub fn validate_basic(&self) -> Result<(), Error> {
         self.header1.validate_basic()?;
         self.header2.validate_basic()?;
