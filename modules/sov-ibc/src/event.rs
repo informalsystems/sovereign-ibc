@@ -9,7 +9,7 @@ use ibc_core::host::types::identifiers::{ChannelId, PortId, Sequence};
 /// Processes an IBC event and generates additional packet event with a hashed
 /// key if the event is of `SendPacket` or `ReceivePacket` type.
 /// These events are indexed by the relayer to process pending packets.
-pub(crate) fn helper_packet_events(
+pub(crate) fn auxiliary_packet_events(
     event: IbcEvent,
 ) -> Result<HashMap<String, IbcEvent>, ContextError> {
     let mut events = HashMap::new();

@@ -29,7 +29,7 @@ use sov_modules_api::{
 use sov_state::Prefix;
 
 use crate::clients::{AnyClientState, AnyConsensusState};
-use crate::event::helper_packet_events;
+use crate::event::auxiliary_packet_events;
 use crate::Ibc;
 
 /// The SDK doesn't have a concept of a "revision number", so we default to 0
@@ -590,7 +590,7 @@ where
             event.clone(),
         );
 
-        let events = helper_packet_events(event)?;
+        let events = auxiliary_packet_events(event)?;
 
         if !events.is_empty() {
             events.into_iter().for_each(|(event_key, event)| {
