@@ -1,6 +1,4 @@
-use ibc_client_tendermint::context::{
-    CommonContext as TmCommonContext, ValidationContext as TmValidationContext,
-};
+use ibc_client_tendermint::context::ValidationContext as TmValidationContext;
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
 use ibc_core::client::types::error::ClientError;
@@ -10,16 +8,51 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::Timestamp;
-use sov_celestia_client::context::{
-    CommonContext as SovCommonContext, ValidationContext as SovValidationContext,
-};
+use sov_celestia_client::context::ValidationContext as SovValidationContext;
 use sov_modules_api::{DaSpec, Spec, StateMapAccessor, StateVecAccessor};
 
-use super::AnyConsensusState;
+use super::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;
 
 impl<'a, S: Spec, Da: DaSpec> ClientValidationContext for IbcContext<'a, S, Da> {
-    fn update_meta(
+    type ClientStateRef = AnyClientState;
+    type ConsensusStateRef = AnyConsensusState;
+
+    fn client_state(&self, client_id: &ClientId) -> Result<Self::ClientStateRef, ContextError> {
+        self.ibc
+            .client_state_map
+            .get(client_id, *self.working_set.borrow_mut())
+            .ok_or(
+                ClientError::ClientStateNotFound {
+                    client_id: client_id.clone(),
+                }
+                .into(),
+            )
+    }
+
+    fn consensus_state(
+        &self,
+        client_cons_state_path: &ClientConsensusStatePath,
+    ) -> Result<Self::ConsensusStateRef, ContextError> {
+        self.ibc
+            .consensus_state_map
+            .get(client_cons_state_path, *self.working_set.borrow_mut())
+            .ok_or(
+                ClientError::ConsensusStateNotFound {
+                    client_id: client_cons_state_path.client_id.clone(),
+                    height: Height::new(
+                        client_cons_state_path.revision_number,
+                        client_cons_state_path.revision_height,
+                    )
+                    .map_err(|_| ClientError::Other {
+                        description: "Height cannot be zero".to_string(),
+                    })?,
+                }
+                .into(),
+            )
+    }
+
+    fn client_update_meta(
         &self,
         client_id: &ClientId,
         height: &Height,
@@ -41,14 +74,12 @@ impl<'a, S: Spec, Da: DaSpec> ClientValidationContext for IbcContext<'a, S, Da> 
 }
 
 impl<'a, S: Spec, Da: DaSpec> ClientExecutionContext for IbcContext<'a, S, Da> {
-    type V = <Self as ValidationContext>::V;
-    type AnyClientState = <Self as ValidationContext>::AnyClientState;
-    type AnyConsensusState = <Self as ValidationContext>::AnyConsensusState;
+    type ClientStateMut = AnyClientState;
 
     fn store_client_state(
         &mut self,
         client_state_path: ClientStatePath,
-        client_state: Self::AnyClientState,
+        client_state: Self::ClientStateMut,
     ) -> Result<(), ContextError> {
         self.ibc.client_state_map.set(
             &client_state_path.0,
@@ -62,7 +93,7 @@ impl<'a, S: Spec, Da: DaSpec> ClientExecutionContext for IbcContext<'a, S, Da> {
     fn store_consensus_state(
         &mut self,
         consensus_state_path: ClientConsensusStatePath,
-        consensus_state: Self::AnyConsensusState,
+        consensus_state: Self::ConsensusStateRef,
     ) -> Result<(), ContextError> {
         self.ibc.consensus_state_map.set(
             &consensus_state_path,
@@ -116,23 +147,13 @@ impl<'a, S: Spec, Da: DaSpec> ClientExecutionContext for IbcContext<'a, S, Da> {
     }
 }
 
-impl<'a, S: Spec, Da: DaSpec> TmCommonContext for IbcContext<'a, S, Da> {
-    type ConversionError = &'static str;
-    type AnyConsensusState = AnyConsensusState;
-
+impl<'a, S: Spec, Da: DaSpec> TmValidationContext for IbcContext<'a, S, Da> {
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         <Self as ValidationContext>::host_timestamp(self)
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
         <Self as ValidationContext>::host_height(self)
-    }
-
-    fn consensus_state(
-        &self,
-        client_cons_state_path: &ClientConsensusStatePath,
-    ) -> Result<Self::AnyConsensusState, ContextError> {
-        <Self as ValidationContext>::consensus_state(self, client_cons_state_path)
     }
 
     fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
@@ -143,14 +164,12 @@ impl<'a, S: Spec, Da: DaSpec> TmCommonContext for IbcContext<'a, S, Da> {
             .collect::<Vec<_>>();
         Ok(heights)
     }
-}
 
-impl<'a, S: Spec, Da: DaSpec> TmValidationContext for IbcContext<'a, S, Da> {
     fn next_consensus_state(
         &self,
         client_id: &ClientId,
         height: &Height,
-    ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
+    ) -> Result<Option<Self::ConsensusStateRef>, ContextError> {
         next_consensus_state(self, client_id, height)
     }
 
@@ -158,28 +177,18 @@ impl<'a, S: Spec, Da: DaSpec> TmValidationContext for IbcContext<'a, S, Da> {
         &self,
         client_id: &ClientId,
         height: &Height,
-    ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
+    ) -> Result<Option<Self::ConsensusStateRef>, ContextError> {
         prev_consensus_state(self, client_id, height)
     }
 }
 
-impl<'a, S: Spec, Da: DaSpec> SovCommonContext for IbcContext<'a, S, Da> {
-    type ConversionError = &'static str;
-    type AnyConsensusState = AnyConsensusState;
-
+impl<'a, S: Spec, Da: DaSpec> SovValidationContext for IbcContext<'a, S, Da> {
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         <Self as ValidationContext>::host_timestamp(self)
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
         <Self as ValidationContext>::host_height(self)
-    }
-
-    fn consensus_state(
-        &self,
-        client_cons_state_path: &ClientConsensusStatePath,
-    ) -> Result<Self::AnyConsensusState, ContextError> {
-        <Self as ValidationContext>::consensus_state(self, client_cons_state_path)
     }
 
     fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
@@ -190,14 +199,12 @@ impl<'a, S: Spec, Da: DaSpec> SovCommonContext for IbcContext<'a, S, Da> {
             .collect::<Vec<_>>();
         Ok(heights)
     }
-}
 
-impl<'a, S: Spec, Da: DaSpec> SovValidationContext for IbcContext<'a, S, Da> {
     fn next_consensus_state(
         &self,
         client_id: &ClientId,
         height: &Height,
-    ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
+    ) -> Result<Option<Self::ConsensusStateRef>, ContextError> {
         next_consensus_state(self, client_id, height)
     }
 
@@ -205,7 +212,7 @@ impl<'a, S: Spec, Da: DaSpec> SovValidationContext for IbcContext<'a, S, Da> {
         &self,
         client_id: &ClientId,
         height: &Height,
-    ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
+    ) -> Result<Option<Self::ConsensusStateRef>, ContextError> {
         prev_consensus_state(self, client_id, height)
     }
 }
