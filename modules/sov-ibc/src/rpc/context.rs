@@ -13,13 +13,13 @@ use ibc_core::host::types::path::{
 };
 use ibc_core::host::ValidationContext;
 use ibc_query::core::context::{ProvableContext, QueryContext};
-use sov_modules_api::{Context, DaSpec, StateMapAccessor, StateValueAccessor, StateVecAccessor};
+use sov_modules_api::{DaSpec, Spec, StateMapAccessor, StateValueAccessor, StateVecAccessor};
 
 use crate::context::IbcContext;
 
-impl<'a, C, Da> ProvableContext for IbcContext<'a, C, Da>
+impl<'a, S, Da> ProvableContext for IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     /// TODO: Should figure out how can access the proof from the context
@@ -28,9 +28,9 @@ where
     }
 }
 
-impl<'a, C, Da> QueryContext for IbcContext<'a, C, Da>
+impl<'a, S, Da> QueryContext for IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     fn client_states(
