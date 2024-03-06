@@ -6,7 +6,7 @@ members = [
     "clients/sov-celestia-cw",
     "modules/sov-ibc-transfer",
     "modules/sov-ibc",
-    "mocks",
+    # "mocks",
 ]
 
 exclude = [
@@ -58,8 +58,8 @@ tendermint-testgen    = { version = "0.34", default-features = false }
 tendermint-light-client-verifier = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-bank                   = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-chain-state            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-modules-api            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-state                  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-rollup-interface       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-bank                   = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }
+sov-chain-state            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }
+sov-modules-api            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }
+sov-state                  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }
+sov-rollup-interface       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }

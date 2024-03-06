@@ -8,21 +8,21 @@ use ibc_core::router::module::Module;
 use ibc_core::router::router::Router;
 use ibc_core::router::types::module::ModuleId;
 use sov_ibc_transfer::context::IbcTransferContext;
-use sov_modules_api::{Context, DaSpec, WorkingSet};
+use sov_modules_api::{Context, DaSpec, Spec, WorkingSet};
 
 use crate::Ibc;
 
-pub struct IbcRouter<'ws, C: Context, Da: DaSpec> {
-    pub transfer_ctx: IbcTransferContext<'ws, C>,
+pub struct IbcRouter<'ws, S: Spec, Da: DaSpec> {
+    pub transfer_ctx: IbcTransferContext<'ws, S>,
     _da: PhantomData<Da>,
 }
 
-impl<'ws, C: Context, Da: DaSpec> IbcRouter<'ws, C, Da> {
+impl<'ws, S: Spec, Da: DaSpec> IbcRouter<'ws, S, Da> {
     pub fn new(
-        ibc_mod: &Ibc<C, Da>,
-        sdk_context: C,
-        working_set: Rc<RefCell<&'ws mut WorkingSet<C>>>,
-    ) -> IbcRouter<'ws, C, Da> {
+        ibc_mod: &Ibc<S, Da>,
+        sdk_context: Context<S>,
+        working_set: Rc<RefCell<&'ws mut WorkingSet<S>>>,
+    ) -> IbcRouter<'ws, S, Da> {
         IbcRouter {
             transfer_ctx: IbcTransferContext::new(
                 ibc_mod.transfer.clone(),
@@ -34,7 +34,7 @@ impl<'ws, C: Context, Da: DaSpec> IbcRouter<'ws, C, Da> {
     }
 }
 
-impl<'ws, C: Context, Da: DaSpec> Router for IbcRouter<'ws, C, Da> {
+impl<'ws, S: Spec, Da: DaSpec> Router for IbcRouter<'ws, S, Da> {
     fn get_route(&self, module_id: &ModuleId) -> Option<&dyn Module> {
         if *module_id == ModuleId::new(MODULE_ID_STR.to_string()) {
             Some(&self.transfer_ctx)

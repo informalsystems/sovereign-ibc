@@ -42,7 +42,7 @@ use ibc_core::primitives::Timestamp;
 use serde::{Deserialize, Serialize};
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::{
-    Context, DaSpec, Error, ModuleInfo, StateMap, StateValue, StateVec, WorkingSet,
+    Context, DaSpec, Error, ModuleInfo, Spec, StateMap, StateValue, StateVec, WorkingSet,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
@@ -56,15 +56,15 @@ pub struct ExampleModuleConfig {}
 /// prefixes by modules are in harmony.
 #[derive(ModuleInfo, Clone)]
 #[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
-pub struct Ibc<C: Context, Da: DaSpec> {
+pub struct Ibc<S: Spec, Da: DaSpec> {
     #[address]
-    pub address: C::Address,
+    pub address: S::Address,
 
     #[kernel_module]
-    chain_state: sov_chain_state::ChainState<C, Da>,
+    chain_state: sov_chain_state::ChainState<S, Da>,
 
     #[module]
-    transfer: IbcTransfer<C>,
+    transfer: IbcTransfer<S>,
 
     // ----------- IBC core client state maps -------------
     #[state]
@@ -130,8 +130,8 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     packet_ack_map: StateMap<AckPath, AcknowledgementCommitment, AcknowledgementCommitmentCodec>,
 }
 
-impl<C: Context, Da: DaSpec> sov_modules_api::Module for Ibc<C, Da> {
-    type Context = C;
+impl<S: Spec, Da: DaSpec> sov_modules_api::Module for Ibc<S, Da> {
+    type Spec = S;
 
     type Config = ExampleModuleConfig;
 
@@ -139,15 +139,15 @@ impl<C: Context, Da: DaSpec> sov_modules_api::Module for Ibc<C, Da> {
 
     type Event = IbcEvent;
 
-    fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<C>) -> Result<(), Error> {
+    fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<S>) -> Result<(), Error> {
         Ok(self.init_module(config, working_set)?)
     }
 
     fn call(
         &self,
         msg: Self::CallMessage,
-        context: &Self::Context,
-        working_set: &mut WorkingSet<C>,
+        context: &Context<S>,
+        working_set: &mut WorkingSet<S>,
     ) -> Result<sov_modules_api::CallResponse, Error> {
         match msg {
             call::CallMessage::Core(msg_envelope) => {

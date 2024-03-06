@@ -22,7 +22,7 @@ use sov_celestia_client::client_state::ClientState as SovClientState;
 use sov_celestia_client::consensus_state::ConsensusState as SovConsensusState;
 use sov_celestia_client::types::client_state::SOV_TENDERMINT_CLIENT_STATE_TYPE_URL;
 use sov_celestia_client::types::consensus_state::SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL;
-use sov_modules_api::{Context, DaSpec};
+use sov_modules_api::{DaSpec, Spec};
 
 use crate::context::IbcContext;
 
@@ -151,14 +151,14 @@ impl ClientStateCommon for AnyClientState {
     }
 }
 
-impl<'a, C, Da> ClientStateExecution<IbcContext<'a, C, Da>> for AnyClientState
+impl<'a, S, Da> ClientStateExecution<IbcContext<'a, S, Da>> for AnyClientState
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     fn initialise(
         &self,
-        ctx: &mut IbcContext<'a, C, Da>,
+        ctx: &mut IbcContext<'a, S, Da>,
         client_id: &ClientId,
         consensus_state: Any,
     ) -> Result<(), ClientError> {
@@ -170,7 +170,7 @@ where
 
     fn update_state(
         &self,
-        ctx: &mut IbcContext<'a, C, Da>,
+        ctx: &mut IbcContext<'a, S, Da>,
         client_id: &ClientId,
         header: Any,
     ) -> Result<Vec<Height>, ClientError> {
@@ -182,7 +182,7 @@ where
 
     fn update_state_on_misbehaviour(
         &self,
-        ctx: &mut IbcContext<'a, C, Da>,
+        ctx: &mut IbcContext<'a, S, Da>,
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<(), ClientError> {
@@ -198,7 +198,7 @@ where
 
     fn update_state_on_upgrade(
         &self,
-        ctx: &mut IbcContext<'a, C, Da>,
+        ctx: &mut IbcContext<'a, S, Da>,
         client_id: &ClientId,
         upgraded_client_state: Any,
         upgraded_consensus_state: Any,
@@ -220,14 +220,14 @@ where
     }
 }
 
-impl<'a, C, Da> ClientStateValidation<IbcContext<'a, C, Da>> for AnyClientState
+impl<'a, S, Da> ClientStateValidation<IbcContext<'a, S, Da>> for AnyClientState
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     fn verify_client_message(
         &self,
-        ctx: &IbcContext<'a, C, Da>,
+        ctx: &IbcContext<'a, S, Da>,
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<(), ClientError> {
@@ -243,7 +243,7 @@ where
 
     fn check_for_misbehaviour(
         &self,
-        ctx: &IbcContext<'a, C, Da>,
+        ctx: &IbcContext<'a, S, Da>,
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<bool, ClientError> {
@@ -259,7 +259,7 @@ where
 
     fn status(
         &self,
-        ctx: &IbcContext<'a, C, Da>,
+        ctx: &IbcContext<'a, S, Da>,
         client_id: &ClientId,
     ) -> Result<Status, ClientError> {
         match self {

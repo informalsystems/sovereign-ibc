@@ -9,7 +9,7 @@ use ibc_core::entrypoint::dispatch;
 use ibc_core::handler::types::msgs::MsgEnvelope;
 use ibc_core::primitives::proto::Any;
 use sov_ibc_transfer::context::IbcTransferContext;
-use sov_modules_api::{CallResponse, Context, DaSpec, WorkingSet};
+use sov_modules_api::{CallResponse, Context, DaSpec, Spec, WorkingSet};
 use thiserror::Error;
 
 use crate::context::IbcContext;
@@ -33,12 +33,12 @@ pub enum CallMessage {
 #[derive(Debug, Error)]
 enum SetValueError {}
 
-impl<C: Context, Da: DaSpec> Ibc<C, Da> {
+impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     pub(crate) fn process_core_message(
         &self,
         msg: Any,
-        context: C,
-        working_set: &mut WorkingSet<C>,
+        context: Context<S>,
+        working_set: &mut WorkingSet<S>,
     ) -> Result<CallResponse> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
@@ -63,8 +63,8 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub(crate) fn transfer(
         &self,
         msg_transfer: MsgTransfer,
-        context: C,
-        working_set: &mut WorkingSet<C>,
+        context: Context<S>,
+        working_set: &mut WorkingSet<S>,
     ) -> Result<CallResponse> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
