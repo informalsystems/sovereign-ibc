@@ -13,12 +13,12 @@ use ibc_core::primitives::Timestamp;
 use sov_celestia_client::context::{
     CommonContext as SovCommonContext, ValidationContext as SovValidationContext,
 };
-use sov_modules_api::{Context, DaSpec, StateMapAccessor, StateVecAccessor};
+use sov_modules_api::{DaSpec, Spec, StateMapAccessor, StateVecAccessor};
 
 use super::AnyConsensusState;
 use crate::context::IbcContext;
 
-impl<'a, C: Context, Da: DaSpec> ClientValidationContext for IbcContext<'a, C, Da> {
+impl<'a, S: Spec, Da: DaSpec> ClientValidationContext for IbcContext<'a, S, Da> {
     fn update_meta(
         &self,
         client_id: &ClientId,
@@ -40,7 +40,7 @@ impl<'a, C: Context, Da: DaSpec> ClientValidationContext for IbcContext<'a, C, D
     }
 }
 
-impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da> {
+impl<'a, S: Spec, Da: DaSpec> ClientExecutionContext for IbcContext<'a, S, Da> {
     type V = <Self as ValidationContext>::V;
     type AnyClientState = <Self as ValidationContext>::AnyClientState;
     type AnyConsensusState = <Self as ValidationContext>::AnyConsensusState;
@@ -116,7 +116,7 @@ impl<'a, C: Context, Da: DaSpec> ClientExecutionContext for IbcContext<'a, C, Da
     }
 }
 
-impl<'a, C: Context, Da: DaSpec> TmCommonContext for IbcContext<'a, C, Da> {
+impl<'a, S: Spec, Da: DaSpec> TmCommonContext for IbcContext<'a, S, Da> {
     type ConversionError = &'static str;
     type AnyConsensusState = AnyConsensusState;
 
@@ -145,7 +145,7 @@ impl<'a, C: Context, Da: DaSpec> TmCommonContext for IbcContext<'a, C, Da> {
     }
 }
 
-impl<'a, C: Context, Da: DaSpec> TmValidationContext for IbcContext<'a, C, Da> {
+impl<'a, S: Spec, Da: DaSpec> TmValidationContext for IbcContext<'a, S, Da> {
     fn next_consensus_state(
         &self,
         client_id: &ClientId,
@@ -163,7 +163,7 @@ impl<'a, C: Context, Da: DaSpec> TmValidationContext for IbcContext<'a, C, Da> {
     }
 }
 
-impl<'a, C: Context, Da: DaSpec> SovCommonContext for IbcContext<'a, C, Da> {
+impl<'a, S: Spec, Da: DaSpec> SovCommonContext for IbcContext<'a, S, Da> {
     type ConversionError = &'static str;
     type AnyConsensusState = AnyConsensusState;
 
@@ -192,7 +192,7 @@ impl<'a, C: Context, Da: DaSpec> SovCommonContext for IbcContext<'a, C, Da> {
     }
 }
 
-impl<'a, C: Context, Da: DaSpec> SovValidationContext for IbcContext<'a, C, Da> {
+impl<'a, S: Spec, Da: DaSpec> SovValidationContext for IbcContext<'a, S, Da> {
     fn next_consensus_state(
         &self,
         client_id: &ClientId,
@@ -210,8 +210,8 @@ impl<'a, C: Context, Da: DaSpec> SovValidationContext for IbcContext<'a, C, Da> 
     }
 }
 
-fn next_consensus_state<C: Context, D: DaSpec>(
-    ctx: &IbcContext<'_, C, D>,
+fn next_consensus_state<S: Spec, D: DaSpec>(
+    ctx: &IbcContext<'_, S, D>,
     client_id: &ClientId,
     height: &Height,
 ) -> Result<Option<AnyConsensusState>, ContextError> {
@@ -269,8 +269,8 @@ fn next_consensus_state<C: Context, D: DaSpec>(
     Ok(None)
 }
 
-fn prev_consensus_state<C: Context, D: DaSpec>(
-    ctx: &IbcContext<'_, C, D>,
+fn prev_consensus_state<S: Spec, D: DaSpec>(
+    ctx: &IbcContext<'_, S, D>,
     client_id: &ClientId,
     height: &Height,
 ) -> Result<Option<AnyConsensusState>, ContextError> {

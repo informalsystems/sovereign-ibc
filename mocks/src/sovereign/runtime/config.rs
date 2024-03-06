@@ -5,7 +5,7 @@ use sov_chain_state::ChainStateConfig;
 use sov_ibc::ExampleModuleConfig;
 use sov_ibc_transfer::TransferConfig;
 use sov_modules_api::utils::generate_address as gen_address_generic;
-use sov_modules_api::{Context, GasUnit};
+use sov_modules_api::{Gas, GasArray, Spec};
 use sov_rollup_interface::da::Time;
 
 // The default initial slot height.
@@ -21,17 +21,17 @@ pub const DEFAULT_ADDRESS_COUNT: u64 = 3;
 pub const DEFAULT_TOKEN_NAME: &str = "sov-demo-token";
 
 #[derive(Clone, Debug)]
-pub struct RollupGenesisConfig<C: Context> {
-    pub chain_state_config: ChainStateConfig<C>,
-    pub bank_config: BankConfig<C>,
+pub struct RollupGenesisConfig<S: Spec> {
+    pub chain_state_config: ChainStateConfig<S>,
+    pub bank_config: BankConfig<S>,
     pub ibc_config: ExampleModuleConfig,
     pub ibc_transfer_config: TransferConfig,
 }
 
-impl<C: Context> RollupGenesisConfig<C> {
+impl<S: Spec> RollupGenesisConfig<S> {
     pub fn new(
-        chain_state_config: ChainStateConfig<C>,
-        bank_config: BankConfig<C>,
+        chain_state_config: ChainStateConfig<S>,
+        bank_config: BankConfig<S>,
         ibc_config: ExampleModuleConfig,
         ibc_transfer_config: TransferConfig,
     ) -> Self {
@@ -44,7 +44,7 @@ impl<C: Context> RollupGenesisConfig<C> {
     }
 }
 
-impl<C: Context> Default for RollupGenesisConfig<C> {
+impl<S: Spec> Default for RollupGenesisConfig<S> {
     fn default() -> Self {
         let chain_state_config = create_chain_state_config();
 
@@ -64,7 +64,7 @@ impl<C: Context> Default for RollupGenesisConfig<C> {
 }
 
 /// Creates a chain state configuration with the given initial slot height
-pub fn create_chain_state_config<C: Context>() -> ChainStateConfig<C> {
+pub fn create_chain_state_config<S: Spec>() -> ChainStateConfig<S> {
     let now = SystemTime::now();
 
     let seconds = now
@@ -76,17 +76,17 @@ pub fn create_chain_state_config<C: Context>() -> ChainStateConfig<C> {
         current_time: Time::from_secs(seconds.try_into().unwrap()),
         gas_price_blocks_depth: 10,
         gas_price_maximum_elasticity: 1,
-        initial_gas_price: GasUnit::ZEROED,
-        minimum_gas_price: GasUnit::ZEROED,
+        initial_gas_price: <<S as Spec>::Gas as Gas>::Price::ZEROED,
+        minimum_gas_price: <<S as Spec>::Gas as Gas>::Price::ZEROED,
     }
 }
 
 /// Creates a bank configuration with the given number of addresses and initial balance
-pub fn create_bank_config<C: Context>(addresses_count: u64, initial_balance: u64) -> BankConfig<C> {
+pub fn create_bank_config<S: Spec>(addresses_count: u64, initial_balance: u64) -> BankConfig<S> {
     let address_and_balances: Vec<_> = (0..addresses_count)
         .map(|i| {
             let key = format!("key_{}", i);
-            let addr = gen_address_generic::<C>(&key);
+            let addr = gen_address_generic::<S>(&key);
             (addr, initial_balance)
         })
         .collect();

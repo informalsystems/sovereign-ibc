@@ -50,8 +50,8 @@ use ibc_query::core::connection::{
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::types::ErrorObjectOwned;
 use sov_modules_api::macros::rpc_gen;
-use sov_modules_api::{Context, DaSpec, WorkingSet};
-use sov_state::storage::{StateCodec, StateValueCodec, StorageKey};
+use sov_modules_api::{DaSpec, Spec, WorkingSet};
+use sov_state::storage::{SlotKey, StateCodec, StateValueCodec};
 
 use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;
@@ -59,12 +59,12 @@ use crate::Ibc;
 
 /// Structure returned by the `client_state` rpc method.
 #[rpc_gen(client, server, namespace = "ibc")]
-impl<C: Context, Da: DaSpec> Ibc<C, Da> {
+impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     #[rpc_method(name = "clientState")]
     pub fn client_state(
         &self,
         request: QueryClientStateRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientStateResponse> {
         let prefix = self.client_state_map.prefix();
 
@@ -73,7 +73,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
         let client_id =
             ClientId::from_str(request.client_id.as_str()).map_err(to_jsonrpsee_error)?;
 
-        let key = StorageKey::new(prefix, &client_id, codec.key_codec());
+        let key = SlotKey::new(prefix, &client_id, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 
@@ -109,7 +109,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn client_states(
         &self,
         request: QueryClientStatesRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientStatesResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -124,7 +124,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn consensus_state(
         &self,
         request: QueryConsensusStateRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConsensusStateResponse> {
         let prefix = self.consensus_state_map.prefix();
 
@@ -139,7 +139,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
             request.revision_height,
         );
 
-        let key = StorageKey::new(prefix, &path, codec.key_codec());
+        let key = SlotKey::new(prefix, &path, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 
@@ -177,7 +177,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn consensus_states(
         &self,
         request: QueryConsensusStatesRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConsensusStatesResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -192,7 +192,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn consensus_state_heights(
         &self,
         request: QueryConsensusStateHeightsRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConsensusStateHeightsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -207,7 +207,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn client_status(
         &self,
         request: QueryClientStatusRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientStatusResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -222,7 +222,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn connection(
         &self,
         request: QueryConnectionRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -237,7 +237,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn connections(
         &self,
         request: QueryConnectionsRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -252,7 +252,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn client_connections(
         &self,
         request: QueryClientConnectionsRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientConnectionsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -267,7 +267,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn connection_client_state(
         &self,
         request: QueryConnectionClientStateRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionClientStateResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -282,7 +282,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn connection_consensus_state(
         &self,
         request: QueryConnectionConsensusStateRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionConsensusStateResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -297,7 +297,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn connection_params(
         &self,
         request: QueryConnectionParamsRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionParamsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -312,7 +312,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn channel(
         &self,
         request: QueryChannelRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryChannelResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -327,7 +327,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn channels(
         &self,
         request: QueryChannelsRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryChannelsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -342,7 +342,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn connection_channels(
         &self,
         request: QueryConnectionChannelsRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionChannelsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -357,7 +357,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn channel_client_state(
         &self,
         request: QueryChannelClientStateRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryChannelClientStateResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -372,7 +372,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn channel_consensus_state(
         &self,
         request: QueryChannelConsensusStateRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryChannelConsensusStateResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -387,7 +387,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn packet_commitment(
         &self,
         request: QueryPacketCommitmentRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketCommitmentResponse> {
         let prefix = self.packet_commitment_map.prefix();
 
@@ -399,7 +399,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
             request.sequence.into(),
         );
 
-        let key = StorageKey::new(prefix, &commitment_path, codec.key_codec());
+        let key = SlotKey::new(prefix, &commitment_path, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 
@@ -433,7 +433,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn packet_commitments(
         &self,
         request: QueryPacketCommitmentsRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketCommitmentsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -448,7 +448,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn packet_receipt(
         &self,
         request: QueryPacketReceiptRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketReceiptResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -463,7 +463,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn packet_acknowledgement(
         &self,
         request: QueryPacketAcknowledgementRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketAcknowledgementResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -478,7 +478,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn packet_acknowledgements(
         &self,
         request: QueryPacketAcknowledgementsRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketAcknowledgementsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -493,7 +493,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn unreceived_packets(
         &self,
         request: QueryUnreceivedPacketsRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryUnreceivedPacketsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -508,7 +508,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn unreceived_acks(
         &self,
         request: QueryUnreceivedAcksRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryUnreceivedAcksResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
@@ -523,7 +523,7 @@ impl<C: Context, Da: DaSpec> Ibc<C, Da> {
     pub fn next_sequence_receive(
         &self,
         request: QueryNextSequenceReceiveRequest,
-        working_set: &mut WorkingSet<C>,
+        working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryNextSequenceReceiveResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,

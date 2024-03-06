@@ -8,16 +8,18 @@ use serde::de::DeserializeOwned;
 use sov_bank::{get_token_address, TokenConfig};
 use sov_celestia_adapter::CelestiaService;
 use sov_mock_da::MockDaService;
-use sov_modules_api::default_context::DefaultContext;
-use sov_modules_api::{Address, Context};
+use sov_modules_api::{Address, Spec};
 use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::services::da::DaService;
 use typed_builder::TypedBuilder;
 
+pub(crate) type DefaultSpec =
+    sov_modules_api::default_spec::DefaultSpec<sov_mock_zkvm::MockZkVerifier>;
+
 use crate::sovereign::{celestia_da_service, mock_da_service, GenesisConfig, RollupGenesisConfig};
 
 #[derive(TypedBuilder, Clone, Debug)]
-pub struct TestSetupConfig<C: Context, Da: DaService> {
+pub struct TestSetupConfig<S: Spec, Da: DaService> {
     /// The chain Id of the DA chain.
     #[builder(default = ChainId::new("mock-celestia-0").unwrap())]
     pub da_chain_id: ChainId,
@@ -28,21 +30,21 @@ pub struct TestSetupConfig<C: Context, Da: DaService> {
     pub rollup_id: ChainId,
     /// The runtime configuration.
     #[builder(default = RollupGenesisConfig::default())]
-    pub rollup_genesis_config: RollupGenesisConfig<C>,
+    pub rollup_genesis_config: RollupGenesisConfig<S>,
     /// Sets whether to use manual IBC TAO or not.
     #[builder(default = false)]
     pub with_manual_tao: bool,
 }
 
-impl<C: Context, Da: DaService> TestSetupConfig<C, Da> {
+impl<S: Spec, Da: DaService> TestSetupConfig<S, Da> {
     /// Returns list of tokens in the bank configuration
-    pub fn get_tokens(&self) -> &Vec<TokenConfig<C>> {
+    pub fn get_tokens(&self) -> &Vec<TokenConfig<S>> {
         &self.rollup_genesis_config.bank_config.tokens
     }
 
     /// Returns the address of the relayer. We use the last address in the list
     /// as the relayer address
-    pub fn get_relayer_address(&self) -> C::Address {
+    pub fn get_relayer_address(&self) -> S::Address {
         self.rollup_genesis_config.bank_config.tokens[0]
             .address_and_balances
             .last()
@@ -52,21 +54,21 @@ impl<C: Context, Da: DaService> TestSetupConfig<C, Da> {
     }
 
     /// Returns the token address for a given token configuration
-    pub fn get_token_address(&self, token_cfg: &TokenConfig<C>) -> C::Address {
-        get_token_address::<C>(
+    pub fn get_token_address(&self, token_cfg: &TokenConfig<S>) -> S::Address {
+        get_token_address::<S>(
             &token_cfg.token_name,
-            self.get_relayer_address().as_ref(),
+            &self.get_relayer_address(),
             token_cfg.salt,
         )
     }
 
-    pub fn kernel_genesis_config(&self) -> BasicKernelGenesisConfig<C, Da::Spec> {
+    pub fn kernel_genesis_config(&self) -> BasicKernelGenesisConfig<S, Da::Spec> {
         BasicKernelGenesisConfig {
             chain_state: self.rollup_genesis_config.chain_state_config.clone(),
         }
     }
 
-    pub fn runtime_genesis_config(&self) -> GenesisConfig<C, Da::Spec> {
+    pub fn runtime_genesis_config(&self) -> GenesisConfig<S, Da::Spec> {
         GenesisConfig::new(
             self.rollup_genesis_config.bank_config.clone(),
             self.rollup_genesis_config.ibc_config.clone(),
@@ -75,14 +77,14 @@ impl<C: Context, Da: DaService> TestSetupConfig<C, Da> {
     }
 }
 
-pub fn default_config_with_mock_da() -> TestSetupConfig<DefaultContext, MockDaService> {
-    TestSetupConfig::<DefaultContext, MockDaService>::builder()
+pub fn default_config_with_mock_da() -> TestSetupConfig<DefaultSpec, MockDaService> {
+    TestSetupConfig::<DefaultSpec, MockDaService>::builder()
         .da_service(mock_da_service())
         .build()
 }
 
-pub async fn default_config_with_celestia_da() -> TestSetupConfig<DefaultContext, CelestiaService> {
-    TestSetupConfig::<DefaultContext, CelestiaService>::builder()
+pub async fn default_config_with_celestia_da() -> TestSetupConfig<DefaultSpec, CelestiaService> {
+    TestSetupConfig::<DefaultSpec, CelestiaService>::builder()
         .da_service(celestia_da_service().await)
         .build()
 }

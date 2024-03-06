@@ -23,8 +23,8 @@ use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp};
 use sov_modules_api::{
-    Context, DaSpec, Module, ModuleInfo, StateMapAccessor, StateValueAccessor, StateVecAccessor,
-    WorkingSet,
+    Context, DaSpec, EventEmitter, ModuleInfo, Spec, StateMapAccessor, StateValueAccessor,
+    StateVecAccessor, WorkingSet,
 };
 use sov_state::Prefix;
 
@@ -36,26 +36,26 @@ use crate::Ibc;
 pub const HOST_REVISION_NUMBER: u64 = 0;
 
 #[derive(Clone)]
-pub struct IbcContext<'a, C, Da>
+pub struct IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
-    pub ibc: &'a Ibc<C, Da>,
-    pub context: Option<C>,
-    pub working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
+    pub ibc: &'a Ibc<S, Da>,
+    pub context: Option<Context<S>>,
+    pub working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
 }
 
-impl<'a, C, Da> IbcContext<'a, C, Da>
+impl<'a, S, Da> IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     pub fn new(
-        ibc: &'a Ibc<C, Da>,
-        context: Option<C>,
-        working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
-    ) -> IbcContext<'a, C, Da> {
+        ibc: &'a Ibc<S, Da>,
+        context: Option<Context<S>>,
+        working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
+    ) -> IbcContext<'a, S, Da> {
         IbcContext {
             ibc,
             context,
@@ -64,9 +64,9 @@ where
     }
 }
 
-impl<'a, C, Da> ValidationContext for IbcContext<'a, C, Da>
+impl<'a, S, Da> ValidationContext for IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     type V = Self;
@@ -356,9 +356,9 @@ where
     }
 }
 
-impl<'a, C, Da> ExecutionContext for IbcContext<'a, C, Da>
+impl<'a, S, Da> ExecutionContext for IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     fn get_client_execution_context(&mut self) -> &mut Self::E {
@@ -611,7 +611,7 @@ where
 
 // TODO: to unblock testing, we implement this method, but the correct way to
 // track and update the host chain's consensus should be investigated
-impl<'ws, C: Context, Da: DaSpec> IbcContext<'ws, C, Da> {
+impl<'ws, S: Spec, Da: DaSpec> IbcContext<'ws, S, Da> {
     pub fn store_host_consensus_state(
         &mut self,
         height: Height,
