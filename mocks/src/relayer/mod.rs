@@ -22,8 +22,8 @@ mod types {
 
     /// Default concrete type for the relayer between the mock rollup and the
     /// mock Cosmos chain.
-    pub type DefaultRelayer<C, Da, S> =
-        MockRelayer<MockRollup<C, Da, S>, MockCosmosChain<InMemoryStore>>;
+    pub type DefaultRelayer<S, Da, P> =
+        MockRelayer<MockRollup<S, Da, P>, MockCosmosChain<InMemoryStore>>;
 }
 
 #[cfg(feature = "native")]

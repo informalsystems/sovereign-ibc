@@ -4,7 +4,7 @@ use std::time::Duration;
 use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    Context, DispatchCall, Genesis, KernelWorkingSet, ModuleInfo, SlotData, StateCheckpoint,
+    DispatchCall, Gas, Genesis, KernelWorkingSet, ModuleInfo, SlotData, Spec, StateCheckpoint,
     VersionedStateReadWriter,
 };
 use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
@@ -18,20 +18,19 @@ use tracing::{debug, info};
 use super::{GenesisConfig, MockRollup, RuntimeCall};
 use crate::utils::{wait_for_block, MutexUtil};
 
-impl<C, Da, S> MockRollup<C, Da, S>
+impl<S, Da, P> MockRollup<S, Da, P>
 where
-    C: Context<Storage = ProverStorage<S>> + Send + Sync,
+    S: Spec<Storage = ProverStorage<P>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
-    S: MerkleProofSpec + Clone + 'static,
-    <S as MerkleProofSpec>::Hasher: Send,
-    C::GasUnit: Default,
+    P: MerkleProofSpec + Clone + 'static,
+    <P as MerkleProofSpec>::Hasher: Send,
 {
     /// Initializes the chain with the genesis configuration
     pub async fn init(
         &mut self,
-        kernel_genesis_config: &BasicKernelGenesisConfig<C, Da::Spec>,
-        runtime_genesis_config: &GenesisConfig<C, Da::Spec>,
-    ) -> StateCheckpoint<C> {
+        kernel_genesis_config: &BasicKernelGenesisConfig<S, Da::Spec>,
+        runtime_genesis_config: &GenesisConfig<S, Da::Spec>,
+    ) -> StateCheckpoint<S> {
         let mut checkpoint = StateCheckpoint::new(self.prover_storage());
 
         let mut kernel_working_set = KernelWorkingSet::uninitialized(&mut checkpoint);
@@ -54,7 +53,7 @@ where
     }
 
     /// Begins a block by setting the host consensus state and triggering the slot hook
-    pub async fn begin_block(&mut self, mut checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
+    pub async fn begin_block(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
         let current_height = self.rollup_ctx.acquire_mutex().visible_slot_number();
 
         debug!("rollup: processing block at height {current_height}");
@@ -103,7 +102,7 @@ where
         working_set.checkpoint().0
     }
 
-    pub async fn execute_msg(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
+    pub async fn execute_msg(&mut self, checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
         let mut working_set = checkpoint.to_revertable(Default::default());
 
         let rollup_ctx = self.rollup_ctx();
@@ -131,11 +130,10 @@ where
 
     /// Commits a block by triggering the end slot hook, computing the state
     /// update and committing it to the prover storage
-    pub async fn commit(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
+    pub async fn commit(&mut self, checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
         let mut checkpoint = self.execute_msg(checkpoint).await;
 
-        self.kernel()
-            .end_slot_hook(&Default::default(), &mut checkpoint);
+        self.kernel().end_slot_hook(&Gas::zero(), &mut checkpoint);
 
         self.runtime().end_slot_hook(&mut checkpoint);
 

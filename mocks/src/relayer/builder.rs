@@ -3,30 +3,29 @@ use ibc_core::host::types::identifiers::Sequence;
 use ibc_core::host::ValidationContext;
 use sov_celestia_client::types::client_state::sov_client_type;
 use sov_mock_da::MockDaService;
-use sov_modules_api::default_context::DefaultContext;
-use sov_modules_api::{Context, WorkingSet};
+use sov_modules_api::{Context, Spec, WorkingSet};
 use sov_prover_storage_manager::new_orphan_storage;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
 
 use super::DefaultRelayer;
-use crate::configs::{default_config_with_mock_da, TestSetupConfig};
+use crate::configs::{default_config_with_mock_da, DefaultSpec, TestSetupConfig};
 use crate::cosmos::{dummy_signer, CosmosBuilder, MockTendermint};
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
 use crate::sovereign::{MockRollup, Runtime, DEFAULT_INIT_HEIGHT};
 
 #[derive(Clone)]
-pub struct RelayerBuilder<C, Da>
+pub struct RelayerBuilder<S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaService,
 {
-    setup_cfg: TestSetupConfig<C, Da>,
+    setup_cfg: TestSetupConfig<S, Da>,
 }
 
-impl Default for RelayerBuilder<DefaultContext, MockDaService> {
+impl Default for RelayerBuilder<DefaultSpec, MockDaService> {
     fn default() -> Self {
         Self {
             setup_cfg: default_config_with_mock_da(),
@@ -34,17 +33,17 @@ impl Default for RelayerBuilder<DefaultContext, MockDaService> {
     }
 }
 
-impl<C, Da> RelayerBuilder<C, Da>
+impl<S, Da> RelayerBuilder<S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaService,
 {
-    pub fn new(setup_cfg: TestSetupConfig<C, Da>) -> Self {
+    pub fn new(setup_cfg: TestSetupConfig<S, Da>) -> Self {
         Self { setup_cfg }
     }
 
     /// Returns the setup configuration
-    pub fn setup_cfg(&self) -> &TestSetupConfig<C, Da> {
+    pub fn setup_cfg(&self) -> &TestSetupConfig<S, Da> {
         &self.setup_cfg
     }
 
@@ -55,20 +54,19 @@ where
     }
 
     /// Initializes a mock rollup and a mock Cosmos chain and sets up the relayer between them.
-    pub async fn setup<S>(self) -> DefaultRelayer<C, Da, S>
+    pub async fn setup<P>(self) -> DefaultRelayer<S, Da, P>
     where
-        C: Context<Storage = ProverStorage<S>> + Send + Sync,
+        S: Spec<Storage = ProverStorage<P>> + Send + Sync,
         Da: DaService<Error = anyhow::Error> + Clone,
-        S: MerkleProofSpec + Clone + 'static,
-        <S as MerkleProofSpec>::Hasher: Send,
-        MockRollup<C, Da, S>: Handle,
-        C::GasUnit: Default,
+        P: MerkleProofSpec + Clone + 'static,
+        <P as MerkleProofSpec>::Hasher: Send,
+        MockRollup<S, Da, P>: Handle,
     {
         let runtime = Runtime::default();
 
         let sender_address = self.setup_cfg.get_relayer_address();
 
-        let rollup_ctx = C::new(sender_address.clone(), sender_address, DEFAULT_INIT_HEIGHT);
+        let rollup_ctx = Context::new(sender_address.clone(), sender_address, DEFAULT_INIT_HEIGHT);
 
         let tmpdir = tempfile::tempdir().unwrap();
 

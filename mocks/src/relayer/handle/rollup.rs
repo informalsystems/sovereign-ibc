@@ -7,7 +7,7 @@ use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
-use sov_modules_api::{Context, WorkingSet};
+use sov_modules_api::{Spec, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
@@ -17,16 +17,15 @@ use crate::sovereign::{MockRollup, RuntimeCall};
 use crate::utils::{wait_for_block, MutexUtil};
 
 #[async_trait]
-impl<C, Da, S> Handle for MockRollup<C, Da, S>
+impl<S, Da, P> Handle for MockRollup<S, Da, P>
 where
-    C: Context<Storage = ProverStorage<S>> + Send + Sync,
+    S: Spec<Storage = ProverStorage<P>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
     <Da as DaService>::Spec: Clone,
-    S: MerkleProofSpec + Clone + 'static,
-    <S as MerkleProofSpec>::Hasher: Send + Sync,
-    C::GasUnit: Default,
+    P: MerkleProofSpec + Clone + 'static,
+    <P as MerkleProofSpec>::Hasher: Send + Sync,
 {
-    type Message = RuntimeCall<C, Da::Spec>;
+    type Message = RuntimeCall<S, Da::Spec>;
 
     async fn query(&self, request: QueryReq) -> QueryResp {
         info!("rollup: querying app with {:?}", request);

@@ -20,7 +20,7 @@ use ibc_core::primitives::{Signer, Timestamp, ToProto};
 use sov_bank::{CallMessage as BankCallMessage, TokenConfig};
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
-use sov_modules_api::Context;
+use sov_modules_api::Spec;
 
 use crate::configs::TransferTestConfig;
 use crate::cosmos::dummy_tm_client_state;
@@ -193,7 +193,7 @@ where
     }
 
     /// Creates a token with the given configuration
-    pub fn build_msg_create_token<C: Context>(&self, token: &TokenConfig<C>) -> BankCallMessage<C> {
+    pub fn build_msg_create_token<S: Spec>(&self, token: &TokenConfig<S>) -> BankCallMessage<S> {
         BankCallMessage::CreateToken {
             salt: token.salt,
             token_name: token.token_name.clone(),
