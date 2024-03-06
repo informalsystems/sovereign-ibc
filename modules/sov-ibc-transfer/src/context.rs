@@ -56,18 +56,17 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     /// up the cache. If the cache does not contain the address, it is computed
     /// and stored in the cache.
     fn obtain_escrow_address(&self, port_id: &PortId, channel_id: &ChannelId) -> S::Address {
+        let mut working_set = self.working_set.borrow_mut();
+
         self.ibc_transfer
             .escrow_address_cache
-            .get(
-                &(port_id.clone(), channel_id.clone()),
-                *self.working_set.borrow_mut(),
-            )
+            .get(&(port_id.clone(), channel_id.clone()), *working_set)
             .unwrap_or_else(|| {
                 let escrow_account = compute_escrow_address::<S>(port_id, channel_id);
                 self.ibc_transfer.escrow_address_cache.set(
                     &(port_id.clone(), channel_id.clone()),
                     &escrow_account,
-                    *self.working_set.borrow_mut(),
+                    *working_set,
                 );
                 escrow_account
             })
