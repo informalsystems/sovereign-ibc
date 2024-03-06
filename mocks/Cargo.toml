@@ -57,7 +57,7 @@ sov-state                  = { workspace = true }
 sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["native"], optional = true }
 sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["native"], optional = true }
 sov-mock-zkvm              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["native"], optional = true }
-sov-modules-stf-blueprint  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }
+sov-modules-stf-blueprint  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["native"], optional = true }
 sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["test-utils"] }
 sov-schema-db              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }
 const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }
@@ -71,14 +71,14 @@ tracing-subscriber    = { version = "0.3", default-features = false, features = 
 default = ["native"]
 native = [
     "sov-bank/native",
-    "sov-celestia-adapter",
-    "sov-chain-state/native",
-    "sov-modules-api/native",
-    "sov-modules-stf-blueprint/native",
-    "sov-state/native",
-    "sov-mock-da",
-    "sov-mock-zkvm",
-    "sov-rollup-interface/native",
     "sov-ibc/native",
     "sov-ibc-transfer/native",
+    "sov-chain-state/native",
+    "sov-modules-api/native",
+    "sov-state/native",
+    "sov-rollup-interface/native",
+    "sov-celestia-adapter",
+    "sov-mock-da",
+    "sov-mock-zkvm",
+    "sov-modules-stf-blueprint",
 ]
