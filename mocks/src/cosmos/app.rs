@@ -2,15 +2,16 @@
 //! tendermint instance.
 use std::fmt::Debug;
 
-use basecoin_app::abci::v0_37::impls::query as basecoin_query;
-use basecoin_app::modules::auth::proto::AccountId;
-use basecoin_app::modules::auth::Auth;
-use basecoin_app::modules::bank::{Bank, BankReader, Denom};
-use basecoin_app::modules::context::{prefix, Identifiable};
-use basecoin_app::modules::ibc::{Ibc, IbcContext};
-use basecoin_app::{BaseCoinApp, Builder};
-use basecoin_store::context::ProvableStore;
-use basecoin_store::impls::RevertibleStore;
+use basecoin::app::abci::v0_37::impls::query as basecoin_query;
+use basecoin::app::{BaseCoinApp, Builder};
+use basecoin::helper::{bank, ibc};
+use basecoin::modules::auth::proto::AccountId;
+use basecoin::modules::auth::Auth;
+use basecoin::modules::bank::{Bank, BankReader, Denom};
+use basecoin::modules::context::{prefix, Identifiable};
+use basecoin::modules::ibc::{Ibc, IbcContext};
+use basecoin::store::context::ProvableStore;
+use basecoin::store::impls::RevertibleStore;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentProofBytes;
 use ibc_core::host::types::identifiers::ChainId;
@@ -63,7 +64,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     }
 
     pub fn ibc_ctx(&self) -> IbcContext<RevertibleStore<S>> {
-        self.app.ibc().ctx()
+        ibc(self.app.clone()).ctx()
     }
 
     pub fn get_balance_of(&self, denom: &str, account: String) -> Option<u64> {
@@ -71,9 +72,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let denom = Denom(denom.to_string());
 
-        if let Some(coin) = self
-            .app
-            .bank()
+        if let Some(coin) = bank(self.app.clone())
             .balance_reader()
             .get_all_balances(account_id)
             .into_iter()

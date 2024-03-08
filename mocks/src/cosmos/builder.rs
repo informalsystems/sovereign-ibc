@@ -1,7 +1,7 @@
 //! Defines a builder structure for instantiating a mock Cosmos chain
 use std::fmt::Debug;
 
-use basecoin_store::context::ProvableStore;
+use basecoin::store::context::ProvableStore;
 
 use super::app::MockCosmosChain;
 use super::MockTendermint;

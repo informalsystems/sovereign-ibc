@@ -1,4 +1,4 @@
-use basecoin_store::avl::get_proof_spec;
+use basecoin::store::avl::get_proof_spec;
 use ibc_client_tendermint::client_state::ClientState;
 use ibc_client_tendermint::types::ConsensusState as TmConsensusState;
 use ibc_core::client::types::Height;
