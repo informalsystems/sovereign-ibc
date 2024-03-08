@@ -3,7 +3,7 @@
 
 use core::fmt::Debug;
 
-use basecoin_store::context::ProvableStore;
+use basecoin::store::context::ProvableStore;
 use ibc_core::channel::types::channel::{
     ChannelEnd, Counterparty as ChanCounterparty, Order, State as ChannelState,
 };

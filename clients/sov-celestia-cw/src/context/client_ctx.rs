@@ -1,3 +1,4 @@
+use ibc_client_wasm_types::client_state::ClientState as WasmClientState;
 use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
 use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
 use ibc_core::client::types::error::ClientError;
@@ -5,17 +6,51 @@ use ibc_core::client::types::Height;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{iteration_key, ClientConsensusStatePath, ClientStatePath};
-use ibc_core::host::ValidationContext;
-use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
 use prost::Message;
 use sov_celestia_client::client_state::ClientState;
+use sov_celestia_client::types::client_state::SovTmClientState;
+use sov_celestia_client::types::consensus_state::SovTmConsensusState;
 
 use super::Context;
 use crate::types::AnyConsensusState;
 
 impl ClientValidationContext for Context<'_> {
-    fn update_meta(
+    type ClientStateRef = ClientState;
+    type ConsensusStateRef = AnyConsensusState;
+
+    fn client_state(&self, _client_id: &ClientId) -> Result<Self::ClientStateRef, ContextError> {
+        let client_state_value = self.retrieve(ClientStatePath::leaf())?;
+
+        let any_wasm: WasmClientState = Protobuf::<Any>::decode(client_state_value.as_slice())
+            .map_err(|e| ClientError::Other {
+                description: e.to_string(),
+            })?;
+
+        let sov_client_state = SovTmClientState::decode_thru_any(any_wasm.data)?;
+
+        Ok(sov_client_state.into())
+    }
+
+    fn consensus_state(
+        &self,
+        client_cons_state_path: &ClientConsensusStatePath,
+    ) -> Result<Self::ConsensusStateRef, ContextError> {
+        let consensus_state_value = self.retrieve(client_cons_state_path.leaf())?;
+        let any_wasm: WasmConsensusState =
+            Protobuf::<Any>::decode(consensus_state_value.as_slice()).map_err(|e| {
+                ClientError::Other {
+                    description: e.to_string(),
+                }
+            })?;
+
+        let consensus_state = SovTmConsensusState::decode_thru_any(any_wasm.data)?;
+
+        Ok(AnyConsensusState::Sovereign(consensus_state.into()))
+    }
+
+    fn client_update_meta(
         &self,
         _client_id: &ClientId,
         height: &Height,
@@ -43,9 +78,7 @@ impl ClientValidationContext for Context<'_> {
 }
 
 impl ClientExecutionContext for Context<'_> {
-    type V = <Self as ValidationContext>::V;
-    type AnyClientState = <Self as ValidationContext>::AnyClientState;
-    type AnyConsensusState = <Self as ValidationContext>::AnyConsensusState;
+    type ClientStateMut = ClientState;
 
     fn store_client_state(
         &mut self,

@@ -14,7 +14,7 @@ pub use relay::*;
 
 #[cfg(feature = "native")]
 mod types {
-    use basecoin_store::impls::InMemoryStore;
+    use basecoin::store::impls::InMemoryStore;
 
     use super::relay::MockRelayer;
     use crate::cosmos::MockCosmosChain;

@@ -2,7 +2,6 @@ use core::time::Duration;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use ibc_client_tendermint::client_state::ClientState as TmClientState;
 use ibc_core::channel::types::channel::ChannelEnd;
 use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
 use ibc_core::channel::types::error::{ChannelError, PacketError};
@@ -14,21 +13,22 @@ use ibc_core::connection::types::error::ConnectionError;
 use ibc_core::connection::types::ConnectionEnd;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::handler::types::events::IbcEvent;
-use ibc_core::host::types::identifiers::{ClientId, ConnectionId, Sequence};
+use ibc_core::host::types::identifiers::{ConnectionId, Sequence};
 use ibc_core::host::types::path::{
-    AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath,
-    ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
+    AckPath, ChannelEndPath, ClientConnectionPath, CommitmentPath, ConnectionPath, ReceiptPath,
+    SeqAckPath, SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
-use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp};
+use sov_celestia_client::client_state::ClientState;
+use sov_celestia_client::consensus_state::ConsensusState;
 use sov_modules_api::{
     Context, DaSpec, EventEmitter, ModuleInfo, Spec, StateMapAccessor, StateValueAccessor,
     StateVecAccessor, WorkingSet,
 };
 use sov_state::Prefix;
 
-use crate::clients::{AnyClientState, AnyConsensusState};
+use crate::clients::AnyConsensusState;
 use crate::event::auxiliary_packet_events;
 use crate::Ibc;
 
@@ -70,52 +70,11 @@ where
     Da: DaSpec,
 {
     type V = Self;
-    type E = Self;
-    type AnyConsensusState = AnyConsensusState;
-    type AnyClientState = AnyClientState;
+    type HostClientState = ClientState;
+    type HostConsensusState = ConsensusState;
 
     fn get_client_validation_context(&self) -> &Self::V {
         self
-    }
-
-    fn client_state(&self, client_id: &ClientId) -> Result<Self::AnyClientState, ContextError> {
-        self.ibc
-            .client_state_map
-            .get(client_id, *self.working_set.borrow_mut())
-            .ok_or(
-                ClientError::ClientStateNotFound {
-                    client_id: client_id.clone(),
-                }
-                .into(),
-            )
-    }
-
-    fn decode_client_state(&self, client_state: Any) -> Result<Self::AnyClientState, ContextError> {
-        let tm_client_state: TmClientState = client_state.try_into()?;
-
-        Ok(tm_client_state.into())
-    }
-
-    fn consensus_state(
-        &self,
-        client_cons_state_path: &ClientConsensusStatePath,
-    ) -> Result<Self::AnyConsensusState, ContextError> {
-        self.ibc
-            .consensus_state_map
-            .get(client_cons_state_path, *self.working_set.borrow_mut())
-            .ok_or(
-                ClientError::ConsensusStateNotFound {
-                    client_id: client_cons_state_path.client_id.clone(),
-                    height: Height::new(
-                        client_cons_state_path.revision_number,
-                        client_cons_state_path.revision_height,
-                    )
-                    .map_err(|_| ClientError::Other {
-                        description: "Height cannot be zero".to_string(),
-                    })?,
-                }
-                .into(),
-            )
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
@@ -160,7 +119,7 @@ where
     fn host_consensus_state(
         &self,
         height: &Height,
-    ) -> Result<Self::AnyConsensusState, ContextError> {
+    ) -> Result<Self::HostConsensusState, ContextError> {
         // TODO: In order to correctly implement this, we need to first define
         // the `ConsensusState` protobuf definition that SDK chains will use
         let host_consensus_state = self
@@ -171,7 +130,13 @@ where
                 description: "Host consensus state not found".to_string(),
             })?;
 
-        Ok(host_consensus_state.clone())
+        match host_consensus_state {
+            AnyConsensusState::Sovereign(consensus_state) => Ok(consensus_state),
+            _ => Err(ClientError::Other {
+                description: "Invalid host consensus state".to_string(),
+            }
+            .into()),
+        }
     }
 
     fn client_counter(&self) -> Result<u64, ContextError> {
@@ -203,7 +168,7 @@ where
 
     fn validate_self_client(
         &self,
-        client_state_of_host_on_counterparty: Any,
+        client_state_of_host_on_counterparty: Self::HostClientState,
     ) -> Result<(), ContextError> {
         // Note: We can optionally implement this.
         // It would require having a Protobuf definition of the chain's `ClientState` that other chains would use.
@@ -361,6 +326,8 @@ where
     S: Spec,
     Da: DaSpec,
 {
+    type E = Self;
+
     fn get_client_execution_context(&mut self) -> &mut Self::E {
         self
     }

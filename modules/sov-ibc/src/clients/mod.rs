@@ -1,14 +1,13 @@
 pub mod context;
 
-use derive_more::{From, TryInto};
+use derive_more::TryInto;
 use ibc_client_tendermint::client_state::ClientState as TmClientState;
 use ibc_client_tendermint::consensus_state::ConsensusState as TmConsensusState;
 use ibc_client_tendermint::types::{
+    ClientState as TmClientStateTypes, ConsensusState as TmConsensusStateType,
     TENDERMINT_CLIENT_STATE_TYPE_URL, TENDERMINT_CONSENSUS_STATE_TYPE_URL,
 };
-use ibc_core::client::context::client_state::{
-    ClientStateCommon, ClientStateExecution, ClientStateValidation,
-};
+use ibc_core::client::context::prelude::*;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::{Height, Status};
 use ibc_core::commitment_types::commitment::{
@@ -20,16 +19,32 @@ use ibc_core::host::types::path::Path;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use sov_celestia_client::client_state::ClientState as SovClientState;
 use sov_celestia_client::consensus_state::ConsensusState as SovConsensusState;
-use sov_celestia_client::types::client_state::SOV_TENDERMINT_CLIENT_STATE_TYPE_URL;
-use sov_celestia_client::types::consensus_state::SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL;
+use sov_celestia_client::types::client_state::{
+    SovTmClientState, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
+};
+use sov_celestia_client::types::consensus_state::{
+    SovTmConsensusState, SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL,
+};
 use sov_modules_api::{DaSpec, Spec};
 
 use crate::context::IbcContext;
 
-#[derive(Clone, Debug, From, TryInto)]
+#[derive(Clone, Debug, TryInto)]
 pub enum AnyClientState {
     Tendermint(TmClientState),
     Sovereign(SovClientState),
+}
+
+impl From<SovTmClientState> for AnyClientState {
+    fn from(cs: SovTmClientState) -> Self {
+        Self::Sovereign(cs.into())
+    }
+}
+
+impl From<TmClientStateTypes> for AnyClientState {
+    fn from(cs: TmClientStateTypes) -> Self {
+        Self::Tendermint(cs.into())
+    }
 }
 
 impl Protobuf<Any> for AnyClientState {}
@@ -269,10 +284,48 @@ where
     }
 }
 
-#[derive(Clone, From, TryInto, ConsensusState)]
+#[derive(Clone, ConsensusState)]
 pub enum AnyConsensusState {
     Tendermint(TmConsensusState),
     Sovereign(SovConsensusState),
+}
+
+impl TryFrom<AnyConsensusState> for TmConsensusStateType {
+    type Error = ClientError;
+
+    fn try_from(cs: AnyConsensusState) -> Result<TmConsensusStateType, Self::Error> {
+        match cs {
+            AnyConsensusState::Tendermint(cs) => Ok(cs.inner().clone()),
+            _ => Err(ClientError::UnknownConsensusStateType {
+                consensus_state_type: "".to_string(),
+            }),
+        }
+    }
+}
+
+impl TryFrom<AnyConsensusState> for SovTmConsensusState {
+    type Error = ClientError;
+
+    fn try_from(cs: AnyConsensusState) -> Result<SovTmConsensusState, Self::Error> {
+        match cs {
+            AnyConsensusState::Sovereign(cs) => Ok(cs.inner().clone()),
+            _ => Err(ClientError::UnknownConsensusStateType {
+                consensus_state_type: "".to_string(),
+            }),
+        }
+    }
+}
+
+impl From<SovTmConsensusState> for AnyConsensusState {
+    fn from(cs: SovTmConsensusState) -> Self {
+        Self::Sovereign(cs.into())
+    }
+}
+
+impl From<TmConsensusStateType> for AnyConsensusState {
+    fn from(cs: TmConsensusStateType) -> Self {
+        Self::Tendermint(cs.into())
+    }
 }
 
 impl Protobuf<Any> for AnyConsensusState {}

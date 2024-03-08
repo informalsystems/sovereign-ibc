@@ -1,8 +1,10 @@
 use std::fmt::Debug;
 
 use async_trait::async_trait;
-use basecoin_store::context::ProvableStore;
+use basecoin::helper::ibc;
+use basecoin::store::context::ProvableStore;
 use ibc_client_tendermint::types::Header;
+use ibc_core::client::context::ClientValidationContext;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::host::ValidationContext;
@@ -30,11 +32,16 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
             QueryReq::ClientCounter => {
                 QueryResp::ClientCounter(self.ibc_ctx().client_counter().unwrap())
             }
-            QueryReq::ClientState(client_id) => {
-                QueryResp::ClientState(self.ibc_ctx().client_state(&client_id).unwrap().into())
-            }
+            QueryReq::ClientState(client_id) => QueryResp::ClientState(
+                self.ibc_ctx()
+                    .get_client_validation_context()
+                    .client_state(&client_id)
+                    .unwrap()
+                    .into(),
+            ),
             QueryReq::ConsensusState(client_id, height) => QueryResp::ConsensusState(
                 self.ibc_ctx()
+                    .get_client_validation_context()
                     .consensus_state(&ClientConsensusStatePath::new(
                         client_id,
                         height.revision_number(),
@@ -83,7 +90,7 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
 
         let events = msgs
             .into_iter()
-            .flat_map(|msg| self.app.ibc().process_message(msg).unwrap())
+            .flat_map(|msg| ibc(self.app.clone()).process_message(msg).unwrap())
             .collect();
 
         wait_for_block().await;

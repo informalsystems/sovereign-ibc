@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use base64::engine::general_purpose;
 use base64::Engine;
-use basecoin_app::modules::ibc::AnyClientState;
+use basecoin::modules::ibc::AnyClientState;
 use ibc_app_transfer::types::msgs::transfer::MsgTransfer;
 use ibc_app_transfer::types::packet::PacketData;
 use ibc_app_transfer::types::{Coin, Memo, PrefixedDenom};

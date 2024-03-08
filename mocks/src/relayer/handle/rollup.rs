@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use ibc_client_tendermint::types::Header;
 use ibc_core::channel::types::proto::v1::QueryPacketCommitmentRequest;
+use ibc_core::client::context::ClientValidationContext;
 use ibc_core::client::types::proto::v1::{QueryClientStateRequest, QueryConsensusStateRequest};
 use ibc_core::client::types::Height;
 use ibc_core::handler::types::events::IbcEvent;
@@ -41,11 +42,16 @@ where
             QueryReq::HostConsensusState(height) => {
                 QueryResp::HostConsensusState(ibc_ctx.host_consensus_state(&height).unwrap().into())
             }
-            QueryReq::ClientState(client_id) => {
-                QueryResp::ClientState(ibc_ctx.client_state(&client_id).unwrap().into())
-            }
+            QueryReq::ClientState(client_id) => QueryResp::ClientState(
+                ibc_ctx
+                    .get_client_validation_context()
+                    .client_state(&client_id)
+                    .unwrap()
+                    .into(),
+            ),
             QueryReq::ConsensusState(client_id, height) => QueryResp::ConsensusState(
                 ibc_ctx
+                    .get_client_validation_context()
                     .consensus_state(&ClientConsensusStatePath::new(
                         client_id,
                         height.revision_number(),

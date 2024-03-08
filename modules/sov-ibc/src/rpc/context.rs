@@ -2,6 +2,7 @@ use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::channel::types::channel::IdentifiedChannelEnd;
 use ibc_core::channel::types::error::ChannelError;
 use ibc_core::channel::types::packet::PacketState;
+use ibc_core::client::context::ClientValidationContext;
 use ibc_core::client::types::Height;
 use ibc_core::connection::types::error::ConnectionError;
 use ibc_core::connection::types::IdentifiedConnectionEnd;
@@ -11,7 +12,7 @@ use ibc_core::host::types::path::{
     AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath, Path,
     ReceiptPath,
 };
-use ibc_core::host::ValidationContext;
+use ibc_core::host::{ClientStateRef, ConsensusStateRef, ValidationContext};
 use ibc_query::core::context::{ProvableContext, QueryContext};
 use sov_modules_api::{DaSpec, Spec, StateMapAccessor, StateValueAccessor, StateVecAccessor};
 
@@ -33,9 +34,7 @@ where
     S: Spec,
     Da: DaSpec,
 {
-    fn client_states(
-        &self,
-    ) -> Result<Vec<(ClientId, <Self as ValidationContext>::AnyClientState)>, ContextError> {
+    fn client_states(&self) -> Result<Vec<(ClientId, ClientStateRef<Self>)>, ContextError> {
         let client_counter = self
             .ibc
             .client_counter
@@ -59,25 +58,27 @@ where
     fn consensus_states(
         &self,
         client_id: &ClientId,
-    ) -> Result<Vec<(Height, <Self as ValidationContext>::AnyConsensusState)>, ContextError> {
+    ) -> Result<Vec<(Height, ConsensusStateRef<Self>)>, ContextError> {
         let update_heights: Vec<Height> = self
             .ibc
             .client_update_heights_vec
             .iter(*self.working_set.borrow_mut())
             .collect();
 
-        let mut consesnsus_states = Vec::new();
+        let mut consensus_states = Vec::new();
 
         for height in update_heights {
-            let cs = self.consensus_state(&ClientConsensusStatePath::new(
-                client_id.clone(),
-                height.revision_number(),
-                height.revision_height(),
-            ))?;
-            consesnsus_states.push((height, cs));
+            let cs = self.get_client_validation_context().consensus_state(
+                &ClientConsensusStatePath::new(
+                    client_id.clone(),
+                    height.revision_number(),
+                    height.revision_height(),
+                ),
+            )?;
+            consensus_states.push((height, cs));
         }
 
-        Ok(consesnsus_states)
+        Ok(consensus_states)
     }
 
     fn consensus_state_heights(&self, client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
