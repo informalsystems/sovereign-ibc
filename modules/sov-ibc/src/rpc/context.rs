@@ -65,19 +65,20 @@ where
             .iter(*self.working_set.borrow_mut())
             .collect();
 
-        let mut consesnsus_states = Vec::new();
+        let mut consensus_states = Vec::new();
 
         for height in update_heights {
-            let client_ctx = self.get_client_validation_context();
-            let cs = client_ctx.consensus_state(&ClientConsensusStatePath::new(
-                client_id.clone(),
-                height.revision_number(),
-                height.revision_height(),
-            ))?;
-            consesnsus_states.push((height, cs));
+            let cs = self.get_client_validation_context().consensus_state(
+                &ClientConsensusStatePath::new(
+                    client_id.clone(),
+                    height.revision_number(),
+                    height.revision_height(),
+                ),
+            )?;
+            consensus_states.push((height, cs));
         }
 
-        Ok(consesnsus_states)
+        Ok(consensus_states)
     }
 
     fn consensus_state_heights(&self, client_id: &ClientId) -> Result<Vec<Height>, ContextError> {

@@ -116,18 +116,6 @@ where
         Ok(timestamp)
     }
 
-    fn client_counter(&self) -> Result<u64, ContextError> {
-        self.ibc
-            .client_counter
-            .get(*self.working_set.borrow_mut())
-            .ok_or(
-                ClientError::Other {
-                    description: "Client counter not found".to_string(),
-                }
-                .into(),
-            )
-    }
-
     fn host_consensus_state(
         &self,
         height: &Height,
@@ -151,14 +139,16 @@ where
         }
     }
 
-    fn validate_self_client(
-        &self,
-        client_state_of_host_on_counterparty: Self::HostClientState,
-    ) -> Result<(), ContextError> {
-        // Note: We can optionally implement this.
-        // It would require having a Protobuf definition of the chain's `ClientState` that other chains would use.
-        // The relayer sends us this `ClientState` as stored on other chains, and we validate it here.
-        Ok(())
+    fn client_counter(&self) -> Result<u64, ContextError> {
+        self.ibc
+            .client_counter
+            .get(*self.working_set.borrow_mut())
+            .ok_or(
+                ClientError::Other {
+                    description: "Client counter not found".to_string(),
+                }
+                .into(),
+            )
     }
 
     fn connection_end(&self, conn_id: &ConnectionId) -> Result<ConnectionEnd, ContextError> {
@@ -174,6 +164,16 @@ where
                 }
                 .into(),
             )
+    }
+
+    fn validate_self_client(
+        &self,
+        client_state_of_host_on_counterparty: Self::HostClientState,
+    ) -> Result<(), ContextError> {
+        // Note: We can optionally implement this.
+        // It would require having a Protobuf definition of the chain's `ClientState` that other chains would use.
+        // The relayer sends us this `ClientState` as stored on other chains, and we validate it here.
+        Ok(())
     }
 
     fn commitment_prefix(&self) -> CommitmentPrefix {

@@ -1,6 +1,5 @@
 use ibc_client_tendermint::context::ValidationContext as TmValidationContext;
-use ibc_core::client::context::client_state::ClientStateCommon;
-use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
+use ibc_core::client::context::prelude::*;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::handler::types::error::ContextError;

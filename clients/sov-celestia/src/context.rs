@@ -8,8 +8,8 @@ use ibc_core::primitives::Timestamp;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 
 /// Enables conversion (`TryInto` and `From`) between the consensus state type
-/// used by the host and the one specific to the Tendermint light client, which
-/// is `ConsensusStateType`.
+/// used by the host and the one specific to the Sovereign light client, which
+/// is `SovTmConsensusState`.
 pub trait ConsensusStateConverter:
     TryInto<SovTmConsensusState, Error = ClientError> + From<SovTmConsensusState>
 {

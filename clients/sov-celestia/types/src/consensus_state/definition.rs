@@ -29,6 +29,7 @@ impl<Da> ConsensusState<Da> {
 pub type SovTmConsensusState = ConsensusState<TmConsensusParams>;
 
 impl SovTmConsensusState {
+    /// Returns the timestamp of the consensus state
     pub fn timestamp(&self) -> Time {
         self.da_params.timestamp
     }

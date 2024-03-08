@@ -10,18 +10,18 @@ use super::Context;
 use crate::types::HeightTravel;
 
 impl SovValidationContext for Context<'_> {
-    fn host_height(&self) -> Result<Height, ContextError> {
-        let host_height = Height::new(0, self.env().block.height)?;
-
-        Ok(host_height)
-    }
-
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         let time = self.env().block.time;
 
         let host_timestamp = Timestamp::from_nanoseconds(time.nanos()).expect("invalid timestamp");
 
         Ok(host_timestamp)
+    }
+
+    fn host_height(&self) -> Result<Height, ContextError> {
+        let host_height = Height::new(0, self.env().block.height)?;
+
+        Ok(host_height)
     }
 
     fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {

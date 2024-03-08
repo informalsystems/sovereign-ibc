@@ -6,7 +6,7 @@ use sov_celestia_client::types::consensus_state::{
     SovTmConsensusState, SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL,
 };
 
-#[derive(Clone, Debug, derive_more::From, ConsensusStateDerive)]
+#[derive(Clone, Debug, ConsensusStateDerive)]
 pub enum AnyConsensusState {
     Sovereign(ConsensusState),
 }

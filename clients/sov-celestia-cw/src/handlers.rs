@@ -2,8 +2,7 @@ use cosmwasm_std::{to_json_binary, Binary};
 use ibc_core::client::context::client_state::{
     ClientStateCommon, ClientStateExecution, ClientStateValidation,
 };
-use ibc_core::client::context::consensus_state::ConsensusState as _;
-use ibc_core::client::context::ClientValidationContext;
+use ibc_core::client::context::prelude::*;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::primitives::proto::Any;
 use prost::Message;
