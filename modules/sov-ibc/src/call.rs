@@ -46,7 +46,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         })?;
 
         info!(
-            "Processing IBC core message: {:?} at visible slot number {:?}",
+            "Processing IBC core message: {:?} at visible slot number: {:?}",
             msg_envelope,
             context.visible_slot_number()
         );
@@ -74,7 +74,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         working_set: &mut WorkingSet<S>,
     ) -> Result<CallResponse> {
         info!(
-            "Processing IBC transfer message: {:?} at visible slot number {:?}",
+            "Processing IBC transfer message: {:?} at visible_slot_number: {:?}",
             msg_transfer,
             context.visible_slot_number()
         );
