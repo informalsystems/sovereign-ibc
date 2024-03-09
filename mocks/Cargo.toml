@@ -52,13 +52,12 @@ sov-modules-api            = { workspace = true }
 sov-rollup-interface       = { workspace = true }
 sov-state                  = { workspace = true }
 
-sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["native"], optional = true }
-sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["native"], optional = true }
-sov-mock-zkvm              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["native"], optional = true }
-sov-modules-stf-blueprint  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["native"], optional = true }
-sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60", features = ["test-utils"] }
-sov-schema-db              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }
-const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "5a144d60" }
+sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
+sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
+sov-mock-zkvm              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
+sov-modules-stf-blueprint  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
+sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["test-utils"] }
+const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc" }
 jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 [dev-dependencies]
