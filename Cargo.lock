@@ -538,7 +538,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=63013eb#63013eb513a921f38af82707a1ea1f5dabc180c8"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=9b214c7#9b214c70a872365e701b8d7a485a22efedc499ec"
 dependencies = [
  "basecoin-app",
  "basecoin-modules",
@@ -560,7 +560,7 @@ dependencies = [
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=63013eb#63013eb513a921f38af82707a1ea1f5dabc180c8"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=9b214c7#9b214c70a872365e701b8d7a485a22efedc499ec"
 dependencies = [
  "basecoin-modules",
  "basecoin-store",
@@ -579,7 +579,7 @@ dependencies = [
 [[package]]
 name = "basecoin-modules"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=63013eb#63013eb513a921f38af82707a1ea1f5dabc180c8"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=9b214c7#9b214c70a872365e701b8d7a485a22efedc499ec"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
@@ -596,7 +596,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.10.8",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b)",
  "tendermint 0.34.0",
  "tendermint-rpc",
  "tonic",
@@ -606,7 +606,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=63013eb#63013eb513a921f38af82707a1ea1f5dabc180c8"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=9b214c7#9b214c70a872365e701b8d7a485a22efedc499ec"
 dependencies = [
  "displaydoc",
  "ics23",
@@ -688,6 +688,21 @@ dependencies = [
  "subtle",
  "zeroize",
 ]
+
+[[package]]
+name = "bit-set"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0700ddab506f33b20a03b13996eccd309a48e5ff77d0d95926aa0210fb4e95f1"
+dependencies = [
+ "bit-vec",
+]
+
+[[package]]
+name = "bit-vec"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
 
 [[package]]
 name = "bitflags"
@@ -1076,7 +1091,7 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 [[package]]
 name = "const-rollup-config"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 
 [[package]]
 name = "const_format"
@@ -4068,6 +4083,7 @@ dependencies = [
  "lazy_static",
  "memchr",
  "parking_lot",
+ "protobuf",
  "thiserror",
 ]
 
@@ -4077,6 +4093,8 @@ version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "31b476131c3c86cb68032fdc5cb6d5a1045e3e42d96b69fa599fd77701e1f5bf"
 dependencies = [
+ "bit-set",
+ "bit-vec",
  "bitflags 2.4.2",
  "lazy_static",
  "num-traits",
@@ -4084,7 +4102,20 @@ dependencies = [
  "rand_chacha",
  "rand_xorshift",
  "regex-syntax 0.8.2",
+ "rusty-fork",
+ "tempfile",
  "unarray",
+]
+
+[[package]]
+name = "proptest-derive"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9cf16337405ca084e9c78985114633b6827711d22b9e6ef6c6c0d665eb3f0b6e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -4142,6 +4173,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "protobuf"
+version = "2.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "106dd99e98437432fed6519dedecfade6a06a73bb7b2a1e019fdd2bee5778d94"
+
+[[package]]
 name = "protobuf-src"
 version = "1.1.0+21.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4169,6 +4206,12 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
+
+[[package]]
+name = "quick-error"
+version = "1.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
 
 [[package]]
 name = "quote"
@@ -4355,9 +4398,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.11.24"
+version = "0.11.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6920094eb85afde5e4a138be3f2de8bbdf28000f0029e72c45025a56b042251"
+checksum = "0eea5a9eb898d3783f17c6407670e3592fd174cb81a10e51d4c37f49450b9946"
 dependencies = [
  "base64 0.21.7",
  "bytes",
@@ -4526,7 +4569,7 @@ dependencies = [
 [[package]]
 name = "risc0-cycle-utils"
 version = "0.3.0"
-source = "git+https://github.com/Sovereign-Labs/risc0-cycle-macros.git?rev=98948b8ee0e3edffcee7f3bd95a9d93c5c0941af#98948b8ee0e3edffcee7f3bd95a9d93c5c0941af"
+source = "git+https://github.com/Sovereign-Labs/risc0-cycle-macros.git?rev=a00d0719388bcecd51b6033721957b27ffe12843#a00d0719388bcecd51b6033721957b27ffe12843"
 dependencies = [
  "bytes",
  "risc0-zkvm",
@@ -4663,6 +4706,22 @@ checksum = "bb919243f34364b6bd2fc10ef797edbfa75f33c252e7998527479c6d6b47e1ec"
 dependencies = [
  "bytes",
  "rustc-hex",
+]
+
+[[package]]
+name = "rockbound"
+version = "1.0.0"
+source = "git+https://github.com/sovereign-Labs/rockbound?tag=v2.0.0#edabd23e12d75058d7ce5d92e38dcc9f66f83c53"
+dependencies = [
+ "anyhow",
+ "byteorder",
+ "once_cell",
+ "prometheus",
+ "proptest",
+ "proptest-derive",
+ "rocksdb",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]
@@ -4818,6 +4877,18 @@ name = "rustversion"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
+
+[[package]]
+name = "rusty-fork"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb3dcc6e454c328bb824492db107ab7c0ae8fcffe4ad210136ef014458c1bc4f"
+dependencies = [
+ "fnv",
+ "quick-error",
+ "tempfile",
+ "wait-timeout",
+]
 
 [[package]]
 name = "ruzstd"
@@ -5010,6 +5081,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "870026e60fa08c69f064aa766c10f10b1d62db9ccd4d0abb206472bee0ce3b32"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde-big-array"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11fc7cc2c76d73e0f27ee52abbd64eec84d46f370c88371120433196934e4b7f"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -5268,7 +5348,7 @@ dependencies = [
 [[package]]
 name = "sov-bank"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "borsh",
@@ -5280,12 +5360,13 @@ dependencies = [
  "sov-modules-api",
  "sov-state",
  "thiserror",
+ "tracing",
 ]
 
 [[package]]
 name = "sov-blob-storage"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "bincode",
@@ -5306,7 +5387,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-adapter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5352,7 +5433,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-client"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662#babc6620e6e3809074a4f4c022efdeb31153c5e9"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b#81d5c5bed02d4df1e5a89af9092661be04c0da60"
 dependencies = [
  "derive_more",
  "ibc-client-tendermint",
@@ -5360,7 +5441,7 @@ dependencies = [
  "ics23",
  "prost",
  "serde",
- "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662)",
+ "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b)",
  "tendermint 0.34.0",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.0",
@@ -5411,7 +5492,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-client-types"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662#babc6620e6e3809074a4f4c022efdeb31153c5e9"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b#81d5c5bed02d4df1e5a89af9092661be04c0da60"
 dependencies = [
  "base64 0.21.7",
  "bytes",
@@ -5433,10 +5514,11 @@ dependencies = [
 [[package]]
 name = "sov-chain-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "borsh",
+ "derivative",
  "jsonrpsee",
  "serde",
  "serde_json",
@@ -5448,7 +5530,7 @@ dependencies = [
 [[package]]
 name = "sov-db"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "bincode",
@@ -5456,11 +5538,11 @@ dependencies = [
  "byteorder",
  "hex",
  "jmt",
+ "rockbound",
  "rocksdb",
  "serde",
  "sov-modules-core",
  "sov-rollup-interface",
- "sov-schema-db",
  "tokio",
 ]
 
@@ -5491,12 +5573,13 @@ dependencies = [
  "sov-state",
  "thiserror",
  "time",
+ "tracing",
 ]
 
 [[package]]
 name = "sov-ibc"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662#babc6620e6e3809074a4f4c022efdeb31153c5e9"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b#81d5c5bed02d4df1e5a89af9092661be04c0da60"
 dependencies = [
  "ahash 0.8.6",
  "anyhow",
@@ -5513,14 +5596,15 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.8",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b)",
  "sov-chain-state",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662)",
+ "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b)",
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
  "thiserror",
  "time",
+ "tracing",
 ]
 
 [[package]]
@@ -5546,17 +5630,16 @@ dependencies = [
  "sha2 0.10.8",
  "sov-bank",
  "sov-celestia-adapter",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b)",
  "sov-chain-state",
- "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662)",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662)",
+ "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b)",
+ "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b)",
  "sov-mock-da",
  "sov-mock-zkvm",
  "sov-modules-api",
  "sov-modules-stf-blueprint",
  "sov-prover-storage-manager",
  "sov-rollup-interface",
- "sov-schema-db",
  "sov-state",
  "tempfile",
  "tendermint 0.34.0",
@@ -5595,7 +5678,7 @@ dependencies = [
 [[package]]
 name = "sov-ibc-transfer"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=babc662#babc6620e6e3809074a4f4c022efdeb31153c5e9"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=81d5c5b#81d5c5bed02d4df1e5a89af9092661be04c0da60"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -5617,7 +5700,7 @@ dependencies = [
 [[package]]
 name = "sov-mock-da"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5629,12 +5712,13 @@ dependencies = [
  "sha2 0.10.8",
  "sov-rollup-interface",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
 name = "sov-mock-zkvm"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "bincode",
@@ -5642,18 +5726,15 @@ dependencies = [
  "ed25519-dalek",
  "hex",
  "rand",
- "schemars",
  "serde",
  "sha2 0.10.8",
- "sov-modules-api",
  "sov-rollup-interface",
- "thiserror",
 ]
 
 [[package]]
 name = "sov-modules-api"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "bech32",
@@ -5678,7 +5759,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-core"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "bech32",
@@ -5699,7 +5780,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-macros"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "borsh",
@@ -5714,7 +5795,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-stf-blueprint"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "borsh",
@@ -5734,12 +5815,12 @@ dependencies = [
 [[package]]
 name = "sov-prover-storage-manager"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
+ "rockbound",
  "sov-db",
  "sov-rollup-interface",
- "sov-schema-db",
  "sov-state",
  "tracing",
 ]
@@ -5747,7 +5828,7 @@ dependencies = [
 [[package]]
 name = "sov-rollup-interface"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5757,6 +5838,7 @@ dependencies = [
  "futures",
  "hex",
  "proptest",
+ "schemars",
  "serde",
  "serde_json",
  "sha2 0.10.8",
@@ -5765,23 +5847,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "sov-schema-db"
-version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
-dependencies = [
- "anyhow",
- "byteorder",
- "once_cell",
- "prometheus",
- "rocksdb",
- "thiserror",
- "tracing",
-]
-
-[[package]]
 name = "sov-sequencer-registry"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "borsh",
@@ -5799,7 +5867,7 @@ dependencies = [
 [[package]]
 name = "sov-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=5a144d60#5a144d60eefaf9ce166bbfd66324b959aa4ae82b"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=3f94cecc#3f94ceccae8f84eb191deeb97ce65a1af3c9fd1b"
 dependencies = [
  "anyhow",
  "bcs",
@@ -5808,6 +5876,7 @@ dependencies = [
  "hex",
  "jmt",
  "serde",
+ "serde-big-array",
  "serde_json",
  "sha2 0.10.8",
  "sov-db",
@@ -5913,20 +5982,20 @@ dependencies = [
 
 [[package]]
 name = "system-configuration"
-version = "0.5.1"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba3a3adc5c275d719af8cb4272ea1c4a6d668a777f37e115f6d11ddbc1c8e0e7"
+checksum = "658bc6ee10a9b4fcf576e9b0819d95ec16f4d2c02d39fd83ac1c8789785c4a42"
 dependencies = [
- "bitflags 1.3.2",
+ "bitflags 2.4.2",
  "core-foundation",
  "system-configuration-sys",
 ]
 
 [[package]]
 name = "system-configuration-sys"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a75fb188eb626b924683e3b95e3a48e63551fcfb51949de2f06a9d91dbee93c9"
+checksum = "8e1d1b10ced5ca923a1fcb8d03e96b8d3268065d724548c0211415ff6ac6bac4"
 dependencies = [
  "core-foundation-sys",
  "libc",
@@ -6711,6 +6780,15 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+
+[[package]]
+name = "wait-timeout"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f200f5b12eb75f8c1ed65abd4b2db8a6e1b138a20de009dacee265a2498f3f6"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "walkdir"

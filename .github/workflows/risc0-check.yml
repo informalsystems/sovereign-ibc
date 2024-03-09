@@ -31,10 +31,12 @@ jobs:
           git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
-      - name: Install cargo-risc0
-        run: cargo install cargo-risczero
+      - name: Install cargo-risczero
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-risczero@0.20
       - name: Install risc0-zkvm toolchain
-        run: cargo risczero install
+        run: cargo risczero install --version v2024-02-08.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check Risc0 compatibility

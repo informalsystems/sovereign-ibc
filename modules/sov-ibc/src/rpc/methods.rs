@@ -66,6 +66,8 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         request: QueryClientStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientStateResponse> {
+        let namespace = self.client_state_map.namespace();
+
         let prefix = self.client_state_map.prefix();
 
         let codec = self.client_state_map.codec();
@@ -73,7 +75,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         let client_id =
             ClientId::from_str(request.client_id.as_str()).map_err(to_jsonrpsee_error)?;
 
-        let key = SlotKey::new(prefix, &client_id, codec.key_codec());
+        let key = SlotKey::new(namespace, prefix, &client_id, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 
@@ -126,6 +128,8 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         request: QueryConsensusStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConsensusStateResponse> {
+        let namespace = self.consensus_state_map.namespace();
+
         let prefix = self.consensus_state_map.prefix();
 
         let codec = self.consensus_state_map.codec();
@@ -139,7 +143,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
             request.revision_height,
         );
 
-        let key = SlotKey::new(prefix, &path, codec.key_codec());
+        let key = SlotKey::new(namespace, prefix, &path, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 
@@ -389,6 +393,8 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         request: QueryPacketCommitmentRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketCommitmentResponse> {
+        let namespace = self.packet_commitment_map.namespace();
+
         let prefix = self.packet_commitment_map.prefix();
 
         let codec = self.packet_commitment_map.codec();
@@ -399,7 +405,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
             request.sequence.into(),
         );
 
-        let key = SlotKey::new(prefix, &commitment_path, codec.key_codec());
+        let key = SlotKey::new(namespace, prefix, &commitment_path, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 

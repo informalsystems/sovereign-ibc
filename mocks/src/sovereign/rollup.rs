@@ -8,6 +8,7 @@ use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::host::ValidationContext;
+use jmt::RootHash;
 use sov_bank::CallMessage as BankCallMessage;
 use sov_celestia_client::types::consensus_state::{SovTmConsensusState, TmConsensusParams};
 use sov_ibc::call::CallMessage as IbcCallMessage;
@@ -16,7 +17,7 @@ use sov_ibc::context::IbcContext;
 use sov_modules_api::{Context, DaSpec, Spec, WorkingSet};
 use sov_modules_stf_blueprint::kernels::basic::BasicKernel;
 use sov_rollup_interface::services::da::DaService;
-use sov_state::{MerkleProofSpec, ProverStorage, Storage};
+use sov_state::{MerkleProofSpec, ProverStorage, Storage, StorageRoot};
 use tendermint::{Hash, Time};
 
 use crate::cosmos::MockTendermint;
@@ -86,7 +87,10 @@ where
             prover_storage,
             da_core,
             rollup_ctx: Arc::new(Mutex::new(rollup_ctx)),
-            state_root: Arc::new(Mutex::new(jmt::RootHash([0; 32]))),
+            state_root: Arc::new(Mutex::new(StorageRoot::new(
+                RootHash([1; 32]),
+                RootHash([0; 32]),
+            ))),
             mempool: Arc::new(Mutex::new(vec![])),
         }
     }
@@ -193,8 +197,10 @@ where
             .host_height()
             .unwrap_or(Height::new(0, 1).expect("valid height"));
 
+        let visible_hash = <S as Spec>::VisibleHash::from(root_hash);
+
         let sov_consensus_state = SovTmConsensusState::new(
-            CommitmentRoot::from_bytes(&root_hash.0),
+            CommitmentRoot::from_bytes(&visible_hash.into()),
             TmConsensusParams::new(
                 Time::now(),
                 Hash::Sha256([
