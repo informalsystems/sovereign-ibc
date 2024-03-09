@@ -1,11 +1,9 @@
 //! Contains the implementation of the Sovereign SDK rollup runner.
 use std::time::Duration;
 
-use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
     DispatchCall, Gas, Genesis, KernelWorkingSet, ModuleInfo, SlotData, Spec, StateCheckpoint,
-    VersionedStateReadWriter,
 };
 use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::da::BlockHeaderTrait;
@@ -88,15 +86,6 @@ where
             &mut checkpoint,
         );
 
-        let kernel_working_set = KernelWorkingSet::from_kernel(self.kernel(), &mut checkpoint);
-        let mut versioned_working_set =
-            VersionedStateReadWriter::from_kernel_ws_virtual(kernel_working_set);
-
-        let visible_hash = <S as Spec>::VisibleHash::from(state_root);
-
-        self.runtime()
-            .begin_slot_hook(visible_hash, &mut versioned_working_set);
-
         let mut working_set = checkpoint.to_revertable(Default::default());
 
         self.set_host_consensus_state(state_root, &mut working_set);
@@ -104,7 +93,11 @@ where
         working_set.checkpoint().0
     }
 
-    pub async fn execute_msg(&mut self, checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
+    pub async fn execute_msg(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
+        let kernel_working_set = KernelWorkingSet::from_kernel(self.kernel(), &mut checkpoint);
+
+        let visible_slot = kernel_working_set.virtual_slot();
+
         let mut working_set = checkpoint.to_revertable(Default::default());
 
         let rollup_ctx = self.rollup_ctx();
@@ -114,7 +107,7 @@ where
             // module, ensuring that the module's address is used for the
             // token creation.
             if let RuntimeCall::ibc(_) = m {
-                self.set_sender(self.runtime().ibc.address().clone())
+                self.resolve_ctx(self.runtime().ibc.address().clone(), visible_slot);
             }
 
             self.runtime()
@@ -122,7 +115,7 @@ where
                 .unwrap();
 
             // Resets the sender address to the address of the relayer
-            self.set_sender(rollup_ctx.sender().clone());
+            self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
         }
 
         *self.mempool.acquire_mutex() = vec![];
@@ -137,19 +130,12 @@ where
 
         self.kernel().end_slot_hook(&Gas::zero(), &mut checkpoint);
 
-        self.runtime().end_slot_hook(&mut checkpoint);
-
         let (cache_log, witness) = checkpoint.freeze();
 
         let (root_hash, state_update) = self
             .prover_storage()
             .compute_state_update(cache_log, &witness)
             .expect("jellyfish merkle tree update must succeed");
-
-        let visible_root_hash = <S as Spec>::VisibleHash::from(root_hash);
-
-        self.runtime()
-            .finalize_hook(visible_root_hash, &mut checkpoint.accessory_state());
 
         let accessory_log = checkpoint.freeze_non_provable();
 
