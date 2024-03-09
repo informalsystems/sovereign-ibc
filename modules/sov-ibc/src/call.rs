@@ -11,6 +11,7 @@ use ibc_core::primitives::proto::Any;
 use sov_ibc_transfer::context::IbcTransferContext;
 use sov_modules_api::{CallResponse, Context, DaSpec, Spec, WorkingSet};
 use thiserror::Error;
+use tracing::info;
 
 use crate::context::IbcContext;
 use crate::router::IbcRouter;
@@ -40,6 +41,16 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         context: Context<S>,
         working_set: &mut WorkingSet<S>,
     ) -> Result<CallResponse> {
+        let msg_envelope = MsgEnvelope::try_from(msg).map_err(|e| {
+            anyhow::anyhow!("Failed to convert Any to MsgEnvelope: {}", e.to_string())
+        })?;
+
+        info!(
+            "Processing IBC core message: {:?} at visible slot number {:?}",
+            msg_envelope,
+            context.visible_slot_number()
+        );
+
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         let mut execution_context = IbcContext {
@@ -48,11 +59,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
             working_set: shared_working_set.clone(),
         };
 
-        let mut router = IbcRouter::new(self, context, shared_working_set);
-
-        let msg_envelope = MsgEnvelope::try_from(msg).map_err(|e| {
-            anyhow::anyhow!("Failed to convert Any to MsgEnvelope: {}", e.to_string())
-        })?;
+        let mut router = IbcRouter::new(self, context.clone(), shared_working_set);
 
         match dispatch(&mut execution_context, &mut router, msg_envelope) {
             Ok(_) => Ok(CallResponse::default()),
@@ -66,6 +73,12 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         context: Context<S>,
         working_set: &mut WorkingSet<S>,
     ) -> Result<CallResponse> {
+        info!(
+            "Processing IBC transfer message: {:?} at visible slot number {:?}",
+            msg_transfer,
+            context.visible_slot_number()
+        );
+
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         let mut ibc_ctx = IbcContext {

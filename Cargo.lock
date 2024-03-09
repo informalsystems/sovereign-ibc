@@ -5573,6 +5573,7 @@ dependencies = [
  "sov-state",
  "thiserror",
  "time",
+ "tracing",
 ]
 
 [[package]]
