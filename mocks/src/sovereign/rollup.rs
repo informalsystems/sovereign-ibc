@@ -177,12 +177,8 @@ where
         *self.state_root.acquire_mutex() = state_root;
     }
 
-    pub(crate) fn set_sender(&mut self, sender_address: S::Address) {
-        *self.rollup_ctx.acquire_mutex() = Context::new(
-            sender_address.clone(),
-            sender_address,
-            self.rollup_ctx().visible_slot_number(),
-        );
+    pub(crate) fn resolve_ctx(&mut self, sender: S::Address, height: u64) {
+        *self.rollup_ctx.acquire_mutex() = Context::new(sender.clone(), sender, height);
     }
 
     /// Sets the host consensus state when processing each block
