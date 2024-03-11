@@ -106,15 +106,15 @@ pub mod test_util {
         pub initial_slot_number: Height,
         pub final_slot_number: Height,
         #[builder(default)]
-        pub initial_da_block_hash: Vec<u8>,
-        #[builder(default)]
-        pub final_da_block_hash: Vec<u8>,
-        #[builder(default)]
         pub genesis_state_root: Vec<u8>,
         #[builder(default)]
         pub input_state_root: Vec<u8>,
         #[builder(default)]
         pub final_state_root: Vec<u8>,
+        #[builder(default)]
+        pub initial_da_block_hash: Vec<u8>,
+        #[builder(default)]
+        pub final_da_block_hash: Vec<u8>,
         #[builder(default = CodeCommitment::from(vec![0; 32]))]
         pub code_commitment: CodeCommitment,
     }
@@ -125,11 +125,11 @@ pub mod test_util {
                 validity_conditions: config.validity_conditions,
                 initial_slot_number: config.initial_slot_number,
                 final_slot_number: config.final_slot_number,
-                initial_da_block_hash: config.initial_da_block_hash,
-                final_da_block_hash: config.final_da_block_hash,
                 genesis_state_root: config.genesis_state_root,
                 input_state_root: config.input_state_root,
                 final_state_root: config.final_state_root,
+                initial_da_block_hash: config.initial_da_block_hash,
+                final_da_block_hash: config.final_da_block_hash,
                 code_commitment: config.code_commitment,
             }
         }

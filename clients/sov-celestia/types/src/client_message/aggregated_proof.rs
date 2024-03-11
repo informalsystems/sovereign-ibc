@@ -86,11 +86,11 @@ pub struct AggregatedProofPublicInput {
     pub validity_conditions: Vec<ValidityCondition>,
     pub initial_slot_number: Height,
     pub final_slot_number: Height,
-    pub initial_da_block_hash: Vec<u8>,
-    pub final_da_block_hash: Vec<u8>,
     pub genesis_state_root: Vec<u8>,
     pub input_state_root: Vec<u8>,
     pub final_state_root: Vec<u8>,
+    pub initial_da_block_hash: Vec<u8>,
+    pub final_da_block_hash: Vec<u8>,
     pub code_commitment: CodeCommitment,
 }
 
@@ -124,11 +124,11 @@ impl Display for AggregatedProofPublicInput {
                 PrettySlice(&self.validity_conditions),
                 self.initial_slot_number,
                 self.final_slot_number,
-                hex::encode(&self.initial_da_block_hash),
-                hex::encode(&self.final_da_block_hash),
                 hex::encode(&self.genesis_state_root),
                 hex::encode(&self.input_state_root),
                 hex::encode(&self.final_state_root),
+                hex::encode(&self.initial_da_block_hash),
+                hex::encode(&self.final_da_block_hash),
                 self.code_commitment,
             )
     }
@@ -148,11 +148,11 @@ impl TryFrom<RawAggregatedProofPublicInput> for AggregatedProofPublicInput {
                 .collect(),
             initial_slot_number: Height::new(0, raw.initial_slot_number)?,
             final_slot_number: Height::new(0, raw.final_slot_number)?,
-            initial_da_block_hash: raw.initial_da_block_hash,
-            final_da_block_hash: raw.final_da_block_hash,
             genesis_state_root: raw.genesis_state_root,
             input_state_root: raw.initial_state_root,
             final_state_root: raw.final_state_root,
+            initial_da_block_hash: raw.initial_da_block_hash,
+            final_da_block_hash: raw.final_da_block_hash,
             code_commitment: raw
                 .code_commitment
                 .ok_or(Error::missing("code commitment"))?
@@ -171,11 +171,11 @@ impl From<AggregatedProofPublicInput> for RawAggregatedProofPublicInput {
                 .collect(),
             initial_slot_number: value.initial_slot_number.revision_height(),
             final_slot_number: value.final_slot_number.revision_height(),
-            initial_da_block_hash: value.initial_da_block_hash,
-            final_da_block_hash: value.final_da_block_hash,
             genesis_state_root: value.genesis_state_root,
             initial_state_root: value.input_state_root,
             final_state_root: value.final_state_root,
+            initial_da_block_hash: value.initial_da_block_hash,
+            final_da_block_hash: value.final_da_block_hash,
             code_commitment: Some(value.code_commitment.into()),
         }
     }
