@@ -28,16 +28,16 @@ message AggregatedProofPublicInput {
   // the final slot number of the rollup, up to which the proof captures the
   // rollup's transition to the final state root.
   uint64 final_slot_number = 3;
-  // the initial DA block hash
-  bytes initial_da_block_hash = 4;
-  // the final DA block hash
-  bytes final_da_block_hash = 5;
   // the genesis state root
-  bytes genesis_state_root = 6;
+  bytes genesis_state_root = 4;
   // the initial state root
-  bytes initial_state_root = 7;
+  bytes initial_state_root = 5;
   // the final state root
-  bytes final_state_root = 8;
+  bytes final_state_root = 6;
+  // the initial DA block hash
+  bytes initial_da_block_hash = 7;
+  // the final DA block hash
+  bytes final_da_block_hash = 8;
   // the code commitment of the aggregated proof circuit
   CodeCommitment code_commitment = 9 [
     (gogoproto.nullable) = false,

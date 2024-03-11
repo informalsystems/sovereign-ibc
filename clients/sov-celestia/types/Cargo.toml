@@ -18,7 +18,7 @@ description  = """
 # external dependencies
 base64        = { workspace = true, features = ["alloc"] }
 bytes         = { workspace = true }
-hex           = { version = "0.4.3", optional = true }
+hex           = { version = "0.4.3" }
 derive_more   = { workspace = true }
 prost         = { workspace = true }
 schemars      = { workspace = true, optional = true }
@@ -63,7 +63,6 @@ json-schema = [
 	"dep:schemars",
 ]
 test-util = [
-	"hex",
 	"typed-builder",
 	"ibc-client-wasm-types"
 ]

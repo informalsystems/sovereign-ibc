@@ -1,3 +1,5 @@
+use core::fmt::{Display, Error as FmtError, Formatter};
+
 use ibc_core::client::types::Height;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Protobuf;
@@ -7,6 +9,7 @@ use ibc_proto::sovereign::types::v1::{
     CodeCommitment as RawCodeCommitment, ValidityCondition as RawValidityCondition,
 };
 
+use crate::client_message::pretty::PrettySlice;
 use crate::error::Error;
 
 /// Defines the aggregated proof data structure for the Sovereign SDK rollups
@@ -34,6 +37,16 @@ impl AggregatedProofData {
 
     pub fn aggregated_proof(&self) -> &AggregatedProof {
         &self.aggregated_proof
+    }
+}
+
+impl Display for AggregatedProofData {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
+        write!(
+            f,
+            "AggregatedProofData {{ aggregated_proof_public_input: {}, aggregated_proof: {} }}",
+            &self.public_input, self.aggregated_proof
+        )
     }
 }
 
@@ -103,6 +116,24 @@ impl AggregatedProofPublicInput {
     }
 }
 
+impl Display for AggregatedProofPublicInput {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        write!(
+                f,
+                "AggregatedProofPublicInput {{ validity_conditions: {}, initial_slot_number: {}, final_slot_number: {}, initial_da_block_hash: {}, final_da_block_hash: {}, genesis_state_root: {}, input_state_root: {}, post_state_root: {}, code_commitment: {} }}",
+                PrettySlice(&self.validity_conditions),
+                self.initial_slot_number,
+                self.final_slot_number,
+                hex::encode(&self.initial_da_block_hash),
+                hex::encode(&self.final_da_block_hash),
+                hex::encode(&self.genesis_state_root),
+                hex::encode(&self.input_state_root),
+                hex::encode(&self.final_state_root),
+                self.code_commitment,
+            )
+    }
+}
+
 impl Protobuf<RawAggregatedProofPublicInput> for AggregatedProofPublicInput {}
 
 impl TryFrom<RawAggregatedProofPublicInput> for AggregatedProofPublicInput {
@@ -161,6 +192,15 @@ impl ValidityCondition {
     }
 }
 
+impl Display for ValidityCondition {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        if self.0.is_empty() {
+            return write!(f, "ValidityCondition([])");
+        }
+        write!(f, "ValidityCondition(0x{})", hex::encode(&self.0))
+    }
+}
+
 impl From<Vec<u8>> for ValidityCondition {
     fn from(validity_condition: Vec<u8>) -> Self {
         Self(validity_condition)
@@ -194,6 +234,15 @@ impl CodeCommitment {
     }
 }
 
+impl Display for CodeCommitment {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        if self.0.is_empty() {
+            return write!(f, "CodeCommitment([])");
+        }
+        write!(f, "CodeCommitment(0x{})", hex::encode(&self.0))
+    }
+}
+
 impl From<Vec<u8>> for CodeCommitment {
     fn from(code_commitment: Vec<u8>) -> Self {
         Self(code_commitment)
@@ -223,6 +272,15 @@ pub struct AggregatedProof(Vec<u8>);
 impl AggregatedProof {
     pub fn as_slice(&self) -> &[u8] {
         &self.0
+    }
+}
+
+impl Display for AggregatedProof {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        if self.0.is_empty() {
+            return write!(f, "AggregatedProof([])");
+        }
+        write!(f, "AggregatedProof(0x{})", hex::encode(&self.0))
     }
 }
 
