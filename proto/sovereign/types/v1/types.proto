@@ -2,42 +2,47 @@ syntax = "proto3";
 
 package sovereign.types.v1;
 
+import "gogoproto/gogo.proto";
+
 // AggregatedProofData is the overarching structure, encompassing public input,
 // proof data information, and aggregated proof bytes.
 message AggregatedProofData {
-  // the public input
-  PublicInput public_input = 1;
-  // the proof data info
-  ProofDataInfo proof_data_info = 2;
+  // the public input of the aggregated proof
+  AggregatedProofPublicInput public_input = 1;
   // the aggregated proof bytes
-  AggregatedProof aggregated_proof = 3;
+  AggregatedProof aggregated_proof = 2;
 }
 
-// PublicInput defines the public properties of the AggregatedProof for the
-// Sovereign SDK rollups, utilized for verifying the proof.
-message PublicInput {
-  // the initial DA block hash
-  bytes initial_da_block_hash = 1;
-  // the final DA block hash
-  bytes final_da_block_hash = 2;
-  // the genesis state root
-  bytes genesis_state_root = 3;
-  // the initial state root
-  bytes initial_state_root = 4;
-  // the final state root
-  bytes final_state_root = 5;
-  // th code commitment of the aggregated proof circuit
-  bytes code_commitment = 6;
-}
-
-// ProofDataInfo contains additional information about the proof.
-message ProofDataInfo {
-  // the initial height of the DA block from which the proof covers the updating
-  // of the initial state root.
-  uint64 initial_state_height = 1;
-  // the last height of the DA block, up to which the proof captures the
+// AggregatedProofPublicInput defines the public properties of the
+// AggregatedProof for the Sovereign SDK rollups, utilized for verifying the
+// proof.
+message AggregatedProofPublicInput {
+  // The set of validity conditions for each block of the aggregated proof.
+  repeated ValidityCondition validity_conditions = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"validity_conditions\""
+  ];
+  // The initial slot number of the rollup from which the proof captures the
+  // rollup's transition from the initial state root.
+  uint64 initial_slot_number = 2;
+  // the final slot number of the rollup, up to which the proof captures the
   // rollup's transition to the final state root.
-  uint64 final_state_height = 2;
+  uint64 final_slot_number = 3;
+  // the genesis state root
+  bytes genesis_state_root = 4;
+  // the initial state root
+  bytes initial_state_root = 5;
+  // the final state root
+  bytes final_state_root = 6;
+  // the initial DA block hash
+  bytes initial_da_block_hash = 7;
+  // the final DA block hash
+  bytes final_da_block_hash = 8;
+  // the code commitment of the aggregated proof circuit
+  CodeCommitment code_commitment = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"code_commitment\""
+  ];
 }
 
 // AggregatedProof defines the aggregated proof structure for the Sovereign SDK
@@ -45,4 +50,17 @@ message ProofDataInfo {
 message AggregatedProof {
   // the rollup aggregated proof bytes covering a range of DA blocks
   bytes proof = 1;
+}
+
+// ValidityCondition defines the validity condition for each block of the
+// aggregated proof
+message ValidityCondition {
+  // the validity condition
+  bytes validity_condition = 1;
+}
+
+// CodeCommitment defines the code commitment of the aggregated proof circuit
+message CodeCommitment {
+  // the code commitment
+  bytes code_commitment = 1;
 }

@@ -9,7 +9,6 @@ use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::Header as RawSovTmH
 use prost::Message;
 
 use super::aggregated_proof::AggregatedProofData;
-use crate::client_message::pretty::PrettyAggregatedProofData;
 use crate::error::Error;
 
 pub const SOV_TENDERMINT_HEADER_TYPE_URL: &str = "/ibc.lightclients.sovereign.tendermint.v1.Header";
@@ -32,8 +31,7 @@ impl<H: Clone + Display> Display for Header<H> {
         write!(
             f,
             "Header {{ da_header: {}, aggregated_proof_data: {} }}",
-            &self.da_header,
-            PrettyAggregatedProofData(&self.aggregated_proof_data)
+            &self.da_header, &self.aggregated_proof_data
         )
     }
 }
