@@ -38,7 +38,7 @@ ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-core-host-cosmos  = { workspace = true }
 ibc-query             = { workspace = true }
-ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false }
+ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false }
 
 # cosmos dependencies
 basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "9b214c7" }

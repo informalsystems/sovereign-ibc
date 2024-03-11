@@ -41,16 +41,16 @@ thiserror   = "1.0.38"
 tracing = { version = "0.1.40", default-features = false }
 
 # ibc depedenencies
-ibc-core              = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false, features = ["borsh","schema","serde"] }
-ibc-core-client       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false }
-ibc-core-host-cosmos  = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false }
-ibc-client-tendermint = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false }
-ibc-client-wasm-types = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false }
-ibc-app-transfer      = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false }
-ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false }
-ibc-query             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false }
-ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4463366e65", default-features = false }
-ibc-proto             = { git = "https://github.com/cosmos/ibc-proto-rs.git", rev = "1b1d7a9", default-features = false }
+ibc-core              = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false, features = ["borsh","schema","serde"] }
+ibc-core-client       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false }
+ibc-core-host-cosmos  = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false }
+ibc-client-tendermint = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false }
+ibc-client-wasm-types = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false }
+ibc-app-transfer      = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false }
+ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false }
+ibc-query             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false }
+ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "a4794b856d", default-features = false }
+ibc-proto             = { git = "https://github.com/cosmos/ibc-proto-rs.git", rev = "02f4a58", default-features = false }
 
 # cosmos dependencies
 tendermint            = { version = "0.34", default-features = false }

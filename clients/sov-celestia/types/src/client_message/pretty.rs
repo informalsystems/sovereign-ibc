@@ -1,8 +1,8 @@
 use core::fmt::{Display, Error as FmtError, Formatter};
 
 use super::aggregated_proof::AggregatedProofData;
-use super::{AggregatedProof, ProofDataInfo};
-use crate::client_message::aggregated_proof::PublicInput;
+use super::{AggregatedProof, CodeCommitment, ValidityCondition};
+use crate::client_message::aggregated_proof::AggregatedProofPublicInput;
 pub struct PrettySlice<'a, T>(pub &'a [T]);
 
 impl<'a, T: Display> Display for PrettySlice<'a, T> {
@@ -26,38 +26,50 @@ impl Display for PrettyAggregatedProofData<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "AggregatedProofData {{ public_input: {}, proof_data_info: {}, aggregated_proof: {} }}",
+            "AggregatedProofData {{ aggregated_proof_public_input: {}, aggregated_proof: {} }}",
             PrettyPublicInput(&self.0.public_input),
-            PrettyProofDataInfo(&self.0.proof_data_info),
             PrettyAggregatedProof(&self.0.aggregated_proof)
         )
     }
 }
 
-pub struct PrettyPublicInput<'a>(pub &'a PublicInput);
+pub struct PrettyPublicInput<'a>(pub &'a AggregatedProofPublicInput);
 
 impl Display for PrettyPublicInput<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "PublicInput {{ initial_da_block_hash: {:?}, final_da_block_hash: {:?}, input_state_root: {:?}, post_state_root: {:?} }}",
-            self.0.initial_da_block_hash,
-            self.0.final_da_block_hash,
-            self.0.input_state_root,
-            self.0.final_state_root
+            "AggregatedProofPublicInput {{ validity_conditions: {}, initial_slot_number: {}, final_slot_number: {}, initial_da_block_hash: {}, final_da_block_hash: {}, genesis_state_root: {}, input_state_root: {}, post_state_root: {}, code_commitment: {} }}",
+            PrettySlice(&self.0.validity_conditions.iter().map(PrettyValidityCondition).collect::<Vec<_>>()),
+            self.0.initial_slot_number,
+            self.0.final_slot_number,
+            PrettySlice(&self.0.initial_da_block_hash),
+            PrettySlice(&self.0.final_da_block_hash),
+            PrettySlice(&self.0.genesis_state_root),
+            PrettySlice(&self.0.input_state_root),
+            PrettySlice(&self.0.final_state_root),
+            PrettyCodeCommitment(&self.0.code_commitment),
         )
     }
 }
 
-pub struct PrettyProofDataInfo<'a>(pub &'a ProofDataInfo);
+pub struct PrettyValidityCondition<'a>(pub &'a ValidityCondition);
 
-impl Display for PrettyProofDataInfo<'_> {
+impl Display for PrettyValidityCondition<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "ProofDataInfo {{ initial_state_height: {}, final_state_height: {} }}",
-            self.0.initial_state_height, self.0.final_state_height
+            "ValidityCondition {{ {} }}",
+            PrettySlice(self.0.as_slice())
         )
+    }
+}
+
+pub struct PrettyCodeCommitment<'a>(pub &'a CodeCommitment);
+
+impl Display for PrettyCodeCommitment<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
+        write!(f, "CodeCommitment {{ {} }}", PrettySlice(self.0.as_slice()))
     }
 }
 
@@ -65,6 +77,10 @@ pub struct PrettyAggregatedProof<'a>(pub &'a AggregatedProof);
 
 impl Display for PrettyAggregatedProof<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
-        write!(f, "AggregatedProof {{ {:?} }}", self.0)
+        write!(
+            f,
+            "AggregatedProof {{ {} }}",
+            PrettySlice(self.0.as_slice())
+        )
     }
 }
