@@ -4,12 +4,17 @@ use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::primitives::Timestamp;
-use sov_celestia_client::context::ValidationContext as SovValidationContext;
+use sov_celestia_client::context::{
+    ConsensusStateConverter, ValidationContext as SovValidationContext,
+};
 
 use super::Context;
-use crate::types::HeightTravel;
+use crate::types::{ClientType, HeightTravel};
 
-impl SovValidationContext for Context<'_> {
+impl<'a, C: ClientType<'a>> SovValidationContext for Context<'a, C>
+where
+    <C as ClientType<'a>>::ConsensusState: ConsensusStateConverter,
+{
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         let time = self.env().block.time;
 

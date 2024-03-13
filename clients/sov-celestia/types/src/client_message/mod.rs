@@ -45,11 +45,9 @@ impl TryFrom<Any> for SovTmClientMessage {
 
     fn try_from(any: Any) -> Result<Self, Self::Error> {
         let msg = match &*any.type_url {
-            SOV_TENDERMINT_HEADER_TYPE_URL => {
-                Self::Header(Box::new(SovTmHeader::decode_thru_raw(any.value)?))
-            }
+            SOV_TENDERMINT_HEADER_TYPE_URL => Self::Header(Box::new(SovTmHeader::try_from(any)?)),
             SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
-                Self::Misbehaviour(Box::new(SovTmMisbehaviour::decode_thru_raw(any.value)?))
+                Self::Misbehaviour(Box::new(SovTmMisbehaviour::try_from(any)?))
             }
             _ => Err(Error::invalid(format!("Unknown type: {}", any.type_url)))?,
         };

@@ -6,22 +6,21 @@ use ibc_core::client::context::prelude::*;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::primitives::proto::Any;
 use prost::Message;
-use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::types::client_message::ClientMessage;
 
 use crate::context::Context;
 use crate::types::{
-    CheckForMisbehaviourMsg, ContractError, ContractResult, ExportMetadataMsg, InstantiateMsg,
-    QueryMsg, QueryResponse, StatusMsg, SudoMsg, UpdateStateMsg, UpdateStateOnMisbehaviourMsg,
-    VerifyClientMessageMsg, VerifyMembershipMsg, VerifyNonMembershipMsg,
-    VerifyUpgradeAndUpdateStateMsg,
+    CheckForMisbehaviourMsg, ClientType, ContractError, ContractResult, ExportMetadataMsg,
+    InstantiateMsg, QueryMsg, QueryResponse, StatusMsg, SudoMsg, UpdateStateMsg,
+    UpdateStateOnMisbehaviourMsg, VerifyClientMessageMsg, VerifyMembershipMsg,
+    VerifyNonMembershipMsg, VerifyUpgradeAndUpdateStateMsg,
 };
 
-impl<'a> Context<'a> {
+impl<'a, C: ClientType<'a>> Context<'a, C> {
     pub fn instantiate(&mut self, msg: InstantiateMsg) -> Result<Binary, ContractError> {
         let any = Any::decode(&mut msg.client_state.as_slice())?;
 
-        let client_state = ClientState::try_from(any)?;
+        let client_state = C::ClientState::try_from(any)?;
 
         let any_consensus_state = Any::decode(&mut msg.consensus_state.as_slice())?;
 
