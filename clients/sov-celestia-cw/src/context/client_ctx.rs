@@ -8,6 +8,7 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{iteration_key, ClientConsensusStatePath, ClientStatePath};
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
+use sov_celestia_client::types::codec::AnyCodec;
 
 use super::Context;
 use crate::types::ClientType;
@@ -24,7 +25,7 @@ impl<'a, C: ClientType<'a>> ClientValidationContext for Context<'a, C> {
                 description: e.to_string(),
             })?;
 
-        let sov_client_state = C::decode_thru_any(any_wasm.data)?;
+        let sov_client_state = C::ClientState::decode_thru_any(any_wasm.data)?;
 
         Ok(sov_client_state)
     }
@@ -35,9 +36,10 @@ impl<'a, C: ClientType<'a>> ClientValidationContext for Context<'a, C> {
     ) -> Result<Self::ConsensusStateRef, ContextError> {
         let consensus_state_value = self.retrieve(client_cons_state_path.leaf())?;
 
-        let any_wasm: WasmConsensusState = C::decode_thru_any(consensus_state_value)?;
+        let any_wasm: WasmConsensusState =
+            C::ConsensusState::decode_thru_any(consensus_state_value)?;
 
-        let consensus_state = C::decode_thru_any(any_wasm.data)?;
+        let consensus_state = C::ConsensusState::decode_thru_any(any_wasm.data)?;
 
         Ok(consensus_state)
     }
@@ -93,13 +95,13 @@ impl<'a, C: ClientType<'a>> ClientExecutionContext for Context<'a, C> {
     ) -> Result<(), ContextError> {
         let key = consensus_state_path.leaf().into_bytes();
 
-        let encoded_consensus_state = C::encode_thru_any(consensus_state);
+        let encoded_consensus_state = C::ConsensusState::encode_thru_any(consensus_state);
 
         let wasm_consensus_state = WasmConsensusState {
             data: encoded_consensus_state,
         };
 
-        let encoded_wasm_consensus_state = C::encode_thru_any(wasm_consensus_state);
+        let encoded_wasm_consensus_state = C::ConsensusState::encode_thru_any(wasm_consensus_state);
 
         self.insert(key, encoded_wasm_consensus_state);
 

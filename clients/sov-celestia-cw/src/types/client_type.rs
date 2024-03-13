@@ -5,7 +5,6 @@ use ibc_core::derive::ConsensusState as ConsensusStateDerive;
 use ibc_core::primitives::proto::Any;
 use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::consensus_state::ConsensusState;
-use sov_celestia_client::types::codec::AnyCodec;
 use sov_celestia_client::types::consensus_state::{
     SovTmConsensusState, SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL,
 };
@@ -19,11 +18,9 @@ impl<'a> ClientType<'a> for SovTmClient {
     type ConsensusState = AnyConsensusState;
 }
 
-impl AnyCodec for SovTmClient {}
-
 /// Enables the introduction of custom client and consensus state types tailored
 /// for Sovereign light clients.
-pub trait ClientType<'a>: AnyCodec + Sized {
+pub trait ClientType<'a>: Sized {
     type ClientState: ClientStateExecution<Context<'a, Self>> + Clone;
     type ConsensusState: ConsensusStateTrait + Into<Any> + TryFrom<Any, Error = ClientError>;
 }

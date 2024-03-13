@@ -15,6 +15,7 @@ use ibc_core::host::types::path::{
 };
 use ibc_core::primitives::proto::{Any, Protobuf};
 use prost::Message;
+use sov_celestia_client::types::codec::AnyCodec;
 
 use crate::types::{parse_height, ClientType, ContractError, GenesisMetadata, HeightTravel};
 
@@ -208,7 +209,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
         client_state: C::ClientState,
     ) -> Result<Vec<u8>, ClientError> {
         let wasm_client_state = WasmClientState {
-            data: C::encode_thru_any(client_state.clone()),
+            data: C::ClientState::encode_thru_any(client_state.clone()),
             checksum: self.obtain_checksum()?,
             latest_height: client_state.latest_height(),
         };
