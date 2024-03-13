@@ -1,12 +1,12 @@
 use core::fmt::{Debug, Display, Error as FmtError, Formatter};
 
 use ibc_client_tendermint::types::Header as TmHeader;
+use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
 use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::Header as RawSovTmHeader;
-use prost::Message;
 
 use super::aggregated_proof::AggregatedProofData;
 use crate::error::Error;
@@ -49,16 +49,6 @@ impl SovTmHeader {
         self.da_header.height()
     }
 
-    /// Protobuf encoding of the `SovTmHeader` through the `Any` type.
-    pub fn encode_thru_any(self) -> Vec<u8> {
-        Any::from(self).encode_to_vec()
-    }
-
-    /// Protobuf decoding of the `SovTmHeader` through the `RawSovTmHeader` type.
-    pub fn decode_thru_raw(value: Vec<u8>) -> Result<Self, Error> {
-        Protobuf::<RawSovTmHeader>::decode(&mut value.as_slice()).map_err(Error::source)
-    }
-
     pub fn verify_chain_id_version_matches_height(&self, chain_id: &ChainId) -> Result<(), Error> {
         self.da_header
             .verify_chain_id_version_matches_height(chain_id)
@@ -74,7 +64,7 @@ impl SovTmHeader {
 impl Protobuf<RawSovTmHeader> for SovTmHeader {}
 
 impl TryFrom<RawSovTmHeader> for SovTmHeader {
-    type Error = Error;
+    type Error = ClientError;
 
     fn try_from(value: RawSovTmHeader) -> Result<Self, Self::Error> {
         let da_header = value
@@ -107,7 +97,7 @@ impl From<SovTmHeader> for RawSovTmHeader {
 impl Protobuf<Any> for SovTmHeader {}
 
 impl TryFrom<Any> for SovTmHeader {
-    type Error = Error;
+    type Error = ClientError;
 
     fn try_from(any: Any) -> Result<Self, Self::Error> {
         let msg = match any.type_url.as_str() {

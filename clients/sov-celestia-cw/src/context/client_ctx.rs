@@ -8,17 +8,13 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{iteration_key, ClientConsensusStatePath, ClientStatePath};
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
-use prost::Message;
-use sov_celestia_client::client_state::ClientState;
-use sov_celestia_client::types::client_state::SovTmClientState;
-use sov_celestia_client::types::consensus_state::SovTmConsensusState;
 
 use super::Context;
-use crate::types::AnyConsensusState;
+use crate::types::ClientType;
 
-impl ClientValidationContext for Context<'_> {
-    type ClientStateRef = ClientState;
-    type ConsensusStateRef = AnyConsensusState;
+impl<'a, C: ClientType<'a>> ClientValidationContext for Context<'a, C> {
+    type ClientStateRef = C::ClientState;
+    type ConsensusStateRef = C::ConsensusState;
 
     fn client_state(&self, _client_id: &ClientId) -> Result<Self::ClientStateRef, ContextError> {
         let client_state_value = self.retrieve(ClientStatePath::leaf())?;
@@ -28,9 +24,9 @@ impl ClientValidationContext for Context<'_> {
                 description: e.to_string(),
             })?;
 
-        let sov_client_state = SovTmClientState::decode_thru_any(any_wasm.data)?;
+        let sov_client_state = C::decode_thru_any(any_wasm.data)?;
 
-        Ok(sov_client_state.into())
+        Ok(sov_client_state)
     }
 
     fn consensus_state(
@@ -38,16 +34,12 @@ impl ClientValidationContext for Context<'_> {
         client_cons_state_path: &ClientConsensusStatePath,
     ) -> Result<Self::ConsensusStateRef, ContextError> {
         let consensus_state_value = self.retrieve(client_cons_state_path.leaf())?;
-        let any_wasm: WasmConsensusState =
-            Protobuf::<Any>::decode(consensus_state_value.as_slice()).map_err(|e| {
-                ClientError::Other {
-                    description: e.to_string(),
-                }
-            })?;
 
-        let consensus_state = SovTmConsensusState::decode_thru_any(any_wasm.data)?;
+        let any_wasm: WasmConsensusState = C::decode_thru_any(consensus_state_value)?;
 
-        Ok(AnyConsensusState::Sovereign(consensus_state.into()))
+        let consensus_state = C::decode_thru_any(any_wasm.data)?;
+
+        Ok(consensus_state)
     }
 
     fn client_update_meta(
@@ -77,13 +69,13 @@ impl ClientValidationContext for Context<'_> {
     }
 }
 
-impl ClientExecutionContext for Context<'_> {
-    type ClientStateMut = ClientState;
+impl<'a, C: ClientType<'a>> ClientExecutionContext for Context<'a, C> {
+    type ClientStateMut = C::ClientState;
 
     fn store_client_state(
         &mut self,
         _client_state_path: ClientStatePath,
-        client_state: ClientState,
+        client_state: Self::ClientStateMut,
     ) -> Result<(), ContextError> {
         let key = ClientStatePath::leaf().into_bytes();
 
@@ -97,19 +89,19 @@ impl ClientExecutionContext for Context<'_> {
     fn store_consensus_state(
         &mut self,
         consensus_state_path: ClientConsensusStatePath,
-        consensus_state: AnyConsensusState,
+        consensus_state: Self::ConsensusStateRef,
     ) -> Result<(), ContextError> {
         let key = consensus_state_path.leaf().into_bytes();
 
-        let encoded_consensus_state = match consensus_state {
-            AnyConsensusState::Sovereign(cs) => cs.inner().clone().encode_thru_any(),
-        };
+        let encoded_consensus_state = C::encode_thru_any(consensus_state);
 
         let wasm_consensus_state = WasmConsensusState {
             data: encoded_consensus_state,
         };
 
-        self.insert(key, Any::from(wasm_consensus_state).encode_to_vec());
+        let encoded_wasm_consensus_state = C::encode_thru_any(wasm_consensus_state);
+
+        self.insert(key, encoded_wasm_consensus_state);
 
         Ok(())
     }

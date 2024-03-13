@@ -15,23 +15,23 @@ use ibc_core::host::types::path::{
 };
 use ibc_core::primitives::proto::{Any, Protobuf};
 use prost::Message;
-use sov_celestia_client::client_state::ClientState;
 
-use crate::types::{parse_height, ContractError, GenesisMetadata, HeightTravel};
+use crate::types::{parse_height, ClientType, ContractError, GenesisMetadata, HeightTravel};
 
 type Checksum = Vec<u8>;
 
 /// Context is a wrapper around the deps and env that gives access to the
-/// methods of the ibc-rs Validation and Execution traits.
-pub struct Context<'a> {
+/// methods under the ibc-rs Validation and Execution traits.
+pub struct Context<'a, C: ClientType<'a>> {
     deps: Option<Deps<'a>>,
     deps_mut: Option<DepsMut<'a>>,
     env: Env,
     client_id: ClientId,
     checksum: Option<Checksum>,
+    client_type: std::marker::PhantomData<C>,
 }
 
-impl<'a> Context<'a> {
+impl<'a, C: ClientType<'a>> Context<'a, C> {
     pub fn new_ref(deps: Deps<'a>, env: Env) -> Result<Self, ContractError> {
         let client_id = ClientId::from_str(env.contract.address.as_str())?;
 
@@ -41,6 +41,7 @@ impl<'a> Context<'a> {
             env,
             client_id,
             checksum: None,
+            client_type: std::marker::PhantomData::<C>,
         })
     }
 
@@ -53,6 +54,7 @@ impl<'a> Context<'a> {
             env,
             client_id,
             checksum: None,
+            client_type: std::marker::PhantomData::<C>,
         })
     }
 
@@ -201,9 +203,12 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub fn encode_client_state(&self, client_state: ClientState) -> Result<Vec<u8>, ClientError> {
+    pub fn encode_client_state(
+        &self,
+        client_state: C::ClientState,
+    ) -> Result<Vec<u8>, ClientError> {
         let wasm_client_state = WasmClientState {
-            data: client_state.inner().clone().encode_thru_any(),
+            data: C::encode_thru_any(client_state.clone()),
             checksum: self.obtain_checksum()?,
             latest_height: client_state.latest_height(),
         };
@@ -216,7 +221,7 @@ pub trait StorageRef {
     fn storage_ref(&self) -> &dyn Storage;
 }
 
-impl StorageRef for Context<'_> {
+impl<'a, C: ClientType<'a>> StorageRef for Context<'a, C> {
     fn storage_ref(&self) -> &dyn Storage {
         match self.deps {
             Some(ref deps) => deps.storage,
@@ -232,7 +237,7 @@ pub trait StorageMut: StorageRef {
     fn storage_mut(&mut self) -> &mut dyn Storage;
 }
 
-impl StorageMut for Context<'_> {
+impl<'a, C: ClientType<'a>> StorageMut for Context<'a, C> {
     fn storage_mut(&mut self) -> &mut dyn Storage {
         match self.deps_mut {
             Some(ref mut deps) => deps.storage,

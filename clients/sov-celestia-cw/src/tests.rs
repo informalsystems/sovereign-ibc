@@ -4,9 +4,13 @@ use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::{Height, Status};
 use ibc_core::host::types::identifiers::ChainId;
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
+use sov_celestia_client::types::client_message::SovTmHeader;
 use sov_celestia_client::types::client_state::test_util::{
     dummy_checksum, dummy_sov_client_state, dummy_sov_consensus_state,
 };
+use sov_celestia_client::types::client_state::SovTmClientState;
+use sov_celestia_client::types::codec::AnyCodec;
+use sov_celestia_client::types::consensus_state::SovTmConsensusState;
 use tendermint_testgen::Generator;
 
 use crate::entrypoints::{instantiate, query, sudo};
@@ -25,8 +29,8 @@ pub fn dummy_instantiate_msg(latest_height: Height) -> InstantiateMsg {
     let sov_consensus_state = dummy_sov_consensus_state();
 
     InstantiateMsg {
-        client_state: sov_client_state.encode_thru_any(),
-        consensus_state: sov_consensus_state.encode_thru_any(),
+        client_state: SovTmClientState::encode_thru_any(sov_client_state),
+        consensus_state: SovTmConsensusState::encode_thru_any(sov_consensus_state),
         checksum: dummy_checksum(),
     }
 }
@@ -52,8 +56,7 @@ pub fn dummy_client_message(trusted_height: Height, target_height: Height) -> Ve
     };
 
     let sov_header = dummy_sov_header(tm_header, trusted_height, target_height);
-
-    sov_header.encode_thru_any()
+    SovTmHeader::encode_thru_any(sov_header)
 }
 
 pub fn verify_client_message(deps: Deps<'_>, client_message: Vec<u8>) {
