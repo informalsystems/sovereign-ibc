@@ -19,7 +19,9 @@ use sov_ibc::context::HOST_REVISION_NUMBER;
 #[cfg(feature = "mock-da")]
 use sov_mock_da::MockDaSpec;
 use sov_modules_api::runtime::capabilities::{BatchSelector, Kernel, KernelSlotHooks};
-use sov_modules_api::{Context, DaSpec, KernelModule, KernelWorkingSet, StateMapAccessor};
+use sov_modules_api::{
+    DaSpec, Gas, KernelModule, KernelWorkingSet, Spec, StateCheckpoint, StateMapAccessor,
+};
 use sov_modules_core::kernel_state::BootstrapWorkingSet;
 use sov_modules_core::Storage;
 #[cfg(feature = "mock-da")]
@@ -53,15 +55,15 @@ impl HasConsensusState for MockDaSpec {
 }
 
 #[derive(Clone)]
-pub struct ConsensusStateTracker<K, C: Context, Da: DaSpec + HasConsensusState> {
+pub struct ConsensusStateTracker<K, S: Spec, Da: DaSpec + HasConsensusState> {
     inner: K,
-    ibc_module: sov_ibc::Ibc<C, Da>,
+    ibc_module: sov_ibc::Ibc<S, Da>,
 }
 
-impl<K, C, Da> Default for ConsensusStateTracker<K, C, Da>
+impl<K, S, Da> Default for ConsensusStateTracker<K, S, Da>
 where
     K: Default,
-    C: Context,
+    S: Spec,
     Da: DaSpec + HasConsensusState,
 {
     fn default() -> Self {
@@ -72,28 +74,28 @@ where
     }
 }
 
-impl<K, C, Da> KernelModule for ConsensusStateTracker<K, C, Da>
+impl<K, S, Da> KernelModule for ConsensusStateTracker<K, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec + HasConsensusState,
 {
-    type Context = C;
+    type Spec = S;
     type Config = ();
 }
 
-impl<K, C, Da> BatchSelector<Da> for ConsensusStateTracker<K, C, Da>
+impl<K, S, Da> BatchSelector<Da> for ConsensusStateTracker<K, S, Da>
 where
     K: BatchSelector<Da>,
-    C: Context,
+    S: Spec,
     Da: DaSpec + HasConsensusState,
 {
     type Batch = K::Batch;
-    type Context = K::Context;
+    type Spec = K::Spec;
 
     fn get_batches_for_this_slot<'a, 'k, I>(
         &self,
         current_blobs: I,
-        working_set: &mut KernelWorkingSet<'k, Self::Context>,
+        working_set: &mut KernelWorkingSet<'k, Self::Spec>,
     ) -> anyhow::Result<Vec<(Self::Batch, Da::Address)>>
     where
         I: IntoIterator<Item = &'a mut Da::BlobTransaction>,
@@ -103,10 +105,10 @@ where
     }
 }
 
-impl<K, C, Da> Kernel<C, Da> for ConsensusStateTracker<K, C, Da>
+impl<K, S, Da> Kernel<S, Da> for ConsensusStateTracker<K, S, Da>
 where
-    K: Kernel<C, Da>,
-    C: Context,
+    K: Kernel<S, Da>,
+    S: Spec,
     Da: DaSpec + HasConsensusState,
 {
     type GenesisConfig = K::GenesisConfig;
@@ -115,34 +117,34 @@ where
     fn genesis(
         &self,
         config: &Self::GenesisConfig,
-        working_set: &mut KernelWorkingSet<'_, C>,
+        working_set: &mut KernelWorkingSet<'_, S>,
     ) -> Result<(), anyhow::Error> {
         self.inner.genesis(config, working_set)
     }
 
-    fn true_slot_number(&self, working_set: &mut BootstrapWorkingSet<'_, C>) -> u64 {
+    fn true_slot_number(&self, working_set: &mut BootstrapWorkingSet<'_, S>) -> u64 {
         self.inner.true_slot_number(working_set)
     }
 
-    fn visible_slot_number(&self, working_set: &mut BootstrapWorkingSet<'_, C>) -> u64 {
+    fn visible_slot_number(&self, working_set: &mut BootstrapWorkingSet<'_, S>) -> u64 {
         self.inner.visible_slot_number(working_set)
     }
 }
 
-impl<K, C, Da> KernelSlotHooks<C, Da> for ConsensusStateTracker<K, C, Da>
+impl<K, S, Da> KernelSlotHooks<S, Da> for ConsensusStateTracker<K, S, Da>
 where
-    K: KernelSlotHooks<C, Da>,
-    C: Context,
+    K: KernelSlotHooks<S, Da>,
+    S: Spec,
     Da: DaSpec + HasConsensusState,
-    <C as sov_modules_api::Spec>::Storage: Storage,
+    <S as Spec>::Storage: Storage,
 {
     fn begin_slot_hook(
         &self,
         slot_header: &Da::BlockHeader,
         validity_condition: &Da::ValidityCondition,
-        pre_state_root: &<<C as sov_modules_api::Spec>::Storage as Storage>::Root,
-        working_set: &mut sov_modules_api::StateCheckpoint<Self::Context>,
-    ) -> C::GasUnit {
+        pre_state_root: &<<Self::Spec as Spec>::Storage as Storage>::Root,
+        working_set: &mut StateCheckpoint<Self::Spec>,
+    ) -> <S::Gas as Gas>::Price {
         let kernel_working_set = KernelWorkingSet::from_kernel(&self.inner, working_set);
         let visible_height = kernel_working_set.virtual_slot();
 
@@ -161,11 +163,7 @@ where
             .begin_slot_hook(slot_header, validity_condition, pre_state_root, working_set)
     }
 
-    fn end_slot_hook(
-        &self,
-        gas_used: &C::GasUnit,
-        working_set: &mut sov_modules_api::StateCheckpoint<Self::Context>,
-    ) {
+    fn end_slot_hook(&self, gas_used: &S::Gas, working_set: &mut StateCheckpoint<Self::Spec>) {
         self.inner.end_slot_hook(gas_used, working_set)
     }
 }

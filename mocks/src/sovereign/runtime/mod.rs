@@ -5,47 +5,18 @@ use sov_bank::Bank;
 use sov_consensus_state_tracker::HasConsensusState;
 use sov_ibc::Ibc;
 use sov_ibc_transfer::IbcTransfer;
-use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
 use sov_modules_api::macros::DefaultRuntime;
-use sov_modules_api::{
-    AccessoryStateCheckpoint, Context, DaSpec, DispatchCall, Genesis, MessageCodec, Spec,
-    StateCheckpoint, VersionedStateReadWriter,
-};
-use sov_state::Storage;
+use sov_modules_api::{DaSpec, DispatchCall, Genesis, MessageCodec, Spec};
 
 #[derive(Genesis, DispatchCall, MessageCodec, DefaultRuntime, Clone)]
 #[serialization(serde::Serialize, serde::Deserialize)]
 #[serialization(borsh::BorshDeserialize, borsh::BorshSerialize)]
-pub struct Runtime<C, Da>
+pub struct Runtime<S, Da>
 where
-    C: Context,
-    Da: DaSpec + HasConsensusState,
+    S: Spec,
+    Da: DaSpec,
 {
-    pub bank: Bank<C>,
-    pub ibc: Ibc<C, Da>,
-    pub ibc_transfer: IbcTransfer<C>,
-}
-
-impl<C: Context, Da: DaSpec + HasConsensusState> SlotHooks for Runtime<C, Da> {
-    type Context = C;
-
-    fn begin_slot_hook(
-        &self,
-        _pre_state_root: &<<Self::Context as Spec>::Storage as Storage>::Root,
-        _working_set: &mut VersionedStateReadWriter<StateCheckpoint<Self::Context>>,
-    ) {
-    }
-
-    fn end_slot_hook(&self, _working_set: &mut StateCheckpoint<Self::Context>) {}
-}
-
-impl<C: Context, Da: DaSpec + HasConsensusState> FinalizeHook for Runtime<C, Da> {
-    type Context = C;
-
-    fn finalize_hook(
-        &self,
-        _root_hash: &<<Self::Context as Spec>::Storage as Storage>::Root,
-        _accesorry_working_set: &mut AccessoryStateCheckpoint<Self::Context>,
-    ) {
-    }
+    pub bank: Bank<S>,
+    pub ibc: Ibc<S, Da>,
+    pub ibc_transfer: IbcTransfer<S>,
 }

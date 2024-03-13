@@ -28,10 +28,9 @@ tracing       = "0.1.36"
 typed-builder = "0.18.0"
 
 # internal dependencies
-sov-ibc                     = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "b441da8" }
-sov-ibc-transfer            = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "b441da8" }
-sov-celestia-client         = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "b441da8", features = ["test-util"] }
-sov-consensus-state-tracker = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "b441da8" }
+sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "9ff51c0" }
+sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "9ff51c0" }
+sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "9ff51c0", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
@@ -39,12 +38,10 @@ ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-core-host-cosmos  = { workspace = true }
 ibc-query             = { workspace = true }
-ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "552863ec93", default-features = false }
+ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "bcd808832e", default-features = false }
 
 # cosmos dependencies
-basecoin-app         = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "8791a3a" }
-basecoin-store       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "8791a3a" }
-
+basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "69df0bd" }
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
 
@@ -55,12 +52,12 @@ sov-modules-api            = { workspace = true }
 sov-rollup-interface       = { workspace = true }
 sov-state                  = { workspace = true }
 
-sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8", features = ["native"], optional = true }
-sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8", features = ["native"], optional = true }
-sov-modules-stf-blueprint  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8", features = ["test-utils"] }
-sov-schema-db              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
-const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "a1d9ed8" }
+sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
+sov-mock-zkvm              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
+sov-mock-da                = { workspace = true, features = ["native"], optional = true }
+sov-modules-stf-blueprint  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
+sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["test-utils"] }
+const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc" }
 jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 [dev-dependencies]
@@ -71,14 +68,14 @@ tracing-subscriber    = { version = "0.3", default-features = false, features = 
 default = ["native"]
 native = [
     "sov-bank/native",
-    "sov-celestia-adapter",
-    "sov-chain-state/native",
-    "sov-modules-api/native",
-    "sov-modules-stf-blueprint/native",
-    "sov-state/native",
-    "sov-mock-da",
-    "sov-rollup-interface/native",
     "sov-ibc/native",
     "sov-ibc-transfer/native",
-    "sov-consensus-state-tracker/native",
+    "sov-chain-state/native",
+    "sov-modules-api/native",
+    "sov-state/native",
+    "sov-rollup-interface/native",
+    "sov-celestia-adapter",
+    "sov-mock-da",
+    "sov-mock-zkvm",
+    "sov-modules-stf-blueprint",
 ]

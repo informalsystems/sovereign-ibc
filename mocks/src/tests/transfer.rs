@@ -7,10 +7,9 @@ use ibc_core::primitives::ToProto;
 use sov_bank::{get_genesis_token_address, TokenConfig};
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
-use sov_modules_api::default_context::DefaultContext;
 use test_log::test;
 
-use crate::configs::TransferTestConfig;
+use crate::configs::{DefaultSpec, TransferTestConfig};
 use crate::relayer::{Handle, QueryReq, QueryResp, QueryService, RelayerBuilder};
 
 /// Checks if a transfer initiated on the rollup (`send_transfer`) succeeds by
@@ -23,8 +22,8 @@ async fn test_escrow_unescrow_on_sov() {
     let rly = relayer_builder.clone().with_manual_tao().setup().await;
 
     // set transfer parameters
-    let token: TokenConfig<DefaultContext> = relayer_builder.setup_cfg().get_tokens()[0].clone();
-    let token_address = get_genesis_token_address::<DefaultContext>(&token.token_name, token.salt);
+    let token: TokenConfig<DefaultSpec> = relayer_builder.setup_cfg().get_tokens()[0].clone();
+    let token_address = get_genesis_token_address::<DefaultSpec>(&token.token_name, token.salt);
     let mut cfg = TransferTestConfig::builder()
         .sov_denom(token.token_name.clone())
         .sov_token_address(Some(token_address))

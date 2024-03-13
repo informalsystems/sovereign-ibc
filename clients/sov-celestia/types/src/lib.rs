@@ -13,6 +13,7 @@ extern crate alloc;
 
 pub mod client_message;
 pub mod client_state;
+pub mod codec;
 pub mod consensus_state;
 pub mod error;
 

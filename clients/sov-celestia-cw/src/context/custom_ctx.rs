@@ -1,32 +1,32 @@
-use ibc_core::client::types::error::ClientError;
+use ibc_core::client::context::ClientValidationContext;
 use ibc_core::client::types::Height;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
-use ibc_core::host::ValidationContext as CoreValidationContext;
 use ibc_core::primitives::Timestamp;
-use sov_celestia_client::context::{CommonContext, ValidationContext};
+use sov_celestia_client::context::{
+    ConsensusStateConverter, ValidationContext as SovValidationContext,
+};
 
 use super::Context;
-use crate::types::{AnyConsensusState, HeightTravel};
+use crate::types::{ClientType, HeightTravel};
 
-impl CommonContext for Context<'_> {
-    type ConversionError = ClientError;
-    type AnyConsensusState = AnyConsensusState;
-
+impl<'a, C: ClientType<'a>> SovValidationContext for Context<'a, C>
+where
+    <C as ClientType<'a>>::ConsensusState: ConsensusStateConverter,
+{
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        CoreValidationContext::host_timestamp(self)
+        let time = self.env().block.time;
+
+        let host_timestamp = Timestamp::from_nanoseconds(time.nanos()).expect("invalid timestamp");
+
+        Ok(host_timestamp)
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        CoreValidationContext::host_height(self)
-    }
+        let host_height = Height::new(0, self.env().block.height)?;
 
-    fn consensus_state(
-        &self,
-        client_cons_state_path: &ClientConsensusStatePath,
-    ) -> Result<Self::AnyConsensusState, ContextError> {
-        CoreValidationContext::consensus_state(self, client_cons_state_path)
+        Ok(host_height)
     }
 
     fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
@@ -34,14 +34,11 @@ impl CommonContext for Context<'_> {
 
         Ok(heights)
     }
-}
-
-impl ValidationContext for Context<'_> {
     fn next_consensus_state(
         &self,
         client_id: &ClientId,
         height: &Height,
-    ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
+    ) -> Result<Option<Self::ConsensusStateRef>, ContextError> {
         let next_height = self.get_adjacent_height(height, HeightTravel::Next)?;
 
         match next_height {
@@ -51,7 +48,7 @@ impl ValidationContext for Context<'_> {
                     h.revision_number(),
                     h.revision_height(),
                 );
-                CoreValidationContext::consensus_state(self, &cons_state_path).map(Some)
+                self.consensus_state(&cons_state_path).map(Some)
             }
             None => Ok(None),
         }
@@ -61,7 +58,7 @@ impl ValidationContext for Context<'_> {
         &self,
         client_id: &ClientId,
         height: &Height,
-    ) -> Result<Option<Self::AnyConsensusState>, ContextError> {
+    ) -> Result<Option<Self::ConsensusStateRef>, ContextError> {
         let prev_height = self.get_adjacent_height(height, HeightTravel::Prev)?;
 
         match prev_height {
@@ -71,7 +68,7 @@ impl ValidationContext for Context<'_> {
                     prev_height.revision_number(),
                     prev_height.revision_height(),
                 );
-                CoreValidationContext::consensus_state(self, &cons_state_path).map(Some)
+                self.consensus_state(&cons_state_path).map(Some)
             }
             None => Ok(None),
         }

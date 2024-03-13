@@ -8,16 +8,17 @@ use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::host::ValidationContext;
+use jmt::RootHash;
 use sov_bank::CallMessage as BankCallMessage;
 use sov_celestia_client::types::consensus_state::{SovTmConsensusState, TmConsensusParams};
 use sov_consensus_state_tracker::{ConsensusStateTracker, HasConsensusState};
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;
-use sov_modules_api::{Context, DaSpec, WorkingSet};
+use sov_modules_api::{Context, DaSpec, Spec, WorkingSet};
 use sov_modules_stf_blueprint::kernels::basic::BasicKernel;
 use sov_rollup_interface::services::da::DaService;
-use sov_state::{MerkleProofSpec, ProverStorage, Storage};
+use sov_state::{MerkleProofSpec, ProverStorage, Storage, StorageRoot};
 use tendermint::{Hash, Time};
 
 use crate::cosmos::MockTendermint;
@@ -28,24 +29,23 @@ use crate::utils::MutexUtil;
 type Mempool<C, Da> = Vec<RuntimeCall<C, Da>>;
 
 #[derive(Clone)]
-pub struct MockRollup<C, Da, S>
+pub struct MockRollup<S, Da, P>
 where
-    C: Context,
+    S: Spec,
     Da: DaService<Error = anyhow::Error> + Clone,
-    Da::Spec: HasConsensusState,
-    S: MerkleProofSpec,
+    P: MerkleProofSpec,
 {
-    kernel: ConsensusStateTracker<BasicKernel<C, Da::Spec>, C, Da::Spec>,
-    runtime: Runtime<C, Da::Spec>,
+    kernel: BasicKernel<S, Da::Spec>,
+    runtime: Runtime<S, Da::Spec>,
     da_service: Da,
-    prover_storage: ProverStorage<S>,
+    prover_storage: ProverStorage<P>,
     pub(crate) da_core: MockTendermint,
-    pub(crate) rollup_ctx: Arc<Mutex<C>>,
-    pub(crate) state_root: Arc<Mutex<<ProverStorage<S> as Storage>::Root>>,
-    pub(crate) mempool: Arc<Mutex<Mempool<C, Da::Spec>>>,
+    pub(crate) rollup_ctx: Arc<Mutex<Context<S>>>,
+    pub(crate) state_root: Arc<Mutex<<ProverStorage<P> as Storage>::Root>>,
+    pub(crate) mempool: Arc<Mutex<Mempool<S, Da::Spec>>>,
 }
 
-impl<C: Context, Da: DaSpec + HasConsensusState> Clone for RuntimeCall<C, Da> {
+impl<S: Spec, Da: DaSpec> Clone for RuntimeCall<S, Da> {
     fn clone(&self) -> Self {
         match self {
             RuntimeCall::bank(call) => RuntimeCall::bank(call.clone()),
@@ -55,30 +55,29 @@ impl<C: Context, Da: DaSpec + HasConsensusState> Clone for RuntimeCall<C, Da> {
     }
 }
 
-impl<C: Context, Da: DaSpec + HasConsensusState> From<IbcCallMessage> for RuntimeCall<C, Da> {
+impl<S: Spec, Da: DaSpec> From<IbcCallMessage> for RuntimeCall<S, Da> {
     fn from(call: IbcCallMessage) -> Self {
         RuntimeCall::ibc(call)
     }
 }
 
-impl<C: Context, Da: DaSpec + HasConsensusState> From<BankCallMessage<C>> for RuntimeCall<C, Da> {
-    fn from(call: BankCallMessage<C>) -> Self {
+impl<S: Spec, Da: DaSpec> From<BankCallMessage<S>> for RuntimeCall<S, Da> {
+    fn from(call: BankCallMessage<S>) -> Self {
         RuntimeCall::bank(call)
     }
 }
 
-impl<C, Da, S> MockRollup<C, Da, S>
+impl<S, Da, P> MockRollup<S, Da, P>
 where
-    C: Context<Storage = ProverStorage<S>> + Send + Sync,
+    S: Spec<Storage = ProverStorage<P>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
-    Da::Spec: HasConsensusState,
-    S: MerkleProofSpec + Clone + 'static,
-    <S as MerkleProofSpec>::Hasher: Send,
+    P: MerkleProofSpec + Clone + 'static,
+    <P as MerkleProofSpec>::Hasher: Send,
 {
     pub fn new(
-        runtime: Runtime<C, Da::Spec>,
-        prover_storage: ProverStorage<S>,
-        rollup_ctx: C,
+        runtime: Runtime<S, Da::Spec>,
+        prover_storage: ProverStorage<P>,
+        rollup_ctx: Context<S>,
         da_core: MockTendermint,
         da_service: Da,
     ) -> Self {
@@ -89,7 +88,10 @@ where
             prover_storage,
             da_core,
             rollup_ctx: Arc::new(Mutex::new(rollup_ctx)),
-            state_root: Arc::new(Mutex::new(jmt::RootHash([0; 32]))),
+            state_root: Arc::new(Mutex::new(StorageRoot::new(
+                RootHash([1; 32]),
+                RootHash([0; 32]),
+            ))),
             mempool: Arc::new(Mutex::new(vec![])),
         }
     }
@@ -98,11 +100,11 @@ where
         self.da_core.chain_id()
     }
 
-    pub fn kernel(&self) -> &ConsensusStateTracker<BasicKernel<C, Da::Spec>, C, Da::Spec> {
+    pub fn kernel(&self) -> &BasicKernel<S, Da::Spec> {
         &self.kernel
     }
 
-    pub fn runtime(&self) -> &Runtime<C, Da::Spec> {
+    pub fn runtime(&self) -> &Runtime<S, Da::Spec> {
         &self.runtime
     }
 
@@ -110,26 +112,26 @@ where
         &self.da_service
     }
 
-    pub fn rollup_ctx(&self) -> C {
+    pub fn rollup_ctx(&self) -> Context<S> {
         self.rollup_ctx.acquire_mutex().clone()
     }
 
-    pub fn prover_storage(&self) -> ProverStorage<S> {
+    pub fn prover_storage(&self) -> ProverStorage<P> {
         self.prover_storage.clone()
     }
 
-    pub fn state_root(&self) -> Arc<Mutex<<ProverStorage<S> as Storage>::Root>> {
+    pub fn state_root(&self) -> Arc<Mutex<<ProverStorage<P> as Storage>::Root>> {
         self.state_root.clone()
     }
 
-    pub fn mempool(&self) -> Vec<RuntimeCall<C, Da::Spec>> {
+    pub fn mempool(&self) -> Vec<RuntimeCall<S, Da::Spec>> {
         self.mempool.acquire_mutex().clone()
     }
 
     pub fn ibc_ctx<'a>(
         &'a self,
-        working_set: &'a mut WorkingSet<C>,
-    ) -> IbcContext<'a, C, Da::Spec> {
+        working_set: &'a mut WorkingSet<S>,
+    ) -> IbcContext<'a, S, Da::Spec> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         IbcContext::new(
@@ -140,8 +142,8 @@ where
     }
 
     /// Returns the balance of a user for a given token
-    pub fn get_balance_of(&self, user_address: C::Address, token_address: C::Address) -> u64 {
-        let mut working_set: WorkingSet<C> = WorkingSet::new(self.prover_storage());
+    pub fn get_balance_of(&self, user_address: S::Address, token_address: S::Address) -> u64 {
+        let mut working_set: WorkingSet<S> = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .bank
@@ -150,7 +152,7 @@ where
     }
 
     /// Returns token address of an IBC denom
-    pub fn get_minted_token_address(&self, token_denom: String) -> Option<C::Address> {
+    pub fn get_minted_token_address(&self, token_denom: String) -> Option<S::Address> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
         self.runtime()
@@ -162,7 +164,7 @@ where
 
     /// Searches the transfer module to retrieve the address of the token held
     /// in escrow, based on its token denom.
-    pub fn get_escrowed_token_address(&self, token_denom: String) -> Option<C::Address> {
+    pub fn get_escrowed_token_address(&self, token_denom: String) -> Option<S::Address> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
         self.runtime()
@@ -172,23 +174,19 @@ where
             .ok()
     }
 
-    pub(crate) fn set_state_root(&mut self, state_root: <ProverStorage<S> as Storage>::Root) {
+    pub(crate) fn set_state_root(&mut self, state_root: <ProverStorage<P> as Storage>::Root) {
         *self.state_root.acquire_mutex() = state_root;
     }
 
-    pub(crate) fn set_sender(&mut self, sender_address: C::Address) {
-        *self.rollup_ctx.acquire_mutex() = C::new(
-            sender_address.clone(),
-            sender_address,
-            self.rollup_ctx().visible_slot_number(),
-        );
+    pub(crate) fn resolve_ctx(&mut self, sender: S::Address, height: u64) {
+        *self.rollup_ctx.acquire_mutex() = Context::new(sender.clone(), sender, height);
     }
 
     /// Sets the host consensus state when processing each block
     pub(crate) fn set_host_consensus_state(
         &mut self,
-        root_hash: <ProverStorage<S> as Storage>::Root,
-        working_set: &mut WorkingSet<C>,
+        root_hash: <ProverStorage<P> as Storage>::Root,
+        working_set: &mut WorkingSet<S>,
     ) {
         let mut ibc_ctx = self.ibc_ctx(working_set);
 
@@ -196,8 +194,10 @@ where
             .host_height()
             .unwrap_or(Height::new(0, 1).expect("valid height"));
 
+        let visible_hash = <S as Spec>::VisibleHash::from(root_hash);
+
         let sov_consensus_state = SovTmConsensusState::new(
-            CommitmentRoot::from_bytes(&root_hash.0),
+            CommitmentRoot::from_bytes(&visible_hash.into()),
             TmConsensusParams::new(
                 Time::now(),
                 Hash::Sha256([

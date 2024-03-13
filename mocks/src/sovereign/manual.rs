@@ -21,27 +21,25 @@ use ibc_core::host::types::path::{
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use sov_consensus_state_tracker::HasConsensusState;
 use sov_ibc::context::IbcContext;
-use sov_modules_api::{Context, WorkingSet};
+use sov_modules_api::{Spec, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 
 use super::MockRollup;
 use crate::cosmos::{dummy_tm_client_state, dummy_tm_consensus_state};
 
-impl<C, Da, S> MockRollup<C, Da, S>
+impl<S, Da, P> MockRollup<S, Da, P>
 where
-    C: Context<Storage = ProverStorage<S>> + Send + Sync,
+    S: Spec<Storage = ProverStorage<P>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
-    Da::Spec: HasConsensusState,
-    S: MerkleProofSpec + Clone + 'static,
-    <S as MerkleProofSpec>::Hasher: Send,
-    C::GasUnit: Default,
+    P: MerkleProofSpec + Clone + 'static,
+    <P as MerkleProofSpec>::Hasher: Send,
 {
     /// Establishes a tendermint light client on the ibc module
     pub async fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let mut ibc_ctx: IbcContext<'_, C, <Da as DaService>::Spec> =
+        let mut ibc_ctx: IbcContext<'_, S, <Da as DaService>::Spec> =
             self.ibc_ctx(&mut working_set);
 
         let client_counter = ibc_ctx.client_counter().unwrap();

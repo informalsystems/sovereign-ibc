@@ -1,4 +1,4 @@
-use basecoin_app::modules::ibc::AnyClientState;
+use basecoin::modules::ibc::AnyClientState;
 use borsh::BorshDeserialize;
 use ibc_client_tendermint::types::proto::v1::{
     ClientState as RawClientState, ConsensusState as RawConsensusState,

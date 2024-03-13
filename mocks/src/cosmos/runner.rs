@@ -2,9 +2,9 @@
 use core::fmt::Debug;
 use std::time::Duration;
 
-use basecoin_app::modules::types::IdentifiedModule;
-use basecoin_store::context::{ProvableStore, Store};
-use basecoin_store::utils::SharedRwExt;
+use basecoin::modules::types::IdentifiedModule;
+use basecoin::store::context::{ProvableStore, Store};
+use basecoin::store::utils::SharedRwExt;
 use tendermint::abci::request::InitChain;
 use tendermint::block::Height as TmHeight;
 use tendermint::v0_37::abci::Request as AbciRequest;

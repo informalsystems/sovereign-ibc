@@ -2,7 +2,6 @@ use core::time::Duration;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use ibc_client_tendermint::client_state::ClientState as TmClientState;
 use ibc_core::channel::types::channel::ChannelEnd;
 use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
 use ibc_core::channel::types::error::{ChannelError, PacketError};
@@ -14,46 +13,49 @@ use ibc_core::connection::types::error::ConnectionError;
 use ibc_core::connection::types::ConnectionEnd;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::handler::types::events::IbcEvent;
-use ibc_core::host::types::identifiers::{ClientId, ConnectionId, Sequence};
+use ibc_core::host::types::identifiers::{ConnectionId, Sequence};
 use ibc_core::host::types::path::{
-    AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath,
-    ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
+    AckPath, ChannelEndPath, ClientConnectionPath, CommitmentPath, ConnectionPath, ReceiptPath,
+    SeqAckPath, SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
-use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp};
+use sov_celestia_client::client_state::ClientState;
+use sov_celestia_client::consensus_state::ConsensusState;
 use sov_modules_api::{
-    Context, DaSpec, ModuleInfo, StateMapAccessor, StateValueAccessor, StateVecAccessor, WorkingSet,
+    Context, DaSpec, EventEmitter, ModuleInfo, Spec, StateMapAccessor, StateValueAccessor,
+    StateVecAccessor, WorkingSet,
 };
 use sov_state::Prefix;
 
-use crate::clients::{AnyClientState, AnyConsensusState};
+use crate::clients::AnyConsensusState;
+use crate::event::auxiliary_packet_events;
 use crate::Ibc;
 
 /// The SDK doesn't have a concept of a "revision number", so we default to 0
 pub const HOST_REVISION_NUMBER: u64 = 0;
 
 #[derive(Clone)]
-pub struct IbcContext<'a, C, Da>
+pub struct IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
-    pub ibc: &'a Ibc<C, Da>,
-    pub context: Option<C>,
-    pub working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
+    pub ibc: &'a Ibc<S, Da>,
+    pub context: Option<Context<S>>,
+    pub working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
 }
 
-impl<'a, C, Da> IbcContext<'a, C, Da>
+impl<'a, S, Da> IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     pub fn new(
-        ibc: &'a Ibc<C, Da>,
-        context: Option<C>,
-        working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
-    ) -> IbcContext<'a, C, Da> {
+        ibc: &'a Ibc<S, Da>,
+        context: Option<Context<S>>,
+        working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
+    ) -> IbcContext<'a, S, Da> {
         IbcContext {
             ibc,
             context,
@@ -62,58 +64,17 @@ where
     }
 }
 
-impl<'a, C, Da> ValidationContext for IbcContext<'a, C, Da>
+impl<'a, S, Da> ValidationContext for IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     type V = Self;
-    type E = Self;
-    type AnyConsensusState = AnyConsensusState;
-    type AnyClientState = AnyClientState;
+    type HostClientState = ClientState;
+    type HostConsensusState = ConsensusState;
 
     fn get_client_validation_context(&self) -> &Self::V {
         self
-    }
-
-    fn client_state(&self, client_id: &ClientId) -> Result<Self::AnyClientState, ContextError> {
-        self.ibc
-            .client_state_map
-            .get(client_id, *self.working_set.borrow_mut())
-            .ok_or(
-                ClientError::ClientStateNotFound {
-                    client_id: client_id.clone(),
-                }
-                .into(),
-            )
-    }
-
-    fn decode_client_state(&self, client_state: Any) -> Result<Self::AnyClientState, ContextError> {
-        let tm_client_state: TmClientState = client_state.try_into()?;
-
-        Ok(tm_client_state.into())
-    }
-
-    fn consensus_state(
-        &self,
-        client_cons_state_path: &ClientConsensusStatePath,
-    ) -> Result<Self::AnyConsensusState, ContextError> {
-        self.ibc
-            .consensus_state_map
-            .get(client_cons_state_path, *self.working_set.borrow_mut())
-            .ok_or(
-                ClientError::ConsensusStateNotFound {
-                    client_id: client_cons_state_path.client_id.clone(),
-                    height: Height::new(
-                        client_cons_state_path.revision_number,
-                        client_cons_state_path.revision_height,
-                    )
-                    .map_err(|_| ClientError::Other {
-                        description: "Height cannot be zero".to_string(),
-                    })?,
-                }
-                .into(),
-            )
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
@@ -158,7 +119,7 @@ where
     fn host_consensus_state(
         &self,
         height: &Height,
-    ) -> Result<Self::AnyConsensusState, ContextError> {
+    ) -> Result<Self::HostConsensusState, ContextError> {
         // TODO: In order to correctly implement this, we need to first define
         // the `ConsensusState` protobuf definition that SDK chains will use
         let host_consensus_state = self
@@ -169,7 +130,13 @@ where
                 description: "Host consensus state not found".to_string(),
             })?;
 
-        Ok(host_consensus_state.clone())
+        match host_consensus_state {
+            AnyConsensusState::Sovereign(consensus_state) => Ok(consensus_state),
+            _ => Err(ClientError::Other {
+                description: "Invalid host consensus state".to_string(),
+            }
+            .into()),
+        }
     }
 
     fn client_counter(&self) -> Result<u64, ContextError> {
@@ -201,7 +168,7 @@ where
 
     fn validate_self_client(
         &self,
-        client_state_of_host_on_counterparty: Any,
+        client_state_of_host_on_counterparty: Self::HostClientState,
     ) -> Result<(), ContextError> {
         // Note: We can optionally implement this.
         // It would require having a Protobuf definition of the chain's `ClientState` that other chains would use.
@@ -354,11 +321,13 @@ where
     }
 }
 
-impl<'a, C, Da> ExecutionContext for IbcContext<'a, C, Da>
+impl<'a, S, Da> ExecutionContext for IbcContext<'a, S, Da>
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
+    type E = Self;
+
     fn get_client_execution_context(&mut self) -> &mut Self::E {
         self
     }
@@ -582,23 +551,20 @@ where
     }
 
     fn emit_ibc_event(&mut self, event: IbcEvent) -> Result<(), ContextError> {
-        // Note: as an interim solution, we transform IBC events into Tendermint
-        // events to simplify the conversion process, avoiding the need for
-        // converting individual IBC event types into a key-value pair of `&str`
-        let tm_event =
-            tendermint::abci::Event::try_from(event).map_err(|_| ClientError::Other {
-                description: "Failed to convert IBC event to Tendermint event".to_string(),
-            })?;
+        self.ibc.emit_event(
+            *self.working_set.borrow_mut(),
+            event.event_type(),
+            event.clone(),
+        );
 
-        let event_attribute: Vec<String> = tm_event
-            .attributes
-            .into_iter()
-            .map(|attr| format!("{attr:?}"))
-            .collect();
+        let events = auxiliary_packet_events(event)?;
 
-        self.working_set
-            .borrow_mut()
-            .add_event(tm_event.kind.as_str(), event_attribute.join(","));
+        if !events.is_empty() {
+            events.into_iter().for_each(|(event_key, event)| {
+                self.ibc
+                    .emit_event(*self.working_set.borrow_mut(), &event_key, event);
+            });
+        }
 
         Ok(())
     }
@@ -612,7 +578,7 @@ where
 
 // TODO: to unblock testing, we implement this method, but the correct way to
 // track and update the host chain's consensus should be investigated
-impl<'ws, C: Context, Da: DaSpec> IbcContext<'ws, C, Da> {
+impl<'ws, S: Spec, Da: DaSpec> IbcContext<'ws, S, Da> {
     pub fn store_host_consensus_state(
         &mut self,
         height: Height,

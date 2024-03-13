@@ -1,14 +1,13 @@
 pub mod context;
 
-use derive_more::{From, TryInto};
+use derive_more::TryInto;
 use ibc_client_tendermint::client_state::ClientState as TmClientState;
 use ibc_client_tendermint::consensus_state::ConsensusState as TmConsensusState;
 use ibc_client_tendermint::types::{
+    ClientState as TmClientStateTypes, ConsensusState as TmConsensusStateType,
     TENDERMINT_CLIENT_STATE_TYPE_URL, TENDERMINT_CONSENSUS_STATE_TYPE_URL,
 };
-use ibc_core::client::context::client_state::{
-    ClientStateCommon, ClientStateExecution, ClientStateValidation,
-};
+use ibc_core::client::context::prelude::*;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::{Height, Status};
 use ibc_core::commitment_types::commitment::{
@@ -20,16 +19,32 @@ use ibc_core::host::types::path::Path;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use sov_celestia_client::client_state::ClientState as SovClientState;
 use sov_celestia_client::consensus_state::ConsensusState as SovConsensusState;
-use sov_celestia_client::types::client_state::SOV_TENDERMINT_CLIENT_STATE_TYPE_URL;
-use sov_celestia_client::types::consensus_state::SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL;
-use sov_modules_api::{Context, DaSpec};
+use sov_celestia_client::types::client_state::{
+    SovTmClientState, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
+};
+use sov_celestia_client::types::consensus_state::{
+    SovTmConsensusState, SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL,
+};
+use sov_modules_api::{DaSpec, Spec};
 
 use crate::context::IbcContext;
 
-#[derive(Clone, Debug, From, TryInto)]
+#[derive(Clone, Debug, TryInto)]
 pub enum AnyClientState {
     Tendermint(TmClientState),
     Sovereign(SovClientState),
+}
+
+impl From<SovTmClientState> for AnyClientState {
+    fn from(cs: SovTmClientState) -> Self {
+        Self::Sovereign(cs.into())
+    }
+}
+
+impl From<TmClientStateTypes> for AnyClientState {
+    fn from(cs: TmClientStateTypes) -> Self {
+        Self::Tendermint(cs.into())
+    }
 }
 
 impl Protobuf<Any> for AnyClientState {}
@@ -151,14 +166,14 @@ impl ClientStateCommon for AnyClientState {
     }
 }
 
-impl<'a, C, Da> ClientStateExecution<IbcContext<'a, C, Da>> for AnyClientState
+impl<'a, S, Da> ClientStateExecution<IbcContext<'a, S, Da>> for AnyClientState
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     fn initialise(
         &self,
-        ctx: &mut IbcContext<'a, C, Da>,
+        ctx: &mut IbcContext<'a, S, Da>,
         client_id: &ClientId,
         consensus_state: Any,
     ) -> Result<(), ClientError> {
@@ -170,7 +185,7 @@ where
 
     fn update_state(
         &self,
-        ctx: &mut IbcContext<'a, C, Da>,
+        ctx: &mut IbcContext<'a, S, Da>,
         client_id: &ClientId,
         header: Any,
     ) -> Result<Vec<Height>, ClientError> {
@@ -182,7 +197,7 @@ where
 
     fn update_state_on_misbehaviour(
         &self,
-        ctx: &mut IbcContext<'a, C, Da>,
+        ctx: &mut IbcContext<'a, S, Da>,
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<(), ClientError> {
@@ -198,7 +213,7 @@ where
 
     fn update_state_on_upgrade(
         &self,
-        ctx: &mut IbcContext<'a, C, Da>,
+        ctx: &mut IbcContext<'a, S, Da>,
         client_id: &ClientId,
         upgraded_client_state: Any,
         upgraded_consensus_state: Any,
@@ -220,14 +235,14 @@ where
     }
 }
 
-impl<'a, C, Da> ClientStateValidation<IbcContext<'a, C, Da>> for AnyClientState
+impl<'a, S, Da> ClientStateValidation<IbcContext<'a, S, Da>> for AnyClientState
 where
-    C: Context,
+    S: Spec,
     Da: DaSpec,
 {
     fn verify_client_message(
         &self,
-        ctx: &IbcContext<'a, C, Da>,
+        ctx: &IbcContext<'a, S, Da>,
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<(), ClientError> {
@@ -243,7 +258,7 @@ where
 
     fn check_for_misbehaviour(
         &self,
-        ctx: &IbcContext<'a, C, Da>,
+        ctx: &IbcContext<'a, S, Da>,
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<bool, ClientError> {
@@ -259,7 +274,7 @@ where
 
     fn status(
         &self,
-        ctx: &IbcContext<'a, C, Da>,
+        ctx: &IbcContext<'a, S, Da>,
         client_id: &ClientId,
     ) -> Result<Status, ClientError> {
         match self {
@@ -269,10 +284,48 @@ where
     }
 }
 
-#[derive(Clone, From, TryInto, ConsensusState)]
+#[derive(Clone, ConsensusState)]
 pub enum AnyConsensusState {
     Tendermint(TmConsensusState),
     Sovereign(SovConsensusState),
+}
+
+impl TryFrom<AnyConsensusState> for TmConsensusStateType {
+    type Error = ClientError;
+
+    fn try_from(cs: AnyConsensusState) -> Result<TmConsensusStateType, Self::Error> {
+        match cs {
+            AnyConsensusState::Tendermint(cs) => Ok(cs.inner().clone()),
+            _ => Err(ClientError::UnknownConsensusStateType {
+                consensus_state_type: "".to_string(),
+            }),
+        }
+    }
+}
+
+impl TryFrom<AnyConsensusState> for SovTmConsensusState {
+    type Error = ClientError;
+
+    fn try_from(cs: AnyConsensusState) -> Result<SovTmConsensusState, Self::Error> {
+        match cs {
+            AnyConsensusState::Sovereign(cs) => Ok(cs.inner().clone()),
+            _ => Err(ClientError::UnknownConsensusStateType {
+                consensus_state_type: "".to_string(),
+            }),
+        }
+    }
+}
+
+impl From<SovTmConsensusState> for AnyConsensusState {
+    fn from(cs: SovTmConsensusState) -> Self {
+        Self::Sovereign(cs.into())
+    }
+}
+
+impl From<TmConsensusStateType> for AnyConsensusState {
+    fn from(cs: TmConsensusStateType) -> Self {
+        Self::Tendermint(cs.into())
+    }
 }
 
 impl Protobuf<Any> for AnyConsensusState {}
