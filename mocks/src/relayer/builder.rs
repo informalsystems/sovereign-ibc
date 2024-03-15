@@ -2,7 +2,7 @@ use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::host::types::identifiers::Sequence;
 use ibc_core::host::ValidationContext;
 use sov_celestia_client::types::client_state::sov_client_type;
-#[cfg(feature = "celestia-da")]
+#[cfg(all(feature = "celestia-da", not(feature = "mock-da")))]
 use sov_consensus_state_tracker::CelestiaService;
 use sov_consensus_state_tracker::HasConsensusState;
 #[cfg(feature = "mock-da")]
@@ -14,7 +14,7 @@ use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
 
 use super::DefaultRelayer;
-#[cfg(feature = "celestia-da")]
+#[cfg(all(feature = "celestia-da", not(feature = "mock-da")))]
 use crate::configs::default_config_with_celestia_da;
 #[cfg(feature = "mock-da")]
 use crate::configs::default_config_with_mock_da;
@@ -42,7 +42,7 @@ impl RelayerBuilder<DefaultSpec, MockDaService> {
     }
 }
 
-#[cfg(feature = "celestia-da")]
+#[cfg(all(feature = "celestia-da", not(feature = "mock-da")))]
 impl RelayerBuilder<DefaultSpec, CelestiaService> {
     pub async fn default() -> Self {
         Self {
