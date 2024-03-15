@@ -28,7 +28,6 @@ use sov_modules_api::{
 };
 use sov_state::Prefix;
 
-use crate::clients::AnyConsensusState;
 use crate::event::auxiliary_packet_events;
 use crate::Ibc;
 
@@ -120,8 +119,6 @@ where
         &self,
         height: &Height,
     ) -> Result<Self::HostConsensusState, ContextError> {
-        // TODO: In order to correctly implement this, we need to first define
-        // the `ConsensusState` protobuf definition that SDK chains will use
         let host_consensus_state = self
             .ibc
             .host_consensus_state_map
@@ -130,13 +127,7 @@ where
                 description: "Host consensus state not found".to_string(),
             })?;
 
-        match host_consensus_state {
-            AnyConsensusState::Sovereign(consensus_state) => Ok(consensus_state),
-            _ => Err(ClientError::Other {
-                description: "Invalid host consensus state".to_string(),
-            }
-            .into()),
-        }
+        Ok(host_consensus_state)
     }
 
     fn client_counter(&self) -> Result<u64, ContextError> {
@@ -572,23 +563,6 @@ where
     /// FIXME: To implement this method there should be a way for IBC module to
     /// insert logs into the transaction receipts upon execution
     fn log_message(&mut self, message: String) -> Result<(), ContextError> {
-        Ok(())
-    }
-}
-
-// TODO: to unblock testing, we implement this method, but the correct way to
-// track and update the host chain's consensus should be investigated
-impl<'ws, S: Spec, Da: DaSpec> IbcContext<'ws, S, Da> {
-    pub fn store_host_consensus_state(
-        &mut self,
-        height: Height,
-        consensus_state: AnyConsensusState,
-    ) -> Result<(), ContextError> {
-        self.ibc.host_consensus_state_map.set(
-            &height,
-            &consensus_state,
-            *self.working_set.borrow_mut(),
-        );
         Ok(())
     }
 }

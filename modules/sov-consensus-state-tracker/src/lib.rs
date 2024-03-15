@@ -7,57 +7,35 @@
     clippy::unwrap_used
 )]
 
+#[cfg(feature = "celestia-da")]
+mod celestia_da;
+#[cfg(feature = "mock-da")]
+mod mock_da;
+
+#[cfg(feature = "celestia-da")]
+pub use celestia_da::*;
 use ibc_core::client::types::Height;
 #[cfg(feature = "mock-da")]
-use ibc_core::commitment_types::commitment::CommitmentRoot;
-#[cfg(feature = "mock-da")]
-use sov_celestia_client::types::consensus_state::{
-    ConsensusState as SovConsensusState, TmConsensusParams,
-};
-use sov_ibc::clients::AnyConsensusState;
+pub use mock_da::*;
+use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_ibc::context::HOST_REVISION_NUMBER;
-#[cfg(feature = "mock-da")]
-use sov_mock_da::MockDaSpec;
 use sov_modules_api::runtime::capabilities::{BatchSelector, Kernel, KernelSlotHooks};
 use sov_modules_api::{
     DaSpec, Gas, KernelModule, KernelWorkingSet, Spec, StateCheckpoint, StateMapAccessor,
 };
 use sov_modules_core::kernel_state::BootstrapWorkingSet;
 use sov_modules_core::Storage;
-#[cfg(feature = "mock-da")]
-use sov_rollup_interface::da::BlockHeaderTrait;
 
+/// Implement HasConsensusState for all DaSpecs that you wish to support, and
+/// extract the consensus state from the header.
 pub trait HasConsensusState: DaSpec {
-    fn consensus_state(header: &Self::BlockHeader) -> AnyConsensusState;
-}
-
-#[cfg(feature = "mock-da")]
-impl HasConsensusState for MockDaSpec {
-    fn consensus_state(header: &Self::BlockHeader) -> AnyConsensusState {
-        // Implement HasConsensusState for all DaSpecs that you wish to support,
-        // and extract the consensus state from the header.
-        // Suggestion: maybe add feature gates to this crate for each DaSpec.
-        AnyConsensusState::Sovereign(
-            SovConsensusState {
-                root: CommitmentRoot::from_bytes(header.hash().as_ref()),
-                da_params: TmConsensusParams::new(
-                    tendermint::Time::from_unix_timestamp(
-                        header.time.secs(),
-                        header.time.subsec_nanos(),
-                    )
-                    .expect("time is valid"),
-                    tendermint::Hash::None, // TODO: use `None` for the MockDaSpec, but later we use the real value when working with real DaSpecs
-                ),
-            }
-            .into(),
-        )
-    }
+    fn consensus_state(header: &Self::BlockHeader) -> HostConsensusState;
 }
 
 #[derive(Clone)]
 pub struct ConsensusStateTracker<K, S: Spec, Da: DaSpec + HasConsensusState> {
     inner: K,
-    ibc_module: sov_ibc::Ibc<S, Da>,
+    ibc: sov_ibc::Ibc<S, Da>,
 }
 
 impl<K, S, Da> Default for ConsensusStateTracker<K, S, Da>
@@ -69,7 +47,7 @@ where
     fn default() -> Self {
         Self {
             inner: K::default(),
-            ibc_module: Default::default(),
+            ibc: Default::default(),
         }
     }
 }
@@ -146,13 +124,15 @@ where
         working_set: &mut StateCheckpoint<Self::Spec>,
     ) -> <S::Gas as Gas>::Price {
         let kernel_working_set = KernelWorkingSet::from_kernel(&self.inner, working_set);
-        let visible_height = kernel_working_set.virtual_slot();
 
-        // Workaround for the fact that zero is not a valid height (No block produced and processed yet)
-        if visible_height > 0 {
-            let height = Height::new(HOST_REVISION_NUMBER, visible_height).expect("valid height");
+        let visible_slot_number = kernel_working_set.virtual_slot();
+
+        // Workaround the fact that zero is not a valid height (No block produced and processed yet)
+        if visible_slot_number > 0 {
+            let height =
+                Height::new(HOST_REVISION_NUMBER, visible_slot_number).expect("valid height");
             let consensus_state = Da::consensus_state(slot_header);
-            self.ibc_module.host_consensus_state_map.set(
+            self.ibc.host_consensus_state_map.set(
                 &height,
                 &consensus_state,
                 kernel_working_set.inner,

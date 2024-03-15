@@ -40,6 +40,7 @@ use ibc_core::host::types::path::{
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::Timestamp;
 use serde::{Deserialize, Serialize};
+use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::{
     Context, DaSpec, Error, ModuleInfo, Spec, StateMap, StateValue, StateVec, WorkingSet,
@@ -77,7 +78,7 @@ pub struct Ibc<S: Spec, Da: DaSpec> {
     consensus_state_map: StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec<Any>>,
 
     #[state]
-    pub host_consensus_state_map: StateMap<Height, AnyConsensusState, ProtobufCodec<Any>>,
+    pub host_consensus_state_map: StateMap<Height, HostConsensusState, ProtobufCodec<Any>>,
 
     #[state]
     client_update_heights_vec: StateVec<Height>,
