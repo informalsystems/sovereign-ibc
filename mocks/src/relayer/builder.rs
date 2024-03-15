@@ -2,8 +2,11 @@ use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::host::types::identifiers::Sequence;
 use ibc_core::host::ValidationContext;
 use sov_celestia_client::types::client_state::sov_client_type;
+#[cfg(feature = "celestia-da")]
+use sov_consensus_state_tracker::CelestiaService;
 use sov_consensus_state_tracker::HasConsensusState;
-use sov_mock_da::MockDaService;
+#[cfg(feature = "mock-da")]
+use sov_consensus_state_tracker::MockDaService;
 use sov_modules_api::{Context, Spec, WorkingSet};
 use sov_prover_storage_manager::new_orphan_storage;
 use sov_rollup_interface::services::da::DaService;
@@ -11,7 +14,11 @@ use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
 
 use super::DefaultRelayer;
-use crate::configs::{default_config_with_mock_da, DefaultSpec, TestSetupConfig};
+#[cfg(feature = "celestia-da")]
+use crate::configs::default_config_with_celestia_da;
+#[cfg(feature = "mock-da")]
+use crate::configs::default_config_with_mock_da;
+use crate::configs::{DefaultSpec, TestSetupConfig};
 use crate::cosmos::{dummy_signer, CosmosBuilder, MockTendermint};
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
@@ -26,10 +33,20 @@ where
     setup_cfg: TestSetupConfig<S, Da>,
 }
 
-impl Default for RelayerBuilder<DefaultSpec, MockDaService> {
-    fn default() -> Self {
+#[cfg(feature = "mock-da")]
+impl RelayerBuilder<DefaultSpec, MockDaService> {
+    pub async fn default() -> Self {
         Self {
             setup_cfg: default_config_with_mock_da(),
+        }
+    }
+}
+
+#[cfg(feature = "celestia-da")]
+impl RelayerBuilder<DefaultSpec, CelestiaService> {
+    pub async fn default() -> Self {
+        Self {
+            setup_cfg: default_config_with_celestia_da().await,
         }
     }
 }
@@ -59,6 +76,7 @@ where
     where
         S: Spec<Storage = ProverStorage<P>> + Send + Sync,
         Da: DaService<Error = anyhow::Error> + Clone,
+        Da::Spec: HasConsensusState,
         P: MerkleProofSpec + Clone + 'static,
         <P as MerkleProofSpec>::Hasher: Send,
         MockRollup<S, Da, P>: Handle,

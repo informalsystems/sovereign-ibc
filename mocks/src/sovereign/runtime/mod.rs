@@ -2,7 +2,6 @@
 mod config;
 pub use config::*;
 use sov_bank::Bank;
-use sov_consensus_state_tracker::HasConsensusState;
 use sov_ibc::Ibc;
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::macros::DefaultRuntime;

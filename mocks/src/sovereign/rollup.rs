@@ -4,22 +4,16 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
-use ibc_core::client::types::Height;
-use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::host::types::identifiers::ChainId;
-use ibc_core::host::ValidationContext;
 use jmt::RootHash;
 use sov_bank::CallMessage as BankCallMessage;
-use sov_celestia_client::types::consensus_state::{SovTmConsensusState, TmConsensusParams};
 use sov_consensus_state_tracker::{ConsensusStateTracker, HasConsensusState};
 use sov_ibc::call::CallMessage as IbcCallMessage;
-use sov_ibc::clients::AnyConsensusState;
 use sov_ibc::context::IbcContext;
 use sov_modules_api::{Context, DaSpec, Spec, WorkingSet};
 use sov_modules_stf_blueprint::kernels::basic::BasicKernel;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage, StorageRoot};
-use tendermint::{Hash, Time};
 
 use crate::cosmos::MockTendermint;
 use crate::sovereign::runtime::RuntimeCall;
@@ -33,9 +27,10 @@ pub struct MockRollup<S, Da, P>
 where
     S: Spec,
     Da: DaService<Error = anyhow::Error> + Clone,
+    Da::Spec: HasConsensusState,
     P: MerkleProofSpec,
 {
-    kernel: BasicKernel<S, Da::Spec>,
+    kernel: ConsensusStateTracker<BasicKernel<S, Da::Spec>, S, Da::Spec>,
     runtime: Runtime<S, Da::Spec>,
     da_service: Da,
     prover_storage: ProverStorage<P>,
@@ -71,6 +66,7 @@ impl<S, Da, P> MockRollup<S, Da, P>
 where
     S: Spec<Storage = ProverStorage<P>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
+    Da::Spec: HasConsensusState,
     P: MerkleProofSpec + Clone + 'static,
     <P as MerkleProofSpec>::Hasher: Send,
 {
@@ -100,7 +96,7 @@ where
         self.da_core.chain_id()
     }
 
-    pub fn kernel(&self) -> &BasicKernel<S, Da::Spec> {
+    pub fn kernel(&self) -> &ConsensusStateTracker<BasicKernel<S, Da::Spec>, S, Da::Spec> {
         &self.kernel
     }
 
@@ -180,39 +176,5 @@ where
 
     pub(crate) fn resolve_ctx(&mut self, sender: S::Address, height: u64) {
         *self.rollup_ctx.acquire_mutex() = Context::new(sender.clone(), sender, height);
-    }
-
-    /// Sets the host consensus state when processing each block
-    pub(crate) fn set_host_consensus_state(
-        &mut self,
-        root_hash: <ProverStorage<P> as Storage>::Root,
-        working_set: &mut WorkingSet<S>,
-    ) {
-        let mut ibc_ctx = self.ibc_ctx(working_set);
-
-        let current_height = ibc_ctx
-            .host_height()
-            .unwrap_or(Height::new(0, 1).expect("valid height"));
-
-        let visible_hash = <S as Spec>::VisibleHash::from(root_hash);
-
-        let sov_consensus_state = SovTmConsensusState::new(
-            CommitmentRoot::from_bytes(&visible_hash.into()),
-            TmConsensusParams::new(
-                Time::now(),
-                Hash::Sha256([
-                    0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
-                    0x4b, 0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d,
-                    0x9e, 0xe1, 0x86, 0x1b, 0xc1, 0x43,
-                ]),
-            ),
-        )
-        .into();
-
-        let consensus_state = AnyConsensusState::Sovereign(sov_consensus_state);
-
-        ibc_ctx
-            .store_host_consensus_state(current_height, consensus_state)
-            .unwrap();
     }
 }

@@ -6,9 +6,10 @@ use ibc_core::host::types::identifiers::ChainId;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 use serde::de::DeserializeOwned;
 use sov_bank::{get_token_address, TokenConfig};
-use sov_celestia_adapter::CelestiaService;
-use sov_consensus_state_tracker::HasConsensusState;
-use sov_mock_da::MockDaService;
+#[cfg(feature = "celestia-da")]
+use sov_consensus_state_tracker::CelestiaService;
+#[cfg(feature = "mock-da")]
+use sov_consensus_state_tracker::MockDaService;
 use sov_modules_api::{Address, Spec};
 use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::services::da::DaService;
@@ -17,7 +18,11 @@ use typed_builder::TypedBuilder;
 pub(crate) type DefaultSpec =
     sov_modules_api::default_spec::DefaultSpec<sov_mock_zkvm::MockZkVerifier>;
 
-use crate::sovereign::{celestia_da_service, mock_da_service, GenesisConfig, RollupGenesisConfig};
+#[cfg(feature = "celestia-da")]
+use crate::sovereign::celestia_da_service;
+#[cfg(feature = "mock-da")]
+use crate::sovereign::mock_da_service;
+use crate::sovereign::{GenesisConfig, RollupGenesisConfig};
 
 #[derive(TypedBuilder, Clone, Debug)]
 pub struct TestSetupConfig<S: Spec, Da: DaService> {
@@ -78,12 +83,14 @@ impl<S: Spec, Da: DaService> TestSetupConfig<S, Da> {
     }
 }
 
+#[cfg(feature = "mock-da")]
 pub fn default_config_with_mock_da() -> TestSetupConfig<DefaultSpec, MockDaService> {
     TestSetupConfig::<DefaultSpec, MockDaService>::builder()
         .da_service(mock_da_service())
         .build()
 }
 
+#[cfg(feature = "celestia-da")]
 pub async fn default_config_with_celestia_da() -> TestSetupConfig<DefaultSpec, CelestiaService> {
     TestSetupConfig::<DefaultSpec, CelestiaService>::builder()
         .da_service(celestia_da_service().await)
