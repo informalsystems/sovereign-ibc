@@ -18,8 +18,8 @@ pub mod consensus_state;
 pub mod error;
 
 /// Re-exports Sovereign SDK rollup light clients proto types from
-/// `ibc_proto-rs`
+/// `ibc_proto_sov-rs`
 pub mod proto {
-    pub use ibc_proto::ibc::lightclients::sovereign::tendermint::*;
-    pub use ibc_proto::sovereign::*;
+    pub use ibc_proto_sov::ibc::lightclients::sovereign::tendermint::*;
+    pub use ibc_proto_sov::sovereign::*;
 }

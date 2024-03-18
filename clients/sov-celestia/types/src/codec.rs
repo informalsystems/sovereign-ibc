@@ -1,5 +1,5 @@
 use ibc_core::client::types::error::ClientError;
-use ibc_proto::google::protobuf::Any;
+use ibc_proto_sov::google::protobuf::Any;
 use prost::Message;
 
 pub trait AnyCodec {

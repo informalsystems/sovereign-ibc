@@ -6,7 +6,7 @@ use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::ZERO_DURATION;
-use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::ClientState as RawClientState;
+use ibc_proto_sov::ibc::lightclients::sovereign::tendermint::v1::ClientState as RawClientState;
 
 use super::TmClientParams;
 use crate::error::Error;

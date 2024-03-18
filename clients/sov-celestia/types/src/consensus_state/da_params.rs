@@ -1,5 +1,5 @@
 use ibc_core::primitives::proto::Protobuf;
-use ibc_proto::ibc::lightclients::sovereign::tendermint::v1::TendermintConsensusParams as RawTmConsensusParams;
+use ibc_proto_sov::ibc::lightclients::sovereign::tendermint::v1::TendermintConsensusParams as RawTmConsensusParams;
 use tendermint::hash::Algorithm;
 use tendermint::{Hash, Time};
 use tendermint_proto::google::protobuf as tpb;
@@ -29,7 +29,7 @@ impl TryFrom<RawTmConsensusParams> for TmConsensusParams {
     type Error = Error;
 
     fn try_from(raw: RawTmConsensusParams) -> Result<Self, Self::Error> {
-        let ibc_proto::google::protobuf::Timestamp { seconds, nanos } =
+        let ibc_proto_sov::google::protobuf::Timestamp { seconds, nanos } =
             raw.timestamp.ok_or(Error::missing("timestamp"))?;
 
         let proto_timestamp = tpb::Timestamp { seconds, nanos };
@@ -47,7 +47,7 @@ impl TryFrom<RawTmConsensusParams> for TmConsensusParams {
 impl From<TmConsensusParams> for RawTmConsensusParams {
     fn from(value: TmConsensusParams) -> Self {
         let tpb::Timestamp { seconds, nanos } = value.timestamp.into();
-        let timestamp = ibc_proto::google::protobuf::Timestamp { seconds, nanos };
+        let timestamp = ibc_proto_sov::google::protobuf::Timestamp { seconds, nanos };
 
         Self {
             timestamp: Some(timestamp),

@@ -29,7 +29,7 @@ typed-builder = { version = "0.18.0", optional = true }
 ibc-core              = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"], optional = true }
-ibc-proto             = { workspace = true }
+ibc-proto-sov         = { workspace = true }
 ics23 	              = { version = "0.11", default-features = false }
 
 # DA layer dependencies
@@ -42,7 +42,7 @@ default = ["std"]
 std = [
 	"ibc-core/std",
 	"ibc-client-tendermint/std",
-	"ibc-proto/std",
+	"ibc-proto-sov/std",
 	"ics23/std",
 	"bytes/std",
 	"prost/std",
@@ -52,14 +52,14 @@ std = [
 serde = [
 	"ibc-core/serde",
 	"ibc-client-tendermint/serde",
-	"ibc-proto/serde",
+	"ibc-proto-sov/serde",
 	"ics23/serde",
 	"dep:serde",
 ]
 json-schema = [
 	"ibc-core/schema",
 	"ibc-client-tendermint/schema",
-	"ibc-proto/json-schema",
+	"ibc-proto-sov/json-schema",
 	"dep:schemars",
 ]
 test-util = [

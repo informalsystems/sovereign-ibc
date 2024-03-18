@@ -3,7 +3,7 @@ use core::fmt::{Display, Error as FmtError, Formatter};
 use ibc_core::client::types::Height;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Protobuf;
-use ibc_proto::sovereign::types::v1::{
+use ibc_proto_sov::sovereign::types::v1::{
     AggregatedProof as RawAggregatedProof, AggregatedProofData as RawAggregatedProofData,
     AggregatedProofPublicInput as RawAggregatedProofPublicInput,
     CodeCommitment as RawCodeCommitment, ValidityCondition as RawValidityCondition,
