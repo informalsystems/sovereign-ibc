@@ -16,7 +16,7 @@ use crate::relayer::{Handle, QueryReq, QueryResp, RelayerBuilder};
 #[test(tokio::test)]
 #[ignore]
 async fn test_create_client_on_sov() {
-    let rly = RelayerBuilder::default().setup().await;
+    let rly = RelayerBuilder::default().await.setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_sov().await;
 
@@ -80,7 +80,7 @@ async fn test_create_client_on_sov() {
 
 #[test(tokio::test)]
 async fn test_update_client_on_sov() {
-    let rly = RelayerBuilder::default().setup().await;
+    let rly = RelayerBuilder::default().await.setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_sov().await;
 
@@ -115,7 +115,7 @@ async fn test_update_client_on_sov() {
 
 #[test(tokio::test)]
 async fn test_create_client_on_cos() {
-    let rly = RelayerBuilder::default().setup().await;
+    let rly = RelayerBuilder::default().await.setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_cos().await;
 
@@ -154,7 +154,7 @@ async fn test_create_client_on_cos() {
 
 #[test(tokio::test)]
 async fn test_update_client_on_cos() {
-    let rly = RelayerBuilder::default().setup().await;
+    let rly = RelayerBuilder::default().await.setup().await;
 
     let msg_create_client = rly.build_msg_create_client_for_cos().await;
 

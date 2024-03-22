@@ -28,9 +28,10 @@ tracing       = "0.1.36"
 typed-builder = "0.18.0"
 
 # internal dependencies
-sov-ibc               = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "9ff51c0" }
-sov-ibc-transfer      = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "9ff51c0" }
-sov-celestia-client   = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "9ff51c0", features = ["test-util"] }
+sov-ibc                     = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "43980b3" }
+sov-ibc-transfer            = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "43980b3" }
+sov-consensus-state-tracker = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "43980b3" }
+sov-celestia-client         = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "43980b3", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
@@ -38,10 +39,10 @@ ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-core-host-cosmos  = { workspace = true }
 ibc-query             = { workspace = true }
-ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "bcd808832e", default-features = false }
+ibc-testkit           = { workspace = true }
 
 # cosmos dependencies
-basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "69df0bd" }
+basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "4d77fc5" }
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
 
@@ -52,12 +53,10 @@ sov-modules-api            = { workspace = true }
 sov-rollup-interface       = { workspace = true }
 sov-state                  = { workspace = true }
 
-sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
-sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
+const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", optional = true }
 sov-mock-zkvm              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
 sov-modules-stf-blueprint  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["native"], optional = true }
 sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc", features = ["test-utils"] }
-const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "3f94cecc" }
 jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 [dev-dependencies]
@@ -65,7 +64,7 @@ test-log              = { version = "0.2.14", default-features = false, features
 tracing-subscriber    = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
 
 [features]
-default = ["native"]
+default = ["mock-da"]
 native = [
     "sov-bank/native",
     "sov-ibc/native",
@@ -74,8 +73,16 @@ native = [
     "sov-modules-api/native",
     "sov-state/native",
     "sov-rollup-interface/native",
-    "sov-celestia-adapter",
-    "sov-mock-da",
     "sov-mock-zkvm",
     "sov-modules-stf-blueprint",
 ]
+mock-da = [
+    "native",
+    "sov-consensus-state-tracker/mock-da"
+]
+celestia-da = [
+    "native",
+    "const-rollup-config",
+    "sov-consensus-state-tracker/celestia-da"
+]
+

@@ -1,6 +1,7 @@
 //! Contains the implementation of the Sovereign SDK rollup runner.
 use std::time::Duration;
 
+use sov_consensus_state_tracker::HasConsensusState;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
     DispatchCall, Gas, Genesis, KernelWorkingSet, ModuleInfo, SlotData, Spec, StateCheckpoint,
@@ -20,6 +21,7 @@ impl<S, Da, P> MockRollup<S, Da, P>
 where
     S: Spec<Storage = ProverStorage<P>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
+    Da::Spec: HasConsensusState,
     P: MerkleProofSpec + Clone + 'static,
     <P as MerkleProofSpec>::Hasher: Send,
 {
@@ -86,9 +88,7 @@ where
             &mut checkpoint,
         );
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
-
-        self.set_host_consensus_state(state_root, &mut working_set);
+        let working_set = checkpoint.to_revertable(Default::default());
 
         working_set.checkpoint().0
     }

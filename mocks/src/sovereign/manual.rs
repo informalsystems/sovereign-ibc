@@ -19,6 +19,7 @@ use ibc_core::host::types::path::{
     ChannelEndPath, ConnectionPath, SeqAckPath, SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
+use sov_consensus_state_tracker::HasConsensusState;
 use sov_ibc::context::IbcContext;
 use sov_modules_api::{Spec, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
@@ -31,6 +32,7 @@ impl<S, Da, P> MockRollup<S, Da, P>
 where
     S: Spec<Storage = ProverStorage<P>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
+    Da::Spec: HasConsensusState,
     P: MerkleProofSpec + Clone + 'static,
     <P as MerkleProofSpec>::Hasher: Send,
 {

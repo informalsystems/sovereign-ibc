@@ -17,7 +17,7 @@ use crate::relayer::{Handle, QueryReq, QueryResp, QueryService, RelayerBuilder};
 /// chain (`recv_packet`).
 #[test(tokio::test)]
 async fn test_escrow_unescrow_on_sov() {
-    let relayer_builder = RelayerBuilder::default();
+    let relayer_builder = RelayerBuilder::default().await;
 
     let rly = relayer_builder.clone().with_manual_tao().setup().await;
 
@@ -135,7 +135,7 @@ async fn test_escrow_unescrow_on_sov() {
 #[test(tokio::test)]
 #[ignore]
 async fn test_mint_burn_on_sov() {
-    let relayer_builder = RelayerBuilder::default();
+    let relayer_builder = RelayerBuilder::default().await;
 
     let rly = relayer_builder.clone().with_manual_tao().setup().await;
 
