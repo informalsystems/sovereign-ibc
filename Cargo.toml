@@ -55,9 +55,9 @@ ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4
 ibc-query             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4f0ab6aaee", default-features = false }
 ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "4f0ab6aaee", default-features = false }
 
-# NOTE: the `sov-ibc-proto` is the only crate depends on ibc-proto. For any
-# required protobuf types in the project, importing them from `ibc` crates is a
-# more efficient approach.
+# NOTE: `ibc-proto` is solely required by `sov-ibc-proto`. When needing Protobuf
+# Rust types in the project, importing from their respective `ibc` type crates is
+# a more efficient approach.
 ibc-proto             = { version = "0.41.0", default-features = false }
 
 # cosmos dependencies
