@@ -1,51 +1,43 @@
 //! Defines JSON RPC methods exposed by the ibc module
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::str::FromStr;
 
 use borsh::BorshSerialize;
-use ibc_core::channel::types::proto::v1::{
-    QueryChannelClientStateRequest, QueryChannelClientStateResponse,
-    QueryChannelConsensusStateRequest, QueryChannelConsensusStateResponse, QueryChannelRequest,
-    QueryChannelResponse, QueryChannelsRequest, QueryChannelsResponse,
-    QueryConnectionChannelsRequest, QueryConnectionChannelsResponse,
-    QueryNextSequenceReceiveRequest, QueryNextSequenceReceiveResponse,
-    QueryPacketAcknowledgementRequest, QueryPacketAcknowledgementResponse,
-    QueryPacketAcknowledgementsRequest, QueryPacketAcknowledgementsResponse,
-    QueryPacketCommitmentRequest, QueryPacketCommitmentResponse, QueryPacketCommitmentsRequest,
-    QueryPacketCommitmentsResponse, QueryPacketReceiptRequest, QueryPacketReceiptResponse,
-    QueryUnreceivedAcksRequest, QueryUnreceivedAcksResponse, QueryUnreceivedPacketsRequest,
-    QueryUnreceivedPacketsResponse,
-};
-use ibc_core::client::types::proto::v1::{
-    QueryClientStateRequest, QueryClientStateResponse, QueryClientStatesRequest,
-    QueryClientStatesResponse, QueryClientStatusRequest, QueryClientStatusResponse,
-    QueryConsensusStateHeightsRequest, QueryConsensusStateHeightsResponse,
-    QueryConsensusStateRequest, QueryConsensusStateResponse, QueryConsensusStatesRequest,
-    QueryConsensusStatesResponse,
-};
-use ibc_core::connection::types::proto::v1::{
-    QueryClientConnectionsRequest, QueryClientConnectionsResponse,
-    QueryConnectionClientStateRequest, QueryConnectionClientStateResponse,
-    QueryConnectionConsensusStateRequest, QueryConnectionConsensusStateResponse,
-    QueryConnectionParamsRequest, QueryConnectionParamsResponse, QueryConnectionRequest,
-    QueryConnectionResponse, QueryConnectionsRequest, QueryConnectionsResponse,
-};
-use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::channel::types::commitment::PacketCommitment;
 use ibc_core::host::types::path::{ClientConsensusStatePath, CommitmentPath};
 use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::{
     query_channel, query_channel_client_state, query_channel_consensus_state, query_channels,
     query_connection_channels, query_next_sequence_receive, query_packet_acknowledgement,
     query_packet_acknowledgements, query_packet_commitments, query_packet_receipt,
-    query_unreceived_acks, query_unreceived_packets,
+    query_unreceived_acks, query_unreceived_packets, QueryChannelClientStateRequest,
+    QueryChannelClientStateResponse, QueryChannelConsensusStateRequest,
+    QueryChannelConsensusStateResponse, QueryChannelRequest, QueryChannelResponse,
+    QueryChannelsRequest, QueryChannelsResponse, QueryConnectionChannelsRequest,
+    QueryConnectionChannelsResponse, QueryNextSequenceReceiveRequest,
+    QueryNextSequenceReceiveResponse, QueryPacketAcknowledgementRequest,
+    QueryPacketAcknowledgementResponse, QueryPacketAcknowledgementsRequest,
+    QueryPacketAcknowledgementsResponse, QueryPacketCommitmentRequest,
+    QueryPacketCommitmentResponse, QueryPacketCommitmentsRequest, QueryPacketCommitmentsResponse,
+    QueryPacketReceiptRequest, QueryPacketReceiptResponse, QueryUnreceivedAcksRequest,
+    QueryUnreceivedAcksResponse, QueryUnreceivedPacketsRequest, QueryUnreceivedPacketsResponse,
 };
 use ibc_query::core::client::{
-    query_client_states, query_client_status, query_consensus_state_heights, query_consensus_states,
+    query_client_states, query_client_status, query_consensus_state_heights,
+    query_consensus_states, QueryClientStateRequest, QueryClientStateResponse,
+    QueryClientStatesRequest, QueryClientStatesResponse, QueryClientStatusRequest,
+    QueryClientStatusResponse, QueryConsensusStateHeightsRequest,
+    QueryConsensusStateHeightsResponse, QueryConsensusStateRequest, QueryConsensusStateResponse,
+    QueryConsensusStatesRequest, QueryConsensusStatesResponse,
 };
 use ibc_query::core::connection::{
     query_client_connections, query_connection, query_connection_client_state,
     query_connection_consensus_state, query_connection_params, query_connections,
+    QueryClientConnectionsRequest, QueryClientConnectionsResponse,
+    QueryConnectionClientStateRequest, QueryConnectionClientStateResponse,
+    QueryConnectionConsensusStateRequest, QueryConnectionConsensusStateResponse,
+    QueryConnectionParamsRequest, QueryConnectionParamsResponse, QueryConnectionRequest,
+    QueryConnectionResponse, QueryConnectionsRequest, QueryConnectionsResponse,
 };
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::types::ErrorObjectOwned;
@@ -72,15 +64,15 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let codec = self.client_state_map.codec();
 
-        let client_id =
-            ClientId::from_str(request.client_id.as_str()).map_err(to_jsonrpsee_error)?;
-
-        let key = SlotKey::new(namespace, prefix, &client_id, codec.key_codec());
+        let key = SlotKey::new(namespace, prefix, &request.client_id, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 
         let storage_value = value_with_proof.value.ok_or_else(|| {
-            to_jsonrpsee_error(format!("Client state not found for client {client_id:?}"))
+            to_jsonrpsee_error(format!(
+                "Client state not found for client {:?}",
+                request.client_id
+            ))
         })?;
 
         let client_state: AnyClientState = codec
@@ -100,11 +92,11 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let current_height = ibc_ctx.host_height().map_err(to_jsonrpsee_error)?;
 
-        Ok(QueryClientStateResponse {
-            client_state: Some(client_state.into()),
+        Ok(QueryClientStateResponse::new(
+            client_state.into(),
             proof,
-            proof_height: Some(current_height.into()),
-        })
+            current_height,
+        ))
     }
 
     #[rpc_method(name = "clientStates")]
@@ -134,13 +126,19 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let codec = self.consensus_state_map.codec();
 
-        let client_id =
-            ClientId::from_str(request.client_id.as_str()).map_err(to_jsonrpsee_error)?;
+        let consensus_height = match request.consensus_height {
+            Some(height) => height,
+            None => {
+                return Err(to_jsonrpsee_error(
+                    "Consensus height is required for querying consensus state",
+                ))
+            }
+        };
 
         let path = ClientConsensusStatePath::new(
-            client_id.clone(),
-            request.revision_number,
-            request.revision_height,
+            request.client_id.clone(),
+            consensus_height.revision_number(),
+            consensus_height.revision_height(),
         );
 
         let key = SlotKey::new(namespace, prefix, &path, codec.key_codec());
@@ -149,7 +147,8 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let storage_value = value_with_proof.value.ok_or_else(|| {
             to_jsonrpsee_error(format!(
-                "Consensus state not found for client {client_id:?}"
+                "Consensus state not found for client {:?}",
+                request.client_id
             ))
         })?;
 
@@ -170,11 +169,11 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let proof_height = ibc_ctx.host_height().map_err(to_jsonrpsee_error)?;
 
-        Ok(QueryConsensusStateResponse {
-            consensus_state: Some(consensus_state.into()),
+        Ok(QueryConsensusStateResponse::new(
+            consensus_state.into(),
             proof,
-            proof_height: Some(proof_height.into()),
-        })
+            proof_height,
+        ))
     }
 
     #[rpc_method(name = "consensusStates")]
@@ -399,11 +398,8 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let codec = self.packet_commitment_map.codec();
 
-        let commitment_path = CommitmentPath::new(
-            &request.port_id.parse().map_err(to_jsonrpsee_error)?,
-            &request.channel_id.parse().map_err(to_jsonrpsee_error)?,
-            request.sequence.into(),
-        );
+        let commitment_path =
+            CommitmentPath::new(&request.port_id, &request.channel_id, request.sequence);
 
         let key = SlotKey::new(namespace, prefix, &commitment_path, codec.key_codec());
 
@@ -428,11 +424,11 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let current_height = ibc_ctx.host_height().map_err(to_jsonrpsee_error)?;
 
-        Ok(QueryPacketCommitmentResponse {
-            commitment: storage_value.value().to_vec(),
+        Ok(QueryPacketCommitmentResponse::new(
+            PacketCommitment::from(storage_value.value().to_vec()),
             proof,
-            proof_height: Some(current_height.into()),
-        })
+            current_height,
+        ))
     }
 
     #[rpc_method(name = "packetCommitments")]
