@@ -1,0 +1,25 @@
+[package]
+name = "sov-ibc-proto"
+authors      = { workspace = true }
+edition      = { workspace = true }
+license      = { workspace = true }
+repository   = { workspace = true }
+rust-version = { workspace = true }
+version      = { workspace = true }
+readme       = "./../README.md"
+
+[dependencies]
+# external dependencies
+informalsystems-pbjson = { version = "0.7.0", default-features = false, optional = true }
+prost                  = { workspace = true }
+serde                  = { workspace = true, default-features = false, optional = true }
+
+# ibc dependencies
+ibc-proto          = { workspace = true }
+tendermint-proto   = { workspace = true }
+
+[features]
+default            = ["std"]
+std                = ["prost/std", "ibc-proto/std", "informalsystems-pbjson/std"]
+serde              = ["dep:serde", "ibc-proto/serde", "informalsystems-pbjson"]
+proto-descriptor   = []

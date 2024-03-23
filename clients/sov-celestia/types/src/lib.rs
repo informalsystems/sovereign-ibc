@@ -20,6 +20,6 @@ pub mod error;
 /// Re-exports Sovereign SDK rollup light clients proto types from
 /// `ibc_proto-rs`
 pub mod proto {
-    pub use ibc_proto::ibc::lightclients::sovereign::tendermint::*;
-    pub use ibc_proto::sovereign::*;
+    pub use sov_ibc_proto::ibc::lightclients::sovereign::tendermint::*;
+    pub use sov_ibc_proto::sovereign::*;
 }

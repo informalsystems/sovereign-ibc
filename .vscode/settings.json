@@ -4,8 +4,4 @@
         "./ci/risc0-check/methods/guest/Cargo.toml",
         "./ci/risc0-check/host/Cargo.toml",
     ],
-    "cSpell.words": [
-        "jsonrpsee",
-        "Rollup"
-    ]
 }
