@@ -9,7 +9,7 @@ members = [
     "modules/sov-ibc-transfer",
     "modules/sov-ibc",
     "modules/sov-consensus-state-tracker",
-    # "mocks",
+    "mocks",
 ]
 
 exclude = [
