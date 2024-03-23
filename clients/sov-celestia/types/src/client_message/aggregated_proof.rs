@@ -3,14 +3,14 @@ use core::fmt::{Display, Error as FmtError, Formatter};
 use ibc_core::client::types::Height;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Protobuf;
-use ibc_proto::sovereign::types::v1::{
+
+use crate::client_message::pretty::PrettySlice;
+use crate::error::Error;
+use crate::proto::types::v1::{
     AggregatedProof as RawAggregatedProof, AggregatedProofData as RawAggregatedProofData,
     AggregatedProofPublicInput as RawAggregatedProofPublicInput,
     CodeCommitment as RawCodeCommitment, ValidityCondition as RawValidityCondition,
 };
-
-use crate::client_message::pretty::PrettySlice;
-use crate::error::Error;
 
 /// Defines the aggregated proof data structure for the Sovereign SDK rollups
 #[derive(Clone, Debug, PartialEq, Eq)]

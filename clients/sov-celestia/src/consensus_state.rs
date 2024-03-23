@@ -4,7 +4,7 @@ use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
-use sov_celestia_client_types::proto::v1::ConsensusState as RawConsensusState;
+use sov_celestia_client_types::proto::tendermint::v1::ConsensusState as RawConsensusState;
 use tendermint::{Hash, Time};
 
 /// Newtype wrapper around the `ConsensusState` type imported from the
