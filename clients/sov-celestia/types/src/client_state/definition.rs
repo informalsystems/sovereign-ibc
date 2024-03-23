@@ -6,10 +6,10 @@ use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::ZERO_DURATION;
-use sov_ibc_proto::ibc::lightclients::sovereign::tendermint::v1::ClientState as RawClientState;
 
 use super::TmClientParams;
 use crate::error::Error;
+use crate::proto::tendermint::v1::ClientState as RawClientState;
 
 pub const SOV_TENDERMINT_CLIENT_STATE_TYPE_URL: &str =
     "/ibc.lightclients.sovereign.tendermint.v1.ClientState";

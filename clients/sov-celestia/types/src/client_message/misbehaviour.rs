@@ -6,10 +6,10 @@ use ibc_client_tendermint::types::{Header as TmHeader, Misbehaviour as TmMisbeha
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::primitives::proto::{Any, Protobuf};
-use sov_ibc_proto::ibc::lightclients::sovereign::tendermint::v1::Misbehaviour as RawSovTmMisbehaviour;
 
 use super::header::{Header, SovTmHeader};
 use crate::error::Error;
+use crate::proto::tendermint::v1::Misbehaviour as RawSovTmMisbehaviour;
 
 pub const SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL: &str =
     "/ibc.lightclients.sovereign.tendermint.v1.Misbehaviour";

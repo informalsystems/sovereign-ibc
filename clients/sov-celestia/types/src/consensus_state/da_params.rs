@@ -1,10 +1,10 @@
 use ibc_core::primitives::proto::Protobuf;
-use sov_ibc_proto::ibc::lightclients::sovereign::tendermint::v1::TendermintConsensusParams as RawTmConsensusParams;
 use tendermint::hash::Algorithm;
 use tendermint::{Hash, Time};
 use tendermint_proto::google::protobuf as tpb;
 
 use crate::error::Error;
+use crate::proto::tendermint::v1::TendermintConsensusParams as RawTmConsensusParams;
 
 /// Defines the Tendermint-specific consensus state parameters
 #[derive(Clone, Debug, PartialEq, Eq)]

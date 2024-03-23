@@ -4,9 +4,9 @@ use ibc_client_tendermint::types::proto::v1::Fraction;
 use ibc_client_tendermint::types::TrustThreshold;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::Protobuf;
-use sov_ibc_proto::ibc::lightclients::sovereign::tendermint::v1::TendermintClientParams as RawTmClientParams;
 
 use crate::error::Error;
+use crate::proto::tendermint::v1::TendermintClientParams as RawTmClientParams;
 
 /// Defines the Tendermint-specific client state parameters
 #[derive(Clone, Debug, PartialEq, Eq)]

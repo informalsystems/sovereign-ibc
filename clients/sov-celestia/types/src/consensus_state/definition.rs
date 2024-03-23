@@ -3,11 +3,11 @@
 use ibc_core::client::types::error::ClientError;
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::primitives::proto::{Any, Protobuf};
-use sov_ibc_proto::ibc::lightclients::sovereign::tendermint::v1::ConsensusState as RawConsensusState;
 use tendermint::Time;
 
 use super::TmConsensusParams;
 use crate::client_message::SovTmHeader;
+use crate::proto::tendermint::v1::ConsensusState as RawConsensusState;
 
 pub const SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL: &str =
     "/ibc.lightclients.sovereign.tendermint.v1.ConsensusState";
