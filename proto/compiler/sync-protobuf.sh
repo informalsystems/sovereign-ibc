@@ -66,7 +66,6 @@ cargo run -- compile \
   --ibc "$IBC_GO_DIR/proto-include" \
   --out ./../src/prost
 
-
 # Remove unused generated code
 rm -f ./../src/prost/cosmos_proto.rs
 rm -f ./../src/prost/cosmos.ics23.v1.rs

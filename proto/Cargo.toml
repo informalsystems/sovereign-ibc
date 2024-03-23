@@ -22,4 +22,5 @@ tendermint-proto   = { workspace = true }
 default            = ["std"]
 std                = ["prost/std", "ibc-proto/std", "informalsystems-pbjson/std"]
 serde              = ["dep:serde", "ibc-proto/serde", "informalsystems-pbjson"]
+schema             = ["ibc-proto/json-schema", "serde", "std"]
 proto-descriptor   = []
