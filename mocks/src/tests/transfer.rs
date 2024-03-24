@@ -212,7 +212,7 @@ async fn test_mint_burn_on_sov() {
     // -----------------------------------------------------------------------
     // Check uniqueness of the created token address
     // -----------------------------------------------------------------------
-    let denom_path_prefix = TracePrefix::new(PortId::transfer(), ChannelId::default());
+    let denom_path_prefix = TracePrefix::new(PortId::transfer(), ChannelId::zero());
     let mut prefixed_denom = PrefixedDenom::from_str(&cfg.cos_denom).unwrap();
     prefixed_denom.add_trace_prefix(denom_path_prefix);
 
