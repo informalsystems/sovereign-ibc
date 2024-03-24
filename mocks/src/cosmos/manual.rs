@@ -66,7 +66,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             ConnectionState::Open,
             client_id.clone(),
             ConnCounterparty::new(client_id, Some(connection_id.clone()), prefix),
-            vec![ConnectionVersion::default()],
+            ConnectionVersion::compatibles(),
             Default::default(),
         )
         .unwrap();
@@ -88,10 +88,10 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
 
         let channel_end = ChannelEnd::new(
             ChannelState::Open,
-            Order::default(),
+            Order::Unordered,
             ChanCounterparty::new(PortId::transfer(), Some(channel_id.clone())),
             vec![connection_id],
-            ChannelVersion::default(),
+            ChannelVersion::empty(),
         )
         .unwrap();
 

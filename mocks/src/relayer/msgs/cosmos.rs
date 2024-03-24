@@ -124,7 +124,7 @@ where
 
         MsgTransfer {
             port_id_on_a: PortId::transfer(),
-            chan_id_on_a: ChannelId::default(),
+            chan_id_on_a: ChannelId::zero(),
             packet_data,
             // NOTE: packet timeout height and timeout timestamp cannot both be 0
             timeout_height_on_b: TimeoutHeight::At(Height::new(HOST_REVISION_NUMBER, 200).unwrap()),
@@ -178,7 +178,7 @@ where
             seq_on_a: latest_seq_send,
             chan_id_on_a: msg_transfer.chan_id_on_a,
             port_id_on_a: msg_transfer.port_id_on_a,
-            chan_id_on_b: ChannelId::default(),
+            chan_id_on_b: ChannelId::zero(),
             port_id_on_b: PortId::transfer(),
             data: serde_json::to_vec(&msg_transfer.packet_data).unwrap(),
             timeout_height_on_b: msg_transfer.timeout_height_on_b,

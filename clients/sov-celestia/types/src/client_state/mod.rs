@@ -57,7 +57,7 @@ pub mod test_util {
     pub struct TendermintParamsConfig {
         #[builder(default = ChainId::new("mock-celestia-0").expect("Never fails"))]
         pub chain_id: ChainId,
-        #[builder(default)]
+        #[builder(default = TrustThreshold::ONE_THIRD)]
         pub trust_level: TrustThreshold,
         #[builder(default = Duration::from_secs(64000))]
         pub trusting_period: Duration,
