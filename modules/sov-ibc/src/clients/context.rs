@@ -8,7 +8,7 @@ use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::Timestamp;
 use sov_celestia_client::context::ValidationContext as SovValidationContext;
-use sov_modules_api::{DaSpec, Spec, StateMapAccessor, StateVecAccessor};
+use sov_modules_api::{DaSpec, Spec};
 
 use super::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;

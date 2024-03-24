@@ -22,10 +22,7 @@ use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::{Signer, Timestamp};
 use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::consensus_state::ConsensusState;
-use sov_modules_api::{
-    Context, DaSpec, EventEmitter, ModuleInfo, Spec, StateMapAccessor, StateValueAccessor,
-    StateVecAccessor, WorkingSet,
-};
+use sov_modules_api::{Context, DaSpec, EventEmitter, ModuleInfo, Spec, WorkingSet};
 use sov_state::Prefix;
 
 use crate::event::auxiliary_packet_events;
@@ -88,31 +85,18 @@ where
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        let context = self.context.clone().ok_or(ClientError::Other {
-            description: "Context not found".to_string(),
-        })?;
+        let host_consensus_state = self.host_consensus_state(&self.host_height()?)?;
 
-        let mut working_set = self.working_set.borrow_mut();
+        let chain_time = host_consensus_state.timestamp();
 
-        let mut versioned_working_set = working_set.versioned_state(&context);
-
-        let chain_time = self.ibc.chain_state.get_time(&mut versioned_working_set);
-
-        if chain_time.secs() < 0 {
+        if chain_time.unix_timestamp() < 0 {
             // FIXME: at least add a `ContextError::Host` enum variant, and use that here
             return Err(ContextError::ClientError(ClientError::Other {
-                description: format!("Invalid host chain time: {}", chain_time.secs()),
+                description: format!("Invalid host chain time: {}", chain_time.unix_timestamp()),
             }));
         }
 
-        let time_in_nanos: u64 =
-            (chain_time.secs() as u64) * 10u64.pow(9) + chain_time.subsec_nanos() as u64;
-
-        // FIXME: at least add a `ContextError::Host` enum variant, and use that here
-        let timestamp = Timestamp::from_nanoseconds(time_in_nanos)
-            .map_err(PacketError::InvalidPacketTimestamp)?;
-
-        Ok(timestamp)
+        Ok(Timestamp::from(chain_time))
     }
 
     fn host_consensus_state(

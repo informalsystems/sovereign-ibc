@@ -62,7 +62,7 @@ pub struct Ibc<S: Spec, Da: DaSpec> {
     pub address: S::Address,
 
     #[kernel_module]
-    chain_state: sov_chain_state::ChainState<S, Da>,
+    _chain_state: sov_chain_state::ChainState<S, Da>,
 
     #[module]
     transfer: IbcTransfer<S>,

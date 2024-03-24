@@ -23,7 +23,7 @@ use ibc_core::primitives::Signer;
 use ibc_core::router::module::Module;
 use ibc_core::router::types::module::ModuleExtras;
 use sov_bank::Coins;
-use sov_modules_api::{Context, Spec, StateMapAccessor, WorkingSet};
+use sov_modules_api::{Context, Spec, WorkingSet};
 use uint::FromDecStrErr;
 
 use super::IbcTransfer;
