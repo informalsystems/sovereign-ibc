@@ -10,7 +10,7 @@ use sov_bank::CallMessage as BankCallMessage;
 use sov_consensus_state_tracker::{ConsensusStateTracker, HasConsensusState};
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::context::IbcContext;
-use sov_modules_api::{Context, DaSpec, Spec, WorkingSet};
+use sov_modules_api::{Context, Spec, WorkingSet};
 use sov_modules_stf_blueprint::kernels::basic::BasicKernel;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage, StorageRoot};
@@ -20,7 +20,7 @@ use crate::sovereign::runtime::RuntimeCall;
 use crate::sovereign::Runtime;
 use crate::utils::MutexUtil;
 
-type Mempool<C, Da> = Vec<RuntimeCall<C, Da>>;
+type Mempool<C> = Vec<RuntimeCall<C>>;
 
 #[derive(Clone)]
 pub struct MockRollup<S, Da, P>
@@ -31,35 +31,13 @@ where
     P: MerkleProofSpec,
 {
     kernel: ConsensusStateTracker<BasicKernel<S, Da::Spec>, S, Da::Spec>,
-    runtime: Runtime<S, Da::Spec>,
+    runtime: Runtime<S>,
     da_service: Da,
     prover_storage: ProverStorage<P>,
     pub(crate) da_core: MockTendermint,
     pub(crate) rollup_ctx: Arc<Mutex<Context<S>>>,
     pub(crate) state_root: Arc<Mutex<<ProverStorage<P> as Storage>::Root>>,
-    pub(crate) mempool: Arc<Mutex<Mempool<S, Da::Spec>>>,
-}
-
-impl<S: Spec, Da: DaSpec> Clone for RuntimeCall<S, Da> {
-    fn clone(&self) -> Self {
-        match self {
-            RuntimeCall::bank(call) => RuntimeCall::bank(call.clone()),
-            RuntimeCall::ibc(call) => RuntimeCall::ibc(call.clone()),
-            RuntimeCall::ibc_transfer(_) => RuntimeCall::ibc_transfer(()),
-        }
-    }
-}
-
-impl<S: Spec, Da: DaSpec> From<IbcCallMessage> for RuntimeCall<S, Da> {
-    fn from(call: IbcCallMessage) -> Self {
-        RuntimeCall::ibc(call)
-    }
-}
-
-impl<S: Spec, Da: DaSpec> From<BankCallMessage<S>> for RuntimeCall<S, Da> {
-    fn from(call: BankCallMessage<S>) -> Self {
-        RuntimeCall::bank(call)
-    }
+    pub(crate) mempool: Arc<Mutex<Mempool<S>>>,
 }
 
 impl<S, Da, P> MockRollup<S, Da, P>
@@ -71,7 +49,7 @@ where
     <P as MerkleProofSpec>::Hasher: Send,
 {
     pub fn new(
-        runtime: Runtime<S, Da::Spec>,
+        runtime: Runtime<S>,
         prover_storage: ProverStorage<P>,
         rollup_ctx: Context<S>,
         da_core: MockTendermint,
@@ -100,7 +78,7 @@ where
         &self.kernel
     }
 
-    pub fn runtime(&self) -> &Runtime<S, Da::Spec> {
+    pub fn runtime(&self) -> &Runtime<S> {
         &self.runtime
     }
 
@@ -120,21 +98,14 @@ where
         self.state_root.clone()
     }
 
-    pub fn mempool(&self) -> Vec<RuntimeCall<S, Da::Spec>> {
+    pub fn mempool(&self) -> Vec<RuntimeCall<S>> {
         self.mempool.acquire_mutex().clone()
     }
 
-    pub fn ibc_ctx<'a>(
-        &'a self,
-        working_set: &'a mut WorkingSet<S>,
-    ) -> IbcContext<'a, S, Da::Spec> {
+    pub fn ibc_ctx<'a>(&'a self, working_set: &'a mut WorkingSet<S>) -> IbcContext<'a, S> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
-        IbcContext::new(
-            &self.runtime.ibc,
-            Some(self.rollup_ctx.acquire_mutex().clone()),
-            shared_working_set.clone(),
-        )
+        IbcContext::new(&self.runtime.ibc, shared_working_set.clone())
     }
 
     /// Returns the balance of a user for a given token
@@ -176,5 +147,27 @@ where
 
     pub(crate) fn resolve_ctx(&mut self, sender: S::Address, height: u64) {
         *self.rollup_ctx.acquire_mutex() = Context::new(sender.clone(), sender, height);
+    }
+}
+
+impl<S: Spec> Clone for RuntimeCall<S> {
+    fn clone(&self) -> Self {
+        match self {
+            RuntimeCall::bank(call) => RuntimeCall::bank(call.clone()),
+            RuntimeCall::ibc(call) => RuntimeCall::ibc(call.clone()),
+            RuntimeCall::ibc_transfer(_) => RuntimeCall::ibc_transfer(()),
+        }
+    }
+}
+
+impl<S: Spec> From<IbcCallMessage> for RuntimeCall<S> {
+    fn from(call: IbcCallMessage) -> Self {
+        RuntimeCall::ibc(call)
+    }
+}
+
+impl<S: Spec> From<BankCallMessage<S>> for RuntimeCall<S> {
+    fn from(call: BankCallMessage<S>) -> Self {
+        RuntimeCall::bank(call)
     }
 }

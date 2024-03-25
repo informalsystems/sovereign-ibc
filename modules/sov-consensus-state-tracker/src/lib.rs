@@ -33,7 +33,8 @@ pub trait HasConsensusState: DaSpec {
 #[derive(Clone)]
 pub struct ConsensusStateTracker<K, S: Spec, Da: DaSpec + HasConsensusState> {
     inner: K,
-    ibc: sov_ibc::Ibc<S, Da>,
+    ibc: sov_ibc::Ibc<S>,
+    da: core::marker::PhantomData<Da>,
 }
 
 impl<K, S, Da> Default for ConsensusStateTracker<K, S, Da>
@@ -46,6 +47,7 @@ where
         Self {
             inner: K::default(),
             ibc: Default::default(),
+            da: Default::default(),
         }
     }
 }
@@ -121,15 +123,36 @@ where
         pre_state_root: &<<Self::Spec as Spec>::Storage as Storage>::Root,
         working_set: &mut StateCheckpoint<Self::Spec>,
     ) -> <S::Gas as Gas>::Price {
+        // NOTE: The `begin_slot_hook` is executed on the inner first to update
+        // states within the basic kernel, such as the `sov-chain-state`,
+        // ensuring that the current slot number remains current.
+        let gas_price = self.inner.begin_slot_hook(
+            slot_header,
+            validity_condition,
+            pre_state_root,
+            working_set,
+        );
+
         let kernel_working_set = KernelWorkingSet::from_kernel(&self.inner, working_set);
 
-        let visible_slot_number = kernel_working_set.virtual_slot();
+        let visible_slot_number = kernel_working_set.current_slot();
 
-        // Workaround the fact that zero is not a valid height (No block produced and processed yet)
+        // Workaround the fact that zero is not a valid height (No DA block produced and processed yet)
         if visible_slot_number > 0 {
             let height =
                 Height::new(HOST_REVISION_NUMBER, visible_slot_number).expect("valid height");
+
+            self.ibc
+                .host_height_map
+                .set(&height, kernel_working_set.inner);
+
             let consensus_state = Da::consensus_state(slot_header);
+
+            self.ibc.host_timestamp_map.set(
+                &consensus_state.timestamp().into(),
+                kernel_working_set.inner,
+            );
+
             self.ibc.host_consensus_state_map.set(
                 &height,
                 &consensus_state,
@@ -137,8 +160,7 @@ where
             );
         }
 
-        self.inner
-            .begin_slot_hook(slot_header, validity_condition, pre_state_root, working_set)
+        gas_price
     }
 
     fn end_slot_hook(&self, gas_used: &S::Gas, working_set: &mut StateCheckpoint<Self::Spec>) {

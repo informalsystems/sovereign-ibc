@@ -8,12 +8,12 @@ use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::Timestamp;
 use sov_celestia_client::context::ValidationContext as SovValidationContext;
-use sov_modules_api::{DaSpec, Spec};
+use sov_modules_api::Spec;
 
 use super::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;
 
-impl<'a, S: Spec, Da: DaSpec> ClientValidationContext for IbcContext<'a, S, Da> {
+impl<'a, S: Spec> ClientValidationContext for IbcContext<'a, S> {
     type ClientStateRef = AnyClientState;
     type ConsensusStateRef = AnyConsensusState;
 
@@ -72,7 +72,7 @@ impl<'a, S: Spec, Da: DaSpec> ClientValidationContext for IbcContext<'a, S, Da> 
     }
 }
 
-impl<'a, S: Spec, Da: DaSpec> ClientExecutionContext for IbcContext<'a, S, Da> {
+impl<'a, S: Spec> ClientExecutionContext for IbcContext<'a, S> {
     type ClientStateMut = AnyClientState;
 
     fn store_client_state(
@@ -146,7 +146,7 @@ impl<'a, S: Spec, Da: DaSpec> ClientExecutionContext for IbcContext<'a, S, Da> {
     }
 }
 
-impl<'a, S: Spec, Da: DaSpec> TmValidationContext for IbcContext<'a, S, Da> {
+impl<'a, S: Spec> TmValidationContext for IbcContext<'a, S> {
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         <Self as ValidationContext>::host_timestamp(self)
     }
@@ -181,7 +181,7 @@ impl<'a, S: Spec, Da: DaSpec> TmValidationContext for IbcContext<'a, S, Da> {
     }
 }
 
-impl<'a, S: Spec, Da: DaSpec> SovValidationContext for IbcContext<'a, S, Da> {
+impl<'a, S: Spec> SovValidationContext for IbcContext<'a, S> {
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         <Self as ValidationContext>::host_timestamp(self)
     }
@@ -216,8 +216,8 @@ impl<'a, S: Spec, Da: DaSpec> SovValidationContext for IbcContext<'a, S, Da> {
     }
 }
 
-fn next_consensus_state<S: Spec, D: DaSpec>(
-    ctx: &IbcContext<'_, S, D>,
+fn next_consensus_state<S: Spec>(
+    ctx: &IbcContext<'_, S>,
     client_id: &ClientId,
     height: &Height,
 ) -> Result<Option<AnyConsensusState>, ContextError> {
@@ -275,8 +275,8 @@ fn next_consensus_state<S: Spec, D: DaSpec>(
     Ok(None)
 }
 
-fn prev_consensus_state<S: Spec, D: DaSpec>(
-    ctx: &IbcContext<'_, S, D>,
+fn prev_consensus_state<S: Spec>(
+    ctx: &IbcContext<'_, S>,
     client_id: &ClientId,
     height: &Height,
 ) -> Result<Option<AnyConsensusState>, ContextError> {
