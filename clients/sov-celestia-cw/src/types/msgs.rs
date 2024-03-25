@@ -4,8 +4,6 @@ use alloc::vec::Vec;
 use std::str::FromStr;
 
 use cosmwasm_schema::cw_serde;
-use ibc_client_wasm_types::client_state::ClientState as WasmClientState;
-use ibc_client_wasm_types::consensus_state::ConsensusState as WasmConsensusState;
 use ibc_client_wasm_types::serializer::Base64;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::proto::v1::Height as RawHeight;
@@ -98,8 +96,12 @@ pub struct CheckSubstituteAndUpdateStateMsg {}
 
 #[cw_serde]
 pub struct VerifyUpgradeAndUpdateStateMsgRaw {
-    pub upgrade_client_state: WasmClientState,
-    pub upgrade_consensus_state: WasmConsensusState,
+    #[schemars(with = "String")]
+    #[serde(with = "Base64", default)]
+    pub upgrade_client_state: Bytes,
+    #[schemars(with = "String")]
+    #[serde(with = "Base64", default)]
+    pub upgrade_consensus_state: Bytes,
     #[schemars(with = "String")]
     #[serde(with = "Base64", default)]
     pub proof_upgrade_client: Bytes,
@@ -119,10 +121,9 @@ impl TryFrom<VerifyUpgradeAndUpdateStateMsgRaw> for VerifyUpgradeAndUpdateStateM
     type Error = ContractError;
 
     fn try_from(raw: VerifyUpgradeAndUpdateStateMsgRaw) -> Result<Self, Self::Error> {
-        let upgrade_client_state = Any::decode(&mut raw.upgrade_client_state.data.as_slice())?;
+        let upgrade_client_state = Any::decode(&mut raw.upgrade_client_state.as_slice())?;
 
-        let upgrade_consensus_state =
-            Any::decode(&mut raw.upgrade_consensus_state.data.as_slice())?;
+        let upgrade_consensus_state = Any::decode(&mut raw.upgrade_consensus_state.as_slice())?;
 
         Ok(VerifyUpgradeAndUpdateStateMsg {
             upgrade_client_state,
