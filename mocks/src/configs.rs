@@ -22,7 +22,7 @@ pub(crate) type DefaultSpec =
 use crate::sovereign::celestia_da_service;
 #[cfg(feature = "mock-da")]
 use crate::sovereign::mock_da_service;
-use crate::sovereign::{GenesisConfig, RollupGenesisConfig};
+use crate::sovereign::{GenesisConfig, RollupGenesisConfig, DEFAULT_SALT};
 
 #[derive(TypedBuilder, Clone, Debug)]
 pub struct TestSetupConfig<S: Spec, Da: DaService> {
@@ -59,13 +59,10 @@ impl<S: Spec, Da: DaService> TestSetupConfig<S, Da> {
             .clone()
     }
 
-    /// Returns the token address for a given token configuration
-    pub fn get_token_address(&self, token_cfg: &TokenConfig<S>) -> S::Address {
-        get_token_address::<S>(
-            &token_cfg.token_name,
-            &self.get_relayer_address(),
-            token_cfg.salt,
-        )
+    /// Obtains the token address for the given token name when the relayer is
+    /// the creator.
+    pub fn get_token_address_for_relayer(&self, token_name: &str) -> S::Address {
+        get_token_address::<S>(token_name, &self.get_relayer_address(), DEFAULT_SALT)
     }
 
     pub fn kernel_genesis_config(&self) -> BasicKernelGenesisConfig<S, Da::Spec> {
@@ -74,7 +71,7 @@ impl<S: Spec, Da: DaService> TestSetupConfig<S, Da> {
         }
     }
 
-    pub fn runtime_genesis_config(&self) -> GenesisConfig<S, Da::Spec> {
+    pub fn runtime_genesis_config(&self) -> GenesisConfig<S> {
         GenesisConfig::new(
             self.rollup_genesis_config.bank_config.clone(),
             self.rollup_genesis_config.ibc_config.clone(),

@@ -26,6 +26,7 @@ use crate::configs::TransferTestConfig;
 use crate::cosmos::dummy_tm_client_state;
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
+use crate::sovereign::{DEFAULT_INIT_BALANCE, DEFAULT_SALT};
 
 impl<SrcChain, DstChain> MockRelayer<SrcChain, DstChain>
 where
@@ -195,9 +196,9 @@ where
     /// Creates a token with the given configuration
     pub fn build_msg_create_token<S: Spec>(&self, token: &TokenConfig<S>) -> BankCallMessage<S> {
         BankCallMessage::CreateToken {
-            salt: token.salt,
+            salt: DEFAULT_SALT,
             token_name: token.token_name.clone(),
-            initial_balance: 1000,
+            initial_balance: DEFAULT_INIT_BALANCE,
             minter_address: token.address_and_balances[0].0.clone(),
             authorized_minters: vec![token.address_and_balances[0].0.clone()],
         }

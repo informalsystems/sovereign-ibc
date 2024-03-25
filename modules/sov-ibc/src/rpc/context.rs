@@ -14,14 +14,13 @@ use ibc_core::host::types::path::{
 };
 use ibc_core::host::{ClientStateRef, ConsensusStateRef, ValidationContext};
 use ibc_query::core::context::{ProvableContext, QueryContext};
-use sov_modules_api::{DaSpec, Spec, StateMapAccessor, StateValueAccessor, StateVecAccessor};
+use sov_modules_api::Spec;
 
 use crate::context::IbcContext;
 
-impl<'a, S, Da> ProvableContext for IbcContext<'a, S, Da>
+impl<'a, S> ProvableContext for IbcContext<'a, S>
 where
     S: Spec,
-    Da: DaSpec,
 {
     /// TODO: Should figure out how can access the proof from the context
     fn get_proof(&self, _height: Height, _path: &Path) -> Option<Vec<u8>> {
@@ -29,10 +28,9 @@ where
     }
 }
 
-impl<'a, S, Da> QueryContext for IbcContext<'a, S, Da>
+impl<'a, S> QueryContext for IbcContext<'a, S>
 where
     S: Spec,
-    Da: DaSpec,
 {
     fn client_states(&self) -> Result<Vec<(ClientId, ClientStateRef<Self>)>, ContextError> {
         let client_counter = self

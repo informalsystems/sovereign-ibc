@@ -1,9 +1,9 @@
 use anyhow::Result;
-use sov_modules_api::{DaSpec, Module, Spec, StateValueAccessor, WorkingSet};
+use sov_modules_api::{Module, Spec, WorkingSet};
 
 use crate::Ibc;
 
-impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
+impl<S: Spec> Ibc<S> {
     pub(crate) fn init_module(
         &self,
         _config: &<Self as Module>::Config,

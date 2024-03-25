@@ -22,10 +22,7 @@ use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::{Signer, Timestamp};
 use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::consensus_state::ConsensusState;
-use sov_modules_api::{
-    Context, DaSpec, EventEmitter, ModuleInfo, Spec, StateMapAccessor, StateValueAccessor,
-    StateVecAccessor, WorkingSet,
-};
+use sov_modules_api::{EventEmitter, ModuleInfo, Spec, WorkingSet};
 use sov_state::Prefix;
 
 use crate::event::auxiliary_packet_events;
@@ -35,38 +32,44 @@ use crate::Ibc;
 pub const HOST_REVISION_NUMBER: u64 = 0;
 
 #[derive(Clone)]
-pub struct IbcContext<'a, S, Da>
+pub struct IbcContext<'a, S>
 where
     S: Spec,
-    Da: DaSpec,
 {
-    pub ibc: &'a Ibc<S, Da>,
-    pub context: Option<Context<S>>,
+    pub ibc: &'a Ibc<S>,
     pub working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
 }
 
-impl<'a, S, Da> IbcContext<'a, S, Da>
+impl<'a, S> IbcContext<'a, S>
 where
     S: Spec,
-    Da: DaSpec,
 {
     pub fn new(
-        ibc: &'a Ibc<S, Da>,
-        context: Option<Context<S>>,
+        ibc: &'a Ibc<S>,
         working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
-    ) -> IbcContext<'a, S, Da> {
-        IbcContext {
-            ibc,
-            context,
-            working_set,
+    ) -> IbcContext<'a, S> {
+        IbcContext { ibc, working_set }
+    }
+
+    /// Check that the context slot number matches the host height that IBC modules view.
+    pub(crate) fn height_sanity_check(&self, context_slot_number: u64) -> anyhow::Result<()> {
+        let host_height = self.host_height()?.revision_height();
+
+        if context_slot_number != host_height {
+            anyhow::bail!(
+                "Visible slot number from context does not match host height that IBC modules view: {} != {}",
+                context_slot_number,
+                host_height
+            );
         }
+
+        Ok(())
     }
 }
 
-impl<'a, S, Da> ValidationContext for IbcContext<'a, S, Da>
+impl<'a, S> ValidationContext for IbcContext<'a, S>
 where
     S: Spec,
-    Da: DaSpec,
 {
     type V = Self;
     type HostClientState = ClientState;
@@ -77,42 +80,27 @@ where
     }
 
     fn host_height(&self) -> Result<Height, ContextError> {
-        let context = self.context.clone().ok_or(ClientError::Other {
-            description: "Context not found".to_string(),
-        })?;
+        let height = self
+            .ibc
+            .host_height_map
+            .get(*self.working_set.borrow_mut())
+            .ok_or(ClientError::Other {
+                description: "Host height not found".to_string(),
+            })?;
 
-        Ok(Height::new(
-            HOST_REVISION_NUMBER,
-            context.visible_slot_number(),
-        )?)
+        Ok(height)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        let context = self.context.clone().ok_or(ClientError::Other {
-            description: "Context not found".to_string(),
-        })?;
+        let host_timestamp = self
+            .ibc
+            .host_timestamp_map
+            .get(*self.working_set.borrow_mut())
+            .ok_or(ClientError::Other {
+                description: "Host timestamp not found".to_string(),
+            })?;
 
-        let mut working_set = self.working_set.borrow_mut();
-
-        let mut versioned_working_set = working_set.versioned_state(&context);
-
-        let chain_time = self.ibc.chain_state.get_time(&mut versioned_working_set);
-
-        if chain_time.secs() < 0 {
-            // FIXME: at least add a `ContextError::Host` enum variant, and use that here
-            return Err(ContextError::ClientError(ClientError::Other {
-                description: format!("Invalid host chain time: {}", chain_time.secs()),
-            }));
-        }
-
-        let time_in_nanos: u64 =
-            (chain_time.secs() as u64) * 10u64.pow(9) + chain_time.subsec_nanos() as u64;
-
-        // FIXME: at least add a `ContextError::Host` enum variant, and use that here
-        let timestamp = Timestamp::from_nanoseconds(time_in_nanos)
-            .map_err(PacketError::InvalidPacketTimestamp)?;
-
-        Ok(timestamp)
+        Ok(host_timestamp)
     }
 
     fn host_consensus_state(
@@ -312,10 +300,9 @@ where
     }
 }
 
-impl<'a, S, Da> ExecutionContext for IbcContext<'a, S, Da>
+impl<'a, S> ExecutionContext for IbcContext<'a, S>
 where
     S: Spec,
-    Da: DaSpec,
 {
     type E = Self;
 

@@ -28,7 +28,7 @@ where
     P: MerkleProofSpec + Clone + 'static,
     <P as MerkleProofSpec>::Hasher: Send + Sync,
 {
-    type Message = RuntimeCall<S, Da::Spec>;
+    type Message = RuntimeCall<S>;
 
     async fn query(&self, request: QueryReq) -> QueryResp {
         info!("rollup: querying app with {:?}", request);

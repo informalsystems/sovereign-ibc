@@ -9,8 +9,7 @@ use ibc_core::entrypoint::dispatch;
 use ibc_core::handler::types::msgs::MsgEnvelope;
 use ibc_core::primitives::proto::Any;
 use sov_ibc_transfer::context::IbcTransferContext;
-use sov_modules_api::{CallResponse, Context, DaSpec, Spec, WorkingSet};
-use thiserror::Error;
+use sov_modules_api::{CallResponse, Context, Spec, WorkingSet};
 use tracing::info;
 
 use crate::context::IbcContext;
@@ -30,11 +29,7 @@ pub enum CallMessage {
     Transfer(MsgTransfer),
 }
 
-/// Example of a custom error.
-#[derive(Debug, Error)]
-enum SetValueError {}
-
-impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
+impl<S: Spec> Ibc<S> {
     pub(crate) fn process_core_message(
         &self,
         msg: Any,
@@ -53,15 +48,16 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
-        let mut execution_context = IbcContext {
+        let mut ibc_ctx = IbcContext {
             ibc: self,
-            context: Some(context.clone()),
             working_set: shared_working_set.clone(),
         };
 
+        ibc_ctx.height_sanity_check(context.visible_slot_number())?;
+
         let mut router = IbcRouter::new(self, context.clone(), shared_working_set);
 
-        match dispatch(&mut execution_context, &mut router, msg_envelope) {
+        match dispatch(&mut ibc_ctx, &mut router, msg_envelope) {
             Ok(_) => Ok(CallResponse::default()),
             Err(e) => bail!(e.to_string()),
         }
@@ -83,9 +79,10 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let mut ibc_ctx = IbcContext {
             ibc: self,
-            context: Some(context.clone()),
             working_set: shared_working_set.clone(),
         };
+
+        ibc_ctx.height_sanity_check(context.visible_slot_number())?;
 
         let mut transfer_ctx =
             IbcTransferContext::new(self.transfer.clone(), context, shared_working_set.clone());

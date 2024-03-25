@@ -40,8 +40,7 @@ where
     pub async fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let mut ibc_ctx: IbcContext<'_, S, <Da as DaService>::Spec> =
-            self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx: IbcContext<'_, S> = self.ibc_ctx(&mut working_set);
 
         let client_counter = ibc_ctx.client_counter().unwrap();
 

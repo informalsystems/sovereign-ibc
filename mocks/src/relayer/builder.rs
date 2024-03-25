@@ -124,6 +124,10 @@ where
             cos_chain.chain_id()
         );
 
+        rollup.run().await;
+
+        info!("rollup: initialized with chain id {}", rollup.chain_id());
+
         let cos_client_counter = cos_chain.ibc_ctx().client_counter().unwrap();
 
         let cos_client_id = tm_client_type().build_client_id(cos_client_counter);
@@ -152,10 +156,6 @@ where
 
             info!("relayer: manually initialized IBC TAO layers");
         }
-
-        rollup.run().await;
-
-        info!("rollup: initialized with chain id {}", rollup.chain_id());
 
         MockRelayer::new(
             rollup.clone().into(),

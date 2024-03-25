@@ -28,7 +28,6 @@ ibc-core         = { workspace = true }
 tendermint = { workspace = true } # Temporary dependency used for implementing the consensus_state method
 
 # sovereign dependencies
-sov-chain-state      = { workspace = true }
 sov-mock-da          = { workspace = true, features = ["native"], optional = true }
 sov-celestia-adapter = { workspace = true, features = ["native"], optional = true }
 sov-modules-api      = { workspace = true }
@@ -42,7 +41,6 @@ default = ["mock-da"]
 mock-da = ["native", "sov-mock-da"]
 celestia-da = ["native", "sov-celestia-adapter"]
 native = [
-    "sov-chain-state/native",
     "sov-modules-api/native",
     "sov-modules-core/native",
     "sov-rollup-interface/native",

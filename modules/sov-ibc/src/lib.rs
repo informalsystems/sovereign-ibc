@@ -43,7 +43,7 @@ use serde::{Deserialize, Serialize};
 use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::{
-    Context, DaSpec, Error, ModuleInfo, Spec, StateMap, StateValue, StateVec, WorkingSet,
+    Context, Error, ModuleInfo, Spec, StateMap, StateValue, StateVec, WorkingSet,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
@@ -57,15 +57,22 @@ pub struct ExampleModuleConfig {}
 /// prefixes by modules are in harmony.
 #[derive(ModuleInfo, Clone)]
 #[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
-pub struct Ibc<S: Spec, Da: DaSpec> {
+pub struct Ibc<S: Spec> {
     #[address]
     pub address: S::Address,
 
-    #[kernel_module]
-    chain_state: sov_chain_state::ChainState<S, Da>,
-
     #[module]
     transfer: IbcTransfer<S>,
+
+    // ----------- IBC core host state maps -------------
+    #[state]
+    pub host_height_map: StateValue<Height>,
+
+    #[state]
+    pub host_timestamp_map: StateValue<Timestamp>,
+
+    #[state]
+    pub host_consensus_state_map: StateMap<Height, HostConsensusState, ProtobufCodec<Any>>,
 
     // ----------- IBC core client state maps -------------
     #[state]
@@ -76,9 +83,6 @@ pub struct Ibc<S: Spec, Da: DaSpec> {
 
     #[state]
     consensus_state_map: StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec<Any>>,
-
-    #[state]
-    pub host_consensus_state_map: StateMap<Height, HostConsensusState, ProtobufCodec<Any>>,
 
     #[state]
     client_update_heights_vec: StateVec<Height>,
@@ -131,7 +135,7 @@ pub struct Ibc<S: Spec, Da: DaSpec> {
     packet_ack_map: StateMap<AckPath, AcknowledgementCommitment, AcknowledgementCommitmentCodec>,
 }
 
-impl<S: Spec, Da: DaSpec> sov_modules_api::Module for Ibc<S, Da> {
+impl<S: Spec> sov_modules_api::Module for Ibc<S> {
     type Spec = S;
 
     type Config = ExampleModuleConfig;

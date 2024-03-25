@@ -42,8 +42,8 @@ use ibc_query::core::connection::{
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::types::ErrorObjectOwned;
 use sov_modules_api::macros::rpc_gen;
-use sov_modules_api::{DaSpec, Spec, WorkingSet};
-use sov_state::storage::{SlotKey, StateCodec, StateValueCodec};
+use sov_modules_api::{ProvenStateAccessor, Spec, WorkingSet};
+use sov_state::storage::{SlotKey, StateCodec, StateItemCodec};
 
 use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;
@@ -51,20 +51,18 @@ use crate::Ibc;
 
 /// Structure returned by the `client_state` rpc method.
 #[rpc_gen(client, server, namespace = "ibc")]
-impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
+impl<S: Spec> Ibc<S> {
     #[rpc_method(name = "clientState")]
     pub fn client_state(
         &self,
         request: QueryClientStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientStateResponse> {
-        let namespace = self.client_state_map.namespace();
-
         let prefix = self.client_state_map.prefix();
 
         let codec = self.client_state_map.codec();
 
-        let key = SlotKey::new(namespace, prefix, &request.client_id, codec.key_codec());
+        let key = SlotKey::new(prefix, &request.client_id, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 
@@ -76,7 +74,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         })?;
 
         let client_state: AnyClientState = codec
-            .try_decode_value(storage_value.value())
+            .try_decode(storage_value.value())
             .map_err(to_jsonrpsee_error)?;
 
         let proof = value_with_proof
@@ -86,7 +84,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -107,7 +104,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryClientStatesResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -120,8 +116,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         request: QueryConsensusStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConsensusStateResponse> {
-        let namespace = self.consensus_state_map.namespace();
-
         let prefix = self.consensus_state_map.prefix();
 
         let codec = self.consensus_state_map.codec();
@@ -141,7 +135,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
             consensus_height.revision_height(),
         );
 
-        let key = SlotKey::new(namespace, prefix, &path, codec.key_codec());
+        let key = SlotKey::new(prefix, &path, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 
@@ -153,7 +147,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         })?;
 
         let consensus_state: AnyConsensusState = codec
-            .try_decode_value(storage_value.value())
+            .try_decode(storage_value.value())
             .map_err(to_jsonrpsee_error)?;
 
         let proof = value_with_proof
@@ -163,7 +157,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -184,7 +177,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryConsensusStatesResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -199,7 +191,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryConsensusStateHeightsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -214,7 +205,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryClientStatusResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -229,7 +219,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryConnectionResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -244,7 +233,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryConnectionsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -259,7 +247,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryClientConnectionsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -274,7 +261,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryConnectionClientStateResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -289,7 +275,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryConnectionConsensusStateResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -304,7 +289,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryConnectionParamsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -319,7 +303,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryChannelResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -334,7 +317,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryChannelsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -349,7 +331,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryConnectionChannelsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -364,7 +345,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryChannelClientStateResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -379,7 +359,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryChannelConsensusStateResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -392,8 +371,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         request: QueryPacketCommitmentRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketCommitmentResponse> {
-        let namespace = self.packet_commitment_map.namespace();
-
         let prefix = self.packet_commitment_map.prefix();
 
         let codec = self.packet_commitment_map.codec();
@@ -401,7 +378,7 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
         let commitment_path =
             CommitmentPath::new(&request.port_id, &request.channel_id, request.sequence);
 
-        let key = SlotKey::new(namespace, prefix, &commitment_path, codec.key_codec());
+        let key = SlotKey::new(prefix, &commitment_path, codec.key_codec());
 
         let value_with_proof = working_set.get_with_proof(key);
 
@@ -418,7 +395,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
 
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -439,7 +415,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryPacketCommitmentsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -454,7 +429,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryPacketReceiptResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -469,7 +443,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryPacketAcknowledgementResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -484,7 +457,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryPacketAcknowledgementsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -499,7 +471,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryUnreceivedPacketsResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -514,7 +485,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryUnreceivedAcksResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 
@@ -529,7 +499,6 @@ impl<S: Spec, Da: DaSpec> Ibc<S, Da> {
     ) -> RpcResult<QueryNextSequenceReceiveResponse> {
         let ibc_ctx = IbcContext {
             ibc: self,
-            context: None,
             working_set: Rc::new(RefCell::new(working_set)),
         };
 

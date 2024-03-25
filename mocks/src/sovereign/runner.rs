@@ -9,6 +9,7 @@ use sov_modules_api::{
 use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::da::BlockHeaderTrait;
 use sov_rollup_interface::services::da::DaService;
+use sov_state::storage::StateUpdate;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
@@ -29,8 +30,8 @@ where
     pub async fn init(
         &mut self,
         kernel_genesis_config: &BasicKernelGenesisConfig<S, Da::Spec>,
-        runtime_genesis_config: &GenesisConfig<S, Da::Spec>,
-    ) -> StateCheckpoint<S> {
+        runtime_genesis_config: &GenesisConfig<S>,
+    ) {
         let mut checkpoint = StateCheckpoint::new(self.prover_storage());
 
         let mut kernel_working_set = KernelWorkingSet::uninitialized(&mut checkpoint);
@@ -49,7 +50,7 @@ where
 
         let checkpoint = self.begin_block(checkpoint).await;
 
-        self.commit(checkpoint).await
+        self.commit(checkpoint).await;
     }
 
     /// Begins a block by setting the host consensus state and triggering the slot hook
@@ -125,25 +126,23 @@ where
 
     /// Commits a block by triggering the end slot hook, computing the state
     /// update and committing it to the prover storage
-    pub async fn commit(&mut self, checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
+    pub async fn commit(&mut self, checkpoint: StateCheckpoint<S>) {
         let mut checkpoint = self.execute_msg(checkpoint).await;
 
         self.kernel().end_slot_hook(&Gas::zero(), &mut checkpoint);
 
-        let (cache_log, witness) = checkpoint.freeze();
+        let (cache_log, accessory_delta, witness) = checkpoint.freeze();
 
-        let (root_hash, state_update) = self
+        let (root_hash, mut state_update) = self
             .prover_storage()
             .compute_state_update(cache_log, &witness)
             .expect("jellyfish merkle tree update must succeed");
 
-        let accessory_log = checkpoint.freeze_non_provable();
+        state_update.add_accessory_items(accessory_delta.freeze());
 
-        self.prover_storage().commit(&state_update, &accessory_log);
+        self.prover_storage().commit(&state_update);
 
         self.set_state_root(root_hash);
-
-        checkpoint
     }
 
     /// Runs the rollup chain by initializing the chain and then committing

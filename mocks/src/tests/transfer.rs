@@ -4,12 +4,12 @@ use ibc_app_transfer::types::{PrefixedDenom, TracePrefix};
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use ibc_core::primitives::ToProto;
-use sov_bank::{get_genesis_token_address, TokenConfig};
+use sov_bank::TokenConfig;
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
 use test_log::test;
 
-use crate::configs::{DefaultSpec, TransferTestConfig};
+use crate::configs::TransferTestConfig;
 use crate::relayer::{Handle, QueryReq, QueryResp, QueryService, RelayerBuilder};
 
 /// Checks if a transfer initiated on the rollup (`send_transfer`) succeeds by
@@ -22,8 +22,10 @@ async fn test_escrow_unescrow_on_sov() {
     let rly = relayer_builder.clone().with_manual_tao().setup().await;
 
     // set transfer parameters
-    let token: TokenConfig<DefaultSpec> = relayer_builder.setup_cfg().get_tokens()[0].clone();
-    let token_address = get_genesis_token_address::<DefaultSpec>(&token.token_name, token.salt);
+    let token = relayer_builder.setup_cfg().get_tokens()[0].clone();
+
+    let token_address = token.token_address;
+
     let mut cfg = TransferTestConfig::builder()
         .sov_denom(token.token_name.clone())
         .sov_token_address(Some(token_address))
@@ -83,7 +85,9 @@ async fn test_escrow_unescrow_on_sov() {
         .submit_msgs(vec![fake_token_message.clone().into()])
         .await;
 
-    let fake_token_address = relayer_builder.setup_cfg().get_token_address(&token);
+    let fake_token_address = relayer_builder
+        .setup_cfg()
+        .get_token_address_for_relayer(&token.token_name);
 
     cfg.sov_token_address = Some(fake_token_address);
     cfg.amount = 50;
@@ -133,7 +137,6 @@ async fn test_escrow_unescrow_on_sov() {
 /// Checks if a transfer initiated on the Cosmos chain (`send_transfer`)
 /// succeeds by creating a new token on the rollup (`recv_packet`).
 #[test(tokio::test)]
-#[ignore]
 async fn test_mint_burn_on_sov() {
     let relayer_builder = RelayerBuilder::default().await;
 
@@ -156,8 +159,6 @@ async fn test_mint_burn_on_sov() {
     rly.src_chain_ctx()
         .submit_msgs(vec![fake_token_message.clone().into()])
         .await;
-
-    let fake_minted_token_address = relayer_builder.setup_cfg().get_token_address(&token);
 
     // Store the current balance of the sender to check it later after the transfers
     let initial_sender_balance = rly
@@ -222,7 +223,7 @@ async fn test_mint_burn_on_sov() {
         .get_minted_token_address(prefixed_denom.to_string())
         .unwrap();
 
-    assert_ne!(token_address_on_sov, fake_minted_token_address);
+    assert_ne!(token_address_on_sov, fake_token.token_address);
 
     // -----------------------------------------------------------------------
     // Transfer the same token once again
