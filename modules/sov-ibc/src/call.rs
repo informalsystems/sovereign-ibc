@@ -10,7 +10,6 @@ use ibc_core::handler::types::msgs::MsgEnvelope;
 use ibc_core::primitives::proto::Any;
 use sov_ibc_transfer::context::IbcTransferContext;
 use sov_modules_api::{CallResponse, Context, Spec, WorkingSet};
-use thiserror::Error;
 use tracing::info;
 
 use crate::context::IbcContext;
@@ -29,10 +28,6 @@ pub enum CallMessage {
 
     Transfer(MsgTransfer),
 }
-
-/// Example of a custom error.
-#[derive(Debug, Error)]
-enum SetValueError {}
 
 impl<S: Spec> Ibc<S> {
     pub(crate) fn process_core_message(
