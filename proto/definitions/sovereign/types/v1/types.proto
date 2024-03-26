@@ -22,7 +22,7 @@ message AggregatedProofPublicInput {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"validity_conditions\""
   ];
-  // The initial slot number of the rollup from which the proof captures the
+  // the initial slot number of the rollup from which the proof captures the
   // rollup's transition from the initial state root.
   uint64 initial_slot_number = 2;
   // the final slot number of the rollup, up to which the proof captures the
@@ -34,10 +34,10 @@ message AggregatedProofPublicInput {
   bytes initial_state_root = 5;
   // the final state root
   bytes final_state_root = 6;
-  // the initial DA block hash
-  bytes initial_da_block_hash = 7;
-  // the final DA block hash
-  bytes final_da_block_hash = 8;
+  // the initial slot hash
+  bytes initial_slot_hash = 7;
+  // the final slot hash
+  bytes final_slot_hash = 8;
   // the code commitment of the aggregated proof circuit
   CodeCommitment code_commitment = 9 [
     (gogoproto.nullable) = false,

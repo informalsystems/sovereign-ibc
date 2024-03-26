@@ -26,7 +26,7 @@ pub struct AggregatedProofPublicInput {
     /// The set of validity conditions for each block of the aggregated proof.
     #[prost(message, repeated, tag = "1")]
     pub validity_conditions: ::prost::alloc::vec::Vec<ValidityCondition>,
-    /// The initial slot number of the rollup from which the proof captures the
+    /// the initial slot number of the rollup from which the proof captures the
     /// rollup's transition from the initial state root.
     #[prost(uint64, tag = "2")]
     pub initial_slot_number: u64,
@@ -43,12 +43,12 @@ pub struct AggregatedProofPublicInput {
     /// the final state root
     #[prost(bytes = "vec", tag = "6")]
     pub final_state_root: ::prost::alloc::vec::Vec<u8>,
-    /// the initial DA block hash
+    /// the initial slot hash
     #[prost(bytes = "vec", tag = "7")]
-    pub initial_da_block_hash: ::prost::alloc::vec::Vec<u8>,
-    /// the final DA block hash
+    pub initial_slot_hash: ::prost::alloc::vec::Vec<u8>,
+    /// the final slot hash
     #[prost(bytes = "vec", tag = "8")]
-    pub final_da_block_hash: ::prost::alloc::vec::Vec<u8>,
+    pub final_slot_hash: ::prost::alloc::vec::Vec<u8>,
     /// the code commitment of the aggregated proof circuit
     #[prost(message, optional, tag = "9")]
     pub code_commitment: ::core::option::Option<CodeCommitment>,

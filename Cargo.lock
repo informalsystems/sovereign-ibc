@@ -569,7 +569,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=79f7045#79f70452980b81e8f17b469730c277b55b0fc450"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=6872535#68725350c67e493f4d52d21d53b09f27ee4386bd"
 dependencies = [
  "basecoin-app",
  "basecoin-modules",
@@ -591,7 +591,7 @@ dependencies = [
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=79f7045#79f70452980b81e8f17b469730c277b55b0fc450"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=6872535#68725350c67e493f4d52d21d53b09f27ee4386bd"
 dependencies = [
  "basecoin-modules",
  "basecoin-store",
@@ -610,7 +610,7 @@ dependencies = [
 [[package]]
 name = "basecoin-modules"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=79f7045#79f70452980b81e8f17b469730c277b55b0fc450"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=6872535#68725350c67e493f4d52d21d53b09f27ee4386bd"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
@@ -627,7 +627,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.10.8",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
  "tendermint 0.34.1",
  "tendermint-rpc",
  "tonic",
@@ -637,7 +637,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=79f7045#79f70452980b81e8f17b469730c277b55b0fc450"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=6872535#68725350c67e493f4d52d21d53b09f27ee4386bd"
 dependencies = [
  "displaydoc",
  "ics23",
@@ -5480,7 +5480,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-client"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5#a1376f52ceaf2450eff49cc2e512f0b4e7fc40ba"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d#95f993d03900cedcc0eee34c4b60a3e78b470440"
 dependencies = [
  "derive_more",
  "ibc-client-tendermint",
@@ -5488,7 +5488,7 @@ dependencies = [
  "ics23",
  "prost",
  "serde",
- "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
+ "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
  "tendermint 0.34.1",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.1",
@@ -5539,7 +5539,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-client-types"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5#a1376f52ceaf2450eff49cc2e512f0b4e7fc40ba"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d#95f993d03900cedcc0eee34c4b60a3e78b470440"
 dependencies = [
  "base64 0.21.7",
  "bytes",
@@ -5551,7 +5551,7 @@ dependencies = [
  "ics23",
  "prost",
  "serde",
- "sov-ibc-proto 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
+ "sov-ibc-proto 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
  "tendermint 0.34.1",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.1",
@@ -5603,7 +5603,7 @@ dependencies = [
 [[package]]
 name = "sov-consensus-state-tracker"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5#a1376f52ceaf2450eff49cc2e512f0b4e7fc40ba"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d#95f993d03900cedcc0eee34c4b60a3e78b470440"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -5613,8 +5613,8 @@ dependencies = [
  "prost",
  "serde",
  "sov-celestia-adapter",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
- "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
+ "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
  "sov-mock-da",
  "sov-modules-api",
  "sov-modules-core",
@@ -5675,7 +5675,7 @@ dependencies = [
 [[package]]
 name = "sov-ibc"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5#a1376f52ceaf2450eff49cc2e512f0b4e7fc40ba"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d#95f993d03900cedcc0eee34c4b60a3e78b470440"
 dependencies = [
  "ahash 0.8.6",
  "anyhow",
@@ -5692,8 +5692,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.8",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
+ "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
@@ -5724,11 +5724,11 @@ dependencies = [
  "serde_json",
  "sha2 0.10.8",
  "sov-bank",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
+ "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
  "sov-chain-state",
- "sov-consensus-state-tracker 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
- "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5)",
+ "sov-consensus-state-tracker 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
+ "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
+ "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d)",
  "sov-mock-zkvm",
  "sov-modules-api",
  "sov-modules-stf-blueprint",
@@ -5762,7 +5762,7 @@ dependencies = [
 [[package]]
 name = "sov-ibc-proto"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5#a1376f52ceaf2450eff49cc2e512f0b4e7fc40ba"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d#95f993d03900cedcc0eee34c4b60a3e78b470440"
 dependencies = [
  "ibc-proto",
  "informalsystems-pbjson",
@@ -5807,7 +5807,7 @@ dependencies = [
 [[package]]
 name = "sov-ibc-transfer"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=a1376f5#a1376f52ceaf2450eff49cc2e512f0b4e7fc40ba"
+source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=95f993d#95f993d03900cedcc0eee34c4b60a3e78b470440"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
