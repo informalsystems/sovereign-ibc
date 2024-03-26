@@ -1,10 +1,15 @@
 use async_trait::async_trait;
-use ibc_core::channel::types::proto::v1::QueryPacketCommitmentRequest;
-use ibc_core::client::types::proto::v1::{QueryClientStateRequest, QueryConsensusStateRequest};
+use ibc_client_tendermint::types::Header;
+use ibc_core::client::context::ClientValidationContext;
+use ibc_core::client::types::Height;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
-use sov_modules_api::{Context, WorkingSet};
+use ibc_query::core::channel::QueryPacketCommitmentRequest;
+use ibc_query::core::client::{QueryClientStateRequest, QueryConsensusStateRequest};
+use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
+use sov_consensus_state_tracker::HasConsensusState;
+use sov_modules_api::{Spec, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
@@ -14,15 +19,16 @@ use crate::sovereign::{MockRollup, RuntimeCall};
 use crate::utils::{wait_for_block, MutexUtil};
 
 #[async_trait]
-impl<C, Da, S> Handle for MockRollup<C, Da, S>
+impl<S, Da, P> Handle for MockRollup<S, Da, P>
 where
-    C: Context<Storage = ProverStorage<S>> + Send + Sync,
+    S: Spec<Storage = ProverStorage<P>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
+    Da::Spec: HasConsensusState,
     <Da as DaService>::Spec: Clone,
-    S: MerkleProofSpec + Clone + 'static,
-    <S as MerkleProofSpec>::Hasher: Send + Sync,
+    P: MerkleProofSpec + Clone + 'static,
+    <P as MerkleProofSpec>::Hasher: Send + Sync,
 {
-    type Message = RuntimeCall<C, Da::Spec>;
+    type Message = RuntimeCall<S>;
 
     async fn query(&self, request: QueryReq) -> QueryResp {
         info!("rollup: querying app with {:?}", request);
@@ -38,11 +44,16 @@ where
             QueryReq::HostConsensusState(height) => {
                 QueryResp::HostConsensusState(ibc_ctx.host_consensus_state(&height).unwrap().into())
             }
-            QueryReq::ClientState(client_id) => {
-                QueryResp::ClientState(ibc_ctx.client_state(&client_id).unwrap().into())
-            }
+            QueryReq::ClientState(client_id) => QueryResp::ClientState(
+                ibc_ctx
+                    .get_client_validation_context()
+                    .client_state(&client_id)
+                    .unwrap()
+                    .into(),
+            ),
             QueryReq::ConsensusState(client_id, height) => QueryResp::ConsensusState(
                 ibc_ctx
+                    .get_client_validation_context()
                     .consensus_state(&ClientConsensusStatePath::new(
                         client_id,
                         height.revision_number(),
@@ -51,8 +62,31 @@ where
                     .unwrap()
                     .into(),
             ),
-            QueryReq::Header(_, _) => {
-                unimplemented!()
+            QueryReq::Header(target_height, trusted_height) => {
+                let blocks = self.da_core.blocks();
+
+                let revision_height = target_height.revision_height() as usize;
+
+                if revision_height > blocks.len() {
+                    panic!("block index out of bounds");
+                }
+
+                let target_block = blocks[revision_height - 1].clone();
+
+                let header = Header {
+                    signed_header: target_block.signed_header,
+                    validator_set: target_block.validators,
+                    trusted_height,
+                    trusted_next_validator_set: target_block.next_validators,
+                };
+
+                let sov_header = dummy_sov_header(
+                    header,
+                    Height::new(0, 1).unwrap(),
+                    Height::new(0, revision_height as u64).unwrap(),
+                );
+
+                QueryResp::Header(sov_header.into())
             }
             QueryReq::NextSeqSend(path) => {
                 QueryResp::NextSeqSend(ibc_ctx.get_next_sequence_send(&path).unwrap())
@@ -60,7 +94,8 @@ where
             QueryReq::ValueWithProof(path, _) => match path {
                 Path::ClientState(path) => {
                     let req = QueryClientStateRequest {
-                        client_id: path.0.to_string(),
+                        client_id: path.0,
+                        query_height: None,
                     };
 
                     let resp = self
@@ -69,14 +104,16 @@ where
                         .client_state(req, &mut working_set)
                         .unwrap();
 
-                    QueryResp::ValueWithProof(resp.client_state.unwrap().value, resp.proof)
+                    QueryResp::ValueWithProof(resp.client_state.value, resp.proof)
                 }
                 Path::ClientConsensusState(path) => {
                     let req = QueryConsensusStateRequest {
-                        client_id: path.client_id.to_string(),
-                        revision_number: path.revision_number,
-                        revision_height: path.revision_height,
-                        latest_height: true,
+                        client_id: path.client_id,
+                        consensus_height: Some(
+                            Height::new(path.revision_number, path.revision_height)
+                                .expect("Never fails"),
+                        ),
+                        query_height: None,
                     };
 
                     let resp = self
@@ -85,14 +122,14 @@ where
                         .consensus_state(req, &mut working_set)
                         .unwrap();
 
-                    QueryResp::ValueWithProof(resp.consensus_state.unwrap().value, resp.proof)
+                    QueryResp::ValueWithProof(resp.consensus_state.value, resp.proof)
                 }
-
                 Path::Commitment(path) => {
                     let req = QueryPacketCommitmentRequest {
-                        port_id: path.port_id.to_string(),
-                        channel_id: path.channel_id.to_string(),
-                        sequence: path.sequence.into(),
+                        port_id: path.port_id,
+                        channel_id: path.channel_id,
+                        sequence: path.sequence,
+                        query_height: None,
                     };
 
                     let resp = self
@@ -101,7 +138,7 @@ where
                         .packet_commitment(req, &mut working_set)
                         .unwrap();
 
-                    QueryResp::ValueWithProof(resp.commitment, resp.proof)
+                    QueryResp::ValueWithProof(resp.packet_commitment.into_vec(), resp.proof)
                 }
                 _ => panic!("not implemented"),
             },

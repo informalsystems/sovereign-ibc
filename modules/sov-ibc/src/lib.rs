@@ -11,13 +11,14 @@
 pub mod call;
 pub mod clients;
 pub mod codec;
+pub mod event;
 pub mod genesis;
 
 #[cfg(feature = "native")]
-mod query;
+mod rpc;
 use ibc_core::handler::types::events::IbcEvent;
 #[cfg(feature = "native")]
-pub use query::*;
+pub use rpc::*;
 
 pub mod context;
 mod router;
@@ -39,9 +40,11 @@ use ibc_core::host::types::path::{
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::Timestamp;
 use serde::{Deserialize, Serialize};
+use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_ibc_transfer::IbcTransfer;
-use sov_modules_api::{Context, DaSpec, Error, StateMap, StateValue, StateVec, WorkingSet};
-use sov_modules_macros::ModuleInfo;
+use sov_modules_api::{
+    Context, Error, ModuleInfo, Spec, StateMap, StateValue, StateVec, WorkingSet,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct ExampleModuleConfig {}
@@ -54,15 +57,22 @@ pub struct ExampleModuleConfig {}
 /// prefixes by modules are in harmony.
 #[derive(ModuleInfo, Clone)]
 #[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
-pub struct Ibc<C: Context, Da: DaSpec> {
+pub struct Ibc<S: Spec> {
     #[address]
-    pub address: C::Address,
+    pub address: S::Address,
 
     #[module]
-    chain_state: sov_chain_state::ChainState<C, Da>,
+    transfer: IbcTransfer<S>,
 
-    #[module]
-    transfer: IbcTransfer<C>,
+    // ----------- IBC core host state maps -------------
+    #[state]
+    pub host_height_map: StateValue<Height>,
+
+    #[state]
+    pub host_timestamp_map: StateValue<Timestamp>,
+
+    #[state]
+    pub host_consensus_state_map: StateMap<Height, HostConsensusState, ProtobufCodec<Any>>,
 
     // ----------- IBC core client state maps -------------
     #[state]
@@ -75,16 +85,10 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     consensus_state_map: StateMap<ClientConsensusStatePath, AnyConsensusState, ProtobufCodec<Any>>,
 
     #[state]
-    host_consensus_state_map: StateMap<Height, AnyConsensusState, ProtobufCodec<Any>>,
-
-    #[state]
     client_update_heights_vec: StateVec<Height>,
 
     #[state]
-    client_update_host_times_map: StateMap<(ClientId, Height), Timestamp>,
-
-    #[state]
-    client_update_host_heights_map: StateMap<(ClientId, Height), Height>,
+    client_update_meta_map: StateMap<(ClientId, Height), (Timestamp, Height)>,
 
     // ----------- IBC core connection state maps -------------
     #[state]
@@ -131,8 +135,8 @@ pub struct Ibc<C: Context, Da: DaSpec> {
     packet_ack_map: StateMap<AckPath, AcknowledgementCommitment, AcknowledgementCommitmentCodec>,
 }
 
-impl<C: Context, Da: DaSpec> sov_modules_api::Module for Ibc<C, Da> {
-    type Context = C;
+impl<S: Spec> sov_modules_api::Module for Ibc<S> {
+    type Spec = S;
 
     type Config = ExampleModuleConfig;
 
@@ -140,15 +144,15 @@ impl<C: Context, Da: DaSpec> sov_modules_api::Module for Ibc<C, Da> {
 
     type Event = IbcEvent;
 
-    fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<C>) -> Result<(), Error> {
+    fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<S>) -> Result<(), Error> {
         Ok(self.init_module(config, working_set)?)
     }
 
     fn call(
         &self,
         msg: Self::CallMessage,
-        context: &Self::Context,
-        working_set: &mut WorkingSet<C>,
+        context: &Context<S>,
+        working_set: &mut WorkingSet<S>,
     ) -> Result<sov_modules_api::CallResponse, Error> {
         match msg {
             call::CallMessage::Core(msg_envelope) => {

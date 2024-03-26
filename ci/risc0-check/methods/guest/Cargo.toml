@@ -1,0 +1,12 @@
+[package]
+name = "guest-sov-ibc"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+sov-ibc = { path = "../../../../modules/sov-ibc" }
+sov-ibc-transfer = { path = "../../../../modules/sov-ibc-transfer" }
+sov-celestia-client = { path = "../../../../clients/sov-celestia" }
+risc0-zkvm = { version = "0.20.1", default-features = false, features = ["std"] }

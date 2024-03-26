@@ -1,33 +1,38 @@
-use std::time::Duration;
-
-use basecoin_store::avl::get_proof_spec;
-use ibc_client_tendermint::types::{AllowUpdate, ClientState};
+use basecoin::store::avl::get_proof_spec;
+use ibc_client_tendermint::client_state::ClientState;
+use ibc_client_tendermint::types::ConsensusState as TmConsensusState;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::specs::ProofSpecs;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::Signer;
+use ibc_testkit::fixtures::clients::tendermint::ClientStateConfig;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
-
+use tendermint::{Hash, Time};
 pub fn basecoin_proof_specs() -> ProofSpecs {
     [get_proof_spec(), get_proof_spec()].to_vec().into()
 }
 
 pub fn dummy_tm_client_state(chain_id: ChainId, latest_height: Height) -> ClientState {
-    ClientState::new(
-        chain_id,
-        Default::default(),
-        Duration::from_secs(64000),
-        Duration::from_secs(128000),
-        Duration::from_millis(3000),
-        latest_height,
-        basecoin_proof_specs(),
-        Default::default(),
-        AllowUpdate {
-            after_expiry: false,
-            after_misbehaviour: false,
-        },
+    ClientStateConfig::builder()
+        .chain_id(chain_id)
+        .latest_height(latest_height)
+        .proof_specs(basecoin_proof_specs())
+        .build()
+        .try_into()
+        .unwrap()
+}
+
+pub fn dummy_tm_consensus_state() -> TmConsensusState {
+    TmConsensusState::new(
+        vec![0].into(),
+        Time::now(),
+        // Hash for default validator set
+        Hash::Sha256([
+            0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb, 0x4b,
+            0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d, 0x9e, 0xe1,
+            0x86, 0x1b, 0xc1, 0x43,
+        ]),
     )
-    .unwrap()
 }
 
 pub fn genesis_app_state() -> serde_json::Value {

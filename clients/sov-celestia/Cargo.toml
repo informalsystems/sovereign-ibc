@@ -1,0 +1,57 @@
+[package]
+name 	     = "sov-celestia-client"
+authors 	 = { workspace = true }
+edition 	 = { workspace = true }
+license 	 = { workspace = true }
+repository   = { workspace = true }
+rust-version = { workspace = true }
+version      = { workspace = true }
+keywords     = ["rollup", "sovereign", "ibc", "light-client"]
+readme       = "./../README.md"
+description  = """
+    Contains the implementation of `sov-celestia` light client, and re-exports
+	essential data structures and domain types from `ibc-core-client-types` crate.
+"""
+
+[dependencies]
+# external dependencies
+derive_more   = { workspace = true }
+prost         = { workspace = true }
+schemars      = { workspace = true, optional = true }
+serde         = { workspace = true, features = ["derive"], optional = true }
+typed-builder = { version = "0.18.0", optional = true }
+
+# ibc dependencies
+ibc-core                  = { workspace = true }
+ibc-client-tendermint     = { workspace = true }
+sov-celestia-client-types = { path = "./types", default-features = false }
+ics23 	                  = { version = "0.11", default-features = false }
+
+# DA layer dependencies
+tendermint                       = { workspace = true }
+tendermint-proto 				 = { workspace = true }
+tendermint-light-client-verifier = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	"ibc-core/std",
+	"ibc-client-tendermint/std",
+	"sov-celestia-client-types/std",
+	"ics23/std",
+	"prost/std",
+	"serde/std",
+	"tendermint/std"
+]
+serde = [
+	"ibc-core/serde",
+	"ibc-client-tendermint/serde",
+	"sov-celestia-client-types/serde",
+	"ics23/serde",
+	"dep:serde",
+]
+json-schema = [
+	"ibc-core/schema",
+	"dep:schemars",
+]
+test-util = ["sov-celestia-client-types/test-util"]

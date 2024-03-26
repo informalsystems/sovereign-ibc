@@ -6,40 +6,52 @@ use ibc_core::host::types::identifiers::ChainId;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 use serde::de::DeserializeOwned;
 use sov_bank::{get_token_address, TokenConfig};
-use sov_celestia_adapter::CelestiaService;
-use sov_mock_da::MockDaService;
-use sov_modules_api::default_context::DefaultContext;
-use sov_modules_api::{Address, Context};
+#[cfg(feature = "celestia-da")]
+use sov_consensus_state_tracker::CelestiaService;
+#[cfg(feature = "mock-da")]
+use sov_consensus_state_tracker::MockDaService;
+use sov_modules_api::{Address, Spec};
+use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::services::da::DaService;
 use typed_builder::TypedBuilder;
 
-use crate::sovereign::{celestia_da_service, mock_da_service, GenesisConfig, RuntimeConfig};
+pub(crate) type DefaultSpec =
+    sov_modules_api::default_spec::DefaultSpec<sov_mock_zkvm::MockZkVerifier>;
+
+#[cfg(feature = "celestia-da")]
+use crate::sovereign::celestia_da_service;
+#[cfg(feature = "mock-da")]
+use crate::sovereign::mock_da_service;
+use crate::sovereign::{GenesisConfig, RollupGenesisConfig, DEFAULT_SALT};
 
 #[derive(TypedBuilder, Clone, Debug)]
-pub struct TestSetupConfig<C: Context, Da: DaService> {
-    /// The chain Id of the rollup.
-    #[builder(default = ChainId::new("mock-rollup-0").unwrap())]
-    pub rollup_chain_id: ChainId,
-    /// The runtime configuration.
-    #[builder(default = RuntimeConfig::default())]
-    pub rollup_runtime_config: RuntimeConfig<C>,
+pub struct TestSetupConfig<S: Spec, Da: DaService> {
+    /// The chain Id of the DA chain.
+    #[builder(default = ChainId::new("mock-celestia-0").unwrap())]
+    pub da_chain_id: ChainId,
     /// The da service.
     pub da_service: Da,
+    /// The chain Id of the rollup.
+    #[builder(default = ChainId::new("mock-rollup-0").unwrap())]
+    pub rollup_id: ChainId,
+    /// The runtime configuration.
+    #[builder(default = RollupGenesisConfig::default())]
+    pub rollup_genesis_config: RollupGenesisConfig<S>,
     /// Sets whether to use manual IBC TAO or not.
     #[builder(default = false)]
     pub with_manual_tao: bool,
 }
 
-impl<C: Context, Da: DaService> TestSetupConfig<C, Da> {
+impl<S: Spec, Da: DaService> TestSetupConfig<S, Da> {
     /// Returns list of tokens in the bank configuration
-    pub fn get_tokens(&self) -> &Vec<TokenConfig<C>> {
-        &self.rollup_runtime_config.bank_config.tokens
+    pub fn get_tokens(&self) -> &Vec<TokenConfig<S>> {
+        &self.rollup_genesis_config.bank_config.tokens
     }
 
     /// Returns the address of the relayer. We use the last address in the list
     /// as the relayer address
-    pub fn get_relayer_address(&self) -> C::Address {
-        self.rollup_runtime_config.bank_config.tokens[0]
+    pub fn get_relayer_address(&self) -> S::Address {
+        self.rollup_genesis_config.bank_config.tokens[0]
             .address_and_balances
             .last()
             .unwrap()
@@ -47,33 +59,37 @@ impl<C: Context, Da: DaService> TestSetupConfig<C, Da> {
             .clone()
     }
 
-    /// Returns the token address for a given token configuration
-    pub fn get_token_address(&self, token_cfg: &TokenConfig<C>) -> C::Address {
-        get_token_address::<C>(
-            &token_cfg.token_name,
-            self.get_relayer_address().as_ref(),
-            token_cfg.salt,
-        )
+    /// Obtains the token address for the given token name when the relayer is
+    /// the creator.
+    pub fn get_token_address_for_relayer(&self, token_name: &str) -> S::Address {
+        get_token_address::<S>(token_name, &self.get_relayer_address(), DEFAULT_SALT)
     }
 
-    pub fn rollup_genesis_config(&self) -> GenesisConfig<C, Da::Spec> {
+    pub fn kernel_genesis_config(&self) -> BasicKernelGenesisConfig<S, Da::Spec> {
+        BasicKernelGenesisConfig {
+            chain_state: self.rollup_genesis_config.chain_state_config.clone(),
+        }
+    }
+
+    pub fn runtime_genesis_config(&self) -> GenesisConfig<S> {
         GenesisConfig::new(
-            self.rollup_runtime_config.chain_state_config.clone(),
-            self.rollup_runtime_config.bank_config.clone(),
-            self.rollup_runtime_config.ibc_config.clone(),
-            self.rollup_runtime_config.ibc_transfer_config.clone(),
+            self.rollup_genesis_config.bank_config.clone(),
+            self.rollup_genesis_config.ibc_config.clone(),
+            self.rollup_genesis_config.ibc_transfer_config.clone(),
         )
     }
 }
 
-pub fn default_config_with_mock_da() -> TestSetupConfig<DefaultContext, MockDaService> {
-    TestSetupConfig::<DefaultContext, MockDaService>::builder()
+#[cfg(feature = "mock-da")]
+pub fn default_config_with_mock_da() -> TestSetupConfig<DefaultSpec, MockDaService> {
+    TestSetupConfig::<DefaultSpec, MockDaService>::builder()
         .da_service(mock_da_service())
         .build()
 }
 
-pub async fn default_config_with_celestia_da() -> TestSetupConfig<DefaultContext, CelestiaService> {
-    TestSetupConfig::<DefaultContext, CelestiaService>::builder()
+#[cfg(feature = "celestia-da")]
+pub async fn default_config_with_celestia_da() -> TestSetupConfig<DefaultSpec, CelestiaService> {
+    TestSetupConfig::<DefaultSpec, CelestiaService>::builder()
         .da_service(celestia_da_service().await)
         .build()
 }

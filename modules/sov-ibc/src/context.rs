@@ -2,7 +2,6 @@ use core::time::Duration;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use ibc_client_tendermint::client_state::ClientState as TmClientState;
 use ibc_core::channel::types::channel::ChannelEnd;
 use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
 use ibc_core::channel::types::error::{ChannelError, PacketError};
@@ -14,139 +13,100 @@ use ibc_core::connection::types::error::ConnectionError;
 use ibc_core::connection::types::ConnectionEnd;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::handler::types::events::IbcEvent;
-use ibc_core::host::types::identifiers::{ClientId, ConnectionId, Sequence};
+use ibc_core::host::types::identifiers::{ConnectionId, Sequence};
 use ibc_core::host::types::path::{
-    AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath,
-    ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
+    AckPath, ChannelEndPath, ClientConnectionPath, CommitmentPath, ConnectionPath, ReceiptPath,
+    SeqAckPath, SeqRecvPath, SeqSendPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
-use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::{Signer, Timestamp};
-use sov_modules_api::{
-    Context, DaSpec, StateMapAccessor, StateValueAccessor, StateVecAccessor, WorkingSet,
-};
+use sov_celestia_client::client_state::ClientState;
+use sov_celestia_client::consensus_state::ConsensusState;
+use sov_modules_api::{EventEmitter, ModuleInfo, Spec, WorkingSet};
+use sov_state::Prefix;
 
-use crate::clients::{AnyClientState, AnyConsensusState};
+use crate::event::auxiliary_packet_events;
 use crate::Ibc;
 
 /// The SDK doesn't have a concept of a "revision number", so we default to 0
 pub const HOST_REVISION_NUMBER: u64 = 0;
 
 #[derive(Clone)]
-pub struct IbcContext<'a, C, Da>
+pub struct IbcContext<'a, S>
 where
-    C: Context,
-    Da: DaSpec,
+    S: Spec,
 {
-    pub ibc: &'a Ibc<C, Da>,
-    pub working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
+    pub ibc: &'a Ibc<S>,
+    pub working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
 }
 
-impl<'a, C, Da> IbcContext<'a, C, Da>
+impl<'a, S> IbcContext<'a, S>
 where
-    C: Context,
-    Da: DaSpec,
+    S: Spec,
 {
     pub fn new(
-        ibc: &'a Ibc<C, Da>,
-        working_set: Rc<RefCell<&'a mut WorkingSet<C>>>,
-    ) -> IbcContext<'a, C, Da> {
+        ibc: &'a Ibc<S>,
+        working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
+    ) -> IbcContext<'a, S> {
         IbcContext { ibc, working_set }
+    }
+
+    /// Check that the context slot number matches the host height that IBC modules view.
+    pub(crate) fn height_sanity_check(&self, context_slot_number: u64) -> anyhow::Result<()> {
+        let host_height = self.host_height()?.revision_height();
+
+        if context_slot_number != host_height {
+            anyhow::bail!(
+                "Visible slot number from context does not match host height that IBC modules view: {} != {}",
+                context_slot_number,
+                host_height
+            );
+        }
+
+        Ok(())
     }
 }
 
-impl<'a, C, Da> ValidationContext for IbcContext<'a, C, Da>
+impl<'a, S> ValidationContext for IbcContext<'a, S>
 where
-    C: Context,
-    Da: DaSpec,
+    S: Spec,
 {
     type V = Self;
-    type E = Self;
-    type AnyConsensusState = AnyConsensusState;
-    type AnyClientState = AnyClientState;
+    type HostClientState = ClientState;
+    type HostConsensusState = ConsensusState;
 
     fn get_client_validation_context(&self) -> &Self::V {
         self
     }
 
-    fn client_state(&self, client_id: &ClientId) -> Result<Self::AnyClientState, ContextError> {
-        self.ibc
-            .client_state_map
-            .get(client_id, *self.working_set.borrow_mut())
-            .ok_or(
-                ClientError::ClientStateNotFound {
-                    client_id: client_id.clone(),
-                }
-                .into(),
-            )
-    }
-
-    fn decode_client_state(&self, client_state: Any) -> Result<Self::AnyClientState, ContextError> {
-        let tm_client_state: TmClientState = client_state.try_into()?;
-
-        Ok(tm_client_state.into())
-    }
-
-    fn consensus_state(
-        &self,
-        client_cons_state_path: &ClientConsensusStatePath,
-    ) -> Result<Self::AnyConsensusState, ContextError> {
-        self.ibc
-            .consensus_state_map
-            .get(client_cons_state_path, *self.working_set.borrow_mut())
-            .ok_or(
-                ClientError::ConsensusStateNotFound {
-                    client_id: client_cons_state_path.client_id.clone(),
-                    height: Height::new(
-                        client_cons_state_path.revision_number,
-                        client_cons_state_path.revision_height,
-                    )
-                    .map_err(|_| ClientError::Other {
-                        description: "Height cannot be zero".to_string(),
-                    })?,
-                }
-                .into(),
-            )
-    }
-
     fn host_height(&self) -> Result<Height, ContextError> {
-        let slot_height = self
+        let height = self
             .ibc
-            .chain_state
-            .get_slot_height(&mut self.working_set.borrow_mut());
+            .host_height_map
+            .get(*self.working_set.borrow_mut())
+            .ok_or(ClientError::Other {
+                description: "Host height not found".to_string(),
+            })?;
 
-        Ok(Height::new(HOST_REVISION_NUMBER, slot_height)?)
+        Ok(height)
     }
 
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        let chain_time = self
+        let host_timestamp = self
             .ibc
-            .chain_state
-            .get_time(&mut self.working_set.borrow_mut());
+            .host_timestamp_map
+            .get(*self.working_set.borrow_mut())
+            .ok_or(ClientError::Other {
+                description: "Host timestamp not found".to_string(),
+            })?;
 
-        if chain_time.secs() < 0 {
-            // FIXME: at least add a `ContextError::Host` enum variant, and use that here
-            return Err(ContextError::ClientError(ClientError::Other {
-                description: format!("Invalid host chain time: {}", chain_time.secs()),
-            }));
-        }
-
-        let time_in_nanos: u64 =
-            (chain_time.secs() as u64) * 10u64.pow(9) + chain_time.subsec_nanos() as u64;
-
-        // FIXME: at least add a `ContextError::Host` enum variant, and use that here
-        let timestamp = Timestamp::from_nanoseconds(time_in_nanos)
-            .map_err(PacketError::InvalidPacketTimestamp)?;
-
-        Ok(timestamp)
+        Ok(host_timestamp)
     }
 
     fn host_consensus_state(
         &self,
         height: &Height,
-    ) -> Result<Self::AnyConsensusState, ContextError> {
-        // TODO: In order to correctly implement this, we need to first define
-        // the `ConsensusState` protobuf definition that SDK chains will use
+    ) -> Result<Self::HostConsensusState, ContextError> {
         let host_consensus_state = self
             .ibc
             .host_consensus_state_map
@@ -155,7 +115,7 @@ where
                 description: "Host consensus state not found".to_string(),
             })?;
 
-        Ok(host_consensus_state.clone())
+        Ok(host_consensus_state)
     }
 
     fn client_counter(&self) -> Result<u64, ContextError> {
@@ -187,7 +147,7 @@ where
 
     fn validate_self_client(
         &self,
-        client_state_of_host_on_counterparty: Any,
+        client_state_of_host_on_counterparty: Self::HostClientState,
     ) -> Result<(), ContextError> {
         // Note: We can optionally implement this.
         // It would require having a Protobuf definition of the chain's `ClientState` that other chains would use.
@@ -195,19 +155,12 @@ where
         Ok(())
     }
 
-    // As modules presently lack direct access to their own prefixes, we
-    // truncate the prefix of a field (e.g. client_counter) in order to derive
-    // the module's prefix.
     fn commitment_prefix(&self) -> CommitmentPrefix {
-        let client_counter_prefix = self.ibc.client_counter.prefix();
+        let module_prefix: Prefix = self.ibc.prefix().into();
 
-        let client_counter_prefix_vec = client_counter_prefix.as_aligned_vec().as_ref();
+        let module_prefix_vec = module_prefix.as_aligned_vec().clone().into_inner();
 
-        let module_prefix_len = client_counter_prefix.len() - b"client_counter/".len();
-
-        let module_prefix = client_counter_prefix_vec[..module_prefix_len].to_vec();
-
-        CommitmentPrefix::try_from(module_prefix).expect("never fails as prefix is not empty")
+        CommitmentPrefix::try_from(module_prefix_vec).expect("never fails as prefix is not empty")
     }
 
     fn connection_counter(&self) -> Result<u64, ContextError> {
@@ -347,11 +300,12 @@ where
     }
 }
 
-impl<'a, C, Da> ExecutionContext for IbcContext<'a, C, Da>
+impl<'a, S> ExecutionContext for IbcContext<'a, S>
 where
-    C: Context,
-    Da: DaSpec,
+    S: Spec,
 {
+    type E = Self;
+
     fn get_client_execution_context(&mut self) -> &mut Self::E {
         self
     }
@@ -575,23 +529,20 @@ where
     }
 
     fn emit_ibc_event(&mut self, event: IbcEvent) -> Result<(), ContextError> {
-        // Note: as an interim solution, we transform IBC events into Tendermint
-        // events to simplify the conversion process, avoiding the need for
-        // converting individual IBC event types into a key-value pair of `&str`
-        let tm_event =
-            tendermint::abci::Event::try_from(event).map_err(|_| ClientError::Other {
-                description: "Failed to convert IBC event to Tendermint event".to_string(),
-            })?;
+        self.ibc.emit_event(
+            *self.working_set.borrow_mut(),
+            event.event_type(),
+            event.clone(),
+        );
 
-        let event_attribute: Vec<String> = tm_event
-            .attributes
-            .into_iter()
-            .map(|attr| format!("{attr:?}"))
-            .collect();
+        let events = auxiliary_packet_events(event)?;
 
-        self.working_set
-            .borrow_mut()
-            .add_event(tm_event.kind.as_str(), event_attribute.join(",").as_str());
+        if !events.is_empty() {
+            events.into_iter().for_each(|(event_key, event)| {
+                self.ibc
+                    .emit_event(*self.working_set.borrow_mut(), &event_key, event);
+            });
+        }
 
         Ok(())
     }
@@ -599,23 +550,6 @@ where
     /// FIXME: To implement this method there should be a way for IBC module to
     /// insert logs into the transaction receipts upon execution
     fn log_message(&mut self, message: String) -> Result<(), ContextError> {
-        Ok(())
-    }
-}
-
-// TODO: to unblock testing, we implement this method, but the correct way to
-// track and update the host chain's consensus should be investigated
-impl<'ws, C: Context, Da: DaSpec> IbcContext<'ws, C, Da> {
-    pub fn store_host_consensus_state(
-        &mut self,
-        height: Height,
-        consensus_state: AnyConsensusState,
-    ) -> Result<(), ContextError> {
-        self.ibc.host_consensus_state_map.set(
-            &height,
-            &consensus_state,
-            *self.working_set.borrow_mut(),
-        );
         Ok(())
     }
 }

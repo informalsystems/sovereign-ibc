@@ -23,27 +23,27 @@ use ibc_core::primitives::Signer;
 use ibc_core::router::module::Module;
 use ibc_core::router::types::module::ModuleExtras;
 use sov_bank::Coins;
-use sov_modules_api::{Context, StateMapAccessor, WorkingSet};
-use sov_rollup_interface::digest::Digest;
+use sov_modules_api::{Context, Spec, WorkingSet};
 use uint::FromDecStrErr;
 
 use super::IbcTransfer;
+use crate::utils::compute_escrow_address;
 
 /// We need to create a wrapper around the `Transfer` module and `WorkingSet`,
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
 /// which must be passed to `TokenTransferValidationContext` methods through
 /// the `self` argument.
-pub struct IbcTransferContext<'ws, C: Context> {
-    pub ibc_transfer: IbcTransfer<C>,
-    pub sdk_context: C,
-    pub working_set: Rc<RefCell<&'ws mut WorkingSet<C>>>,
+pub struct IbcTransferContext<'ws, S: Spec> {
+    pub ibc_transfer: IbcTransfer<S>,
+    pub sdk_context: Context<S>,
+    pub working_set: Rc<RefCell<&'ws mut WorkingSet<S>>>,
 }
 
-impl<'ws, C: Context> IbcTransferContext<'ws, C> {
+impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     pub fn new(
-        ibc_transfer: IbcTransfer<C>,
-        sdk_context: C,
-        working_set: Rc<RefCell<&'ws mut WorkingSet<C>>>,
+        ibc_transfer: IbcTransfer<S>,
+        sdk_context: Context<S>,
+        working_set: Rc<RefCell<&'ws mut WorkingSet<S>>>,
     ) -> Self {
         Self {
             ibc_transfer,
@@ -52,30 +52,32 @@ impl<'ws, C: Context> IbcTransferContext<'ws, C> {
         }
     }
 
-    // The escrow address follows the format as outlined in ADR 028:
-    // https://github.com/cosmos/cosmos-sdk/blob/master/docs/architecture/adr-028-public-key-addresses.md
-    // except that we don't use a different hash function.
-    fn get_escrow_account(&self, port_id: &PortId, channel_id: &ChannelId) -> C::Address {
-        // TODO: Probably cache so we don't need to hash every time
-        let escrow_account_bytes: [u8; 32] = {
-            let mut hasher = <C::Hasher as Digest>::new();
-            hasher.update(VERSION);
-            hasher.update([0]);
-            hasher.update(format!("{port_id}/{channel_id}"));
+    /// Obtains the escrow address for a given port and channel pair by looking
+    /// up the cache. If the cache does not contain the address, it is computed
+    /// and stored in the cache.
+    fn obtain_escrow_address(&self, port_id: &PortId, channel_id: &ChannelId) -> S::Address {
+        let mut working_set = self.working_set.borrow_mut();
 
-            let hash = hasher.finalize();
-            *hash.as_ref()
-        };
-
-        escrow_account_bytes.into()
+        self.ibc_transfer
+            .escrow_address_cache
+            .get(&(port_id.clone(), channel_id.clone()), *working_set)
+            .unwrap_or_else(|| {
+                let escrow_account = compute_escrow_address::<S>(port_id, channel_id);
+                self.ibc_transfer.escrow_address_cache.set(
+                    &(port_id.clone(), channel_id.clone()),
+                    &escrow_account,
+                    *working_set,
+                );
+                escrow_account
+            })
     }
 
     /// Transfers `amount` tokens from `from_account` to `to_account`
     fn transfer(
         &self,
-        token_address: C::Address,
-        from_account: &C::Address,
-        to_account: &C::Address,
+        token_address: S::Address,
+        from_account: &S::Address,
+        to_account: &S::Address,
         amount: &Amount,
     ) -> Result<(), TokenTransferError> {
         let amount: sov_bank::Amount = (*amount.as_ref())
@@ -92,7 +94,7 @@ impl<'ws, C: Context> IbcTransferContext<'ws, C> {
                 from_account,
                 to_account,
                 coin,
-                &mut self.working_set.borrow_mut(),
+                *self.working_set.borrow_mut(),
             )
             .map_err(|err| TokenTransferError::Other(err.to_string()))?;
 
@@ -100,9 +102,9 @@ impl<'ws, C: Context> IbcTransferContext<'ws, C> {
     }
 }
 
-impl<'ws, C> core::fmt::Debug for IbcTransferContext<'ws, C>
+impl<'ws, S> core::fmt::Debug for IbcTransferContext<'ws, S>
 where
-    C: Context,
+    S: Spec,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TransferContext")
@@ -112,16 +114,16 @@ where
 }
 
 /// Extra data to be passed to `TokenTransfer` contexts' escrow methods
-pub struct EscrowExtraData<C: Context> {
+pub struct EscrowExtraData<S: Spec> {
     /// The address of the token being escrowed
-    pub token_address: C::Address,
+    pub token_address: S::Address,
 }
 
-impl<'ws, C> TokenTransferValidationContext for IbcTransferContext<'ws, C>
+impl<'ws, S> TokenTransferValidationContext for IbcTransferContext<'ws, S>
 where
-    C: Context,
+    S: Spec,
 {
-    type AccountId = Address<C>;
+    type AccountId = Address<S>;
 
     fn get_port(&self) -> Result<PortId, TokenTransferError> {
         PortId::new(PORT_ID_STR.to_string()).map_err(TokenTransferError::InvalidIdentifier)
@@ -159,14 +161,14 @@ where
             .decode(memo.as_ref())
             .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
 
-        let token_address: C::Address =
+        let token_address: S::Address =
             BorshDeserialize::deserialize(&mut token_address_buf.as_slice())
                 .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
 
         let expected_token_address = {
             self.ibc_transfer
                 .minted_tokens
-                .get(&coin.denom.to_string(), &mut self.working_set.borrow_mut())
+                .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
                 .ok_or(TokenTransferError::InvalidCoin {
                     coin: coin.to_string(),
                 })?
@@ -184,7 +186,7 @@ where
             .get_balance_of(
                 account.address.clone(),
                 token_address,
-                &mut self.working_set.borrow_mut(),
+                *self.working_set.borrow_mut(),
             )
             .ok_or(TokenTransferError::InvalidCoin {
                 coin: coin.denom.to_string(),
@@ -239,7 +241,7 @@ where
             .get_balance_of(
                 from_account.address.clone(),
                 token_address.clone(),
-                &mut self.working_set.borrow_mut(),
+                *self.working_set.borrow_mut(),
             )
             .ok_or(TokenTransferError::InvalidCoin {
                 coin: coin.denom.to_string(),
@@ -283,12 +285,12 @@ where
             let token_address = {
                 self.ibc_transfer
                     .escrowed_tokens
-                    .get(&coin.denom.to_string(), &mut self.working_set.borrow_mut())
+                    .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
                     .ok_or(TokenTransferError::InvalidCoin {
                         coin: coin.to_string(),
                     })?
             };
-            let escrow_address = self.get_escrow_account(port_id, channel_id);
+            let escrow_address = self.obtain_escrow_address(port_id, channel_id);
 
             let escrow_balance = self
                 .ibc_transfer
@@ -296,7 +298,7 @@ where
                 .get_balance_of(
                     escrow_address,
                     token_address,
-                    &mut self.working_set.borrow_mut(),
+                    *self.working_set.borrow_mut(),
                 )
                 .ok_or(TokenTransferError::Other(format!(
                     "No escrow account for token {}",
@@ -317,7 +319,7 @@ where
     }
 }
 
-impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, C> {
+impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> {
     /// This is called in a `recv_packet()` in the case where we are NOT the
     /// token source.
     fn mint_coins_execute(
@@ -328,11 +330,11 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
         let denom = coin.denom.to_string();
 
         // 1. if token address doesn't exist in `minted_tokens`, then create a new token and store in `minted_tokens`
-        let token_address: C::Address = {
+        let token_address: S::Address = {
             let maybe_token_address = self
                 .ibc_transfer
                 .minted_tokens
-                .get(&denom, &mut self.working_set.borrow_mut());
+                .get(&denom, *self.working_set.borrow_mut());
 
             match maybe_token_address {
                 Some(token_address) => token_address,
@@ -367,7 +369,7 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
                     self.ibc_transfer.minted_tokens.set(
                         &denom,
                         &new_token_addr,
-                        &mut self.working_set.borrow_mut(),
+                        *self.working_set.borrow_mut(),
                     );
 
                     new_token_addr
@@ -414,7 +416,7 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
         let token_address = {
             self.ibc_transfer
                 .minted_tokens
-                .get(&denom, &mut self.working_set.borrow_mut())
+                .get(&denom, *self.working_set.borrow_mut())
                 .ok_or(TokenTransferError::InvalidCoin {
                     coin: coin.to_string(),
                 })?
@@ -453,7 +455,7 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
             .decode(memo.as_ref())
             .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
 
-        let token_address: C::Address =
+        let token_address: S::Address =
             BorshDeserialize::deserialize(&mut token_address_buf.as_slice())
                 .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
 
@@ -467,11 +469,11 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
         self.ibc_transfer.escrowed_tokens.set(
             &denom,
             &token_address,
-            &mut self.working_set.borrow_mut(),
+            *self.working_set.borrow_mut(),
         );
 
         // 2. transfer coins to escrow account
-        let escrow_account = self.get_escrow_account(port_id, channel_id);
+        let escrow_account = self.obtain_escrow_address(port_id, channel_id);
 
         self.transfer(
             token_address,
@@ -496,14 +498,14 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
         let token_address = self
             .ibc_transfer
             .escrowed_tokens
-            .get(&coin.denom.to_string(), &mut self.working_set.borrow_mut())
+            .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
             .ok_or(TokenTransferError::InvalidCoin {
                 coin: coin.to_string(),
             })?;
 
         // transfer coins out of escrow account to `to_account`
 
-        let escrow_account = self.get_escrow_account(port_id, channel_id);
+        let escrow_account = self.obtain_escrow_address(port_id, channel_id);
 
         self.transfer(
             token_address,
@@ -518,11 +520,11 @@ impl<'ws, C: Context> TokenTransferExecutionContext for IbcTransferContext<'ws, 
 
 /// Address type, which wraps C::Address. This is needed to implement
 /// `TryFrom<Signer>` (circumventing the orphan rule).
-pub struct Address<C: Context> {
-    pub address: C::Address,
+pub struct Address<S: Spec> {
+    pub address: S::Address,
 }
 
-impl<C: Context> TryFrom<Signer> for Address<C> {
+impl<S: Spec> TryFrom<Signer> for Address<S> {
     type Error = anyhow::Error;
 
     fn try_from(signer: Signer) -> Result<Self, Self::Error> {
@@ -534,7 +536,7 @@ impl<C: Context> TryFrom<Signer> for Address<C> {
     }
 }
 
-impl<'ws, C: Context> Module for IbcTransferContext<'ws, C> {
+impl<'ws, S: Spec> Module for IbcTransferContext<'ws, S> {
     fn on_chan_open_init_validate(
         &self,
         order: Order,

@@ -1,0 +1,48 @@
+[package]
+name = "sov-consensus-state-tracker"
+license      = { workspace = true }
+edition      = { workspace = true }
+rust-version = { workspace = true }
+version      = { workspace = true }
+authors      = { workspace = true }
+repository   = { workspace = true }
+publish      = false
+readme       = "README.md"
+
+[dependencies]
+# external dependencies
+anyhow     = { workspace = true }
+base64     = { workspace = true }
+borsh      = { workspace = true }
+jsonrpsee  = { workspace = true, optional = true }
+prost      = { workspace = true }
+schemars   = { workspace = true, optional = true }
+serde      = { workspace = true }
+serde_json = { workspace = true, optional = true }
+thiserror  = { workspace = true }
+uint       = "0.9"
+
+# ibc dependencies
+ibc-app-transfer = { workspace = true, features = ["borsh", "schema"] }
+ibc-core         = { workspace = true }
+tendermint = { workspace = true } # Temporary dependency used for implementing the consensus_state method
+
+# sovereign dependencies
+sov-mock-da          = { workspace = true, features = ["native"], optional = true }
+sov-celestia-adapter = { workspace = true, features = ["native"], optional = true }
+sov-modules-api      = { workspace = true }
+sov-modules-core     = { workspace = true }
+sov-rollup-interface = { workspace = true }
+sov-ibc              = { path = "../sov-ibc" }
+sov-celestia-client  = { path = "../../clients/sov-celestia" }
+
+[features]
+default = ["mock-da"]
+mock-da = ["native", "sov-mock-da"]
+celestia-da = ["native", "sov-celestia-adapter"]
+native = [
+    "sov-modules-api/native",
+    "sov-modules-core/native",
+    "sov-rollup-interface/native",
+    "sov-ibc/native",
+]

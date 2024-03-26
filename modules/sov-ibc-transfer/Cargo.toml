@@ -29,7 +29,6 @@ ibc-core         = { workspace = true }
 # sovereign dependencies
 sov-bank             = { workspace = true }
 sov-modules-api      = { workspace = true }
-sov-modules-macros   = { workspace = true }
 sov-rollup-interface = { workspace = true }
 
 [features]
@@ -39,7 +38,6 @@ native = [
     "serde",
     "sov-bank/native",
     "sov-modules-api/native",
-    "sov-modules-macros/native",
     "sov-rollup-interface/native",
     "schemars",
     "jsonrpsee",

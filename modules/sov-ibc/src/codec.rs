@@ -6,7 +6,7 @@ use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketComm
 use ibc_core::primitives::proto::Protobuf;
 use prost::Message;
 use sov_state::codec::BorshCodec;
-use sov_state::storage::{StateCodec, StateValueCodec};
+use sov_state::storage::{StateCodec, StateItemCodec};
 
 #[derive(Default, Clone)]
 pub struct ProtobufCodec<Raw> {
@@ -14,7 +14,7 @@ pub struct ProtobufCodec<Raw> {
     _raw: PhantomData<Raw>,
 }
 
-impl<V, Raw> StateValueCodec<V> for ProtobufCodec<Raw>
+impl<V, Raw> StateItemCodec<V> for ProtobufCodec<Raw>
 where
     V: Protobuf<Raw>,
     V::Error: Display,
@@ -22,11 +22,11 @@ where
 {
     type Error = Error;
 
-    fn encode_value(&self, value: &V) -> Vec<u8> {
+    fn encode(&self, value: &V) -> Vec<u8> {
         value.clone().encode_vec()
     }
 
-    fn try_decode_value(&self, bytes: &[u8]) -> Result<V, Self::Error> {
+    fn try_decode(&self, bytes: &[u8]) -> Result<V, Self::Error> {
         Protobuf::decode_vec(bytes).map_err(|e| {
             Error::new(
                 std::io::ErrorKind::InvalidData,
@@ -55,14 +55,14 @@ pub struct PacketCommitmentCodec {
     borsh_codec: BorshCodec,
 }
 
-impl StateValueCodec<PacketCommitment> for PacketCommitmentCodec {
+impl StateItemCodec<PacketCommitment> for PacketCommitmentCodec {
     type Error = Error;
 
-    fn encode_value(&self, commitment: &PacketCommitment) -> Vec<u8> {
+    fn encode(&self, commitment: &PacketCommitment) -> Vec<u8> {
         commitment.clone().into_vec()
     }
 
-    fn try_decode_value(&self, bytes: &[u8]) -> Result<PacketCommitment, Self::Error> {
+    fn try_decode(&self, bytes: &[u8]) -> Result<PacketCommitment, Self::Error> {
         Ok(PacketCommitment::from(bytes.to_vec()))
     }
 }
@@ -86,14 +86,14 @@ pub struct AcknowledgementCommitmentCodec {
     borsh_codec: BorshCodec,
 }
 
-impl StateValueCodec<AcknowledgementCommitment> for AcknowledgementCommitmentCodec {
+impl StateItemCodec<AcknowledgementCommitment> for AcknowledgementCommitmentCodec {
     type Error = Error;
 
-    fn encode_value(&self, commitment: &AcknowledgementCommitment) -> Vec<u8> {
+    fn encode(&self, commitment: &AcknowledgementCommitment) -> Vec<u8> {
         commitment.clone().into_vec()
     }
 
-    fn try_decode_value(&self, bytes: &[u8]) -> Result<AcknowledgementCommitment, Self::Error> {
+    fn try_decode(&self, bytes: &[u8]) -> Result<AcknowledgementCommitment, Self::Error> {
         Ok(AcknowledgementCommitment::from(bytes.to_vec()))
     }
 }

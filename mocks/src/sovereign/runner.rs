@@ -1,52 +1,67 @@
 //! Contains the implementation of the Sovereign SDK rollup runner.
 use std::time::Duration;
 
-use ibc_core::host::ValidationContext;
-use sov_modules_api::hooks::{FinalizeHook, SlotHooks};
+use sov_consensus_state_tracker::HasConsensusState;
+use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    Context, DispatchCall, Genesis, ModuleInfo, SlotData, StateCheckpoint, WorkingSet,
+    DispatchCall, Gas, Genesis, KernelWorkingSet, ModuleInfo, SlotData, Spec, StateCheckpoint,
 };
+use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::da::BlockHeaderTrait;
 use sov_rollup_interface::services::da::DaService;
+use sov_state::storage::StateUpdate;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 use tracing::{debug, info};
 
-use super::{MockRollup, RuntimeCall};
-use crate::sovereign::GenesisConfig;
+use super::{GenesisConfig, MockRollup, RuntimeCall};
 use crate::utils::{wait_for_block, MutexUtil};
 
-impl<C, Da, S> MockRollup<C, Da, S>
+impl<S, Da, P> MockRollup<S, Da, P>
 where
-    C: Context<Storage = ProverStorage<S>> + Send + Sync,
+    S: Spec<Storage = ProverStorage<P>> + Send + Sync,
     Da: DaService<Error = anyhow::Error> + Clone,
-    S: MerkleProofSpec + Clone + 'static,
-    <S as MerkleProofSpec>::Hasher: Send,
+    Da::Spec: HasConsensusState,
+    P: MerkleProofSpec + Clone + 'static,
+    <P as MerkleProofSpec>::Hasher: Send,
 {
     /// Initializes the chain with the genesis configuration
     pub async fn init(
         &mut self,
-        genesis_config: &GenesisConfig<C, Da::Spec>,
-    ) -> StateCheckpoint<C> {
-        let mut working_set = WorkingSet::new(self.prover_storage());
+        kernel_genesis_config: &BasicKernelGenesisConfig<S, Da::Spec>,
+        runtime_genesis_config: &GenesisConfig<S>,
+    ) {
+        let mut checkpoint = StateCheckpoint::new(self.prover_storage());
 
-        self.runtime()
-            .genesis(genesis_config, &mut working_set)
+        let mut kernel_working_set = KernelWorkingSet::uninitialized(&mut checkpoint);
+
+        self.kernel()
+            .genesis(kernel_genesis_config, &mut kernel_working_set)
             .unwrap();
 
-        self.commit(working_set.checkpoint()).await
+        let mut working_set = checkpoint.to_revertable(Default::default());
+
+        self.runtime()
+            .genesis(runtime_genesis_config, &mut working_set)
+            .unwrap();
+
+        let checkpoint = working_set.checkpoint().0;
+
+        let checkpoint = self.begin_block(checkpoint).await;
+
+        self.commit(checkpoint).await;
     }
 
     /// Begins a block by setting the host consensus state and triggering the slot hook
-    pub async fn begin_block(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
-        let mut working_set = checkpoint.to_revertable();
-
-        let current_height = self.runtime().chain_state.get_slot_height(&mut working_set);
+    pub async fn begin_block(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
+        let current_height = self.rollup_ctx.acquire_mutex().visible_slot_number();
 
         debug!("rollup: processing block at height {current_height}");
 
         let height = loop {
+            self.da_core
+                .grow_blocks(self.state_root.lock().unwrap().as_ref().to_vec());
             // Dummy transaction to trigger the block generation
             self.da_service().send_transaction(&[0; 32]).await.unwrap();
             sleep(Duration::from_millis(100)).await;
@@ -54,7 +69,7 @@ where
                 Ok(header) => {
                     debug!("Last finalized height={}", header.height());
                     if header.height() >= current_height {
-                        break current_height;
+                        break header.height();
                     }
                 }
                 Err(err) => {
@@ -67,18 +82,24 @@ where
 
         let state_root = *self.state_root().acquire_mutex();
 
-        self.runtime().begin_slot_hook(
+        self.kernel().begin_slot_hook(
             block.header(),
             &block.validity_condition(),
             &state_root,
-            &mut working_set,
+            &mut checkpoint,
         );
 
-        self.set_host_consensus_state(working_set.checkpoint(), state_root)
+        let working_set = checkpoint.to_revertable(Default::default());
+
+        working_set.checkpoint().0
     }
 
-    pub async fn execute_msg(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
-        let mut working_set = checkpoint.to_revertable();
+    pub async fn execute_msg(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
+        let kernel_working_set = KernelWorkingSet::from_kernel(self.kernel(), &mut checkpoint);
+
+        let visible_slot = kernel_working_set.virtual_slot();
+
+        let mut working_set = checkpoint.to_revertable(Default::default());
 
         let rollup_ctx = self.rollup_ctx();
 
@@ -87,7 +108,7 @@ where
             // module, ensuring that the module's address is used for the
             // token creation.
             if let RuntimeCall::ibc(_) = m {
-                self.set_sender(self.runtime().ibc.address().clone())
+                self.resolve_ctx(self.runtime().ibc.address().clone(), visible_slot);
             }
 
             self.runtime()
@@ -95,57 +116,33 @@ where
                 .unwrap();
 
             // Resets the sender address to the address of the relayer
-            self.set_sender(rollup_ctx.sender().clone());
+            self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
         }
 
         *self.mempool.acquire_mutex() = vec![];
 
-        working_set.checkpoint()
+        working_set.checkpoint().0
     }
 
     /// Commits a block by triggering the end slot hook, computing the state
     /// update and committing it to the prover storage
-    pub async fn commit(&mut self, checkpoint: StateCheckpoint<C>) -> StateCheckpoint<C> {
-        let checkpoint = self.begin_block(checkpoint).await;
+    pub async fn commit(&mut self, checkpoint: StateCheckpoint<S>) {
+        let mut checkpoint = self.execute_msg(checkpoint).await;
 
-        let checkpoint = self.execute_msg(checkpoint).await;
+        self.kernel().end_slot_hook(&Gas::zero(), &mut checkpoint);
 
-        let mut working_set = checkpoint.to_revertable();
+        let (cache_log, accessory_delta, witness) = checkpoint.freeze();
 
-        self.runtime().end_slot_hook(&mut working_set);
-
-        let mut checkpoint = working_set.checkpoint();
-
-        let (cache_log, witness) = checkpoint.freeze();
-
-        let (root_hash, state_update) = self
+        let (root_hash, mut state_update) = self
             .prover_storage()
             .compute_state_update(cache_log, &witness)
             .expect("jellyfish merkle tree update must succeed");
 
-        let mut working_set = checkpoint.to_revertable();
+        state_update.add_accessory_items(accessory_delta.freeze());
 
-        self.runtime()
-            .finalize_hook(&root_hash, &mut working_set.accessory_state());
-
-        let mut checkpoint = working_set.checkpoint();
-
-        let accessory_log = checkpoint.freeze_non_provable();
-
-        self.prover_storage().commit(&state_update, &accessory_log);
-
-        let mut working_set = checkpoint.to_revertable();
-
-        let slot_height = self.ibc_ctx(&mut working_set).host_height().unwrap();
-
-        *self.rollup_ctx.acquire_mutex() = C::new(
-            self.rollup_ctx().sender().clone(),
-            slot_height.revision_height(),
-        );
+        self.prover_storage().commit(&state_update);
 
         self.set_state_root(root_hash);
-
-        working_set.checkpoint()
     }
 
     /// Runs the rollup chain by initializing the chain and then committing
@@ -155,11 +152,12 @@ where
 
         let handle = tokio::task::spawn(async move {
             loop {
-                let working_set = WorkingSet::new(chain.prover_storage());
+                let checkpoint = StateCheckpoint::new(chain.prover_storage());
+                let checkpoint = chain.begin_block(checkpoint).await;
 
                 tokio::time::sleep(Duration::from_millis(200)).await;
 
-                chain.commit(working_set.checkpoint()).await;
+                chain.commit(checkpoint).await;
             }
         });
 

@@ -1,32 +1,32 @@
-//! Defines rpc queries exposed by the ibc transfer module
+//! Defines JSON RPC methods exposed by the ibc transfer module
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::types::ErrorObjectOwned;
 use sov_modules_api::macros::rpc_gen;
-use sov_modules_api::{Context, StateMapAccessor, WorkingSet};
+use sov_modules_api::{Spec, WorkingSet};
 
 use super::IbcTransfer;
 
 #[derive(Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize, Clone)]
-pub struct EscrowedTokenResponse<C: Context> {
-    pub address: C::Address,
+pub struct EscrowedTokenResponse<S: Spec> {
+    pub address: S::Address,
 }
 
 #[derive(Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize, Clone)]
-pub struct MintedTokenResponse<C: Context> {
-    pub address: C::Address,
+pub struct MintedTokenResponse<S: Spec> {
+    pub address: S::Address,
 }
 
 #[rpc_gen(client, server, namespace = "transfer")]
-impl<C> IbcTransfer<C>
+impl<S> IbcTransfer<S>
 where
-    C: Context,
+    S: Spec,
 {
     #[rpc_method(name = "escrowedToken")]
     pub fn escrowed_token(
         &self,
         token_denom: String,
-        working_set: &mut WorkingSet<C>,
-    ) -> RpcResult<EscrowedTokenResponse<C>> {
+        working_set: &mut WorkingSet<S>,
+    ) -> RpcResult<EscrowedTokenResponse<S>> {
         let token_address =
             self.escrowed_tokens
                 .get(&token_denom, working_set)
@@ -45,8 +45,8 @@ where
     pub fn minted_token(
         &self,
         token_denom: String,
-        working_set: &mut WorkingSet<C>,
-    ) -> RpcResult<MintedTokenResponse<C>> {
+        working_set: &mut WorkingSet<S>,
+    ) -> RpcResult<MintedTokenResponse<S>> {
         let token_address =
             self.minted_tokens
                 .get(&token_denom, working_set)

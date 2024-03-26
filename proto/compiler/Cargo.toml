@@ -1,0 +1,19 @@
+[package]
+name = "sov-ibc-proto-compiler"
+authors      = { workspace = true }
+edition      = { workspace = true }
+license      = { workspace = true }
+repository   = { workspace = true }
+rust-version = { workspace = true }
+version      = { workspace = true }
+readme       = "./../README.md"
+publish      = false
+
+[dependencies]
+anyhow           = { workspace = true }
+argh             = "0.1"
+informalsystems-pbjson-build = "0.7.0"
+prost-build      = { workspace = true }
+tonic-build      = "0.10"
+walkdir          = "2.3"
+

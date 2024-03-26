@@ -12,14 +12,17 @@ publish      = false
 [dependencies]
 # external dependencies
 anyhow      = { workspace = true }
+base64      = { workspace = true }
 borsh       = { workspace = true }
 derive_more = { workspace = true }
 jsonrpsee   = { workspace = true, optional = true }
 prost       = { workspace = true }
 schemars    = { workspace = true, optional = true }
+sha2        = { version = "0.10.8", default-features = false }
 serde       = { workspace = true }
 serde_json  = { workspace = true, optional = true }
 thiserror   = { workspace = true }
+tracing     = { workspace = true }
 
 # internal dependencies
 sov-ibc-transfer = { path = "../sov-ibc-transfer" }
@@ -28,27 +31,28 @@ sov-ibc-transfer = { path = "../sov-ibc-transfer" }
 ibc-core              = { workspace = true }
 ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-ibc-query             = { workspace = true }
-# `tendermint` required to convert IbcEvent to a domain event type without custom conversion.
-tendermint            = { workspace = true }
+ibc-query             = { workspace = true, optional = true }
+sov-celestia-client   = { path = "../../clients/sov-celestia" }
+
+# enforce version so that Risc0 compiles
+ahash = "=0.8.6"
+time = "=0.3.29"
 
 # sovereign dependencies
-sov-chain-state      = { workspace = true }
 sov-modules-api      = { workspace = true }
-sov-modules-macros   = { workspace = true }
 sov-state            = { workspace = true }
 sov-rollup-interface = { workspace = true }
 
 [features]
 default = []
+serde = ["serde_json"]
 native = [
-    "serde_json",
-    "sov-chain-state/native",
+    "serde",
     "sov-ibc-transfer/native",
     "sov-modules-api/native",
-    "sov-modules-macros/native",
     "sov-rollup-interface/native",
     "sov-state/native",
     "schemars",
     "jsonrpsee",
+    "ibc-query",
 ]
