@@ -56,3 +56,7 @@ optimize-contracts: ## Optimize WASM files in contracts directory
 		optimized_file="contracts/$$(basename $$wasm_file .wasm).opt.wasm"; \
 		wasm-opt "$$wasm_file" -o "$$optimized_file" -Os; \
 	done
+
+sync-protobuf: ## Re-generates the Rust representation of the Protobuf files
+	@echo "Syncing the protobuf files"
+	$(CURDIR)/proto/compiler/sync-protobuf.sh

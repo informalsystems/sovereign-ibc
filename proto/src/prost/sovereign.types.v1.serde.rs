@@ -263,11 +263,11 @@ impl serde::Serialize for AggregatedProofPublicInput {
         }
         if true {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("initialDaBlockHash", pbjson::private::base64::encode(&self.initial_da_block_hash).as_str())?;
+            struct_ser.serialize_field("initialSlotHash", pbjson::private::base64::encode(&self.initial_slot_hash).as_str())?;
         }
         if true {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("finalDaBlockHash", pbjson::private::base64::encode(&self.final_da_block_hash).as_str())?;
+            struct_ser.serialize_field("finalSlotHash", pbjson::private::base64::encode(&self.final_slot_hash).as_str())?;
         }
         if let Some(v) = self.code_commitment.as_ref() {
             struct_ser.serialize_field("codeCommitment", v)?;
@@ -294,10 +294,10 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
             "initialStateRoot",
             "final_state_root",
             "finalStateRoot",
-            "initial_da_block_hash",
-            "initialDaBlockHash",
-            "final_da_block_hash",
-            "finalDaBlockHash",
+            "initial_slot_hash",
+            "initialSlotHash",
+            "final_slot_hash",
+            "finalSlotHash",
             "code_commitment",
             "codeCommitment",
         ];
@@ -310,8 +310,8 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
             GenesisStateRoot,
             InitialStateRoot,
             FinalStateRoot,
-            InitialDaBlockHash,
-            FinalDaBlockHash,
+            InitialSlotHash,
+            FinalSlotHash,
             CodeCommitment,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -340,8 +340,8 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
                             "genesisStateRoot" | "genesis_state_root" => Ok(GeneratedField::GenesisStateRoot),
                             "initialStateRoot" | "initial_state_root" => Ok(GeneratedField::InitialStateRoot),
                             "finalStateRoot" | "final_state_root" => Ok(GeneratedField::FinalStateRoot),
-                            "initialDaBlockHash" | "initial_da_block_hash" => Ok(GeneratedField::InitialDaBlockHash),
-                            "finalDaBlockHash" | "final_da_block_hash" => Ok(GeneratedField::FinalDaBlockHash),
+                            "initialSlotHash" | "initial_slot_hash" => Ok(GeneratedField::InitialSlotHash),
+                            "finalSlotHash" | "final_slot_hash" => Ok(GeneratedField::FinalSlotHash),
                             "codeCommitment" | "code_commitment" => Ok(GeneratedField::CodeCommitment),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -368,8 +368,8 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
                 let mut genesis_state_root__ = None;
                 let mut initial_state_root__ = None;
                 let mut final_state_root__ = None;
-                let mut initial_da_block_hash__ = None;
-                let mut final_da_block_hash__ = None;
+                let mut initial_slot_hash__ = None;
+                let mut final_slot_hash__ = None;
                 let mut code_commitment__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
@@ -419,19 +419,19 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
                                 Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::InitialDaBlockHash => {
-                            if initial_da_block_hash__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("initialDaBlockHash"));
+                        GeneratedField::InitialSlotHash => {
+                            if initial_slot_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("initialSlotHash"));
                             }
-                            initial_da_block_hash__ = 
+                            initial_slot_hash__ = 
                                 Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::FinalDaBlockHash => {
-                            if final_da_block_hash__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("finalDaBlockHash"));
+                        GeneratedField::FinalSlotHash => {
+                            if final_slot_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("finalSlotHash"));
                             }
-                            final_da_block_hash__ = 
+                            final_slot_hash__ = 
                                 Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
                             ;
                         }
@@ -450,8 +450,8 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
                     genesis_state_root: genesis_state_root__.unwrap_or_default(),
                     initial_state_root: initial_state_root__.unwrap_or_default(),
                     final_state_root: final_state_root__.unwrap_or_default(),
-                    initial_da_block_hash: initial_da_block_hash__.unwrap_or_default(),
-                    final_da_block_hash: final_da_block_hash__.unwrap_or_default(),
+                    initial_slot_hash: initial_slot_hash__.unwrap_or_default(),
+                    final_slot_hash: final_slot_hash__.unwrap_or_default(),
                     code_commitment: code_commitment__,
                 })
             }
