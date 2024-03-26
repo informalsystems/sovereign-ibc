@@ -4,6 +4,7 @@
 
 - 2024-01-17: Drafted initial requirements
 - 2024-01-18: Applied review feedback
+- 2024-03-25: Updated with changes from Sovereign SDK
 
 ## Context
 
@@ -29,8 +30,8 @@ endpoint in the list is the least important and least frequently required.
   - [Rollup RPC](#rollup-rpc)
     - [`/ledger_getEventsRange`](#ledger_geteventsrange)
     - [`/ledger_getTransactions`](#ledger_gettransactions)
-    - [`/prover_aggregatedProof*`](#prover_aggregatedproof)
-    - [`/prover_codeCommitment`](#prover_codecommitment)
+    - [`/ledger_aggregatedProof*`](#ledger_aggregatedproof)
+    - [`/ledger_codeCommitment`](#ledger_codecommitment)
     - [`/accounts_getAccount`](#accounts_getaccount)
     - [`/ledger_rollupStatus`](#ledger_rollupstatus)
     - [`/ledger_rollupHealth`](#ledger_rolluphealth)
@@ -81,7 +82,7 @@ endpoint in the list is the least important and least frequently required.
 - Objective:
   - Needed for basic check to assess the health of sequencer node.
   - Only used once, at relayer startup during health check.
-  
+
 - Priority: Low
 
 - Status: Available as the
@@ -160,21 +161,21 @@ endpoint in the list is the least important and least frequently required.
     a monotonically increasing ID. So this could be used as a range query if we
     know the ID of the start or end transaction.
 
-### `/prover_aggregatedProof*`
+### `/ledger_aggregatedProof*`
 
 - Objective:
   - To obtain an aggregated proof and its relevant data. The relayer must
     operate on rollup data that has been proven. These methods may be exposed
     either by the DA layer or the rollup node, including:
 
-  - `/prover_aggregatedProofData`:
+  - `/ledger_getAggregatedProofData`:
     - Returns the proof of `AggregatedProofData` type.
     - Used to construct the IBC header for passing into the rollup clients, so
       they can verify aggregated proof and update their client state. By
       default, it returns the latest published aggregated proof, but we should
       be able to query for a specific height by passing e.g. `proofIdentifier`.
 
-  - `/prover_latestProofDataInfo`:
+  - `/ledger_getAggregatedProofInfo`:
     - Returns the information of `ProofDataInfo` type.
     - Used as a cheaper convenient endpoint for catching up the relayer to the
       latest executed DA block and for status checks.
@@ -189,7 +190,7 @@ endpoint in the list is the least important and least frequently required.
     constructing an update client message and send it along with the rest of
     packets to the counterparty chain.
 
-### `/prover_codeCommitment`
+### `/ledger_codeCommitment`
 
 - Objective:
   - Used to retrieve the rollup code commitment, essential for the aggregated
@@ -199,7 +200,7 @@ endpoint in the list is the least important and least frequently required.
     need a convenient endpoint to obtain the commitment and include that in the
     governance proposal message. This is based on the assumption that the rollup
     node serves as the most reliable source.
-  
+
 - Priority: High
 
 - Status: Nothing available yet.
@@ -246,7 +247,7 @@ endpoint in the list is the least important and least frequently required.
 
 - Status: Nothing available yet, but part of the needed data can be gathered
   from different endpoints like `/ledger_getHead` or
-  `/prover_AggregatedProofData`.
+  `/ledger_AggregatedProofData`.
 
 ### `/ledger_rollupHealth`
 
