@@ -28,10 +28,10 @@ tracing       = "0.1.36"
 typed-builder = "0.18.0"
 
 # internal dependencies
-sov-ibc                     = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "95f993d" }
-sov-ibc-transfer            = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "95f993d" }
-sov-consensus-state-tracker = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "95f993d" }
-sov-celestia-client         = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "95f993d", features = ["test-util"] }
+sov-ibc                     = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "0be13e4d" }
+sov-ibc-transfer            = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "0be13e4d" }
+sov-consensus-state-tracker = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "0be13e4d" }
+sov-celestia-client         = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "0be13e4d", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
@@ -42,7 +42,7 @@ ibc-query             = { workspace = true }
 ibc-testkit           = { workspace = true }
 
 # cosmos dependencies
-basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "6872535" }
+basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "d5ca333" }
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
 
