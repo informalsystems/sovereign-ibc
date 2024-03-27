@@ -37,7 +37,7 @@ sov-ibc              = { path = "../sov-ibc" }
 sov-celestia-client  = { path = "../../clients/sov-celestia" }
 
 [features]
-default = ["mock-da"]
+default = ["celestia-da"]
 mock-da = ["native", "sov-mock-da"]
 celestia-da = ["native", "sov-celestia-adapter"]
 native = [
