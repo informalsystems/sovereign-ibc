@@ -86,6 +86,15 @@ where
         checkpoint
     }
 
+    /// Apply a slot by executing the messages in the mempool and committing the state update
+    pub async fn apply_slot(&mut self, checkpoint: StateCheckpoint<S>) {
+        let mut checkpoint = self.execute_msg(checkpoint).await;
+
+        self.kernel().end_slot_hook(&Gas::zero(), &mut checkpoint);
+
+        self.commit(checkpoint);
+    }
+
     pub async fn execute_msg(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
         let kernel_working_set = KernelWorkingSet::from_kernel(self.kernel(), &mut checkpoint);
 
@@ -114,15 +123,6 @@ where
         *self.mempool.acquire_mutex() = vec![];
 
         working_set.checkpoint().0
-    }
-
-    /// Apply a slot by executing the messages in the mempool and committing the state update
-    pub async fn apply_slot(&mut self, checkpoint: StateCheckpoint<S>) {
-        let mut checkpoint = self.execute_msg(checkpoint).await;
-
-        self.kernel().end_slot_hook(&Gas::zero(), &mut checkpoint);
-
-        self.commit(checkpoint);
     }
 
     /// Commits the state update to the prover storage
