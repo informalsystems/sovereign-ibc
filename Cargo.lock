@@ -5519,7 +5519,6 @@ version = "0.1.0"
 dependencies = [
  "borsh",
  "derive_more",
- "hex",
  "ibc-client-tendermint",
  "ibc-core",
  "ics23",
@@ -5532,7 +5531,6 @@ dependencies = [
  "tendermint 0.34.1",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.1",
- "tracing",
  "typed-builder",
 ]
 

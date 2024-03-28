@@ -85,7 +85,7 @@ impl ClientStateCommon for ClientState {
         root: &CommitmentRoot,
         path: Path,
     ) -> Result<(), ClientError> {
-        verify_non_membership(&prefix, proof, root, path)
+        verify_non_membership(prefix, proof, root, path)
     }
 }
 

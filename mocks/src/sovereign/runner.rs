@@ -149,7 +149,9 @@ where
         let handle = tokio::task::spawn(async move {
             loop {
                 let checkpoint = StateCheckpoint::new(chain.prover_storage());
+
                 let checkpoint = chain.begin_slot(checkpoint).await;
+
                 chain.apply_slot(checkpoint).await;
             }
         });

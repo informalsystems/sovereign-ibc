@@ -33,7 +33,7 @@ where
 
         let mut working_set = WorkingSet::new(self.prover_storage());
 
-        let ibc_ctx: sov_ibc::context::IbcContext<'_, S> = self.ibc_ctx(&mut working_set);
+        let ibc_ctx = self.ibc_ctx(&mut working_set);
 
         match request {
             QueryReq::ChainId => QueryResp::ChainId(self.chain_id().clone()),
