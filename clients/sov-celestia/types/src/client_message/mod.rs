@@ -103,12 +103,12 @@ pub mod test_util {
         pub validity_conditions: Vec<ValidityCondition>,
         pub initial_slot_number: Height,
         pub final_slot_number: Height,
-        #[builder(default)]
-        pub genesis_state_root: Vec<u8>,
-        #[builder(default)]
-        pub input_state_root: Vec<u8>,
-        #[builder(default)]
-        pub final_state_root: Vec<u8>,
+        #[builder(default = Root::from([0; 32]))]
+        pub genesis_state_root: Root,
+        #[builder(default = Root::from([0; 32]))]
+        pub input_state_root: Root,
+        #[builder(default = Root::from([0; 32]))]
+        pub final_state_root: Root,
         #[builder(default)]
         pub initial_slot_hash: Vec<u8>,
         #[builder(default)]
@@ -151,12 +151,14 @@ pub mod test_util {
         da_header: TmHeader,
         initial_slot_number: Height,
         final_slot_number: Height,
+        final_state_root: Root,
     ) -> SovTmHeader {
         let aggregated_proof_data = AggregatedProofDataConfig::builder()
             .public_input(
                 PublicInputConfig::builder()
                     .initial_slot_number(initial_slot_number)
                     .final_slot_number(final_slot_number)
+                    .final_state_root(final_state_root)
                     .build(),
             )
             .build();

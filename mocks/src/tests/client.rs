@@ -45,7 +45,7 @@ async fn test_create_client_on_sov() {
         .src_chain_ctx()
         .query(QueryReq::ValueWithProof(
             Path::ClientState(ClientStatePath(rly.dst_client_id().clone())),
-            client_state.latest_height(),
+            Some(client_state.latest_height().increment()), // increment as the proof is available as of the next height
         ))
         .await
     {
@@ -64,7 +64,7 @@ async fn test_create_client_on_sov() {
                 revision_number: client_state.latest_height().revision_number(),
                 revision_height: client_state.latest_height().revision_height(),
             }),
-            client_state.latest_height(),
+            Some(client_state.latest_height()),
         ))
         .await
     {

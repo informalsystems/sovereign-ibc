@@ -86,9 +86,9 @@ pub struct AggregatedProofPublicInput {
     pub validity_conditions: Vec<ValidityCondition>,
     pub initial_slot_number: Height,
     pub final_slot_number: Height,
-    pub genesis_state_root: Vec<u8>,
-    pub input_state_root: Vec<u8>,
-    pub final_state_root: Vec<u8>,
+    pub genesis_state_root: Root,
+    pub input_state_root: Root,
+    pub final_state_root: Root,
     pub initial_slot_hash: Vec<u8>,
     pub final_slot_hash: Vec<u8>,
     pub code_commitment: CodeCommitment,
@@ -103,11 +103,11 @@ impl AggregatedProofPublicInput {
         self.final_slot_number
     }
 
-    pub fn genesis_state_root(&self) -> &[u8] {
+    pub fn genesis_state_root(&self) -> &Root {
         &self.genesis_state_root
     }
 
-    pub fn final_state_root(&self) -> &[u8] {
+    pub fn final_state_root(&self) -> &Root {
         &self.final_state_root
     }
 
@@ -124,9 +124,9 @@ impl Display for AggregatedProofPublicInput {
                 PrettySlice(&self.validity_conditions),
                 self.initial_slot_number,
                 self.final_slot_number,
-                hex::encode(&self.genesis_state_root),
-                hex::encode(&self.input_state_root),
-                hex::encode(&self.final_state_root),
+                hex::encode(self.genesis_state_root.as_ref()),
+                hex::encode(self.input_state_root.as_ref()),
+                hex::encode(self.final_state_root.as_ref()),
                 hex::encode(&self.initial_slot_hash),
                 hex::encode(&self.final_slot_hash),
                 self.code_commitment,
@@ -148,9 +148,9 @@ impl TryFrom<RawAggregatedProofPublicInput> for AggregatedProofPublicInput {
                 .collect(),
             initial_slot_number: Height::new(0, raw.initial_slot_number)?,
             final_slot_number: Height::new(0, raw.final_slot_number)?,
-            genesis_state_root: raw.genesis_state_root,
-            input_state_root: raw.initial_state_root,
-            final_state_root: raw.final_state_root,
+            genesis_state_root: raw.genesis_state_root.try_into()?,
+            input_state_root: raw.initial_state_root.try_into()?,
+            final_state_root: raw.final_state_root.try_into()?,
             initial_slot_hash: raw.initial_slot_hash,
             final_slot_hash: raw.final_slot_hash,
             code_commitment: raw
@@ -171,9 +171,9 @@ impl From<AggregatedProofPublicInput> for RawAggregatedProofPublicInput {
                 .collect(),
             initial_slot_number: value.initial_slot_number.revision_height(),
             final_slot_number: value.final_slot_number.revision_height(),
-            genesis_state_root: value.genesis_state_root,
-            initial_state_root: value.input_state_root,
-            final_state_root: value.final_state_root,
+            genesis_state_root: value.genesis_state_root.into(),
+            initial_state_root: value.input_state_root.into(),
+            final_state_root: value.final_state_root.into(),
             initial_slot_hash: value.initial_slot_hash,
             final_slot_hash: value.final_slot_hash,
             code_commitment: Some(value.code_commitment.into()),
@@ -301,5 +301,44 @@ impl From<RawAggregatedProof> for AggregatedProof {
 impl From<AggregatedProof> for RawAggregatedProof {
     fn from(value: AggregatedProof) -> Self {
         Self { proof: value.0 }
+    }
+}
+
+/// Defines the root hash of the aggregated proof
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct Root([u8; 32]);
+
+impl AsRef<[u8; 32]> for Root {
+    fn as_ref(&self) -> &[u8; 32] {
+        &self.0
+    }
+}
+
+impl TryFrom<Vec<u8>> for Root {
+    type Error = Error;
+
+    fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
+        let root = value.as_slice().try_into().map_err(Error::source)?;
+
+        Ok(Self(root))
+    }
+}
+
+impl From<[u8; 32]> for Root {
+    fn from(root: [u8; 32]) -> Self {
+        Self(root)
+    }
+}
+
+impl From<jmt::RootHash> for Root {
+    fn from(app_hash: jmt::RootHash) -> Self {
+        Self::from(app_hash.0)
+    }
+}
+
+impl From<Root> for Vec<u8> {
+    fn from(root: Root) -> Self {
+        root.0.to_vec()
     }
 }

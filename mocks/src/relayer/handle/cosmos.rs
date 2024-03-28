@@ -77,7 +77,7 @@ impl<S: ProvableStore + Debug + Default> Handle for MockCosmosChain<S> {
                 let (value, proof) = self.query(
                     path.to_string().as_bytes().to_vec(),
                     IBC_QUERY_PATH.to_string(),
-                    &height,
+                    height,
                 );
 
                 QueryResp::ValueWithProof(value, proof.into())

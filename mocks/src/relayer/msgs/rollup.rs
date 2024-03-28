@@ -158,7 +158,7 @@ where
             .dst_chain_ctx()
             .query(QueryReq::ValueWithProof(
                 Path::Commitment(commitment_path.clone()),
-                proof_height_on_a,
+                Some(proof_height_on_a),
             ))
             .await
         {

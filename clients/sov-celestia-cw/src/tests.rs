@@ -4,7 +4,7 @@ use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::{Height, Status};
 use ibc_core::host::types::identifiers::ChainId;
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
-use sov_celestia_client::types::client_message::SovTmHeader;
+use sov_celestia_client::types::client_message::{Root, SovTmHeader};
 use sov_celestia_client::types::client_state::test_util::{
     dummy_checksum, dummy_sov_client_state, dummy_sov_consensus_state,
 };
@@ -55,7 +55,13 @@ pub fn dummy_client_message(trusted_height: Height, target_height: Height) -> Ve
         trusted_next_validator_set: light_block.next_validators,
     };
 
-    let sov_header = dummy_sov_header(tm_header, trusted_height, target_height);
+    let sov_header = dummy_sov_header(
+        tm_header,
+        trusted_height,
+        target_height,
+        Root::from([0; 32]),
+    );
+
     SovTmHeader::encode_thru_any(sov_header)
 }
 
