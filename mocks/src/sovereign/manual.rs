@@ -21,7 +21,7 @@ use ibc_core::host::types::path::{
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use sov_consensus_state_tracker::HasConsensusState;
 use sov_ibc::context::IbcContext;
-use sov_modules_api::{Spec, WorkingSet};
+use sov_modules_api::{Spec, StateCheckpoint};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 
@@ -38,7 +38,11 @@ where
 {
     /// Establishes a tendermint light client on the ibc module
     pub async fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
-        let mut working_set = WorkingSet::new(self.prover_storage());
+        let checkpoint = self
+            .begin_slot(StateCheckpoint::new(self.prover_storage()))
+            .await;
+
+        let mut working_set = checkpoint.to_revertable(Default::default());
 
         let mut ibc_ctx: IbcContext<'_, S> = self.ibc_ctx(&mut working_set);
 
@@ -58,7 +62,7 @@ where
 
         ibc_ctx.increase_client_counter().unwrap();
 
-        self.commit(working_set.checkpoint().0).await;
+        self.apply_slot(working_set.checkpoint().0).await;
 
         client_id
     }
@@ -69,7 +73,11 @@ where
         client_id: ClientId,
         prefix: CommitmentPrefix,
     ) -> ConnectionId {
-        let mut working_set = WorkingSet::new(self.prover_storage());
+        let checkpoint = self
+            .begin_slot(StateCheckpoint::new(self.prover_storage()))
+            .await;
+
+        let mut working_set = checkpoint.to_revertable(Default::default());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -90,14 +98,18 @@ where
             .store_connection(&connection_path, connection_end)
             .unwrap();
 
-        self.commit(working_set.checkpoint().0).await;
+        self.apply_slot(working_set.checkpoint().0).await;
 
         connection_id
     }
 
     /// Establishes a channel on the ibc module with the `Open` state
     pub async fn setup_channel(&mut self, connection_id: ConnectionId) -> (PortId, ChannelId) {
-        let mut working_set = WorkingSet::new(self.prover_storage());
+        let checkpoint = self
+            .begin_slot(StateCheckpoint::new(self.prover_storage()))
+            .await;
+
+        let mut working_set = checkpoint.to_revertable(Default::default());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -120,7 +132,7 @@ where
             .store_channel(&channel_end_path, channel_end)
             .unwrap();
 
-        self.commit(working_set.checkpoint().0).await;
+        self.apply_slot(working_set.checkpoint().0).await;
 
         (port_id, channel_id)
     }
@@ -132,7 +144,11 @@ where
         channel_id: ChannelId,
         seq_number: Sequence,
     ) {
-        let mut working_set = WorkingSet::new(self.prover_storage());
+        let checkpoint = self
+            .begin_slot(StateCheckpoint::new(self.prover_storage()))
+            .await;
+
+        let mut working_set = checkpoint.to_revertable(Default::default());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -142,7 +158,7 @@ where
             .store_next_sequence_send(&seq_send_path, seq_number)
             .unwrap();
 
-        self.commit(working_set.checkpoint().0).await;
+        self.apply_slot(working_set.checkpoint().0).await;
     }
 
     /// Sets the recv sequence number for a given channel and port ids
@@ -152,7 +168,11 @@ where
         chan_id: ChannelId,
         seq_number: Sequence,
     ) {
-        let mut working_set = WorkingSet::new(self.prover_storage());
+        let checkpoint = self
+            .begin_slot(StateCheckpoint::new(self.prover_storage()))
+            .await;
+
+        let mut working_set = checkpoint.to_revertable(Default::default());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -162,7 +182,7 @@ where
             .store_next_sequence_recv(&seq_recv_path, seq_number)
             .unwrap();
 
-        self.commit(working_set.checkpoint().0).await;
+        self.apply_slot(working_set.checkpoint().0).await;
     }
 
     /// Sets the ack sequence number for a given channel and port ids
@@ -172,7 +192,11 @@ where
         chan_id: ChannelId,
         seq_number: Sequence,
     ) {
-        let mut working_set = WorkingSet::new(self.prover_storage());
+        let checkpoint = self
+            .begin_slot(StateCheckpoint::new(self.prover_storage()))
+            .await;
+
+        let mut working_set = checkpoint.to_revertable(Default::default());
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -182,6 +206,6 @@ where
             .store_next_sequence_ack(&seq_ack_path, seq_number)
             .unwrap();
 
-        self.commit(working_set.checkpoint().0).await;
+        self.apply_slot(working_set.checkpoint().0).await;
     }
 }

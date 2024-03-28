@@ -40,13 +40,13 @@ use ibc_query::core::connection::{
     QueryConnectionResponse, QueryConnectionsRequest, QueryConnectionsResponse,
 };
 use jsonrpsee::core::RpcResult;
-use jsonrpsee::types::ErrorObjectOwned;
 use sov_modules_api::macros::rpc_gen;
 use sov_modules_api::{ProvenStateAccessor, Spec, WorkingSet};
 use sov_state::storage::{SlotKey, StateCodec, StateItemCodec};
 
 use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;
+use crate::helpers::to_jsonrpsee_error;
 use crate::Ibc;
 
 /// Structure returned by the `client_state` rpc method.
@@ -58,13 +58,13 @@ impl<S: Spec> Ibc<S> {
         request: QueryClientStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientStateResponse> {
-        let prefix = self.client_state_map.prefix();
+        let proof_height = self.determine_query_height(request.query_height, working_set)?;
 
-        let codec = self.client_state_map.codec();
+        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
 
-        let key = SlotKey::new(prefix, &request.client_id, codec.key_codec());
-
-        let value_with_proof = working_set.get_with_proof(key);
+        let value_with_proof = self
+            .client_state_map
+            .get_with_proof(&request.client_id, &mut archival_working_set);
 
         let storage_value = value_with_proof.value.ok_or_else(|| {
             to_jsonrpsee_error(format!(
@@ -73,7 +73,9 @@ impl<S: Spec> Ibc<S> {
             ))
         })?;
 
-        let client_state: AnyClientState = codec
+        let client_state: AnyClientState = self
+            .client_state_map
+            .codec()
             .try_decode(storage_value.value())
             .map_err(to_jsonrpsee_error)?;
 
@@ -82,17 +84,10 @@ impl<S: Spec> Ibc<S> {
             .try_to_vec()
             .map_err(to_jsonrpsee_error)?;
 
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        let current_height = ibc_ctx.host_height().map_err(to_jsonrpsee_error)?;
-
         Ok(QueryClientStateResponse::new(
             client_state.into(),
             proof,
-            current_height,
+            proof_height,
         ))
     }
 
@@ -371,16 +366,21 @@ impl<S: Spec> Ibc<S> {
         request: QueryPacketCommitmentRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketCommitmentResponse> {
-        let prefix = self.packet_commitment_map.prefix();
-
-        let codec = self.packet_commitment_map.codec();
-
         let commitment_path =
             CommitmentPath::new(&request.port_id, &request.channel_id, request.sequence);
 
-        let key = SlotKey::new(prefix, &commitment_path, codec.key_codec());
+        let proof_height = self.determine_query_height(request.query_height, working_set)?;
 
-        let value_with_proof = working_set.get_with_proof(key);
+        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
+
+        let value_with_proof = self
+            .packet_commitment_map
+            .get_with_proof(&commitment_path, &mut archival_working_set);
+
+        let proof = value_with_proof
+            .proof
+            .try_to_vec()
+            .map_err(to_jsonrpsee_error)?;
 
         let storage_value = value_with_proof.value.ok_or_else(|| {
             to_jsonrpsee_error(format!(
@@ -388,22 +388,10 @@ impl<S: Spec> Ibc<S> {
             ))
         })?;
 
-        let proof = value_with_proof
-            .proof
-            .try_to_vec()
-            .map_err(to_jsonrpsee_error)?;
-
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        let current_height = ibc_ctx.host_height().map_err(to_jsonrpsee_error)?;
-
         Ok(QueryPacketCommitmentResponse::new(
             PacketCommitment::from(storage_value.value().to_vec()),
             proof,
-            current_height,
+            proof_height,
         ))
     }
 
@@ -504,13 +492,4 @@ impl<S: Spec> Ibc<S> {
 
         query_next_sequence_receive(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
     }
-}
-
-/// Creates an jsonrpsee error object
-fn to_jsonrpsee_error(err: impl ToString) -> ErrorObjectOwned {
-    ErrorObjectOwned::owned(
-        jsonrpsee::types::error::UNKNOWN_ERROR_CODE,
-        err.to_string(),
-        None::<String>,
-    )
 }

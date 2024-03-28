@@ -10,7 +10,7 @@ use basecoin::modules::auth::Auth;
 use basecoin::modules::bank::{Bank, BankReader, Denom};
 use basecoin::modules::context::{prefix, Identifiable};
 use basecoin::modules::ibc::{Ibc, IbcContext};
-use basecoin::store::context::ProvableStore;
+use basecoin::store::context::{ProvableStore, Store};
 use basecoin::store::impls::RevertibleStore;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentProofBytes;
@@ -89,14 +89,20 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         &self,
         data: Vec<u8>,
         path: String,
-        height: &Height,
+        height: Option<Height>,
     ) -> (Vec<u8>, CommitmentProofBytes) {
+        // If no height is provided, use the current height of the chain.
+        let revision_height = match height {
+            Some(height) => height.revision_height(),
+            None => self.app.store.current_height(),
+        };
+
         let response: ResponseQuery = basecoin_query(
             &self.app,
             RequestQuery {
                 data: data.into(),
                 path,
-                height: height.revision_height().try_into().unwrap(),
+                height: revision_height.try_into().unwrap(),
                 prove: true,
             }
             .into(),

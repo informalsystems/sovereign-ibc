@@ -195,7 +195,7 @@ async fn test_mint_burn_on_sov() {
         .await;
 
     // -----------------------------------------------------------------------
-    // Check client state has been updated successfully
+    // Check client state has been updated successfully on the rollup
     // -----------------------------------------------------------------------
     let any_client_state = match rly
         .src_chain_ctx()
@@ -226,7 +226,7 @@ async fn test_mint_burn_on_sov() {
     assert_ne!(token_address_on_sov, fake_token.token_address);
 
     // -----------------------------------------------------------------------
-    // Transfer the same token once again
+    // Transfer the same token once again to the Cosmos chain
     // -----------------------------------------------------------------------
     rly.dst_chain_ctx()
         .submit_msgs(vec![msg_transfer_on_cos.clone().to_any()])
@@ -265,7 +265,7 @@ async fn test_mint_burn_on_sov() {
         .get_balance_of(&cfg.cos_denom, cfg.cos_address.clone())
         .unwrap();
 
-    let expected_sender_balance = initial_sender_balance - cfg.amount * 2;
+    let mut expected_sender_balance = initial_sender_balance - cfg.amount * 2;
 
     assert_eq!(sender_balance, expected_sender_balance);
 
@@ -284,22 +284,20 @@ async fn test_mint_burn_on_sov() {
         ])
         .await;
 
-    // TODO: Uncomment this part when the rollup header can be queried by the relayer
-    //
-    // let target_height = match rly.src_chain_ctx().query(QueryReq::HostHeight).await {
-    //     QueryResp::HostHeight(height) => height,
-    //     _ => panic!("unexpected response"),
-    // };
+    let target_height = match rly.src_chain_ctx().query(QueryReq::HostHeight).await {
+        QueryResp::HostHeight(height) => height,
+        _ => panic!("unexpected response"),
+    };
 
-    // let msg_update_client = rly.build_msg_update_client_for_cos(target_height).await;
+    let msg_update_client = rly.build_msg_update_client_for_cos(target_height).await;
 
-    // let msg_recv_packet = rly
-    //     .build_msg_recv_packet_for_cos(target_height, msg_transfer_on_sov)
-    //     .await;
+    let msg_recv_packet = rly
+        .build_msg_recv_packet_for_cos(target_height, msg_transfer_on_sov)
+        .await;
 
-    // rly.dst_chain_ctx()
-    //     .submit_msgs(vec![msg_update_client, msg_recv_packet.to_any()])
-    //     .await;
+    rly.dst_chain_ctx()
+        .submit_msgs(vec![msg_update_client, msg_recv_packet.to_any()])
+        .await;
 
     // -----------------------------------------------------------------------
     // Check the token has been burned on rollup and unescrowed on Cosmos chain
@@ -313,15 +311,13 @@ async fn test_mint_burn_on_sov() {
 
     assert_eq!(sender_balance, expected_receiver_balance);
 
-    // TODO: Uncomment this part when the rollup header can be queried by the relayer
+    let receiver_balance = rly
+        .dst_chain_ctx()
+        .service()
+        .get_balance_of(&cfg.cos_denom, cfg.cos_address)
+        .unwrap();
 
-    // let receiver_balance = rly
-    //     .dst_chain_ctx()
-    //     .service()
-    //     .get_balance_of(denom_on_cos, sender_on_cos)
-    //     .unwrap();
+    expected_sender_balance += cfg.amount;
 
-    // expected_sender_balance += transfer_amount;
-
-    // assert_eq!(receiver_balance, expected_sender_balance);
+    assert_eq!(receiver_balance, expected_sender_balance);
 }

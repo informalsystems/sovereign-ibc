@@ -12,7 +12,6 @@ use sov_rollup_interface::services::da::DaService;
 use sov_state::storage::StateUpdate;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tokio::task::JoinHandle;
-use tokio::time::sleep;
 use tracing::{debug, info};
 
 use super::{GenesisConfig, MockRollup, RuntimeCall};
@@ -46,25 +45,22 @@ where
             .genesis(runtime_genesis_config, &mut working_set)
             .unwrap();
 
-        let checkpoint = working_set.checkpoint().0;
-
-        let checkpoint = self.begin_block(checkpoint).await;
-
-        self.commit(checkpoint).await;
+        self.commit(working_set.checkpoint().0);
     }
 
-    /// Begins a block by setting the host consensus state and triggering the slot hook
-    pub async fn begin_block(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
-        let current_height = self.rollup_ctx.acquire_mutex().visible_slot_number();
+    /// Begins processing a DA block by triggering the `begin_slot_hook`
+    pub async fn begin_slot(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
+        let kernel_working_set = KernelWorkingSet::from_kernel(self.kernel(), &mut checkpoint);
 
-        debug!("rollup: processing block at height {current_height}");
+        let current_height = kernel_working_set.current_slot();
+
+        let pre_state_root = self.state_root(current_height).unwrap();
 
         let height = loop {
-            self.da_core
-                .grow_blocks(self.state_root.lock().unwrap().as_ref().to_vec());
+            self.da_core.grow_blocks(pre_state_root.as_ref().to_vec());
             // Dummy transaction to trigger the block generation
             self.da_service().send_transaction(&[0; 32]).await.unwrap();
-            sleep(Duration::from_millis(100)).await;
+            tokio::time::sleep(Duration::from_millis(100)).await;
             match self.da_service().get_last_finalized_block_header().await {
                 Ok(header) => {
                     debug!("Last finalized height={}", header.height());
@@ -80,18 +76,14 @@ where
 
         let block = self.da_service().get_block_at(height).await.unwrap();
 
-        let state_root = *self.state_root().acquire_mutex();
-
         self.kernel().begin_slot_hook(
             block.header(),
             &block.validity_condition(),
-            &state_root,
+            &pre_state_root,
             &mut checkpoint,
         );
 
-        let working_set = checkpoint.to_revertable(Default::default());
-
-        working_set.checkpoint().0
+        checkpoint
     }
 
     pub async fn execute_msg(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
@@ -124,13 +116,17 @@ where
         working_set.checkpoint().0
     }
 
-    /// Commits a block by triggering the end slot hook, computing the state
-    /// update and committing it to the prover storage
-    pub async fn commit(&mut self, checkpoint: StateCheckpoint<S>) {
+    /// Apply a slot by executing the messages in the mempool and committing the state update
+    pub async fn apply_slot(&mut self, checkpoint: StateCheckpoint<S>) {
         let mut checkpoint = self.execute_msg(checkpoint).await;
 
         self.kernel().end_slot_hook(&Gas::zero(), &mut checkpoint);
 
+        self.commit(checkpoint);
+    }
+
+    /// Commits the state update to the prover storage
+    pub fn commit(&mut self, checkpoint: StateCheckpoint<S>) {
         let (cache_log, accessory_delta, witness) = checkpoint.freeze();
 
         let (root_hash, mut state_update) = self
@@ -142,7 +138,7 @@ where
 
         self.prover_storage().commit(&state_update);
 
-        self.set_state_root(root_hash);
+        self.push_state_root(root_hash);
     }
 
     /// Runs the rollup chain by initializing the chain and then committing
@@ -153,11 +149,8 @@ where
         let handle = tokio::task::spawn(async move {
             loop {
                 let checkpoint = StateCheckpoint::new(chain.prover_storage());
-                let checkpoint = chain.begin_block(checkpoint).await;
-
-                tokio::time::sleep(Duration::from_millis(200)).await;
-
-                chain.commit(checkpoint).await;
+                let checkpoint = chain.begin_slot(checkpoint).await;
+                chain.apply_slot(checkpoint).await;
             }
         });
 

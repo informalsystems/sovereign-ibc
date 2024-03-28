@@ -4,16 +4,19 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
+use ibc_client_tendermint::types::Header;
+use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
-use jmt::RootHash;
 use sov_bank::CallMessage as BankCallMessage;
+use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
+use sov_celestia_client::types::client_message::SovTmHeader;
 use sov_consensus_state_tracker::{ConsensusStateTracker, HasConsensusState};
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::context::IbcContext;
 use sov_modules_api::{Context, Spec, WorkingSet};
 use sov_modules_stf_blueprint::kernels::basic::BasicKernel;
 use sov_rollup_interface::services::da::DaService;
-use sov_state::{MerkleProofSpec, ProverStorage, Storage, StorageRoot};
+use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 
 use crate::cosmos::MockTendermint;
 use crate::sovereign::runtime::RuntimeCall;
@@ -36,7 +39,7 @@ where
     prover_storage: ProverStorage<P>,
     pub(crate) da_core: MockTendermint,
     pub(crate) rollup_ctx: Arc<Mutex<Context<S>>>,
-    pub(crate) state_root: Arc<Mutex<<ProverStorage<P> as Storage>::Root>>,
+    pub(crate) state_root: Arc<Mutex<Vec<<ProverStorage<P> as Storage>::Root>>>,
     pub(crate) mempool: Arc<Mutex<Mempool<S>>>,
 }
 
@@ -62,10 +65,7 @@ where
             prover_storage,
             da_core,
             rollup_ctx: Arc::new(Mutex::new(rollup_ctx)),
-            state_root: Arc::new(Mutex::new(StorageRoot::new(
-                RootHash([1; 32]),
-                RootHash([0; 32]),
-            ))),
+            state_root: Arc::new(Mutex::new(vec![])),
             mempool: Arc::new(Mutex::new(vec![])),
         }
     }
@@ -94,8 +94,12 @@ where
         self.prover_storage.clone()
     }
 
-    pub fn state_root(&self) -> Arc<Mutex<<ProverStorage<P> as Storage>::Root>> {
-        self.state_root.clone()
+    /// Returns the state root at a given rollup height (slot number)
+    pub fn state_root(&self, height: u64) -> Option<<ProverStorage<P> as Storage>::Root> {
+        self.state_root
+            .acquire_mutex()
+            .get(height as usize)
+            .cloned()
     }
 
     pub fn mempool(&self) -> Vec<RuntimeCall<S>> {
@@ -106,6 +110,37 @@ where
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         IbcContext::new(&self.runtime.ibc, shared_working_set.clone())
+    }
+
+    pub fn obtain_ibc_header(&self, target_height: Height, trusted_height: Height) -> SovTmHeader {
+        let blocks = self.da_core.blocks();
+
+        let revision_height = target_height.revision_height();
+
+        if revision_height as usize > blocks.len() {
+            panic!("block index out of bounds");
+        }
+
+        let target_block = blocks[revision_height as usize - 1].clone();
+
+        let header = Header {
+            signed_header: target_block.signed_header,
+            validator_set: target_block.validators,
+            trusted_height,
+            trusted_next_validator_set: target_block.next_validators,
+        };
+
+        let target_state_root = match self.state_root(revision_height - 1) {
+            Some(root) => root.user_hash(),
+            None => panic!("state root not found"),
+        };
+
+        dummy_sov_header(
+            header,
+            Height::new(0, 1).unwrap(),
+            Height::new(0, revision_height).unwrap(),
+            target_state_root.into(),
+        )
     }
 
     /// Returns the balance of a user for a given token
@@ -141,8 +176,10 @@ where
             .ok()
     }
 
-    pub(crate) fn set_state_root(&mut self, state_root: <ProverStorage<P> as Storage>::Root) {
-        *self.state_root.acquire_mutex() = state_root;
+    pub(crate) fn push_state_root(&mut self, state_root: <ProverStorage<P> as Storage>::Root) {
+        let mut state_roots = self.state_root.acquire_mutex();
+
+        state_roots.push(state_root);
     }
 
     pub(crate) fn resolve_ctx(&mut self, sender: S::Address, height: u64) {
