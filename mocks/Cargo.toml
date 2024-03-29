@@ -15,8 +15,9 @@ anyhow        = { workspace = true }
 async-trait   = { version = "0.1.74", default-features = false }
 base64        = { workspace = true }
 borsh         = { workspace = true }
+jmt           = { workspace = true }
 prost         = { workspace = true }
-sha2          = { version = "0.10.6", default-features = false }
+sha2          = { workspace = true }
 serde         = { workspace = true }
 serde_json    = { workspace = true }
 tokio         = { version = "1", features = ["full"] }
@@ -28,10 +29,10 @@ tracing       = "0.1.36"
 typed-builder = "0.18.0"
 
 # internal dependencies
-sov-ibc                     = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "0be13e4d" }
-sov-ibc-transfer            = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "0be13e4d" }
-sov-consensus-state-tracker = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "0be13e4d" }
-sov-celestia-client         = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "0be13e4d", features = ["test-util"] }
+sov-ibc                     = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "66138b87" }
+sov-ibc-transfer            = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "66138b87" }
+sov-consensus-state-tracker = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "66138b87" }
+sov-celestia-client         = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "66138b87", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
@@ -42,7 +43,7 @@ ibc-query             = { workspace = true }
 ibc-testkit           = { workspace = true }
 
 # cosmos dependencies
-basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "d5ca333" }
+basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "8f9a6f1" }
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
 
@@ -52,12 +53,10 @@ sov-chain-state            = { workspace = true }
 sov-modules-api            = { workspace = true }
 sov-rollup-interface       = { workspace = true }
 sov-state                  = { workspace = true }
-
 const-rollup-config        = { workspace = true, optional = true }
 sov-mock-zkvm              = { workspace = true, features = ["native"], optional = true }
 sov-modules-stf-blueprint  = { workspace = true, features = ["native"], optional = true }
 sov-prover-storage-manager = { workspace = true, features = ["test-utils"] }
-jmt = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 [dev-dependencies]
 test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }

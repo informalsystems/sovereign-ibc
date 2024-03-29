@@ -34,9 +34,11 @@ bytes       = { version = "1.2.1", default-features = false }
 derive_more = { version = "0.99.11", features = ["from", "try_into"] }
 digest      = "0.10.6"
 hex         = "0.4.3"
+jmt         = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 jsonrpsee   = { version = "0.20.1", features = ["jsonrpsee-types", "macros", "client", "server"] }
 prost       = { version = "0.12", default-features = false }
 prost-build = { version = "0.12", default-features = false }
+sha2        = { version = "0.10.6", default-features = false }
 serde       = { version = "1.0", default-features = false, features = ["derive", "rc"] }
 serde_json  = "1.0"
 schemars    = { version = "0.8.12", features = ["derive"] }

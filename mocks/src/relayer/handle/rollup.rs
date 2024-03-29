@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use ibc_client_tendermint::types::Header;
 use ibc_core::client::context::ClientValidationContext;
 use ibc_core::client::types::Height;
 use ibc_core::handler::types::events::IbcEvent;
@@ -7,7 +6,6 @@ use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
 use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::QueryPacketCommitmentRequest;
 use ibc_query::core::client::{QueryClientStateRequest, QueryConsensusStateRequest};
-use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
 use sov_consensus_state_tracker::HasConsensusState;
 use sov_modules_api::{Spec, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
@@ -63,39 +61,18 @@ where
                     .into(),
             ),
             QueryReq::Header(target_height, trusted_height) => {
-                let blocks = self.da_core.blocks();
-
-                let revision_height = target_height.revision_height() as usize;
-
-                if revision_height > blocks.len() {
-                    panic!("block index out of bounds");
-                }
-
-                let target_block = blocks[revision_height - 1].clone();
-
-                let header = Header {
-                    signed_header: target_block.signed_header,
-                    validator_set: target_block.validators,
-                    trusted_height,
-                    trusted_next_validator_set: target_block.next_validators,
-                };
-
-                let sov_header = dummy_sov_header(
-                    header,
-                    Height::new(0, 1).unwrap(),
-                    Height::new(0, revision_height as u64).unwrap(),
-                );
+                let sov_header = self.obtain_ibc_header(target_height, trusted_height);
 
                 QueryResp::Header(sov_header.into())
             }
             QueryReq::NextSeqSend(path) => {
                 QueryResp::NextSeqSend(ibc_ctx.get_next_sequence_send(&path).unwrap())
             }
-            QueryReq::ValueWithProof(path, _) => match path {
+            QueryReq::ValueWithProof(path, h) => match path {
                 Path::ClientState(path) => {
                     let req = QueryClientStateRequest {
                         client_id: path.0,
-                        query_height: None,
+                        query_height: h,
                     };
 
                     let resp = self
@@ -113,7 +90,7 @@ where
                             Height::new(path.revision_number, path.revision_height)
                                 .expect("Never fails"),
                         ),
-                        query_height: None,
+                        query_height: h,
                     };
 
                     let resp = self
@@ -129,7 +106,7 @@ where
                         port_id: path.port_id,
                         channel_id: path.channel_id,
                         sequence: path.sequence,
-                        query_height: None,
+                        query_height: h,
                     };
 
                     let resp = self

@@ -58,7 +58,7 @@ pub enum QueryReq {
     ClientState(ClientId),
     ConsensusState(ClientId, Height),
     NextSeqSend(SeqSendPath),
-    ValueWithProof(Path, Height),
+    ValueWithProof(Path, Option<Height>),
 }
 
 /// Defines the different types of responses that can be returned from querying
