@@ -103,7 +103,7 @@ where
 
     /// Builds a sdk token transfer message wrapped in a `CallMessage` with the given amount
     /// Note: keep the amount value lower than the initial balance of the sender address
-    pub async fn build_msg_transfer_for_sov(&self, config: &TransferTestConfig) -> MsgTransfer {
+    pub fn build_msg_transfer_for_sov(&self, config: &TransferTestConfig) -> MsgTransfer {
         let mut token_address_buf = String::new();
 
         general_purpose::STANDARD_NO_PAD

@@ -1,12 +1,3 @@
-#![forbid(unsafe_code)]
-#![deny(
-    warnings,
-    unused_import_braces,
-    unused_qualifications,
-    rust_2018_idioms,
-    clippy::unwrap_used
-)]
-
 #[cfg(feature = "celestia-da")]
 mod celestia_da;
 #[cfg(feature = "mock-da")]
@@ -164,6 +155,6 @@ where
     }
 
     fn end_slot_hook(&self, gas_used: &S::Gas, working_set: &mut StateCheckpoint<Self::Spec>) {
-        self.inner.end_slot_hook(gas_used, working_set)
+        self.inner.end_slot_hook(gas_used, working_set);
     }
 }

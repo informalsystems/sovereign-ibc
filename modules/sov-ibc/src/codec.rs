@@ -30,7 +30,7 @@ where
         Protobuf::decode_vec(bytes).map_err(|e| {
             Error::new(
                 std::io::ErrorKind::InvalidData,
-                format!("Protobuf decode error: {}", e),
+                format!("Protobuf decode error: {e}"),
             )
         })
     }

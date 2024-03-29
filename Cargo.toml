@@ -25,6 +25,24 @@ publish      = false
 authors      = ["Informal Systems <hello@informal.systems>"]
 repository   = "https://github.com/informalsystems/sovereign-ibc"
 
+[workspace.lints.rust]
+unsafe_code                   = "forbid"
+dead_code                     = "deny"
+rust_2018_idioms              = "deny"
+trivial_casts                 = "deny"
+unused_import_braces          = "deny"
+unused_variables              = "allow"
+
+[workspace.lints.clippy]
+debug_assert_with_mut_call    = "deny"
+doc_link_with_quotes          = "deny"
+inefficient_to_string         = "deny"
+map_flatten                   = "deny"
+manual_ok_or                  = "deny"
+match_same_arms               = "deny"
+semicolon_if_nothing_returned = "deny"
+uninlined_format_args         = "deny"
+
 [workspace.dependencies]
 # external dependencies
 anyhow      = "1.0.68"
@@ -44,7 +62,7 @@ serde_json  = "1.0"
 schemars    = { version = "0.8.12", features = ["derive"] }
 tempfile    = "3.5"
 thiserror   = "1.0.38"
-tracing = { version = "0.1.40", default-features = false }
+tracing     = { version = "0.1.40", default-features = false }
 
 # ibc depedenencies
 ibc-core              = { version = "0.51.0", default-features = false, features = ["borsh","schema"] }

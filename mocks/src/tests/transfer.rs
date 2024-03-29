@@ -37,7 +37,7 @@ async fn test_escrow_unescrow_on_sov() {
     // -----------------------------------------------------------------------
     // Send a `MsgTransfer` to the rollup
     // -----------------------------------------------------------------------
-    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg).await;
+    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
     rly.src_chain_ctx()
         .submit_msgs(vec![
@@ -97,7 +97,7 @@ async fn test_escrow_unescrow_on_sov() {
         .service()
         .get_balance_of(cfg.sov_address, fake_token_address);
 
-    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg).await;
+    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
     rly.src_chain_ctx()
         .submit_msgs(vec![
@@ -170,7 +170,7 @@ async fn test_mint_burn_on_sov() {
     // -----------------------------------------------------------------------
     // Send a `MsgTransfer` to the Cosmos chain
     // -----------------------------------------------------------------------
-    let msg_transfer_on_cos = rly.build_msg_transfer_for_cos(&cfg).await;
+    let msg_transfer_on_cos = rly.build_msg_transfer_for_cos(&cfg);
 
     rly.dst_chain_ctx()
         .submit_msgs(vec![msg_transfer_on_cos.clone().to_any()])
@@ -276,7 +276,7 @@ async fn test_mint_burn_on_sov() {
     cfg.sov_denom = "transfer/channel-0/basecoin".to_string();
     cfg.sov_token_address = Some(token_address_on_sov);
 
-    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg).await;
+    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
     rly.src_chain_ctx()
         .submit_msgs(vec![

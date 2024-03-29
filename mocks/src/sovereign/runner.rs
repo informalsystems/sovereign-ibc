@@ -4,7 +4,8 @@ use std::time::Duration;
 use sov_consensus_state_tracker::HasConsensusState;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    DispatchCall, Gas, Genesis, KernelWorkingSet, ModuleInfo, SlotData, Spec, StateCheckpoint,
+    DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, ModuleInfo, SlotData, Spec,
+    StateCheckpoint,
 };
 use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::da::BlockHeaderTrait;
@@ -26,7 +27,7 @@ where
     <P as MerkleProofSpec>::Hasher: Send,
 {
     /// Initializes the chain with the genesis configuration
-    pub async fn init(
+    pub fn init(
         &mut self,
         kernel_genesis_config: &BasicKernelGenesisConfig<S, Da::Spec>,
         runtime_genesis_config: &GenesisConfig<S>,
@@ -88,23 +89,23 @@ where
 
     /// Apply a slot by executing the messages in the mempool and committing the state update
     pub async fn apply_slot(&mut self, checkpoint: StateCheckpoint<S>) {
-        let mut checkpoint = self.execute_msg(checkpoint).await;
+        let mut checkpoint = self.execute_msg(checkpoint);
 
         self.kernel().end_slot_hook(&Gas::zero(), &mut checkpoint);
 
         self.commit(checkpoint);
     }
 
-    pub async fn execute_msg(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
+    pub fn execute_msg(&mut self, mut checkpoint: StateCheckpoint<S>) -> StateCheckpoint<S> {
         let kernel_working_set = KernelWorkingSet::from_kernel(self.kernel(), &mut checkpoint);
 
         let visible_slot = kernel_working_set.virtual_slot();
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable(GasMeter::default());
 
         let rollup_ctx = self.rollup_ctx();
 
-        for m in self.mempool().into_iter() {
+        for m in self.mempool() {
             // Sets the sender address to the address of the 'sov-ibc'
             // module, ensuring that the module's address is used for the
             // token creation.

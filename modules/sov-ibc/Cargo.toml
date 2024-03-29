@@ -9,6 +9,9 @@ version      = { workspace = true }
 readme       = "README.md"
 publish      = false
 
+[lints]
+workspace = true
+
 [dependencies]
 # external dependencies
 anyhow      = { workspace = true }
@@ -56,3 +59,4 @@ native = [
     "jsonrpsee",
     "ibc-query",
 ]
+

@@ -1,13 +1,3 @@
-#![allow(unused_variables)]
-#![forbid(unsafe_code)]
-#![deny(
-    warnings,
-    unused_import_braces,
-    unused_qualifications,
-    rust_2018_idioms,
-    clippy::unwrap_used
-)]
-
 pub mod call;
 pub mod clients;
 pub mod codec;

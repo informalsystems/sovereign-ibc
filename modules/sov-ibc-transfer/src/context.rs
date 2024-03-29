@@ -159,11 +159,11 @@ where
     ) -> Result<(), TokenTransferError> {
         let token_address_buf = general_purpose::STANDARD_NO_PAD
             .decode(memo.as_ref())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
+            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
 
         let token_address: S::Address =
             BorshDeserialize::deserialize(&mut token_address_buf.as_slice())
-                .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
+                .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
 
         let expected_token_address = {
             self.ibc_transfer
@@ -215,18 +215,17 @@ where
     ) -> Result<(), TokenTransferError> {
         let token_address_buf = general_purpose::STANDARD_NO_PAD
             .decode(memo.as_ref())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
+            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
 
         let token_address = BorshDeserialize::deserialize(&mut token_address_buf.as_slice())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
+            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
 
         let token_name = self
             .ibc_transfer
             .bank
             .get_token_name(&token_address, &mut self.working_set.borrow_mut())
             .ok_or(TokenTransferError::Other(format!(
-                "No token with address {}",
-                token_address
+                "No token with address {token_address}",
             )))?;
 
         if token_name != coin.denom.to_string() {
@@ -301,8 +300,7 @@ where
                     *self.working_set.borrow_mut(),
                 )
                 .ok_or(TokenTransferError::Other(format!(
-                    "No escrow account for token {}",
-                    coin
+                    "No escrow account for token {coin}"
                 )))?;
 
             escrow_balance.into()
@@ -453,11 +451,11 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
     ) -> Result<(), TokenTransferError> {
         let token_address_buf = general_purpose::STANDARD_NO_PAD
             .decode(memo.as_ref())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
+            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
 
         let token_address: S::Address =
             BorshDeserialize::deserialize(&mut token_address_buf.as_slice())
-                .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {}", e)))?;
+                .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
 
         // The token name on the Sovereign SDK chains is not guaranteed to be
         // unique, and hence we must use the token address (which is guaranteed

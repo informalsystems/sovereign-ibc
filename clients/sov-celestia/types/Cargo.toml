@@ -14,6 +14,9 @@ description  = """
 	applicability to facilitate development and integration across diverse IBC-enabled projects.
 """
 
+[lints]
+workspace = true
+
 [dependencies]
 # external dependencies
 base64        = { workspace = true, features = ["alloc"] }

@@ -13,6 +13,9 @@ description  = """
 	essential data structures and domain types from `ibc-core-client-types` crate.
 """
 
+[lints]
+workspace = true
+
 [dependencies]
 # external dependencies
 borsh         = { workspace = true }

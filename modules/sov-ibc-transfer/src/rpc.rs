@@ -32,7 +32,7 @@ where
                 .get(&token_denom, working_set)
                 .ok_or(ErrorObjectOwned::owned(
                     jsonrpsee::types::error::UNKNOWN_ERROR_CODE,
-                    format!("No escrowed token found for denom {}", token_denom),
+                    format!("No escrowed token found for denom {token_denom}"),
                     None::<String>,
                 ))?;
 
@@ -52,7 +52,7 @@ where
                 .get(&token_denom, working_set)
                 .ok_or(ErrorObjectOwned::owned(
                     jsonrpsee::types::error::UNKNOWN_ERROR_CODE,
-                    format!("No minted token found for denom {}", token_denom),
+                    format!("No minted token found for denom {token_denom}"),
                     None::<String>,
                 ))?;
 

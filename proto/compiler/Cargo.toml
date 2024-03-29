@@ -9,6 +9,9 @@ version      = { workspace = true }
 readme       = "./../README.md"
 publish      = false
 
+[lints]
+workspace = true
+
 [dependencies]
 anyhow           = { workspace = true }
 argh             = "0.1"
