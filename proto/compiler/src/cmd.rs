@@ -34,12 +34,12 @@ pub struct CompileCmd {
 impl CompileCmd {
     pub fn run(&self) {
         self.compile_protos().unwrap_or_else(|e| {
-            eprintln!("[error] failed to compile protos: {}", e);
+            eprintln!("[error] failed to compile protos: {e}");
             process::exit(1);
         });
 
         self.build_pbjson_impls().unwrap_or_else(|e| {
-            eprintln!("[error] failed to build pbjson impls: {}", e);
+            eprintln!("[error] failed to build pbjson impls: {e}");
             process::exit(1);
         });
 

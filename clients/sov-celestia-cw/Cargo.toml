@@ -12,6 +12,9 @@ description  = """
     Contains the CosmWasm contract implementation of the `sov-celesita` light client.
 """
 
+[lints]
+workspace = true
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 

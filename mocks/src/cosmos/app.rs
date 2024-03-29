@@ -67,10 +67,10 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         ibc(self.app.clone()).ctx()
     }
 
-    pub fn get_balance_of(&self, denom: &str, account: String) -> Option<u64> {
+    pub fn get_balance_of(&self, denom_str: &str, account: String) -> Option<u64> {
         let account_id: AccountId = account.parse().unwrap();
 
-        let denom = Denom(denom.to_string());
+        let denom = Denom(denom_str.to_string());
 
         if let Some(coin) = bank(self.app.clone())
             .balance_reader()

@@ -38,7 +38,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     }
 
     /// Begins a new block on the chain.
-    async fn begin_block(&self) {
+    fn begin_block(&self) {
         self.core.grow_blocks(self.app.store.root_hash());
 
         let last_block = self.core.blocks().last().unwrap().clone();
@@ -54,7 +54,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     }
 
     /// Commits the chain state to the store.
-    async fn commit(&self) {
+    fn commit(&self) {
         let mut modules = self.app.modules.write_access();
 
         let mut state = self.app.store.write_access();
@@ -81,11 +81,11 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
             chain.init().await;
 
             loop {
-                chain.begin_block().await;
+                chain.begin_block();
 
                 tokio::time::sleep(Duration::from_millis(200)).await;
 
-                chain.commit().await;
+                chain.commit();
             }
         });
 

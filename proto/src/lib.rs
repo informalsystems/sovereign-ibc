@@ -1,7 +1,5 @@
 //! sov-ibc-proto library gives the developer access to the Sovereign SDK IBC proto-defined structs.
 #![cfg_attr(not(feature = "std"), no_std)]
-#![forbid(unsafe_code)]
-#![deny(warnings, trivial_casts, trivial_numeric_casts, unused_import_braces)]
 
 extern crate alloc;
 

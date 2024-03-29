@@ -99,7 +99,7 @@ where
     }
 
     /// Builds a Cosmos chain token transfer message; serialized to Any
-    pub async fn build_msg_transfer_for_cos(&self, config: &TransferTestConfig) -> MsgTransfer {
+    pub fn build_msg_transfer_for_cos(&self, config: &TransferTestConfig) -> MsgTransfer {
         let memo = match config.sov_token_address {
             Some(token_address) => {
                 let mut token_address_buf = String::new();

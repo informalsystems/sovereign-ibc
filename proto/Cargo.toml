@@ -8,6 +8,9 @@ rust-version = { workspace = true }
 version      = { workspace = true }
 readme       = "./../README.md"
 
+[lints]
+workspace = true
+
 [dependencies]
 # external dependencies
 informalsystems-pbjson = { version = "0.7.0", default-features = false, optional = true }

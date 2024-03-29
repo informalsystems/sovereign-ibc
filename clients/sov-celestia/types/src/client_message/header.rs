@@ -67,11 +67,11 @@ impl TryFrom<RawSovTmHeader> for SovTmHeader {
     type Error = ClientError;
 
     fn try_from(value: RawSovTmHeader) -> Result<Self, Self::Error> {
-        let da_header = value
+        let raw_da_header = value
             .tendermint_header
             .ok_or(Error::missing("missing core header"))?;
 
-        let da_header = TmHeader::try_from(da_header).map_err(Error::source)?;
+        let da_header = TmHeader::try_from(raw_da_header).map_err(Error::source)?;
 
         let aggregated_proof_data = value
             .aggregated_proof_data

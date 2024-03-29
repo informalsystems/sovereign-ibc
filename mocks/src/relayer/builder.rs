@@ -101,12 +101,10 @@ where
             self.setup_cfg.da_service.clone(),
         );
 
-        rollup
-            .init(
-                &self.setup_cfg.kernel_genesis_config(),
-                &self.setup_cfg.runtime_genesis_config(),
-            )
-            .await;
+        rollup.init(
+            &self.setup_cfg.kernel_genesis_config(),
+            &self.setup_cfg.runtime_genesis_config(),
+        );
 
         let sov_client_counter = match rollup.query(QueryReq::ClientCounter).await {
             QueryResp::ClientCounter(counter) => counter,

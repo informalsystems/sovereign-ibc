@@ -88,7 +88,7 @@ pub fn create_chain_state_config<S: Spec>() -> ChainStateConfig<S> {
 pub fn create_bank_config<S: Spec>(addresses_count: u64, initial_balance: u64) -> BankConfig<S> {
     let address_and_balances: Vec<_> = (0..addresses_count)
         .map(|i| {
-            let key = format!("key_{}", i);
+            let key = format!("key_{i}");
             let addr = gen_address_generic::<S>(&key);
             (addr, initial_balance)
         })

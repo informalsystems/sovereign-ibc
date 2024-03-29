@@ -96,11 +96,11 @@ impl core::fmt::Display for Error {
         write!(f, "Code: {} Origin: {}", self.code, self.origin)?;
 
         if let Some(given) = &self.given {
-            write!(f, ", Given: {}", given)?;
+            write!(f, ", Given: {given}")?;
         }
 
         if let Some(expected) = &self.expected {
-            write!(f, ", Expected: {}", expected)?;
+            write!(f, ", Expected: {expected}")?;
         }
 
         Ok(())
