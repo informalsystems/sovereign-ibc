@@ -58,6 +58,7 @@ jobs:
       - name: Set up Git credentials
         run:
           git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
+      - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ env.MSRV }}
