@@ -8,30 +8,27 @@ use crate::client_message::pretty::PrettySlice;
 use crate::error::Error;
 use crate::proto::types::v1::{
     AggregatedProof as RawAggregatedProof, AggregatedProofData as RawAggregatedProofData,
-    AggregatedProofPublicInput as RawAggregatedProofPublicInput,
-    CodeCommitment as RawCodeCommitment, ValidityCondition as RawValidityCondition,
+    AggregatedProofPublicData as RawAggregatedProofPublicData, CodeCommitment as RawCodeCommitment,
+    ValidityCondition as RawValidityCondition,
 };
 
 /// Defines the aggregated proof data structure for the Sovereign SDK rollups
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AggregatedProofData {
-    pub public_input: AggregatedProofPublicInput,
+    pub public_input: AggregatedProofPublicData,
     pub aggregated_proof: AggregatedProof,
 }
 
 impl AggregatedProofData {
-    pub fn new(
-        public_input: AggregatedProofPublicInput,
-        aggregated_proof: AggregatedProof,
-    ) -> Self {
+    pub fn new(public_input: AggregatedProofPublicData, aggregated_proof: AggregatedProof) -> Self {
         Self {
             public_input,
             aggregated_proof,
         }
     }
 
-    pub fn public_input(&self) -> &AggregatedProofPublicInput {
+    pub fn public_input(&self) -> &AggregatedProofPublicData {
         &self.public_input
     }
 
@@ -82,7 +79,7 @@ impl From<AggregatedProofData> for RawAggregatedProofData {
 /// rollups, utilized for verifying the proof.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AggregatedProofPublicInput {
+pub struct AggregatedProofPublicData {
     pub validity_conditions: Vec<ValidityCondition>,
     pub initial_slot_number: Height,
     pub final_slot_number: Height,
@@ -94,7 +91,7 @@ pub struct AggregatedProofPublicInput {
     pub code_commitment: CodeCommitment,
 }
 
-impl AggregatedProofPublicInput {
+impl AggregatedProofPublicData {
     pub fn initial_slot_number(&self) -> Height {
         self.initial_slot_number
     }
@@ -116,11 +113,11 @@ impl AggregatedProofPublicInput {
     }
 }
 
-impl Display for AggregatedProofPublicInput {
+impl Display for AggregatedProofPublicData {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(
                 f,
-                "AggregatedProofPublicInput {{ validity_conditions: {}, initial_slot_number: {}, final_slot_number: {}, initial_slot_hash: {}, final_slot_hash: {}, genesis_state_root: {}, input_state_root: {}, post_state_root: {}, code_commitment: {} }}",
+                "AggregatedProofPublicData {{ validity_conditions: {}, initial_slot_number: {}, final_slot_number: {}, initial_slot_hash: {}, final_slot_hash: {}, genesis_state_root: {}, input_state_root: {}, post_state_root: {}, code_commitment: {} }}",
                 PrettySlice(&self.validity_conditions),
                 self.initial_slot_number,
                 self.final_slot_number,
@@ -134,12 +131,12 @@ impl Display for AggregatedProofPublicInput {
     }
 }
 
-impl Protobuf<RawAggregatedProofPublicInput> for AggregatedProofPublicInput {}
+impl Protobuf<RawAggregatedProofPublicData> for AggregatedProofPublicData {}
 
-impl TryFrom<RawAggregatedProofPublicInput> for AggregatedProofPublicInput {
+impl TryFrom<RawAggregatedProofPublicData> for AggregatedProofPublicData {
     type Error = Error;
 
-    fn try_from(raw: RawAggregatedProofPublicInput) -> Result<Self, Self::Error> {
+    fn try_from(raw: RawAggregatedProofPublicData) -> Result<Self, Self::Error> {
         Ok(Self {
             validity_conditions: raw
                 .validity_conditions
@@ -161,8 +158,8 @@ impl TryFrom<RawAggregatedProofPublicInput> for AggregatedProofPublicInput {
     }
 }
 
-impl From<AggregatedProofPublicInput> for RawAggregatedProofPublicInput {
-    fn from(value: AggregatedProofPublicInput) -> Self {
+impl From<AggregatedProofPublicData> for RawAggregatedProofPublicData {
+    fn from(value: AggregatedProofPublicData) -> Self {
         Self {
             validity_conditions: value
                 .validity_conditions

@@ -8,7 +8,7 @@ import "gogoproto/gogo.proto";
 // proof data information, and aggregated proof bytes.
 message AggregatedProofData {
   // the public input of the aggregated proof
-  AggregatedProofPublicInput public_input = 1;
+  AggregatedProofPublicData public_input = 1;
   // the aggregated proof bytes
   AggregatedProof aggregated_proof = 2;
 }
@@ -16,7 +16,7 @@ message AggregatedProofData {
 // AggregatedProofPublicInput defines the public properties of the
 // AggregatedProof for the Sovereign SDK rollups, utilized for verifying the
 // proof.
-message AggregatedProofPublicInput {
+message AggregatedProofPublicData {
   // The set of validity conditions for each block of the aggregated proof.
   repeated ValidityCondition validity_conditions = 1 [
     (gogoproto.nullable) = false,

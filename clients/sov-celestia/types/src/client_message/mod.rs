@@ -117,7 +117,7 @@ pub mod test_util {
         pub code_commitment: CodeCommitment,
     }
 
-    impl From<PublicInputConfig> for AggregatedProofPublicInput {
+    impl From<PublicInputConfig> for AggregatedProofPublicData {
         fn from(config: PublicInputConfig) -> Self {
             Self {
                 validity_conditions: config.validity_conditions,
