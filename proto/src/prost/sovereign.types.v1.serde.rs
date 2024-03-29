@@ -202,7 +202,7 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofData {
         deserializer.deserialize_struct("sovereign.types.v1.AggregatedProofData", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for AggregatedProofPublicInput {
+impl serde::Serialize for AggregatedProofPublicData {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
     where
@@ -237,7 +237,7 @@ impl serde::Serialize for AggregatedProofPublicInput {
         if true {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("sovereign.types.v1.AggregatedProofPublicInput", len)?;
+        let mut struct_ser = serializer.serialize_struct("sovereign.types.v1.AggregatedProofPublicData", len)?;
         if true {
             struct_ser.serialize_field("validityConditions", &self.validity_conditions)?;
         }
@@ -275,7 +275,7 @@ impl serde::Serialize for AggregatedProofPublicInput {
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
+impl<'de> serde::Deserialize<'de> for AggregatedProofPublicData {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
     where
@@ -352,13 +352,13 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = AggregatedProofPublicInput;
+            type Value = AggregatedProofPublicData;
 
             fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                formatter.write_str("struct sovereign.types.v1.AggregatedProofPublicInput")
+                formatter.write_str("struct sovereign.types.v1.AggregatedProofPublicData")
             }
 
-            fn visit_map<V>(self, mut map_: V) -> core::result::Result<AggregatedProofPublicInput, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> core::result::Result<AggregatedProofPublicData, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -443,7 +443,7 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
                         }
                     }
                 }
-                Ok(AggregatedProofPublicInput {
+                Ok(AggregatedProofPublicData {
                     validity_conditions: validity_conditions__.unwrap_or_default(),
                     initial_slot_number: initial_slot_number__.unwrap_or_default(),
                     final_slot_number: final_slot_number__.unwrap_or_default(),
@@ -456,7 +456,7 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicInput {
                 })
             }
         }
-        deserializer.deserialize_struct("sovereign.types.v1.AggregatedProofPublicInput", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("sovereign.types.v1.AggregatedProofPublicData", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for CodeCommitment {

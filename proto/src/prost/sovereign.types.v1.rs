@@ -5,7 +5,7 @@
 pub struct AggregatedProofData {
     /// the public input of the aggregated proof
     #[prost(message, optional, tag = "1")]
-    pub public_input: ::core::option::Option<AggregatedProofPublicInput>,
+    pub public_input: ::core::option::Option<AggregatedProofPublicData>,
     /// the aggregated proof bytes
     #[prost(message, optional, tag = "2")]
     pub aggregated_proof: ::core::option::Option<AggregatedProof>,
@@ -22,7 +22,7 @@ impl ::prost::Name for AggregatedProofData {
 /// proof.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct AggregatedProofPublicInput {
+pub struct AggregatedProofPublicData {
     /// The set of validity conditions for each block of the aggregated proof.
     #[prost(message, repeated, tag = "1")]
     pub validity_conditions: ::prost::alloc::vec::Vec<ValidityCondition>,
@@ -53,8 +53,8 @@ pub struct AggregatedProofPublicInput {
     #[prost(message, optional, tag = "9")]
     pub code_commitment: ::core::option::Option<CodeCommitment>,
 }
-impl ::prost::Name for AggregatedProofPublicInput {
-    const NAME: &'static str = "AggregatedProofPublicInput";
+impl ::prost::Name for AggregatedProofPublicData {
+    const NAME: &'static str = "AggregatedProofPublicData";
     const PACKAGE: &'static str = "sovereign.types.v1";
     fn full_name() -> ::prost::alloc::string::String {
         ::prost::alloc::format!("sovereign.types.v1.{}", Self::NAME)
