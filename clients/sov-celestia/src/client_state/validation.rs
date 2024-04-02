@@ -1,3 +1,4 @@
+use ibc_client_tendermint::context::{DefaultVerifier, TmVerifier};
 use ibc_core::client::context::client_state::ClientStateValidation;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Status;
@@ -5,9 +6,14 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Any;
+use sov_celestia_client_types::client_message::{
+    SovTmHeader, SovTmMisbehaviour, SOV_TENDERMINT_HEADER_TYPE_URL,
+    SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL,
+};
 use sov_celestia_client_types::client_state::SovTmClientState;
 
 use super::ClientState;
+use crate::client_state::{verify_header, verify_misbehaviour};
 use crate::context::{ConsensusStateConverter, ValidationContext as SovValidationContext};
 
 impl<V> ClientStateValidation<V> for ClientState
@@ -17,11 +23,17 @@ where
 {
     fn verify_client_message(
         &self,
-        _ctx: &V,
-        _client_id: &ClientId,
-        _client_message: Any,
+        ctx: &V,
+        client_id: &ClientId,
+        client_message: Any,
     ) -> Result<(), ClientError> {
-        Ok(())
+        verify_client_message(
+            self.inner(),
+            ctx,
+            client_id,
+            client_message,
+            &DefaultVerifier,
+        )
     }
 
     fn check_for_misbehaviour(
@@ -38,6 +50,48 @@ where
     }
 }
 
+/// Verify the client message as part of the validation process during the
+/// update client flow.
+pub fn verify_client_message<V>(
+    client_state: &SovTmClientState,
+    ctx: &V,
+    client_id: &ClientId,
+    client_message: Any,
+    verifier: &impl TmVerifier,
+) -> Result<(), ClientError>
+where
+    V: SovValidationContext,
+    V::ConsensusStateRef: ConsensusStateConverter,
+{
+    match client_message.type_url.as_str() {
+        SOV_TENDERMINT_HEADER_TYPE_URL => {
+            let header = SovTmHeader::try_from(client_message)?;
+            verify_header(
+                ctx,
+                &header,
+                client_id,
+                client_state.chain_id(),
+                &client_state.as_light_client_options()?,
+                verifier,
+            )
+        }
+        SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
+            let misbehaviour = SovTmMisbehaviour::try_from(client_message)?;
+            verify_misbehaviour(
+                ctx,
+                &misbehaviour,
+                client_id,
+                client_state.chain_id(),
+                &client_state.as_light_client_options()?,
+                verifier,
+            )
+        }
+        _ => Err(ClientError::InvalidUpdateClientMessage),
+    }
+}
+
+/// Checks the status (whether it is active, frozen, or expired) of the
+/// Sovereign client state.
 pub fn status<V>(
     client_state: &SovTmClientState,
     ctx: &V,

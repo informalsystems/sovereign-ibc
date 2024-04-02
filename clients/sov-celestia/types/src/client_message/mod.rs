@@ -78,28 +78,31 @@ pub mod test_util {
 
     use super::*;
     use crate::client_state::test_util::HeaderConfig;
-    use crate::proto::types::v1::AggregatedProof as RawAggregatedProof;
+
+    // -------------------------------------------------------------------------
+    // NOTE: Vectors default to 32-byte arrays as empty vectors aren't valid.
+    // -------------------------------------------------------------------------
 
     #[derive(typed_builder::TypedBuilder, Debug)]
     #[builder(build_method(into = AggregatedProofData))]
     pub struct AggregatedProofDataConfig {
         pub public_input: PublicInputConfig,
-        #[builder(default)]
-        pub aggregated_proof: AggregatedProofConfig,
+        #[builder(default = vec![0; 32].into())]
+        pub aggregated_proof: AggregatedProof,
     }
 
     impl From<AggregatedProofDataConfig> for AggregatedProofData {
         fn from(config: AggregatedProofDataConfig) -> Self {
             Self {
                 public_input: config.public_input.into(),
-                aggregated_proof: config.aggregated_proof.into(),
+                aggregated_proof: config.aggregated_proof,
             }
         }
     }
 
     #[derive(typed_builder::TypedBuilder, Debug)]
     pub struct PublicInputConfig {
-        #[builder(default)]
+        #[builder(default = vec![vec![0; 32].into()])]
         pub validity_conditions: Vec<ValidityCondition>,
         pub initial_slot_number: Height,
         pub final_slot_number: Height,
@@ -109,9 +112,9 @@ pub mod test_util {
         pub input_state_root: Root,
         #[builder(default = Root::from([0; 32]))]
         pub final_state_root: Root,
-        #[builder(default)]
+        #[builder(default = vec![0; 32])]
         pub initial_slot_hash: Vec<u8>,
-        #[builder(default)]
+        #[builder(default = vec![0; 32])]
         pub final_slot_hash: Vec<u8>,
         #[builder(default = CodeCommitment::from(vec![0; 32]))]
         pub code_commitment: CodeCommitment,
@@ -130,20 +133,6 @@ pub mod test_util {
                 final_slot_hash: config.final_slot_hash,
                 code_commitment: config.code_commitment,
             }
-        }
-    }
-
-    #[derive(typed_builder::TypedBuilder, Debug, Default)]
-    pub struct AggregatedProofConfig {
-        #[builder(default)]
-        pub proof: Vec<u8>,
-    }
-
-    impl From<AggregatedProofConfig> for AggregatedProof {
-        fn from(config: AggregatedProofConfig) -> Self {
-            Self::from(RawAggregatedProof {
-                proof: config.proof,
-            })
         }
     }
 

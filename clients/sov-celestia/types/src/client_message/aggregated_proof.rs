@@ -35,6 +35,16 @@ impl AggregatedProofData {
     pub fn aggregated_proof(&self) -> &AggregatedProof {
         &self.aggregated_proof
     }
+
+    pub fn validate_basic(&self) -> Result<(), Error> {
+        self.public_input.basic_validate()?;
+
+        if self.aggregated_proof.is_empty() {
+            return Err(Error::empty("aggregated proof"));
+        }
+
+        Ok(())
+    }
 }
 
 impl Display for AggregatedProofData {
@@ -110,6 +120,39 @@ impl AggregatedProofPublicData {
 
     pub fn code_commitment(&self) -> &CodeCommitment {
         &self.code_commitment
+    }
+
+    pub fn basic_validate(&self) -> Result<(), Error> {
+        if self.validity_conditions.is_empty() {
+            return Err(Error::empty("validity conditions"));
+        }
+
+        self.validity_conditions.iter().try_for_each(|vc| {
+            if vc.is_empty() {
+                return Err(Error::empty("validity condition"));
+            }
+            Ok(())
+        })?;
+
+        if self.initial_slot_number > self.final_slot_number {
+            return Err(Error::invalid(
+                "initial slot number is greater than final slot number",
+            ));
+        }
+
+        if self.initial_slot_hash.is_empty() {
+            return Err(Error::empty("initial slot hash"));
+        }
+
+        if self.final_slot_hash.is_empty() {
+            return Err(Error::empty("final slot hash"));
+        }
+
+        if self.code_commitment.is_empty() {
+            return Err(Error::empty("code commitment"));
+        }
+
+        Ok(())
     }
 }
 
@@ -187,6 +230,10 @@ impl ValidityCondition {
     pub fn as_slice(&self) -> &[u8] {
         &self.0
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 }
 
 impl Display for ValidityCondition {
@@ -229,6 +276,10 @@ impl CodeCommitment {
     pub fn as_slice(&self) -> &[u8] {
         &self.0
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 }
 
 impl Display for CodeCommitment {
@@ -269,6 +320,10 @@ pub struct AggregatedProof(Vec<u8>);
 impl AggregatedProof {
     pub fn as_slice(&self) -> &[u8] {
         &self.0
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 }
 
