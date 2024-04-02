@@ -15,7 +15,7 @@ use sov_celestia_client::types::client_state::test_util::{
 use sov_celestia_client::types::client_state::SovTmClientState;
 use sov_celestia_client::types::codec::AnyCodec;
 use sov_celestia_client::types::consensus_state::SovTmConsensusState;
-use tendermint_testgen::Generator;
+use tendermint_testgen::{Generator, Validator};
 
 use crate::entrypoints::{instantiate, query, sudo};
 use crate::types::{
@@ -47,8 +47,9 @@ pub fn dummy_instantiate_msg(latest_height: Height) -> InstantiateMsg {
 
 pub fn dummy_client_message(trusted_height: Height, target_height: Height) -> Vec<u8> {
     let validators = vec![
-        tendermint_testgen::Validator::new("1").voting_power(50),
-        tendermint_testgen::Validator::new("2").voting_power(50),
+        Validator::new("1").voting_power(40),
+        Validator::new("2").voting_power(30),
+        Validator::new("3").voting_power(30),
     ];
 
     let future_time = dummy_tm_time()
@@ -67,6 +68,10 @@ pub fn dummy_client_message(trusted_height: Height, target_height: Height) -> Ve
     let light_block = tendermint_testgen::LightBlock::new_default_with_header(header)
         .generate()
         .expect("failed to generate light block");
+
+    let val = light_block.next_validators.hash();
+
+    dbg!(val);
 
     let tm_header = Header {
         signed_header: light_block.signed_header,

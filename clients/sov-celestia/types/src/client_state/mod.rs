@@ -119,7 +119,7 @@ pub mod test_util {
             TmConsensusParams::new(
                 timestamp.into_tm_time().expect("Time exists"),
                 // Hash of default validator set
-                Hash::from_str("E4D2147E1C5994DAF958EAFA8413706F1C75E1A2813A2CD0D32876A25D9BCF98")
+                Hash::from_str("D6B93922C33AAEBEC9043566CB4B1B48365B1358B67C7DEF986D9EE1861BC143")
                     .expect("Never fails"),
             ),
         )
