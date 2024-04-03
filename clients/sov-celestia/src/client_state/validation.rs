@@ -108,7 +108,8 @@ where
             let header = SovTmHeader::try_from(client_message)?;
             check_da_misbehaviour_on_update(ctx, header, client_id, &client_state.latest_height)
 
-            // TODO: Determine if we need any sort of misbehaviour checking for rollup part
+            // TODO: Determine if we need any sort of misbehaviour check for the
+            // rollup (aggregated proof) part.
         }
         SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
             let misbehaviour = SovTmMisbehaviour::try_from(client_message)?;
@@ -117,7 +118,8 @@ where
                 &misbehaviour.header2().da_header,
             )
 
-            // TODO: Determine if we need any sort of misbehaviour checking for rollup part
+            // TODO: Determine if we need any sort of misbehaviour check for the
+            // rollup (aggregated proof) part.
         }
         _ => Err(ClientError::InvalidUpdateClientMessage),
     }
