@@ -108,10 +108,7 @@ impl From<tendermint::block::Header> for SovTmConsensusState {
     fn from(header: tendermint::block::Header) -> Self {
         Self {
             root: CommitmentRoot::from_bytes(header.app_hash.as_ref()),
-            da_params: TmConsensusParams {
-                timestamp: header.time,
-                next_validators_hash: header.next_validators_hash,
-            },
+            da_params: TmConsensusParams::new(header.time, header.next_validators_hash),
         }
     }
 }
@@ -128,10 +125,7 @@ impl From<SovTmHeader> for SovTmConsensusState {
                     .final_state_root
                     .as_ref(),
             ),
-            da_params: TmConsensusParams {
-                timestamp: tm_header.time,
-                next_validators_hash: tm_header.next_validators_hash,
-            },
+            da_params: TmConsensusParams::new(tm_header.time, tm_header.next_validators_hash),
         }
     }
 }

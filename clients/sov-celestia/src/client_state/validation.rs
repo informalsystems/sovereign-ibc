@@ -1,3 +1,4 @@
+use ibc_client_tendermint::client_state::check_for_misbehaviour_on_misbehavior;
 use ibc_client_tendermint::context::{DefaultVerifier, TmVerifier};
 use ibc_core::client::context::client_state::ClientStateValidation;
 use ibc_core::client::types::error::ClientError;
@@ -13,7 +14,7 @@ use sov_celestia_client_types::client_message::{
 use sov_celestia_client_types::client_state::SovTmClientState;
 
 use super::ClientState;
-use crate::client_state::{verify_header, verify_misbehaviour};
+use crate::client_state::{check_da_misbehaviour_on_update, verify_header, verify_misbehaviour};
 use crate::context::{ConsensusStateConverter, ValidationContext as SovValidationContext};
 
 impl<V> ClientStateValidation<V> for ClientState
@@ -38,11 +39,11 @@ where
 
     fn check_for_misbehaviour(
         &self,
-        _ctx: &V,
-        _client_id: &ClientId,
-        _client_message: Any,
+        ctx: &V,
+        client_id: &ClientId,
+        client_message: Any,
     ) -> Result<bool, ClientError> {
-        Ok(false)
+        check_for_misbehaviour(self.inner(), ctx, client_id, client_message)
     }
 
     fn status(&self, ctx: &V, client_id: &ClientId) -> Result<Status, ClientError> {
@@ -85,6 +86,40 @@ where
                 &client_state.as_light_client_options()?,
                 verifier,
             )
+        }
+        _ => Err(ClientError::InvalidUpdateClientMessage),
+    }
+}
+
+/// Check for misbehaviour on the client state as part of the client state
+/// validation process.
+pub fn check_for_misbehaviour<V>(
+    client_state: &SovTmClientState,
+    ctx: &V,
+    client_id: &ClientId,
+    client_message: Any,
+) -> Result<bool, ClientError>
+where
+    V: SovValidationContext,
+    V::ConsensusStateRef: ConsensusStateConverter,
+{
+    match client_message.type_url.as_str() {
+        SOV_TENDERMINT_HEADER_TYPE_URL => {
+            let header = SovTmHeader::try_from(client_message)?;
+            check_da_misbehaviour_on_update(ctx, header, client_id, &client_state.latest_height)
+
+            // TODO: Determine if we need any sort of misbehaviour check for the
+            // rollup (aggregated proof) part.
+        }
+        SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
+            let misbehaviour = SovTmMisbehaviour::try_from(client_message)?;
+            check_for_misbehaviour_on_misbehavior(
+                &misbehaviour.header1().da_header,
+                &misbehaviour.header2().da_header,
+            )
+
+            // TODO: Determine if we need any sort of misbehaviour check for the
+            // rollup (aggregated proof) part.
         }
         _ => Err(ClientError::InvalidUpdateClientMessage),
     }
