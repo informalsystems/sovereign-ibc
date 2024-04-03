@@ -6,6 +6,7 @@ use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::ZERO_DURATION;
+use tendermint_light_client_verifier::options::Options;
 
 use super::TmClientParams;
 use crate::error::Error;
@@ -72,6 +73,20 @@ impl SovTmClientState {
         Ok(Self {
             latest_height: max(header.height(), self.latest_height),
             ..self
+        })
+    }
+
+    /// Helper method to produce a [`Options`] struct for use in
+    /// Tendermint-specific light client verification.
+    pub fn as_light_client_options(&self) -> Result<Options, Error> {
+        Ok(Options {
+            trust_threshold: self
+                .da_params
+                .trust_level
+                .try_into()
+                .map_err(Error::source)?,
+            trusting_period: self.da_params.trusting_period,
+            clock_drift: self.da_params.max_clock_drift,
         })
     }
 

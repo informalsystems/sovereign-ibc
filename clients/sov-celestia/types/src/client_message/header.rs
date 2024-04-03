@@ -3,11 +3,13 @@ use core::fmt::{Debug, Display, Error as FmtError, Formatter};
 use ibc_client_tendermint::types::Header as TmHeader;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
-use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
+use tendermint::chain::Id as TmChainId;
+use tendermint_light_client_verifier::types::TrustedBlockState;
 
 use super::aggregated_proof::AggregatedProofData;
+use crate::consensus_state::SovTmConsensusState;
 use crate::error::Error;
 use crate::proto::tendermint::v1::Header as RawSovTmHeader;
 
@@ -45,19 +47,53 @@ impl SovTmHeader {
         self.da_header.timestamp()
     }
 
+    /// Returns the height of the Sovereign-Tendermint header.
     pub fn height(&self) -> Height {
-        self.da_header.height()
+        self.aggregated_proof_data.public_input.final_slot_number()
     }
 
-    pub fn verify_chain_id_version_matches_height(&self, chain_id: &ChainId) -> Result<(), Error> {
-        self.da_header
-            .verify_chain_id_version_matches_height(chain_id)
-            .map_err(Error::source)
+    /// Returns the trusted height of the Sovereign-Tendermint header, which
+    /// corresponds to the `trusted_height` field or the DA header.
+    pub fn trusted_height(&self) -> Height {
+        self.da_header.trusted_height
     }
 
-    /// Checks if the fields of a given header are consistent with the trusted fields of this header.
+    /// Performs sanity checks and validate if the fields of the given header
+    /// are consistent with the trusted fields of this header.
     pub fn validate_basic(&self) -> Result<(), Error> {
-        self.da_header.validate_basic().map_err(Error::source)
+        self.da_header.validate_basic().map_err(Error::source)?;
+
+        self.aggregated_proof_data.validate_basic()?;
+
+        if self.height() != self.da_header.height() {
+            return Err(Error::mismatch(format!(
+                "DA header height {} does not match aggregated proof height(rollup slot number) {}",
+                self.da_header.height(),
+                self.height()
+            )))?;
+        };
+
+        Ok(())
+    }
+
+    /// Transforms the header into a `TrustedBlockState` which can be used for
+    /// the DA header misbehaviour verification.
+    pub fn as_trusted_da_block_state<'a>(
+        &'a self,
+        consensus_state: &SovTmConsensusState,
+        chain_id: &'a TmChainId,
+    ) -> Result<TrustedBlockState<'a>, Error> {
+        Ok(TrustedBlockState {
+            chain_id,
+            header_time: consensus_state.timestamp(),
+            height: self
+                .trusted_height()
+                .revision_height()
+                .try_into()
+                .map_err(Error::source)?,
+            next_validators: &self.da_header.trusted_next_validator_set,
+            next_validators_hash: consensus_state.da_params.next_validators_hash,
+        })
     }
 }
 

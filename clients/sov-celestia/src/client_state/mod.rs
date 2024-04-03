@@ -1,18 +1,23 @@
-//! Implements the core [`ClientState`](ibc_core::client::context::client_state::ClientState) trait
+//! Implements the core
+//! [`ClientState`](ibc_core::client::context::client_state::ClientState) trait
 //! for the Sovereign light client.
 
 mod common;
 mod execution;
+mod misbehaviour;
+mod update_client;
 mod validation;
 
 pub use execution::*;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::{Any, Protobuf};
+pub use misbehaviour::*;
 use sov_celestia_client_types::client_state::{
     SovTmClientState, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
 };
 use sov_celestia_client_types::proto::tendermint::v1::ClientState as RawSovTmClientState;
+pub use update_client::*;
 
 /// Newtype wrapper exists so that we can bypass Rust's orphan rules and
 /// implement traits from `ibc::core::client::context` on the `ClientState`

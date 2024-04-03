@@ -1,17 +1,21 @@
+use std::ops::Add;
+use std::time::Duration;
+
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 use cosmwasm_std::{coins, from_json, Deps, MessageInfo};
 use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::{Height, Status};
 use ibc_core::host::types::identifiers::ChainId;
+use ibc_core::primitives::Timestamp;
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
 use sov_celestia_client::types::client_message::{Root, SovTmHeader};
 use sov_celestia_client::types::client_state::test_util::{
-    dummy_checksum, dummy_sov_client_state, dummy_sov_consensus_state,
+    dummy_checksum, dummy_sov_client_state, dummy_sov_consensus_state, mock_celestia_chain_id,
 };
 use sov_celestia_client::types::client_state::SovTmClientState;
 use sov_celestia_client::types::codec::AnyCodec;
 use sov_celestia_client::types::consensus_state::SovTmConsensusState;
-use tendermint_testgen::Generator;
+use tendermint_testgen::{Generator, Validator};
 
 use crate::entrypoints::{instantiate, query, sudo};
 use crate::types::{
@@ -23,10 +27,16 @@ pub fn dummy_msg_info() -> MessageInfo {
     mock_info("creator", &coins(1000, "ibc"))
 }
 
+/// Returns a dummy timestamp for testing purposes. The value corresponds to the
+/// timestamp of the `mock_env()`.
+pub fn dummy_tm_time() -> Timestamp {
+    Timestamp::from_nanoseconds(1_571_797_419_879_305_533).expect("never fails")
+}
+
 pub fn dummy_instantiate_msg(latest_height: Height) -> InstantiateMsg {
     let sov_client_state = dummy_sov_client_state(ChainId::new("rollup").unwrap(), latest_height);
 
-    let sov_consensus_state = dummy_sov_consensus_state();
+    let sov_consensus_state = dummy_sov_consensus_state(dummy_tm_time());
 
     InstantiateMsg {
         client_state: SovTmClientState::encode_thru_any(sov_client_state),
@@ -37,16 +47,31 @@ pub fn dummy_instantiate_msg(latest_height: Height) -> InstantiateMsg {
 
 pub fn dummy_client_message(trusted_height: Height, target_height: Height) -> Vec<u8> {
     let validators = vec![
-        tendermint_testgen::Validator::new("1"),
-        tendermint_testgen::Validator::new("2"),
+        Validator::new("1").voting_power(40),
+        Validator::new("2").voting_power(30),
+        Validator::new("3").voting_power(30),
     ];
 
-    let header =
-        tendermint_testgen::Header::new(&validators).height(target_height.revision_height());
+    let future_time = dummy_tm_time()
+        .add(Duration::from_secs(1))
+        .expect("never fails")
+        .into_tm_time()
+        .expect("Time exists");
+
+    let header = tendermint_testgen::Header::new(&validators)
+        .chain_id(mock_celestia_chain_id().as_str())
+        .height(target_height.revision_height())
+        .time(future_time)
+        .next_validators(&validators)
+        .app_hash(vec![0; 32].try_into().expect("never fails"));
 
     let light_block = tendermint_testgen::LightBlock::new_default_with_header(header)
         .generate()
         .expect("failed to generate light block");
+
+    let val = light_block.next_validators.hash();
+
+    dbg!(val);
 
     let tm_header = Header {
         signed_header: light_block.signed_header,

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use ibc_core::commitment_types::commitment::CommitmentRoot;
 use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_celestia_client::types::consensus_state::{
@@ -18,7 +20,10 @@ impl HasConsensusState for MockDaSpec {
                     header.time().subsec_nanos(),
                 )
                 .expect("time is valid"),
-                tendermint::Hash::None,
+                tendermint::Hash::from_str(
+                    "D6B93922C33AAEBEC9043566CB4B1B48365B1358B67C7DEF986D9EE1861BC143",
+                )
+                .expect("Never fails"),
             ),
         }
         .into()

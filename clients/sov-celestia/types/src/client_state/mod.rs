@@ -24,10 +24,15 @@ pub mod test_util {
     use ibc_core::client::types::Height;
     use ibc_core::host::types::identifiers::ChainId;
     use ibc_core::primitives::proto::Any;
-    use tendermint::{Hash, Time};
+    use ibc_core::primitives::Timestamp;
+    use tendermint::Hash;
 
     use super::*;
     use crate::consensus_state::{SovTmConsensusState, TmConsensusParams};
+
+    pub fn mock_celestia_chain_id() -> ChainId {
+        ChainId::new("mock-celestia-0").expect("Never fails")
+    }
 
     #[derive(typed_builder::TypedBuilder, Debug)]
     #[builder(build_method(into = SovTmClientState))]
@@ -55,7 +60,7 @@ pub mod test_util {
     #[derive(typed_builder::TypedBuilder, Debug)]
     #[builder(build_method(into = TmClientParams))]
     pub struct TendermintParamsConfig {
-        #[builder(default = ChainId::new("mock-celestia-0").expect("Never fails"))]
+        #[builder(default = mock_celestia_chain_id())]
         pub chain_id: ChainId,
         #[builder(default = TrustThreshold::ONE_THIRD)]
         pub trust_level: TrustThreshold,
@@ -108,17 +113,14 @@ pub mod test_util {
             .build()
     }
 
-    pub fn dummy_sov_consensus_state() -> SovTmConsensusState {
+    pub fn dummy_sov_consensus_state(timestamp: Timestamp) -> SovTmConsensusState {
         SovTmConsensusState::new(
             vec![0].into(),
             TmConsensusParams::new(
-                Time::now(),
+                timestamp.into_tm_time().expect("Time exists"),
                 // Hash of default validator set
-                Hash::Sha256([
-                    0xd6, 0xb9, 0x39, 0x22, 0xc3, 0x3a, 0xae, 0xbe, 0xc9, 0x4, 0x35, 0x66, 0xcb,
-                    0x4b, 0x1b, 0x48, 0x36, 0x5b, 0x13, 0x58, 0xb6, 0x7c, 0x7d, 0xef, 0x98, 0x6d,
-                    0x9e, 0xe1, 0x86, 0x1b, 0xc1, 0x43,
-                ]),
+                Hash::from_str("D6B93922C33AAEBEC9043566CB4B1B48365B1358B67C7DEF986D9EE1861BC143")
+                    .expect("Never fails"),
             ),
         )
     }
@@ -143,7 +145,7 @@ pub mod test_util {
 
     pub fn dummy_wasm_consensus_state() -> WasmConsensusState {
         WasmConsensusState {
-            data: Any::from(dummy_sov_consensus_state()).value,
+            data: Any::from(dummy_sov_consensus_state(Timestamp::now())).value,
         }
     }
 

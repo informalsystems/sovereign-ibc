@@ -19,8 +19,8 @@ pub const SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL: &str =
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Misbehaviour<H: Clone> {
     client_id: ClientId,
-    header1: Header<H>,
-    header2: Header<H>,
+    header1: Box<Header<H>>,
+    header2: Box<Header<H>>,
 }
 
 /// Misbehaviour type alias for the Sovereign SDK rollups operating on the
@@ -31,8 +31,8 @@ impl SovTmMisbehaviour {
     pub fn new(client_id: ClientId, header1: SovTmHeader, header2: SovTmHeader) -> Self {
         Self {
             client_id,
-            header1,
-            header2,
+            header1: header1.into(),
+            header2: header2.into(),
         }
     }
 
@@ -130,8 +130,8 @@ impl From<SovTmMisbehaviour> for RawSovTmMisbehaviour {
         #[allow(deprecated)]
         RawSovTmMisbehaviour {
             client_id: value.client_id.to_string(),
-            header_1: Some(value.header1.into()),
-            header_2: Some(value.header2.into()),
+            header_1: Some((*value.header1).into()),
+            header_2: Some((*value.header2).into()),
         }
     }
 }
