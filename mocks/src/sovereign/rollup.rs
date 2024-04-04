@@ -7,14 +7,14 @@ use std::sync::{Arc, Mutex};
 use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
-use sov_bank::CallMessage as BankCallMessage;
+use sov_bank::{CallMessage as BankCallMessage, TokenId};
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
 use sov_celestia_client::types::client_message::SovTmHeader;
 use sov_consensus_state_tracker::{ConsensusStateTracker, HasConsensusState};
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::context::IbcContext;
+use sov_kernels::basic::BasicKernel;
 use sov_modules_api::{Context, Spec, WorkingSet};
-use sov_modules_stf_blueprint::kernels::basic::BasicKernel;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 
@@ -144,35 +144,35 @@ where
     }
 
     /// Returns the balance of a user for a given token
-    pub fn get_balance_of(&self, user_address: S::Address, token_address: S::Address) -> u64 {
+    pub fn get_balance_of(&self, user_address: S::Address, token_id: TokenId) -> u64 {
         let mut working_set: WorkingSet<S> = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .bank
-            .get_balance_of(user_address, token_address, &mut working_set)
+            .get_balance_of(user_address, token_id, &mut working_set)
             .unwrap()
     }
 
-    /// Returns token address of an IBC denom
-    pub fn get_minted_token_address(&self, token_denom: String) -> Option<S::Address> {
+    /// Returns token ID of an IBC denom
+    pub fn get_minted_token_id(&self, token_denom: String) -> Option<TokenId> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .ibc_transfer
             .minted_token(token_denom, &mut working_set)
-            .map(|token| token.address)
+            .map(|token| token.token_id)
             .ok()
     }
 
-    /// Searches the transfer module to retrieve the address of the token held
-    /// in escrow, based on its token denom.
-    pub fn get_escrowed_token_address(&self, token_denom: String) -> Option<S::Address> {
+    /// Searches the transfer module to retrieve the token ID held in escrow,
+    /// based on its name(denom).
+    pub fn get_escrowed_token_id(&self, token_denom: String) -> Option<TokenId> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .ibc_transfer
             .escrowed_token(token_denom, &mut working_set)
-            .map(|token| token.address)
+            .map(|token| token.token_id)
             .ok()
     }
 

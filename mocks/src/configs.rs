@@ -5,18 +5,19 @@ use std::path::Path;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 use serde::de::DeserializeOwned;
-use sov_bank::{get_token_address, TokenConfig};
+use sov_bank::{get_token_id, GasTokenConfig, TokenId};
 #[cfg(feature = "celestia-da")]
 use sov_consensus_state_tracker::CelestiaService;
 #[cfg(feature = "mock-da")]
 use sov_consensus_state_tracker::MockDaService;
+use sov_kernels::basic::BasicKernelGenesisConfig;
+use sov_mock_zkvm::MockZkVerifier;
 use sov_modules_api::{Address, Spec};
-use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::services::da::DaService;
 use typed_builder::TypedBuilder;
 
 pub(crate) type DefaultSpec =
-    sov_modules_api::default_spec::DefaultSpec<sov_mock_zkvm::MockZkVerifier>;
+    sov_modules_api::default_spec::DefaultSpec<MockZkVerifier, MockZkVerifier>;
 
 #[cfg(feature = "celestia-da")]
 use crate::sovereign::celestia_da_service;
@@ -44,14 +45,19 @@ pub struct TestSetupConfig<S: Spec, Da: DaService> {
 
 impl<S: Spec, Da: DaService> TestSetupConfig<S, Da> {
     /// Returns list of tokens in the bank configuration
-    pub fn get_tokens(&self) -> &Vec<TokenConfig<S>> {
-        &self.rollup_genesis_config.bank_config.tokens
+    pub fn gas_token_config(&self) -> GasTokenConfig<S> {
+        self.rollup_genesis_config
+            .bank_config
+            .gas_token_config
+            .clone()
     }
 
     /// Returns the address of the relayer. We use the last address in the list
     /// as the relayer address
     pub fn get_relayer_address(&self) -> S::Address {
-        self.rollup_genesis_config.bank_config.tokens[0]
+        self.rollup_genesis_config
+            .bank_config
+            .gas_token_config
             .address_and_balances
             .last()
             .unwrap()
@@ -59,10 +65,10 @@ impl<S: Spec, Da: DaService> TestSetupConfig<S, Da> {
             .clone()
     }
 
-    /// Obtains the token address for the given token name when the relayer is
-    /// the creator.
-    pub fn get_token_address_for_relayer(&self, token_name: &str) -> S::Address {
-        get_token_address::<S>(token_name, &self.get_relayer_address(), DEFAULT_SALT)
+    /// Obtains the token id for the given token name when the relayer is the
+    /// creator.
+    pub fn get_token_id_for_relayer(&self, token_name: &str) -> TokenId {
+        get_token_id::<S>(token_name, &self.get_relayer_address(), DEFAULT_SALT)
     }
 
     pub fn kernel_genesis_config(&self) -> BasicKernelGenesisConfig<S, Da::Spec> {
@@ -99,9 +105,9 @@ pub async fn default_config_with_celestia_da() -> TestSetupConfig<DefaultSpec, C
 pub struct TransferTestConfig {
     /// The token name on the rollup.
     pub sov_denom: String,
-    /// The token address on the rollup.
+    /// The token ID on the rollup.
     #[builder(default = None)]
-    pub sov_token_address: Option<Address>,
+    pub sov_token_id: Option<TokenId>,
     /// An arbitrary user address on the rollup.
     pub sov_address: Address,
     /// The token name on the Cosmos chain.

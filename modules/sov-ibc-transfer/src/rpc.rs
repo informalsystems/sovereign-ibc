@@ -1,19 +1,20 @@
 //! Defines JSON RPC methods exposed by the ibc transfer module
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::types::ErrorObjectOwned;
+use sov_bank::TokenId;
 use sov_modules_api::macros::rpc_gen;
 use sov_modules_api::{Spec, WorkingSet};
 
 use super::IbcTransfer;
 
 #[derive(Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize, Clone)]
-pub struct EscrowedTokenResponse<S: Spec> {
-    pub address: S::Address,
+pub struct EscrowedTokenResponse {
+    pub token_id: TokenId,
 }
 
 #[derive(Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize, Clone)]
-pub struct MintedTokenResponse<S: Spec> {
-    pub address: S::Address,
+pub struct MintedTokenResponse {
+    pub token_id: TokenId,
 }
 
 #[rpc_gen(client, server, namespace = "transfer")]
@@ -26,8 +27,8 @@ where
         &self,
         token_denom: String,
         working_set: &mut WorkingSet<S>,
-    ) -> RpcResult<EscrowedTokenResponse<S>> {
-        let token_address =
+    ) -> RpcResult<EscrowedTokenResponse> {
+        let token_id =
             self.escrowed_tokens
                 .get(&token_denom, working_set)
                 .ok_or(ErrorObjectOwned::owned(
@@ -36,9 +37,7 @@ where
                     None::<String>,
                 ))?;
 
-        Ok(EscrowedTokenResponse {
-            address: token_address.clone(),
-        })
+        Ok(EscrowedTokenResponse { token_id })
     }
 
     #[rpc_method(name = "mintedToken")]
@@ -46,8 +45,8 @@ where
         &self,
         token_denom: String,
         working_set: &mut WorkingSet<S>,
-    ) -> RpcResult<MintedTokenResponse<S>> {
-        let token_address =
+    ) -> RpcResult<MintedTokenResponse> {
+        let token_id =
             self.minted_tokens
                 .get(&token_denom, working_set)
                 .ok_or(ErrorObjectOwned::owned(
@@ -56,8 +55,6 @@ where
                     None::<String>,
                 ))?;
 
-        Ok(MintedTokenResponse {
-            address: token_address.clone(),
-        })
+        Ok(MintedTokenResponse { token_id })
     }
 }

@@ -4,7 +4,7 @@ use ibc_app_transfer::types::{PrefixedDenom, TracePrefix};
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use ibc_core::primitives::ToProto;
-use sov_bank::TokenConfig;
+use sov_bank::{TokenConfig, GAS_TOKEN_ID};
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
 use test_log::test;
@@ -22,17 +22,17 @@ async fn test_escrow_unescrow_on_sov() {
     let rly = relayer_builder.clone().with_manual_tao().setup().await;
 
     // set transfer parameters
-    let token = relayer_builder.setup_cfg().get_tokens()[0].clone();
+    let gas_token = relayer_builder.setup_cfg().gas_token_config();
 
-    let token_address = token.token_address;
+    let gas_token_id = GAS_TOKEN_ID;
 
     let mut cfg = TransferTestConfig::builder()
-        .sov_denom(token.token_name.clone())
-        .sov_token_address(Some(token_address))
-        .sov_address(token.address_and_balances[0].0)
+        .sov_denom(gas_token.token_name.clone())
+        .sov_token_id(Some(GAS_TOKEN_ID))
+        .sov_address(gas_token.address_and_balances[0].0)
         .build();
 
-    let expected_sender_balance = token.address_and_balances[0].1 - cfg.amount * 2;
+    let expected_sender_balance = gas_token.address_and_balances[0].1 - cfg.amount * 2;
 
     // -----------------------------------------------------------------------
     // Send a `MsgTransfer` to the rollup
@@ -51,10 +51,10 @@ async fn test_escrow_unescrow_on_sov() {
     let escrowed_token = rly
         .src_chain_ctx()
         .service()
-        .get_escrowed_token_address(token_address.to_string())
+        .get_escrowed_token_id(gas_token_id.to_string())
         .unwrap();
 
-    assert_eq!(escrowed_token, token_address);
+    assert_eq!(escrowed_token, gas_token_id);
 
     // -----------------------------------------------------------------------
     // Transfer the same token once again
@@ -71,7 +71,7 @@ async fn test_escrow_unescrow_on_sov() {
     let sender_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, token_address);
+        .get_balance_of(cfg.sov_address, gas_token_id);
 
     assert_eq!(sender_balance, expected_sender_balance);
 
@@ -79,23 +79,25 @@ async fn test_escrow_unescrow_on_sov() {
     // Transfer another token but with the same name as the previous one
     // -----------------------------------------------------------------------
 
-    let fake_token_message = rly.build_msg_create_token(&token);
+    let fake_token_message = rly.build_msg_create_token(&gas_token.clone().into());
 
     rly.src_chain_ctx()
         .submit_msgs(vec![fake_token_message.clone().into()])
         .await;
 
-    let fake_token_address = relayer_builder
+    let fake_token_id = relayer_builder
         .setup_cfg()
-        .get_token_address_for_relayer(&token.token_name);
+        .get_token_id_for_relayer(&gas_token.token_name);
 
-    cfg.sov_token_address = Some(fake_token_address);
+    std::dbg!(fake_token_id);
+
+    cfg.sov_token_id = Some(fake_token_id);
     cfg.amount = 50;
 
     let fake_token_sender_initial_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, fake_token_address);
+        .get_balance_of(cfg.sov_address, fake_token_id);
 
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
@@ -111,22 +113,22 @@ async fn test_escrow_unescrow_on_sov() {
     let escrowed_token = rly
         .src_chain_ctx()
         .service()
-        .get_escrowed_token_address(fake_token_address.to_string())
+        .get_escrowed_token_id(fake_token_id.to_string())
         .unwrap();
 
-    assert_eq!(escrowed_token, fake_token_address);
+    assert_eq!(escrowed_token, fake_token_id);
 
     let sender_genuine_token_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, token_address);
+        .get_balance_of(cfg.sov_address, gas_token_id);
 
     assert_eq!(sender_genuine_token_balance, expected_sender_balance);
 
     let fake_token_sender_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, fake_token_address);
+        .get_balance_of(cfg.sov_address, fake_token_id);
 
     assert_eq!(
         fake_token_sender_balance,
@@ -143,15 +145,15 @@ async fn test_mint_burn_on_sov() {
     let rly = relayer_builder.clone().with_manual_tao().setup().await;
 
     // set transfer parameters
-    let token = relayer_builder.setup_cfg().get_tokens()[0].clone();
+    let gas_token = relayer_builder.setup_cfg().gas_token_config();
     let mut cfg = TransferTestConfig::builder()
-        .sov_denom(token.token_name.clone())
-        .sov_address(token.address_and_balances[0].0)
+        .sov_denom(gas_token.token_name.clone())
+        .sov_address(gas_token.address_and_balances[0].0)
         .build();
 
     let fake_token = TokenConfig {
         token_name: "transfer/channel-0/basecoin".to_string(),
-        ..token.clone()
+        ..gas_token.into()
     };
 
     let fake_token_message = rly.build_msg_create_token(&fake_token);
@@ -211,19 +213,19 @@ async fn test_mint_burn_on_sov() {
     assert_eq!(client_state.latest_height(), target_height);
 
     // -----------------------------------------------------------------------
-    // Check uniqueness of the created token address
+    // Check uniqueness of the created token ID
     // -----------------------------------------------------------------------
     let denom_path_prefix = TracePrefix::new(PortId::transfer(), ChannelId::zero());
     let mut prefixed_denom = PrefixedDenom::from_str(&cfg.cos_denom).unwrap();
     prefixed_denom.add_trace_prefix(denom_path_prefix);
 
-    let token_address_on_sov = rly
+    let token_id_on_sov = rly
         .src_chain_ctx()
         .service()
-        .get_minted_token_address(prefixed_denom.to_string())
+        .get_minted_token_id(prefixed_denom.to_string())
         .unwrap();
 
-    assert_ne!(token_address_on_sov, fake_token.token_address);
+    assert_ne!(token_id_on_sov, fake_token.token_id);
 
     // -----------------------------------------------------------------------
     // Transfer the same token once again to the Cosmos chain
@@ -253,7 +255,7 @@ async fn test_mint_burn_on_sov() {
     let receiver_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, token_address_on_sov);
+        .get_balance_of(cfg.sov_address, token_id_on_sov);
 
     let mut expected_receiver_balance = cfg.amount * 2;
 
@@ -274,7 +276,7 @@ async fn test_mint_burn_on_sov() {
     // -----------------------------------------------------------------------
 
     cfg.sov_denom = "transfer/channel-0/basecoin".to_string();
-    cfg.sov_token_address = Some(token_address_on_sov);
+    cfg.sov_token_id = Some(token_id_on_sov);
 
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
@@ -305,7 +307,7 @@ async fn test_mint_burn_on_sov() {
     let sender_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, token_address_on_sov);
+        .get_balance_of(cfg.sov_address, token_id_on_sov);
 
     expected_receiver_balance -= cfg.amount;
 

@@ -87,17 +87,17 @@ tendermint-testgen    = { version = "0.34", default-features = false }
 tendermint-light-client-verifier = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-bank                   = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-modules-api            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-modules-core           = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-state                  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-rollup-interface       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
+sov-bank                   = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-modules-api            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-modules-core           = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-state                  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-rollup-interface       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
 
 ### utilized only by `sov-ibc-mocks`
-const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-chain-state            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-mock-zkvm              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-modules-stf-blueprint  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
-sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "cf048cd59" }
+sov-chain-state            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-kernels                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-mock-zkvm              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
