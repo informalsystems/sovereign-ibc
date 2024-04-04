@@ -71,8 +71,6 @@ pub fn dummy_client_message(trusted_height: Height, target_height: Height) -> Ve
 
     let val = light_block.next_validators.hash();
 
-    dbg!(val);
-
     let tm_header = Header {
         signed_header: light_block.signed_header,
         validator_set: light_block.validators,

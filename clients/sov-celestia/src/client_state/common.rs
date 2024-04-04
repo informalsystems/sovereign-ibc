@@ -4,18 +4,19 @@ use borsh::de::BorshDeserialize;
 use borsh::BorshSerialize;
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::client::context::consensus_state::ConsensusState as ConsensusStateTrait;
-use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::error::{ClientError, UpgradeClientError};
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
 use ibc_core::commitment_types::error::CommitmentError;
 use ibc_core::host::types::identifiers::ClientType;
-use ibc_core::host::types::path::Path;
+use ibc_core::host::types::path::{Path, UpgradeClientPath};
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Any;
+use ibc_core::primitives::ToVec;
 use jmt::proof::SparseMerkleProof;
-use sov_celestia_client_types::client_state::sov_client_type;
+use sov_celestia_client_types::client_state::{sov_client_type, SovTmClientState};
 
 use super::ClientState;
 use crate::consensus_state::ConsensusState;
@@ -58,13 +59,20 @@ impl ClientStateCommon for ClientState {
     /// guide
     fn verify_upgrade_client(
         &self,
-        _upgraded_client_state: Any,
-        _upgraded_consensus_state: Any,
-        _proof_upgrade_client: CommitmentProofBytes,
-        _proof_upgrade_consensus_state: CommitmentProofBytes,
-        _root: &CommitmentRoot,
+        upgraded_client_state: Any,
+        upgraded_consensus_state: Any,
+        proof_upgrade_client: CommitmentProofBytes,
+        proof_upgrade_consensus_state: CommitmentProofBytes,
+        root: &CommitmentRoot,
     ) -> Result<(), ClientError> {
-        Ok(())
+        verify_upgrade_client(
+            self.inner(),
+            upgraded_client_state,
+            upgraded_consensus_state,
+            proof_upgrade_client,
+            proof_upgrade_consensus_state,
+            root,
+        )
     }
 
     fn verify_membership(
@@ -87,6 +95,61 @@ impl ClientStateCommon for ClientState {
     ) -> Result<(), ClientError> {
         verify_non_membership(prefix, proof, root, path)
     }
+}
+
+/// Perform client-specific verifications and check all data in the new client
+/// state to be the same across all valid Tendermint clients for the new chain.
+pub fn verify_upgrade_client(
+    client_state: &SovTmClientState,
+    upgraded_client_state: Any,
+    upgraded_consensus_state: Any,
+    proof_upgrade_client: CommitmentProofBytes,
+    proof_upgrade_consensus_state: CommitmentProofBytes,
+    root: &CommitmentRoot,
+) -> Result<(), ClientError> {
+    // Make sure that the client type is of Tendermint type `ClientState`
+    let upgraded_tm_client_state = ClientState::try_from(upgraded_client_state.clone())?;
+
+    // Make sure that the consensus type is of Tendermint type `ConsensusState`
+    ConsensusState::try_from(upgraded_consensus_state.clone())?;
+
+    let latest_height = client_state.latest_height;
+
+    let upgraded_tm_client_state_height = upgraded_tm_client_state.latest_height();
+
+    // Make sure the latest height of the current client is not greater than the
+    // upgrade height This condition checks both the revision number and the
+    // height
+    if latest_height >= upgraded_tm_client_state_height {
+        Err(UpgradeClientError::LowUpgradeHeight {
+            upgraded_height: latest_height,
+            client_height: upgraded_tm_client_state_height,
+        })?;
+    }
+
+    let upgrade_path_prefix = client_state.upgrade_path.clone().try_into()?;
+
+    let last_height = latest_height.revision_height();
+
+    // Verify the proof of the upgraded client state
+    verify_membership(
+        &upgrade_path_prefix,
+        &proof_upgrade_client,
+        root,
+        Path::UpgradeClient(UpgradeClientPath::UpgradedClientState(last_height)),
+        upgraded_client_state.to_vec(),
+    )?;
+
+    // Verify the proof of the upgraded consensus state
+    verify_membership(
+        &upgrade_path_prefix,
+        &proof_upgrade_consensus_state,
+        root,
+        Path::UpgradeClient(UpgradeClientPath::UpgradedClientConsensusState(last_height)),
+        upgraded_consensus_state.to_vec(),
+    )?;
+
+    Ok(())
 }
 
 pub fn verify_membership(
@@ -151,6 +214,14 @@ fn obtain_key_hash(prefix: &CommitmentPrefix, path: Path) -> Result<jmt::KeyHash
         Path::Commitment(p) => ("packet_commitment_map", p.try_to_vec()),
         Path::Ack(p) => ("packet_ack_map", p.try_to_vec()),
         Path::Receipt(p) => ("packet_receipt_map", p.try_to_vec()),
+        Path::UpgradeClient(p) => match p {
+            UpgradeClientPath::UpgradedClientState(_) => {
+                ("upgraded_client_state_map", p.try_to_vec())
+            }
+            UpgradeClientPath::UpgradedClientConsensusState(_) => {
+                ("upgraded_consensus_state_map", p.try_to_vec())
+            }
+        },
         _ => Err(ClientError::Other {
             description: "unsupported path".into(),
         })?,

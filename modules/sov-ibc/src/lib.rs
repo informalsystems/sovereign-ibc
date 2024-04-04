@@ -25,11 +25,12 @@ use ibc_core::connection::types::ConnectionEnd;
 use ibc_core::host::types::identifiers::{ClientId, ConnectionId, Sequence};
 use ibc_core::host::types::path::{
     AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath,
-    ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath,
+    ConnectionPath, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath, UpgradeClientPath,
 };
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::Timestamp;
 use serde::{Deserialize, Serialize};
+use sov_celestia_client::client_state::ClientState as HostClientState;
 use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::{
@@ -79,6 +80,13 @@ pub struct Ibc<S: Spec> {
 
     #[state]
     client_update_meta_map: StateMap<(ClientId, Height), (Timestamp, Height)>,
+
+    #[state]
+    upgraded_client_state_map: StateMap<UpgradeClientPath, HostClientState, ProtobufCodec<Any>>,
+
+    #[state]
+    upgraded_consensus_state_map:
+        StateMap<UpgradeClientPath, HostConsensusState, ProtobufCodec<Any>>,
 
     // ----------- IBC core connection state maps -------------
     #[state]

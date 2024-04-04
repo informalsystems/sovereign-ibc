@@ -21,8 +21,8 @@ pub struct ClientState {
     /// NOTE: ClientState must stored under
     /// `{upgradePath}/{upgradeHeight}/clientState` ConsensusState must be stored
     /// under `{upgradepath}/{upgradeHeight}/consensusState`
-    #[prost(string, repeated, tag = "4")]
-    pub upgrade_path: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(string, tag = "4")]
+    pub upgrade_path: ::prost::alloc::string::String,
     /// the tendermint-specific client state parameters
     #[prost(message, optional, tag = "5")]
     pub tendermint_params: ::core::option::Option<TendermintClientParams>,

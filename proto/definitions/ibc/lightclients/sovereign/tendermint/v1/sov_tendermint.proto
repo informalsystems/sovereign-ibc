@@ -32,7 +32,7 @@ message ClientState {
   // NOTE: ClientState must stored under
   // `{upgradePath}/{upgradeHeight}/clientState` ConsensusState must be stored
   // under `{upgradepath}/{upgradeHeight}/consensusState`
-  repeated string upgrade_path = 4 [(gogoproto.moretags) = "yaml:\"upgrade_path\""];
+  string upgrade_path = 4 [(gogoproto.moretags) = "yaml:\"upgrade_path\""];
   // the tendermint-specific client state parameters
   TendermintClientParams tendermint_params = 5 [
     (gogoproto.nullable) = false,

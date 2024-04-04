@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use borsh::BorshSerialize;
 use ibc_core::channel::types::commitment::PacketCommitment;
-use ibc_core::host::types::path::{ClientConsensusStatePath, CommitmentPath};
+use ibc_core::host::types::path::{ClientConsensusStatePath, CommitmentPath, UpgradeClientPath};
 use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::{
     query_channel, query_channel_client_state, query_channel_consensus_state, query_channels,
@@ -28,7 +28,9 @@ use ibc_query::core::client::{
     QueryClientStatesRequest, QueryClientStatesResponse, QueryClientStatusRequest,
     QueryClientStatusResponse, QueryConsensusStateHeightsRequest,
     QueryConsensusStateHeightsResponse, QueryConsensusStateRequest, QueryConsensusStateResponse,
-    QueryConsensusStatesRequest, QueryConsensusStatesResponse,
+    QueryConsensusStatesRequest, QueryConsensusStatesResponse, QueryUpgradedClientStateRequest,
+    QueryUpgradedClientStateResponse, QueryUpgradedConsensusStateRequest,
+    QueryUpgradedConsensusStateResponse,
 };
 use ibc_query::core::connection::{
     query_client_connections, query_connection, query_connection_client_state,
@@ -40,6 +42,8 @@ use ibc_query::core::connection::{
     QueryConnectionResponse, QueryConnectionsRequest, QueryConnectionsResponse,
 };
 use jsonrpsee::core::RpcResult;
+use sov_celestia_client::client_state::ClientState as HostClientState;
+use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_modules_api::macros::rpc_gen;
 use sov_modules_api::{ProvenStateAccessor, Spec, WorkingSet};
 use sov_state::storage::{SlotKey, StateCodec, StateItemCodec};
@@ -204,6 +208,55 @@ impl<S: Spec> Ibc<S> {
         };
 
         query_client_status(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+    }
+
+    #[rpc_method(name = "upgradedClientState")]
+    pub fn upgraded_client_state(
+        &self,
+        request: QueryUpgradedClientStateRequest,
+        working_set: &mut WorkingSet<S>,
+    ) -> RpcResult<QueryUpgradedClientStateResponse> {
+        let current_revision_height = self
+            .determine_query_height(None, working_set)?
+            .revision_height();
+
+        let upgrade_client_path = UpgradeClientPath::UpgradedClientState(current_revision_height);
+
+        let mut archival_working_set = working_set.get_archival_at(current_revision_height);
+
+        let any_upgraded_client_state: HostClientState = self
+            .upgraded_client_state_map
+            .get(&upgrade_client_path, &mut archival_working_set)
+            .ok_or(to_jsonrpsee_error("Upgraded client state not found"))?;
+
+        Ok(QueryUpgradedClientStateResponse::new(
+            any_upgraded_client_state.into(),
+        ))
+    }
+
+    #[rpc_method(name = "upgradedConsensusState")]
+    pub fn upgraded_consensus_state(
+        &self,
+        request: QueryUpgradedConsensusStateRequest,
+        working_set: &mut WorkingSet<S>,
+    ) -> RpcResult<QueryUpgradedConsensusStateResponse> {
+        let current_revision_eight = self
+            .determine_query_height(None, working_set)?
+            .revision_height();
+
+        let upgrade_consensus_path =
+            UpgradeClientPath::UpgradedClientConsensusState(current_revision_eight);
+
+        let mut archival_working_set = working_set.get_archival_at(current_revision_eight);
+
+        let any_upgraded_client_state: HostConsensusState = self
+            .upgraded_consensus_state_map
+            .get(&upgrade_consensus_path, &mut archival_working_set)
+            .ok_or(to_jsonrpsee_error("Upgraded consensus state not found"))?;
+
+        Ok(QueryUpgradedConsensusStateResponse::new(
+            any_upgraded_client_state.into(),
+        ))
     }
 
     #[rpc_method(name = "connection")]
