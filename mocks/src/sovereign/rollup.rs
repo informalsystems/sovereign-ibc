@@ -164,8 +164,8 @@ where
             .ok()
     }
 
-    /// Searches the transfer module to retrieve the token ID held in escrow,
-    /// based on its name(denom).
+    /// Searches the transfer module to retrieve the ID of the token ID in
+    /// escrow based on its name(denom).
     pub fn get_escrowed_token_id(&self, token_denom: String) -> Option<TokenId> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
