@@ -66,6 +66,11 @@ where
         Ok(())
     }
 
+    // ------------------------------------------------------------------------
+    // TODO: Determine who should have upgrade authority for clients, and which
+    // party is responsible for storing upgraded client/consensus states?
+    // ------------------------------------------------------------------------
+
     /// Stores the upgraded client state at the specified upgrade path.
     pub fn store_upgraded_client_state(
         &mut self,
