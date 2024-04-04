@@ -6,6 +6,7 @@ use anyhow::anyhow;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use serde::{Deserialize, Serialize};
+use sov_bank::TokenId;
 use sov_modules_api::{Context, Error, Module, ModuleInfo, Spec, StateMap, WorkingSet};
 
 #[cfg(feature = "native")]
@@ -29,20 +30,20 @@ pub struct IbcTransfer<S: Spec> {
 
     /// Keeps track of the address of each token we minted by token denom.
     #[state]
-    minted_tokens: StateMap<String, S::Address>,
+    minted_tokens: StateMap<String, TokenId>,
 
     /// Keeps track of the address of each token we escrowed as a function of
-    /// the token denom. We need this map because we have the token address
+    /// the token denom. We need this map because we have the token ID
     /// information when escrowing the tokens (i.e. when someone calls a
     /// `send_transfer()`), but not when unescrowing tokens (i.e in a
     /// `recv_packet`), in which case the only information we have is the ICS 20
     /// denom, and amount. Given that every token that is unescrowed has been
-    /// previously escrowed, our strategy to get the token address associated
+    /// previously escrowed, our strategy to get the token ID associated
     /// with a denom is
-    /// 1. when tokens are escrowed, save the mapping `denom -> token address`
-    /// 2. when tokens are unescrowed, lookup the token address by `denom`
+    /// 1. when tokens are escrowed, save the mapping `denom -> token ID`
+    /// 2. when tokens are unescrowed, lookup the token ID by `denom`
     #[state]
-    escrowed_tokens: StateMap<String, S::Address>,
+    escrowed_tokens: StateMap<String, TokenId>,
 
     /// Keeps track of escrow addresses associated with a specific port and
     /// channel pair, offering an efficient means to access these addresses

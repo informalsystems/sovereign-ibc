@@ -2,12 +2,12 @@
 use std::time::Duration;
 
 use sov_consensus_state_tracker::HasConsensusState;
+use sov_kernels::basic::BasicKernelGenesisConfig;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
     DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, ModuleInfo, SlotData, Spec,
     StateCheckpoint,
 };
-use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
 use sov_rollup_interface::da::BlockHeaderTrait;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::storage::StateUpdate;
@@ -142,8 +142,8 @@ where
         self.push_state_root(root_hash);
     }
 
-    /// Runs the rollup chain by initializing the chain and then committing
-    /// blocks at a fixed interval
+    /// Runs the rollup by initializing the rollup and then committing blocks at
+    /// a fixed interval
     pub async fn run(&mut self) -> JoinHandle<()> {
         let mut chain = self.clone();
 

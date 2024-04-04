@@ -32,10 +32,10 @@ tracing       = "0.1.36"
 typed-builder = "0.18.0"
 
 # internal dependencies
-sov-ibc                     = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "79c90604" }
-sov-ibc-transfer            = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "79c90604" }
-sov-consensus-state-tracker = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "79c90604" }
-sov-celestia-client         = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "79c90604", features = ["test-util"] }
+sov-ibc                     = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "272989d2" }
+sov-ibc-transfer            = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "272989d2" }
+sov-consensus-state-tracker = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "272989d2" }
+sov-celestia-client         = { git = "https://github.com/informalsystems/sovereign-ibc.git", rev = "272989d2", features = ["test-util"] }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
@@ -46,7 +46,7 @@ ibc-query             = { workspace = true }
 ibc-testkit           = { workspace = true }
 
 # cosmos dependencies
-basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "264f677" }
+basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "91608f5" }
 tendermint           = { workspace = true }
 tendermint-testgen   = { workspace = true }
 
@@ -54,11 +54,11 @@ tendermint-testgen   = { workspace = true }
 sov-bank                   = { workspace = true }
 sov-chain-state            = { workspace = true }
 sov-modules-api            = { workspace = true }
-sov-rollup-interface       = { workspace = true }
 sov-state                  = { workspace = true }
+sov-rollup-interface       = { workspace = true }
 const-rollup-config        = { workspace = true, optional = true }
+sov-kernels                = { workspace = true, features = ["native"], optional = true }
 sov-mock-zkvm              = { workspace = true, features = ["native"], optional = true }
-sov-modules-stf-blueprint  = { workspace = true, features = ["native"], optional = true }
 sov-prover-storage-manager = { workspace = true, features = ["test-utils"] }
 
 [dev-dependencies]
@@ -76,7 +76,7 @@ native = [
     "sov-state/native",
     "sov-rollup-interface/native",
     "sov-mock-zkvm",
-    "sov-modules-stf-blueprint",
+    "sov-kernels",
 ]
 mock-da = [
     "native",

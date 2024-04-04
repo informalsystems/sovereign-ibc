@@ -1,6 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use sov_bank::{get_genesis_token_address, BankConfig, TokenConfig};
+use sov_bank::{BankConfig, GasTokenConfig};
 use sov_chain_state::ChainStateConfig;
 use sov_ibc::ExampleModuleConfig;
 use sov_ibc_transfer::TransferConfig;
@@ -17,8 +17,8 @@ pub const DEFAULT_INIT_BALANCE: u64 = 1000;
 /// The default number of addresses.
 pub const DEFAULT_ADDRESS_COUNT: u64 = 3;
 
-/// The default demo token name.
-pub const DEFAULT_TOKEN_NAME: &str = "sov-demo-token";
+/// The default gas token name.
+pub const DEFAULT_GAS_TOKEN_NAME: &str = "sov-gas-token";
 
 /// The default salt.
 pub const DEFAULT_SALT: u64 = 0;
@@ -94,23 +94,14 @@ pub fn create_bank_config<S: Spec>(addresses_count: u64, initial_balance: u64) -
         })
         .collect();
 
-    let token_name = DEFAULT_TOKEN_NAME;
-
-    let genuine_token_config = TokenConfig {
-        token_name: token_name.to_owned(),
-        token_address: get_genesis_token_address::<S>(token_name, DEFAULT_SALT),
-        address_and_balances: address_and_balances.clone(),
-        authorized_minters: vec![],
-    };
-
-    let forged_token_config = TokenConfig {
-        token_name: token_name.to_owned(),
-        token_address: get_genesis_token_address::<S>(token_name, DEFAULT_SALT + 1),
+    let gas_token_config = GasTokenConfig {
+        token_name: DEFAULT_GAS_TOKEN_NAME.to_owned(),
         address_and_balances: address_and_balances.clone(),
         authorized_minters: vec![],
     };
 
     BankConfig {
-        tokens: vec![genuine_token_config, forged_token_config],
+        gas_token_config,
+        tokens: vec![],
     }
 }

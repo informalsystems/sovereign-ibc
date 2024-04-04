@@ -100,14 +100,13 @@ where
 
     /// Builds a Cosmos chain token transfer message; serialized to Any
     pub fn build_msg_transfer_for_cos(&self, config: &TransferTestConfig) -> MsgTransfer {
-        let memo = match config.sov_token_address {
-            Some(token_address) => {
-                let mut token_address_buf = String::new();
+        let memo = match config.sov_token_id {
+            Some(token_id) => {
+                let mut token_id_buf = String::new();
 
-                general_purpose::STANDARD_NO_PAD
-                    .encode_string(token_address, &mut token_address_buf);
+                general_purpose::STANDARD_NO_PAD.encode_string(token_id, &mut token_id_buf);
 
-                token_address_buf.into()
+                token_id_buf.into()
             }
             None => Memo::from_str("").unwrap(),
         };

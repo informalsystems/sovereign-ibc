@@ -104,10 +104,10 @@ where
     /// Builds a sdk token transfer message wrapped in a `CallMessage` with the given amount
     /// Note: keep the amount value lower than the initial balance of the sender address
     pub fn build_msg_transfer_for_sov(&self, config: &TransferTestConfig) -> MsgTransfer {
-        let mut token_address_buf = String::new();
+        let mut token_id_buf = String::new();
 
         general_purpose::STANDARD_NO_PAD
-            .encode_string(config.sov_token_address.unwrap(), &mut token_address_buf);
+            .encode_string(config.sov_token_id.unwrap(), &mut token_id_buf);
 
         let packet_data = PacketData {
             token: Coin {
@@ -116,7 +116,7 @@ where
             },
             sender: Signer::from(config.sov_address.to_string()),
             receiver: Signer::from(config.cos_address.clone()),
-            memo: token_address_buf.into(),
+            memo: token_id_buf.into(),
         };
 
         MsgTransfer {
