@@ -98,7 +98,7 @@ impl ClientStateCommon for ClientState {
 }
 
 /// Perform client-specific verifications and check all data in the new client
-/// state to be the same across all valid Tendermint clients for the new chain.
+/// state to be the same across all valid Sovereign clients for the new rollup.
 pub fn verify_upgrade_client(
     client_state: &SovTmClientState,
     upgraded_client_state: Any,

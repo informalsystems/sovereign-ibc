@@ -69,6 +69,7 @@ where
     // ------------------------------------------------------------------------
     // TODO: Determine who should have upgrade authority for clients, and which
     // party is responsible for storing upgraded client/consensus states?
+    // <https://github.com/informalsystems/sovereign-ibc/issues/122>
     // ------------------------------------------------------------------------
 
     /// Stores the upgraded client state at the specified upgrade path.
