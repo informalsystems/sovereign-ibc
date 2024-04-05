@@ -2,22 +2,22 @@ use ibc_client_wasm_types::{SUBJECT_PREFIX, SUBSTITUTE_PREFIX};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 
-/// The RecoveryPrefix field indicates whether the recovery mode has been
+/// The MigrationPrefix field indicates whether the recovery mode has been
 /// activated if there is an incoming `MigrateClientStore` message. If so, it
 /// specifies the prefix key for either the subject or substitute storage index.
 #[derive(Clone, Debug)]
-pub enum RecoveryPrefix {
+pub enum MigrationPrefix {
     Subject,
     Substitute,
     None,
 }
 
-impl RecoveryPrefix {
+impl MigrationPrefix {
     pub fn key(&self) -> &[u8] {
         match self {
-            RecoveryPrefix::Subject => SUBJECT_PREFIX,
-            RecoveryPrefix::Substitute => SUBSTITUTE_PREFIX,
-            RecoveryPrefix::None => b"",
+            MigrationPrefix::Subject => SUBJECT_PREFIX,
+            MigrationPrefix::Substitute => SUBSTITUTE_PREFIX,
+            MigrationPrefix::None => b"",
         }
     }
 }

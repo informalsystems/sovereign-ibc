@@ -18,7 +18,7 @@ use prost::Message;
 use sov_celestia_client::types::codec::AnyCodec;
 
 use crate::types::{
-    parse_height, ClientType, ContractError, GenesisMetadata, HeightTravel, RecoveryPrefix,
+    parse_height, ClientType, ContractError, GenesisMetadata, HeightTravel, MigrationPrefix,
 };
 
 type Checksum = Vec<u8>;
@@ -31,7 +31,7 @@ pub struct Context<'a, C: ClientType<'a>> {
     env: Env,
     client_id: ClientId,
     checksum: Option<Checksum>,
-    recovery_prefix: RecoveryPrefix,
+    recovery_prefix: MigrationPrefix,
     client_type: std::marker::PhantomData<C>,
 }
 
@@ -45,7 +45,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
             env,
             client_id,
             checksum: None,
-            recovery_prefix: RecoveryPrefix::None,
+            recovery_prefix: MigrationPrefix::None,
             client_type: std::marker::PhantomData::<C>,
         })
     }
@@ -59,7 +59,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
             env,
             client_id,
             checksum: None,
-            recovery_prefix: RecoveryPrefix::None,
+            recovery_prefix: MigrationPrefix::None,
             client_type: std::marker::PhantomData::<C>,
         })
     }
@@ -81,11 +81,11 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
     }
 
     pub fn set_subject_prefix(&mut self) {
-        self.recovery_prefix = RecoveryPrefix::Subject;
+        self.recovery_prefix = MigrationPrefix::Subject;
     }
 
     pub fn set_substitute_prefix(&mut self) {
-        self.recovery_prefix = RecoveryPrefix::Substitute;
+        self.recovery_prefix = MigrationPrefix::Substitute;
     }
 
     pub fn prefixed_key(&self, key: impl AsRef<[u8]>) -> Vec<u8> {

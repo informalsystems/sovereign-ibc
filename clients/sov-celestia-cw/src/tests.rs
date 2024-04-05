@@ -32,7 +32,7 @@ pub struct Fixture {
     pub trusted_height: Height,
     pub target_height: Height,
     pub validators: Vec<Validator>,
-    pub recovery_mode: bool,
+    pub migration_mode: bool,
 }
 
 impl Default for Fixture {
@@ -50,21 +50,21 @@ impl Default for Fixture {
                 Validator::new("2").voting_power(30),
                 Validator::new("3").voting_power(30),
             ],
-            recovery_mode: false,
+            migration_mode: false,
         }
     }
 }
 
 impl Fixture {
-    pub fn with_recovery_mode(mut self) -> Self {
-        self.recovery_mode = true;
+    pub fn migration_mode(mut self) -> Self {
+        self.migration_mode = true;
         self
     }
 
     pub fn ctx_ref<'a>(&self, deps: Deps<'a, Empty>) -> SovTmContext<'a> {
         let mut ctx = SovTmContext::new_ref(deps, mock_env()).expect("never fails");
 
-        if self.recovery_mode {
+        if self.migration_mode {
             ctx.set_subject_prefix();
         };
 
@@ -74,7 +74,7 @@ impl Fixture {
     pub fn ctx_mut<'a>(&self, deps: DepsMut<'a, Empty>) -> SovTmContext<'a> {
         let mut ctx = SovTmContext::new_mut(deps, mock_env()).expect("never fails");
 
-        if self.recovery_mode {
+        if self.migration_mode {
             ctx.set_subject_prefix();
         };
 
@@ -242,7 +242,7 @@ fn happy_cw_update_client() {
 
 #[test]
 fn happy_cw_client_recovery() {
-    let fxt = Fixture::default().with_recovery_mode();
+    let fxt = Fixture::default().migration_mode();
 
     let mut deps = mock_dependencies();
 
