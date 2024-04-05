@@ -156,7 +156,7 @@ where
                     .try_to_vec()
                     .ok()
             }
-            // not required; but should filled in for completeness
+            // not required; hence `None` is returned
             Path::NextClientSequence(_)
             | Path::NextConnectionSequence(_)
             | Path::NextChannelSequence(_)
