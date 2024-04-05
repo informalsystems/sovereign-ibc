@@ -100,15 +100,44 @@ where
                 .proof
                 .try_to_vec()
                 .ok(),
-            // not required; hence `None` is returned
-            Path::NextClientSequence(_)
-            | Path::NextConnectionSequence(_)
-            | Path::NextChannelSequence(_)
-            | Path::ClientUpdateTime(_)
-            | Path::ClientUpdateHeight(_)
-            | Path::Ports(_)
-            | Path::SeqAck(_)
-            | Path::UpgradeClient(_) => None,
+            // not required in ibc-core; but still implemented
+            Path::NextClientSequence(_) => self
+                .ibc
+                .client_counter
+                .get_with_proof(&mut archival_working_set)
+                .proof
+                .try_to_vec()
+                .ok(),
+            Path::NextConnectionSequence(_) => self
+                .ibc
+                .connection_counter
+                .get_with_proof(&mut archival_working_set)
+                .proof
+                .try_to_vec()
+                .ok(),
+            Path::NextChannelSequence(_) => self
+                .ibc
+                .channel_counter
+                .get_with_proof(&mut archival_working_set)
+                .proof
+                .try_to_vec()
+                .ok(),
+            Path::UpgradeClient(upgrade_client_path) => self
+                .ibc
+                .upgraded_client_state_map
+                .get_with_proof(upgrade_client_path, &mut archival_working_set)
+                .proof
+                .try_to_vec()
+                .ok(),
+            Path::SeqAck(seq_ack_path) => self
+                .ibc
+                .ack_sequence_map
+                .get_with_proof(seq_ack_path, &mut archival_working_set)
+                .proof
+                .try_to_vec()
+                .ok(),
+            // not required, also not implemented; so `None` is returned
+            Path::ClientUpdateTime(_) | Path::ClientUpdateHeight(_) | Path::Ports(_) => None,
         }
     }
 }
