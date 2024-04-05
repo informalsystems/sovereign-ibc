@@ -79,11 +79,11 @@ impl<'a, C: ClientType<'a>> ClientExecutionContext for Context<'a, C> {
         _client_state_path: ClientStatePath,
         client_state: Self::ClientStateMut,
     ) -> Result<(), ContextError> {
-        let key = ClientStatePath::leaf().into_bytes();
+        let prefixed_key = self.prefixed_key(ClientStatePath::leaf());
 
         let encoded_client_state = self.encode_client_state(client_state)?;
 
-        self.insert(key, encoded_client_state);
+        self.insert(prefixed_key, encoded_client_state);
 
         Ok(())
     }
@@ -93,7 +93,7 @@ impl<'a, C: ClientType<'a>> ClientExecutionContext for Context<'a, C> {
         consensus_state_path: ClientConsensusStatePath,
         consensus_state: Self::ConsensusStateRef,
     ) -> Result<(), ContextError> {
-        let key = consensus_state_path.leaf().into_bytes();
+        let prefixed_key = self.prefixed_key(consensus_state_path.leaf());
 
         let encoded_consensus_state = C::ConsensusState::encode_thru_any(consensus_state);
 
@@ -103,7 +103,7 @@ impl<'a, C: ClientType<'a>> ClientExecutionContext for Context<'a, C> {
 
         let encoded_wasm_consensus_state = C::ConsensusState::encode_thru_any(wasm_consensus_state);
 
-        self.insert(key, encoded_wasm_consensus_state);
+        self.insert(prefixed_key, encoded_wasm_consensus_state);
 
         Ok(())
     }
@@ -112,7 +112,9 @@ impl<'a, C: ClientType<'a>> ClientExecutionContext for Context<'a, C> {
         &mut self,
         consensus_state_path: ClientConsensusStatePath,
     ) -> Result<(), ContextError> {
-        self.remove(consensus_state_path.leaf().into_bytes());
+        let prefixed_key = self.prefixed_key(consensus_state_path.leaf());
+
+        self.remove(prefixed_key);
 
         Ok(())
     }
@@ -126,15 +128,19 @@ impl<'a, C: ClientType<'a>> ClientExecutionContext for Context<'a, C> {
     ) -> Result<(), ContextError> {
         let time_key = self.client_update_time_key(&height);
 
+        let prefixed_time_key = self.prefixed_key(time_key);
+
         let time_vec: [u8; 8] = host_timestamp.nanoseconds().to_be_bytes();
 
-        self.insert(time_key, time_vec);
+        self.insert(prefixed_time_key, time_vec);
 
         let height_key = self.client_update_height_key(&height);
 
+        let prefixed_height_key = self.prefixed_key(height_key);
+
         let revision_height_vec: [u8; 8] = host_height.revision_height().to_be_bytes();
 
-        self.insert(height_key, revision_height_vec);
+        self.insert(prefixed_height_key, revision_height_vec);
 
         let iteration_key = iteration_key(height.revision_number(), height.revision_height());
 
@@ -152,11 +158,15 @@ impl<'a, C: ClientType<'a>> ClientExecutionContext for Context<'a, C> {
     ) -> Result<(), ContextError> {
         let time_key = self.client_update_time_key(&height);
 
-        self.remove(time_key);
+        let prefixed_time_key = self.prefixed_key(time_key);
+
+        self.remove(prefixed_time_key);
 
         let height_key = self.client_update_height_key(&height);
 
-        self.remove(height_key);
+        let prefixed_height_key = self.prefixed_key(height_key);
+
+        self.remove(prefixed_height_key);
 
         let iteration_key = iteration_key(height.revision_number(), height.revision_height());
 

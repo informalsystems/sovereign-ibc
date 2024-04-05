@@ -51,6 +51,7 @@ pub mod test_util {
             ClientState::new(
                 config.rollup_id,
                 config.latest_height,
+                config.frozen_height,
                 config.upgrade_path,
                 config.tendermint_params,
             )

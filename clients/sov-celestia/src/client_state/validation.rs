@@ -51,7 +51,7 @@ where
     }
 
     fn check_substitute(&self, ctx: &V, substitute_client_state: Any) -> Result<(), ClientError> {
-        unimplemented!()
+        check_substitute::<V>(self.inner(), substitute_client_state)
     }
 }
 
@@ -170,4 +170,44 @@ where
     }
 
     Ok(Status::Active)
+}
+
+/// the client recovery validation step.
+///
+/// The subject and substitute client states match if all their respective
+/// client state parameters match except for frozen height, latest height,
+/// trusting period, and chain ID.
+pub fn check_substitute<V>(
+    subject_client_state: &SovTmClientState,
+    substitute_client_state: Any,
+) -> Result<(), ClientError>
+where
+    V: SovValidationContext,
+    V::ConsensusStateRef: ConsensusStateConverter,
+{
+    let SovTmClientState {
+        rollup_id: subject_rollup_id,
+        latest_height: _,
+        frozen_height: _,
+        upgrade_path: subject_upgrade_path,
+        da_params: subject_da_params,
+    } = subject_client_state;
+
+    let substitute_client_state = SovTmClientState::try_from(substitute_client_state)?;
+
+    let SovTmClientState {
+        rollup_id: substitute_rollup_id,
+        latest_height: _,
+        frozen_height: _,
+        upgrade_path: substitute_upgrade_path,
+        da_params: substitute_da_params,
+    } = substitute_client_state;
+
+    (subject_rollup_id == &substitute_rollup_id
+        && subject_upgrade_path == &substitute_upgrade_path
+        && subject_da_params.trust_level == substitute_da_params.trust_level
+        && subject_da_params.max_clock_drift == substitute_da_params.max_clock_drift
+        && subject_da_params.unbonding_period == substitute_da_params.unbonding_period)
+        .then_some(())
+        .ok_or(ClientError::ClientRecoveryStateMismatch)
 }

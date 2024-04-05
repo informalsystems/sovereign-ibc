@@ -32,13 +32,14 @@ impl<Da> ClientState<Da> {
     pub fn new(
         rollup_id: ChainId,
         latest_height: Height,
+        frozen_height: Option<Height>,
         upgrade_path: UpgradePath,
         da_params: Da,
     ) -> Self {
         Self {
             rollup_id,
             latest_height,
-            frozen_height: None,
+            frozen_height,
             upgrade_path,
             da_params,
         }
@@ -114,10 +115,6 @@ impl TryFrom<RawClientState> for SovTmClientState {
             .ok_or(Error::missing("latest_height"))?
             .try_into()?;
 
-        if raw.frozen_height.is_some() {
-            return Err(Error::invalid("frozen_height is not supported"))?;
-        }
-
         let upgrade_path = raw.upgrade_path;
 
         let tendermint_params = raw
@@ -128,6 +125,7 @@ impl TryFrom<RawClientState> for SovTmClientState {
         Ok(Self::new(
             rollup_id,
             latest_height,
+            raw.frozen_height.map(TryInto::try_into).transpose()?,
             upgrade_path.try_into()?,
             tendermint_params,
         ))

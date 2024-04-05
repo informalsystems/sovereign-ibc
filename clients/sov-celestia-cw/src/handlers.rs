@@ -34,6 +34,10 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
     pub fn sudo(&mut self, msg: SudoMsg) -> Result<Binary, ContractError> {
         let client_id = self.client_id();
 
+        if let SudoMsg::MigrateClientStore(_) = msg {
+            self.set_subject_prefix();
+        };
+
         let client_state = self.client_state(&client_id)?;
 
         let result = match msg {
@@ -132,9 +136,19 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
                 ContractResult::success()
             }
             SudoMsg::MigrateClientStore(_) => {
-                return Err(ContractError::InvalidMsg(
-                    "ibc-rs does no support this feature yet".to_string(),
-                ));
+                self.set_substitute_prefix();
+                let substitute_client_state = self.client_state(&client_id)?;
+
+                self.set_subject_prefix();
+                client_state.check_substitute(self, substitute_client_state.clone().into())?;
+
+                client_state.update_on_recovery(
+                    self,
+                    &self.client_id(),
+                    substitute_client_state.into(),
+                )?;
+
+                ContractResult::success()
             }
         };
         Ok(to_json_binary(&result)?)
