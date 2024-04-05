@@ -1,7 +1,7 @@
 use std::ops::Add;
 use std::time::Duration;
 
-use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
+use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{coins, from_json, Deps, DepsMut, Empty, MessageInfo, StdError};
 use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::{Height, Status};
@@ -10,18 +10,18 @@ use ibc_core::primitives::Timestamp;
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
 use sov_celestia_client::types::client_message::{Root, SovTmHeader};
 use sov_celestia_client::types::client_state::test_util::{
-    dummy_checksum, dummy_sov_client_state, dummy_sov_consensus_state, mock_celestia_chain_id,
+    dummy_checksum, dummy_sov_consensus_state, mock_celestia_chain_id, ClientStateConfig,
+    TendermintParamsConfig,
 };
 use sov_celestia_client::types::client_state::SovTmClientState;
 use sov_celestia_client::types::codec::AnyCodec;
 use sov_celestia_client::types::consensus_state::SovTmConsensusState;
 use tendermint_testgen::{Generator, Validator};
 
-use crate::entrypoints::{instantiate, sudo, SovTmContext};
+use crate::entrypoints::SovTmContext;
 use crate::types::{
-    CheckForMisbehaviourMsgRaw, ContractResult, ExportMetadataMsg, GenesisMetadata, InstantiateMsg,
-    MigrateClientStoreMsg, QueryMsg, QueryResponse, StatusMsg, UpdateStateMsgRaw,
-    UpdateStateOnMisbehaviourMsgRaw, VerifyClientMessageRaw,
+    CheckForMisbehaviourMsgRaw, ExportMetadataMsg, GenesisMetadata, InstantiateMsg, QueryMsg,
+    QueryResponse, StatusMsg, VerifyClientMessageRaw,
 };
 
 /// Test fixture
@@ -82,7 +82,17 @@ impl Fixture {
     }
 
     pub fn dummy_instantiate_msg(&self) -> InstantiateMsg {
-        let sov_client_state = dummy_sov_client_state(self.chain_id.clone(), self.trusted_height);
+        // Setting the `trusting_period`` to 1 second allows for a quick client
+        // freeze in the `happy_cw_client_recovery` test
+        let tendermint_params = TendermintParamsConfig::builder()
+            .trusting_period(Duration::from_secs(1))
+            .build();
+
+        let sov_client_state = ClientStateConfig::builder()
+            .rollup_id(self.chain_id.clone())
+            .latest_height(self.trusted_height)
+            .tendermint_params(tendermint_params)
+            .build();
 
         let sov_consensus_state = dummy_sov_consensus_state(self.trusted_timestamp);
 
@@ -183,100 +193,4 @@ impl Fixture {
 
 pub fn dummy_msg_info() -> MessageInfo {
     mock_info("creator", &coins(1000, "ibc"))
-}
-
-#[test]
-fn happy_cw_create_client() {
-    let fxt = Fixture::default();
-
-    let mut deps = mock_dependencies();
-
-    let instantiate_msg = fxt.dummy_instantiate_msg();
-
-    let resp = instantiate(deps.as_mut(), mock_env(), dummy_msg_info(), instantiate_msg).unwrap();
-
-    assert_eq!(0, resp.messages.len());
-
-    let contract_result: ContractResult = from_json(resp.data.unwrap()).unwrap();
-
-    assert!(contract_result.heights.is_none());
-
-    fxt.check_client_status(deps.as_ref(), Status::Active);
-}
-
-#[test]
-fn happy_cw_update_client() {
-    let fxt = Fixture::default();
-
-    let mut deps = mock_dependencies();
-
-    // ------------------- Create client -------------------
-
-    let instantiate_msg = fxt.dummy_instantiate_msg();
-
-    instantiate(deps.as_mut(), mock_env(), dummy_msg_info(), instantiate_msg).unwrap();
-
-    // ------------------- Verify and Update client -------------------
-
-    let client_message = fxt.dummy_client_message();
-
-    fxt.verify_client_message(deps.as_ref(), client_message.clone());
-
-    let resp = sudo(
-        deps.as_mut(),
-        mock_env(),
-        UpdateStateMsgRaw { client_message }.into(),
-    )
-    .unwrap();
-
-    // ------------------- Check response -------------------
-
-    assert_eq!(0, resp.messages.len());
-
-    let contract_result: ContractResult = from_json(resp.data.unwrap()).unwrap();
-
-    assert_eq!(contract_result.heights, Some(vec![fxt.target_height]));
-
-    fxt.check_client_status(deps.as_ref(), Status::Active);
-}
-
-#[test]
-fn happy_cw_client_recovery() {
-    let fxt = Fixture::default().migration_mode();
-
-    let mut deps = mock_dependencies();
-
-    let mut ctx = fxt.ctx_mut(deps.as_mut());
-
-    // ------------------- Create subject client -------------------
-
-    let instantiate_msg = fxt.dummy_instantiate_msg();
-
-    let data = ctx.instantiate(instantiate_msg.clone()).unwrap();
-
-    // ------------------- Freeze subject client -------------------
-
-    let client_message = fxt.dummy_misbehaviour_message();
-
-    fxt.check_for_misbehaviour(deps.as_ref(), client_message.clone());
-
-    let mut ctx = fxt.ctx_mut(deps.as_mut());
-
-    let data = ctx
-        .sudo(UpdateStateOnMisbehaviourMsgRaw { client_message }.into())
-        .unwrap();
-
-    // ------------------- Create substitute client -------------------
-
-    ctx.set_substitute_prefix();
-
-    let data = ctx.instantiate(instantiate_msg).unwrap();
-
-    // ------------------- Recover subject client -------------------
-
-    let resp = sudo(deps.as_mut(), mock_env(), MigrateClientStoreMsg {}.into()).unwrap();
-
-    assert_eq!(0, resp.messages.len());
-
-    fxt.check_client_status(deps.as_ref(), Status::Active);
 }

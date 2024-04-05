@@ -316,7 +316,7 @@ impl TryFrom<AnyConsensusState> for TmConsensusStateType {
 
     fn try_from(cs: AnyConsensusState) -> Result<TmConsensusStateType, Self::Error> {
         match cs {
-            AnyConsensusState::Tendermint(cs) => Ok(cs.inner().clone()),
+            AnyConsensusState::Tendermint(cs) => Ok(cs.into_inner()),
             _ => Err(ClientError::UnknownConsensusStateType {
                 consensus_state_type: "".to_string(),
             }),

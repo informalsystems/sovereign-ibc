@@ -65,7 +65,7 @@ pub mod test_util {
         pub chain_id: ChainId,
         #[builder(default = TrustThreshold::ONE_THIRD)]
         pub trust_level: TrustThreshold,
-        #[builder(default = Duration::from_millis(1))]
+        #[builder(default = Duration::from_millis(64000))]
         pub trusting_period: Duration,
         #[builder(default = Duration::from_secs(128000))]
         pub unbonding_period: Duration,
