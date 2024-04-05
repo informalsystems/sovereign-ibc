@@ -34,9 +34,8 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
     pub fn sudo(&mut self, msg: SudoMsg) -> Result<Binary, ContractError> {
         let client_id = self.client_id();
 
-        match msg {
-            SudoMsg::MigrateClientStore(_) => self.set_subject_prefix(),
-            _ => (),
+        if let SudoMsg::MigrateClientStore(_) = msg {
+            self.set_subject_prefix();
         };
 
         let client_state = self.client_state(&client_id)?;
