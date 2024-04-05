@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use borsh::BorshSerialize;
 use ibc_core::channel::types::commitment::PacketCommitment;
-use ibc_core::host::types::path::{ClientConsensusStatePath, CommitmentPath};
+use ibc_core::host::types::path::{ClientConsensusStatePath, CommitmentPath, UpgradeClientPath};
 use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::{
     query_channel, query_channel_client_state, query_channel_consensus_state, query_channels,
@@ -28,7 +28,9 @@ use ibc_query::core::client::{
     QueryClientStatesRequest, QueryClientStatesResponse, QueryClientStatusRequest,
     QueryClientStatusResponse, QueryConsensusStateHeightsRequest,
     QueryConsensusStateHeightsResponse, QueryConsensusStateRequest, QueryConsensusStateResponse,
-    QueryConsensusStatesRequest, QueryConsensusStatesResponse,
+    QueryConsensusStatesRequest, QueryConsensusStatesResponse, QueryUpgradedClientStateRequest,
+    QueryUpgradedClientStateResponse, QueryUpgradedConsensusStateRequest,
+    QueryUpgradedConsensusStateResponse,
 };
 use ibc_query::core::connection::{
     query_client_connections, query_connection, query_connection_client_state,
@@ -40,6 +42,8 @@ use ibc_query::core::connection::{
     QueryConnectionResponse, QueryConnectionsRequest, QueryConnectionsResponse,
 };
 use jsonrpsee::core::RpcResult;
+use sov_celestia_client::client_state::ClientState as HostClientState;
+use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_modules_api::macros::rpc_gen;
 use sov_modules_api::{ProvenStateAccessor, Spec, WorkingSet};
 use sov_state::storage::{SlotKey, StateCodec, StateItemCodec};
@@ -204,6 +208,88 @@ impl<S: Spec> Ibc<S> {
         };
 
         query_client_status(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+    }
+
+    #[rpc_method(name = "upgradedClientState")]
+    pub fn upgraded_client_state(
+        &self,
+        request: QueryUpgradedClientStateRequest,
+        working_set: &mut WorkingSet<S>,
+    ) -> RpcResult<QueryUpgradedClientStateResponse> {
+        let proof_height = self.determine_query_height(request.query_height, working_set)?;
+
+        let upgrade_client_path =
+            UpgradeClientPath::UpgradedClientState(proof_height.revision_height());
+
+        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
+
+        let value_with_proof = self
+            .upgraded_client_state_map
+            .get_with_proof(&upgrade_client_path, &mut archival_working_set);
+
+        let storage_value = value_with_proof.value.ok_or_else(|| {
+            to_jsonrpsee_error(format!(
+                "upgraded client state not found at: {proof_height:?}",
+            ))
+        })?;
+
+        let upgraded_client_state: HostClientState = self
+            .upgraded_client_state_map
+            .codec()
+            .try_decode(storage_value.value())
+            .map_err(to_jsonrpsee_error)?;
+
+        let proof = value_with_proof
+            .proof
+            .try_to_vec()
+            .map_err(to_jsonrpsee_error)?;
+
+        Ok(QueryUpgradedClientStateResponse::new(
+            upgraded_client_state.into(),
+            proof,
+            proof_height,
+        ))
+    }
+
+    #[rpc_method(name = "upgradedConsensusState")]
+    pub fn upgraded_consensus_state(
+        &self,
+        request: QueryUpgradedConsensusStateRequest,
+        working_set: &mut WorkingSet<S>,
+    ) -> RpcResult<QueryUpgradedConsensusStateResponse> {
+        let proof_height = self.determine_query_height(request.query_height, working_set)?;
+
+        let upgrade_consensus_path =
+            UpgradeClientPath::UpgradedClientConsensusState(proof_height.revision_height());
+
+        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
+
+        let value_with_proof = self
+            .upgraded_consensus_state_map
+            .get_with_proof(&upgrade_consensus_path, &mut archival_working_set);
+
+        let storage_value = value_with_proof.value.ok_or_else(|| {
+            to_jsonrpsee_error(format!(
+                "upgraded consensus state not found at: {proof_height:?}",
+            ))
+        })?;
+
+        let upgraded_consensus_state: HostConsensusState = self
+            .upgraded_consensus_state_map
+            .codec()
+            .try_decode(storage_value.value())
+            .map_err(to_jsonrpsee_error)?;
+
+        let proof = value_with_proof
+            .proof
+            .try_to_vec()
+            .map_err(to_jsonrpsee_error)?;
+
+        Ok(QueryUpgradedConsensusStateResponse::new(
+            upgraded_consensus_state.into(),
+            proof,
+            proof_height,
+        ))
     }
 
     #[rpc_method(name = "connection")]

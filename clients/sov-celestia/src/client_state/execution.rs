@@ -69,6 +69,15 @@ where
             upgraded_consensus_state,
         )
     }
+
+    fn update_on_recovery(
+        &self,
+        ctx: &mut E,
+        subject_client_id: &ClientId,
+        substitute_client_state: Any,
+    ) -> Result<(), ClientError> {
+        unimplemented!()
+    }
 }
 
 pub fn initialise<E>(

@@ -1,8 +1,10 @@
 use core::cmp::max;
+use std::str::FromStr;
 
 use ibc_client_tendermint::types::{Header as TmHeader, TrustThreshold};
-use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::error::{ClientError, UpgradeClientError};
 use ibc_core::client::types::Height;
+use ibc_core::commitment_types::commitment::CommitmentPrefix;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::ZERO_DURATION;
@@ -22,7 +24,7 @@ pub struct ClientState<Da> {
     pub rollup_id: ChainId,
     pub latest_height: Height,
     pub frozen_height: Option<Height>,
-    pub upgrade_path: Vec<String>,
+    pub upgrade_path: UpgradePath,
     pub da_params: Da,
 }
 
@@ -30,7 +32,7 @@ impl<Da> ClientState<Da> {
     pub fn new(
         rollup_id: ChainId,
         latest_height: Height,
-        upgrade_path: Vec<String>,
+        upgrade_path: UpgradePath,
         da_params: Da,
     ) -> Self {
         Self {
@@ -126,7 +128,7 @@ impl TryFrom<RawClientState> for SovTmClientState {
         Ok(Self::new(
             rollup_id,
             latest_height,
-            upgrade_path,
+            upgrade_path.try_into()?,
             tendermint_params,
         ))
     }
@@ -138,7 +140,7 @@ impl From<SovTmClientState> for RawClientState {
             rollup_id: value.rollup_id.to_string(),
             latest_height: Some(value.latest_height.into()),
             frozen_height: value.frozen_height.map(|h| h.into()),
-            upgrade_path: value.upgrade_path,
+            upgrade_path: value.upgrade_path.0,
             tendermint_params: Some(value.da_params.into()),
         }
     }
@@ -174,5 +176,56 @@ impl From<SovTmClientState> for Any {
             type_url: SOV_TENDERMINT_CLIENT_STATE_TYPE_URL.to_string(),
             value: Protobuf::<RawClientState>::encode_vec(client_state),
         }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq)]
+pub struct UpgradePath(String);
+
+impl Default for UpgradePath {
+    fn default() -> Self {
+        Self("sov_ibc/Ibc/".to_string())
+    }
+}
+
+impl UpgradePath {
+    pub fn new(path: String) -> Self {
+        Self(path)
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl TryFrom<String> for UpgradePath {
+    type Error = ClientError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::from_str(&value)
+    }
+}
+
+impl FromStr for UpgradePath {
+    type Err = ClientError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.is_empty() {
+            return Err(UpgradeClientError::Other {
+                reason: "empty upgrade path".into(),
+            })?;
+        }
+
+        Ok(Self(s.to_string()))
+    }
+}
+
+impl TryFrom<UpgradePath> for CommitmentPrefix {
+    type Error = ClientError;
+
+    fn try_from(value: UpgradePath) -> Result<Self, Self::Error> {
+        CommitmentPrefix::try_from(value.0.into_bytes())
+            .map_err(ClientError::InvalidCommitmentProof)
     }
 }

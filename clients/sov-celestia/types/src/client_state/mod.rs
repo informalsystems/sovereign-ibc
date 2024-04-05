@@ -42,7 +42,7 @@ pub mod test_util {
         #[builder(default)]
         pub frozen_height: Option<Height>,
         #[builder(default)]
-        pub upgrade_path: Vec<String>,
+        pub upgrade_path: UpgradePath,
         pub tendermint_params: TmClientParams,
     }
 

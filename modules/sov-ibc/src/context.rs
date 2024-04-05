@@ -16,12 +16,12 @@ use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{ConnectionId, Sequence};
 use ibc_core::host::types::path::{
     AckPath, ChannelEndPath, ClientConnectionPath, CommitmentPath, ConnectionPath, ReceiptPath,
-    SeqAckPath, SeqRecvPath, SeqSendPath,
+    SeqAckPath, SeqRecvPath, SeqSendPath, UpgradeClientPath,
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::{Signer, Timestamp};
-use sov_celestia_client::client_state::ClientState;
-use sov_celestia_client::consensus_state::ConsensusState;
+use sov_celestia_client::client_state::{ClientState as HostClientState, ClientState};
+use sov_celestia_client::consensus_state::{ConsensusState as HostConsensusState, ConsensusState};
 use sov_modules_api::{EventEmitter, ModuleInfo, Spec, WorkingSet};
 use sov_state::Prefix;
 
@@ -64,6 +64,38 @@ where
         }
 
         Ok(())
+    }
+
+    // ------------------------------------------------------------------------
+    // TODO: Determine who should have upgrade authority for clients, and which
+    // party is responsible for storing upgraded client/consensus states?
+    // <https://github.com/informalsystems/sovereign-ibc/issues/122>
+    // ------------------------------------------------------------------------
+
+    /// Stores the upgraded client state at the specified upgrade path.
+    pub fn store_upgraded_client_state(
+        &mut self,
+        upgrade_path: UpgradeClientPath,
+        client_state: HostClientState,
+    ) {
+        self.ibc.upgraded_client_state_map.set(
+            &upgrade_path,
+            &client_state,
+            *self.working_set.borrow_mut(),
+        );
+    }
+
+    /// Stores the upgraded consensus state at the specified upgrade path.
+    pub fn store_upgraded_consensus_state(
+        &mut self,
+        upgrade_path: UpgradeClientPath,
+        consensus_state: HostConsensusState,
+    ) {
+        self.ibc.upgraded_consensus_state_map.set(
+            &upgrade_path,
+            &consensus_state,
+            *self.working_set.borrow_mut(),
+        );
     }
 }
 

@@ -89,8 +89,6 @@ async fn test_escrow_unescrow_on_sov() {
         .setup_cfg()
         .get_token_id_for_relayer(&gas_token.token_name);
 
-    std::dbg!(fake_token_id);
-
     cfg.sov_token_id = Some(fake_token_id);
     cfg.amount = 50;
 
