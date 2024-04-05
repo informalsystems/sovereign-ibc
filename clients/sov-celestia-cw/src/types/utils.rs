@@ -5,6 +5,7 @@ use ibc_core::client::types::Height;
 /// The RecoveryPrefix field indicates whether the recovery mode has been
 /// activated if there is an incoming `MigrateClientStore` message. If so, it
 /// specifies the prefix key for either the subject or substitute storage index.
+#[derive(Clone, Debug)]
 pub enum RecoveryPrefix {
     Subject,
     Substitute,
@@ -23,6 +24,7 @@ impl RecoveryPrefix {
 
 /// Travel is an enum to represent the direction of travel in the context of
 /// height.
+#[derive(Clone, Debug)]
 pub enum HeightTravel {
     Next,
     Prev,

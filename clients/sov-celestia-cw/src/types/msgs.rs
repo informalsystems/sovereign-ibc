@@ -40,6 +40,7 @@ pub struct InstantiateMsg {
 // Implementation of the SudoMsg enum and its variants
 // ------------------------------------------------------------
 
+#[derive(derive_more::From)]
 #[cw_serde]
 pub enum SudoMsg {
     UpdateState(UpdateStateMsgRaw),
@@ -237,6 +238,7 @@ pub struct MigrateClientStoreMsg {}
 // Implementation of the QueryMsg enum and its variants
 // ------------------------------------------------------------
 
+#[derive(derive_more::From)]
 #[cw_serde]
 pub enum QueryMsg {
     Status(StatusMsg),

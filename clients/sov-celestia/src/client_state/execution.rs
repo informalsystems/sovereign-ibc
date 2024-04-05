@@ -229,6 +229,7 @@ where
     let new_client_state = SovTmClientState::new(
         upgraded_client_state.rollup_id,
         upgraded_client_state.latest_height,
+        None,
         upgraded_client_state.upgrade_path,
         upgraded_client_state.da_params,
     );

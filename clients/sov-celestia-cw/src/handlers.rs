@@ -34,6 +34,11 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
     pub fn sudo(&mut self, msg: SudoMsg) -> Result<Binary, ContractError> {
         let client_id = self.client_id();
 
+        match msg {
+            SudoMsg::MigrateClientStore(_) => self.set_subject_prefix(),
+            _ => (),
+        };
+
         let client_state = self.client_state(&client_id)?;
 
         let result = match msg {
@@ -132,17 +137,13 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
                 ContractResult::success()
             }
             SudoMsg::MigrateClientStore(_) => {
-                self.set_subject_prefix();
-                let subject_client_state = self.client_state(&client_id)?;
-
                 self.set_substitute_prefix();
                 let substitute_client_state = self.client_state(&client_id)?;
 
                 self.set_subject_prefix();
-                subject_client_state
-                    .check_substitute(self, substitute_client_state.clone().into())?;
+                client_state.check_substitute(self, substitute_client_state.clone().into())?;
 
-                subject_client_state.update_on_recovery(
+                client_state.update_on_recovery(
                     self,
                     &self.client_id(),
                     substitute_client_state.into(),

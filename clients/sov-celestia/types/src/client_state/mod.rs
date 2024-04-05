@@ -51,6 +51,7 @@ pub mod test_util {
             ClientState::new(
                 config.rollup_id,
                 config.latest_height,
+                config.frozen_height,
                 config.upgrade_path,
                 config.tendermint_params,
             )
@@ -64,7 +65,7 @@ pub mod test_util {
         pub chain_id: ChainId,
         #[builder(default = TrustThreshold::ONE_THIRD)]
         pub trust_level: TrustThreshold,
-        #[builder(default = Duration::from_secs(64000))]
+        #[builder(default = Duration::from_millis(1))]
         pub trusting_period: Duration,
         #[builder(default = Duration::from_secs(128000))]
         pub unbonding_period: Duration,

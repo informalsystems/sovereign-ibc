@@ -147,7 +147,6 @@ where
 
         ctx.consensus_state(&path_at_header_height).ok()
     };
-
     if let Some(existing_consensus_state) = maybe_existing_consensus_state {
         let existing_consensus_state = existing_consensus_state.try_into()?;
 

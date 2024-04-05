@@ -88,14 +88,20 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
         self.recovery_prefix = RecoveryPrefix::Substitute;
     }
 
+    pub fn prefixed_key(&self, key: impl AsRef<[u8]>) -> Vec<u8> {
+        let mut prefixed_key = Vec::new();
+        prefixed_key.extend_from_slice(self.recovery_prefix.key());
+        prefixed_key.extend_from_slice(key.as_ref());
+
+        prefixed_key
+    }
+
     pub fn retrieve(&self, key: impl AsRef<[u8]>) -> Result<Vec<u8>, ClientError> {
-        let mut full_key = Vec::new();
-        full_key.extend_from_slice(self.recovery_prefix.key());
-        full_key.extend_from_slice(key.as_ref());
+        let prefixed_key = self.prefixed_key(key);
 
         let value = self
             .storage_ref()
-            .get(full_key.as_ref())
+            .get(prefixed_key.as_ref())
             .ok_or(ClientError::Other {
                 description: "key not found".to_string(),
             })?;
