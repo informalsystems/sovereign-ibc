@@ -49,6 +49,10 @@ where
     fn status(&self, ctx: &V, client_id: &ClientId) -> Result<Status, ClientError> {
         status(self.inner(), ctx, client_id)
     }
+
+    fn check_substitute(&self, ctx: &V, substitute_client_state: Any) -> Result<(), ClientError> {
+        unimplemented!()
+    }
 }
 
 /// Verify the client message as part of the validation process during the

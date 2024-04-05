@@ -232,6 +232,22 @@ where
             ),
         }
     }
+
+    fn update_on_recovery(
+        &self,
+        ctx: &mut IbcContext<'a, S>,
+        subject_client_id: &ClientId,
+        substitute_client_state: Any,
+    ) -> Result<(), ClientError> {
+        match self {
+            AnyClientState::Tendermint(cs) => {
+                cs.update_on_recovery(ctx, subject_client_id, substitute_client_state)
+            }
+            AnyClientState::Sovereign(cs) => {
+                cs.update_on_recovery(ctx, subject_client_id, substitute_client_state)
+            }
+        }
+    }
 }
 
 impl<'a, S> ClientStateValidation<IbcContext<'a, S>> for AnyClientState
@@ -274,6 +290,17 @@ where
         match self {
             AnyClientState::Tendermint(cs) => cs.status(ctx, client_id),
             AnyClientState::Sovereign(cs) => cs.status(ctx, client_id),
+        }
+    }
+
+    fn check_substitute(
+        &self,
+        ctx: &IbcContext<'a, S>,
+        substitute_client_state: Any,
+    ) -> Result<(), ClientError> {
+        match self {
+            AnyClientState::Tendermint(cs) => cs.check_substitute(ctx, substitute_client_state),
+            AnyClientState::Sovereign(cs) => cs.check_substitute(ctx, substitute_client_state),
         }
     }
 }

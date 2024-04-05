@@ -216,21 +216,38 @@ impl<S: Spec> Ibc<S> {
         request: QueryUpgradedClientStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryUpgradedClientStateResponse> {
-        let current_revision_height = self
-            .determine_query_height(None, working_set)?
-            .revision_height();
+        let proof_height = self.determine_query_height(request.query_height, working_set)?;
 
-        let upgrade_client_path = UpgradeClientPath::UpgradedClientState(current_revision_height);
+        let upgrade_client_path =
+            UpgradeClientPath::UpgradedClientState(proof_height.revision_height());
 
-        let mut archival_working_set = working_set.get_archival_at(current_revision_height);
+        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
 
-        let any_upgraded_client_state: HostClientState = self
+        let value_with_proof = self
             .upgraded_client_state_map
-            .get(&upgrade_client_path, &mut archival_working_set)
-            .ok_or(to_jsonrpsee_error("Upgraded client state not found"))?;
+            .get_with_proof(&upgrade_client_path, &mut archival_working_set);
+
+        let storage_value = value_with_proof.value.ok_or_else(|| {
+            to_jsonrpsee_error(format!(
+                "upgraded client state not found at: {proof_height:?}",
+            ))
+        })?;
+
+        let upgraded_client_state: HostClientState = self
+            .upgraded_client_state_map
+            .codec()
+            .try_decode(storage_value.value())
+            .map_err(to_jsonrpsee_error)?;
+
+        let proof = value_with_proof
+            .proof
+            .try_to_vec()
+            .map_err(to_jsonrpsee_error)?;
 
         Ok(QueryUpgradedClientStateResponse::new(
-            any_upgraded_client_state.into(),
+            upgraded_client_state.into(),
+            proof,
+            proof_height,
         ))
     }
 
@@ -240,22 +257,38 @@ impl<S: Spec> Ibc<S> {
         request: QueryUpgradedConsensusStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryUpgradedConsensusStateResponse> {
-        let current_revision_eight = self
-            .determine_query_height(None, working_set)?
-            .revision_height();
+        let proof_height = self.determine_query_height(request.query_height, working_set)?;
 
         let upgrade_consensus_path =
-            UpgradeClientPath::UpgradedClientConsensusState(current_revision_eight);
+            UpgradeClientPath::UpgradedClientConsensusState(proof_height.revision_height());
 
-        let mut archival_working_set = working_set.get_archival_at(current_revision_eight);
+        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
 
-        let any_upgraded_client_state: HostConsensusState = self
+        let value_with_proof = self
             .upgraded_consensus_state_map
-            .get(&upgrade_consensus_path, &mut archival_working_set)
-            .ok_or(to_jsonrpsee_error("Upgraded consensus state not found"))?;
+            .get_with_proof(&upgrade_consensus_path, &mut archival_working_set);
+
+        let storage_value = value_with_proof.value.ok_or_else(|| {
+            to_jsonrpsee_error(format!(
+                "upgraded consensus state not found at: {proof_height:?}",
+            ))
+        })?;
+
+        let upgraded_consensus_state: HostConsensusState = self
+            .upgraded_consensus_state_map
+            .codec()
+            .try_decode(storage_value.value())
+            .map_err(to_jsonrpsee_error)?;
+
+        let proof = value_with_proof
+            .proof
+            .try_to_vec()
+            .map_err(to_jsonrpsee_error)?;
 
         Ok(QueryUpgradedConsensusStateResponse::new(
-            any_upgraded_client_state.into(),
+            upgraded_consensus_state.into(),
+            proof,
+            proof_height,
         ))
     }
 
