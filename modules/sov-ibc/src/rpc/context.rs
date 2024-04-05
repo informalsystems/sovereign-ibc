@@ -23,7 +23,6 @@ impl<'a, S> ProvableContext for IbcContext<'a, S>
 where
     S: Spec,
 {
-    /// TODO: Should figure out how can access the proof from the context
     fn get_proof(&self, height: Height, path: &Path) -> Option<Vec<u8>> {
         let mut archival_working_set = self
             .working_set
