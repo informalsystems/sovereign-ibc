@@ -1,3 +1,4 @@
+use borsh::BorshSerialize;
 use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::channel::types::channel::IdentifiedChannelEnd;
 use ibc_core::channel::types::error::ChannelError;
@@ -23,8 +24,140 @@ where
     S: Spec,
 {
     /// TODO: Should figure out how can access the proof from the context
-    fn get_proof(&self, _height: Height, _path: &Path) -> Option<Vec<u8>> {
-        Some(vec![])
+    fn get_proof(&self, height: Height, path: &Path) -> Option<Vec<u8>> {
+        let result = match path {
+            Path::ClientState(client_state_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .client_state_map
+                    .get_with_proof(&client_state_path.0, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            Path::ClientConsensusState(client_consensus_state_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .consensus_state_map
+                    .get_with_proof(client_consensus_state_path, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            Path::ClientConnection(client_connection_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .client_connections_map
+                    .get_with_proof(client_connection_path, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            Path::Connection(connection_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .connection_end_map
+                    .get_with_proof(connection_path, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            Path::ChannelEnd(channel_end_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .channel_end_map
+                    .get_with_proof(channel_end_path, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            Path::SeqSend(seq_send_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .send_sequence_map
+                    .get_with_proof(seq_send_path, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            Path::SeqRecv(seq_recv_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .recv_sequence_map
+                    .get_with_proof(seq_recv_path, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            Path::Commitment(commitment_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .packet_commitment_map
+                    .get_with_proof(commitment_path, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            Path::Ack(ack_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .packet_ack_map
+                    .get_with_proof(ack_path, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            Path::Receipt(receipt_path) => {
+                let mut archival_working_set = self
+                    .working_set
+                    .borrow()
+                    .get_archival_at(height.revision_height());
+
+                self.ibc
+                    .packet_receipt_map
+                    .get_with_proof(receipt_path, &mut archival_working_set)
+                    .proof
+                    .try_to_vec()
+            }
+            // not required; but should filled in for completeness
+            Path::SeqAck(_) => todo!(),
+            Path::UpgradeClient(_) => todo!(),
+            Path::NextClientSequence(_) => todo!(),
+            Path::NextConnectionSequence(_) => todo!(),
+            Path::NextChannelSequence(_) => todo!(),
+            Path::ClientUpdateTime(_) => todo!(),
+            Path::ClientUpdateHeight(_) => todo!(),
+            Path::Ports(_) => todo!(),
+        };
+
+        result.ok()
     }
 }
 
