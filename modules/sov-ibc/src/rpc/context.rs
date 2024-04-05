@@ -147,14 +147,14 @@ where
                     .try_to_vec()
             }
             // not required; but should filled in for completeness
-            Path::SeqAck(_) => todo!(),
-            Path::UpgradeClient(_) => todo!(),
-            Path::NextClientSequence(_) => todo!(),
-            Path::NextConnectionSequence(_) => todo!(),
-            Path::NextChannelSequence(_) => todo!(),
-            Path::ClientUpdateTime(_) => todo!(),
-            Path::ClientUpdateHeight(_) => todo!(),
-            Path::Ports(_) => todo!(),
+            Path::NextClientSequence(_)
+            | Path::NextConnectionSequence(_)
+            | Path::NextChannelSequence(_)
+            | Path::ClientUpdateTime(_)
+            | Path::ClientUpdateHeight(_)
+            | Path::Ports(_)
+            | Path::SeqAck(_)
+            | Path::UpgradeClient(_) => todo!(),
         };
 
         result.ok()
