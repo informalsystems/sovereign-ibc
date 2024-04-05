@@ -17,7 +17,9 @@ use ibc_core::primitives::proto::{Any, Protobuf};
 use prost::Message;
 use sov_celestia_client::types::codec::AnyCodec;
 
-use crate::types::{parse_height, ClientType, ContractError, GenesisMetadata, HeightTravel};
+use crate::types::{
+    parse_height, ClientType, ContractError, GenesisMetadata, HeightTravel, RecoveryPrefix,
+};
 
 type Checksum = Vec<u8>;
 
@@ -29,6 +31,7 @@ pub struct Context<'a, C: ClientType<'a>> {
     env: Env,
     client_id: ClientId,
     checksum: Option<Checksum>,
+    recovery_prefix: RecoveryPrefix,
     client_type: std::marker::PhantomData<C>,
 }
 
@@ -42,6 +45,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
             env,
             client_id,
             checksum: None,
+            recovery_prefix: RecoveryPrefix::None,
             client_type: std::marker::PhantomData::<C>,
         })
     }
@@ -55,6 +59,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
             env,
             client_id,
             checksum: None,
+            recovery_prefix: RecoveryPrefix::None,
             client_type: std::marker::PhantomData::<C>,
         })
     }
@@ -75,10 +80,22 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
         self.checksum = Some(checksum);
     }
 
+    pub fn set_subject_prefix(&mut self) {
+        self.recovery_prefix = RecoveryPrefix::Subject;
+    }
+
+    pub fn set_substitute_prefix(&mut self) {
+        self.recovery_prefix = RecoveryPrefix::Substitute;
+    }
+
     pub fn retrieve(&self, key: impl AsRef<[u8]>) -> Result<Vec<u8>, ClientError> {
+        let mut full_key = Vec::new();
+        full_key.extend_from_slice(self.recovery_prefix.key());
+        full_key.extend_from_slice(key.as_ref());
+
         let value = self
             .storage_ref()
-            .get(key.as_ref())
+            .get(full_key.as_ref())
             .ok_or(ClientError::Other {
                 description: "key not found".to_string(),
             })?;
@@ -128,7 +145,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
 
     pub fn client_update_time_key(&self, height: &Height) -> Vec<u8> {
         let client_update_time_path = ClientUpdateTimePath::new(
-            self.client_id().clone(),
+            self.client_id(),
             height.revision_number(),
             height.revision_height(),
         );

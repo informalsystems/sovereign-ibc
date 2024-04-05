@@ -132,9 +132,23 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
                 ContractResult::success()
             }
             SudoMsg::MigrateClientStore(_) => {
-                return Err(ContractError::InvalidMsg(
-                    "ibc-rs does no support this feature yet".to_string(),
-                ));
+                self.set_subject_prefix();
+                let subject_client_state = self.client_state(&client_id)?;
+
+                self.set_substitute_prefix();
+                let substitute_client_state = self.client_state(&client_id)?;
+
+                self.set_subject_prefix();
+                subject_client_state
+                    .check_substitute(self, substitute_client_state.clone().into())?;
+
+                subject_client_state.update_on_recovery(
+                    self,
+                    &self.client_id(),
+                    substitute_client_state.into(),
+                )?;
+
+                ContractResult::success()
             }
         };
         Ok(to_json_binary(&result)?)

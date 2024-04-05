@@ -1,5 +1,25 @@
+use ibc_client_wasm_types::{SUBJECT_PREFIX, SUBSTITUTE_PREFIX};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
+
+/// The RecoveryPrefix field indicates whether the recovery mode has been
+/// activated if there is an incoming `MigrateClientStore` message. If so, it
+/// specifies the prefix key for either the subject or substitute storage index.
+pub enum RecoveryPrefix {
+    Subject,
+    Substitute,
+    None,
+}
+
+impl RecoveryPrefix {
+    pub fn key(&self) -> &[u8] {
+        match self {
+            RecoveryPrefix::Subject => SUBJECT_PREFIX,
+            RecoveryPrefix::Substitute => SUBSTITUTE_PREFIX,
+            RecoveryPrefix::None => b"",
+        }
+    }
+}
 
 /// Travel is an enum to represent the direction of travel in the context of
 /// height.

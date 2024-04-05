@@ -76,7 +76,12 @@ where
         subject_client_id: &ClientId,
         substitute_client_state: Any,
     ) -> Result<(), ClientError> {
-        unimplemented!()
+        update_on_recovery(
+            self.inner(),
+            ctx,
+            subject_client_id,
+            substitute_client_state,
+        )
     }
 }
 
@@ -281,7 +286,7 @@ where
 /// verified substitute client state in response to a successful client
 /// recovery.
 pub fn update_on_recovery<E>(
-    subject_client_state: SovTmClientState,
+    subject_client_state: &SovTmClientState,
     ctx: &mut E,
     subject_client_id: &ClientId,
     substitute_client_state: Any,
@@ -298,10 +303,10 @@ where
     let latest_height = substitute_client_state.latest_height;
 
     let new_client_state = SovTmClientState {
-        rollup_id: subject_client_state.rollup_id,
+        rollup_id: subject_client_state.rollup_id.clone(),
         latest_height,
         frozen_height: None,
-        upgrade_path: subject_client_state.upgrade_path,
+        upgrade_path: subject_client_state.upgrade_path.clone(),
         da_params: TmClientParams {
             chain_id,
             trusting_period,
