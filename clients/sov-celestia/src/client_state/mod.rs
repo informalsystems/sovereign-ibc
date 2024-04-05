@@ -30,6 +30,10 @@ impl ClientState {
     pub fn inner(&self) -> &SovTmClientState {
         &self.0
     }
+
+    pub fn into_inner(self) -> SovTmClientState {
+        self.0
+    }
 }
 
 impl Protobuf<RawSovTmClientState> for ClientState {}

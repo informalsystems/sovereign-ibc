@@ -8,7 +8,7 @@ use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Any;
 use sov_celestia_client_types::client_message::Header;
-use sov_celestia_client_types::client_state::SovTmClientState;
+use sov_celestia_client_types::client_state::{SovTmClientState, TmClientParams};
 use sov_celestia_client_types::consensus_state::{
     ConsensusState as ConsensusStateType, SovTmConsensusState, TmConsensusParams,
 };
@@ -274,4 +274,55 @@ where
     )?;
 
     Ok(latest_height)
+}
+
+/// Update the client's chain ID, trusting period, latest height, processed
+/// height, and processed time metadata values to those values provided by a
+/// verified substitute client state in response to a successful client
+/// recovery.
+pub fn update_on_recovery<E>(
+    subject_client_state: SovTmClientState,
+    ctx: &mut E,
+    subject_client_id: &ClientId,
+    substitute_client_state: Any,
+) -> Result<(), ClientError>
+where
+    E: SovExecutionContext,
+    E::ClientStateRef: From<SovTmClientState>,
+    E::ConsensusStateRef: ConsensusStateConverter,
+{
+    let substitute_client_state = ClientState::try_from(substitute_client_state)?.into_inner();
+
+    let chain_id = substitute_client_state.da_params.chain_id;
+    let trusting_period = substitute_client_state.da_params.trusting_period;
+    let latest_height = substitute_client_state.latest_height;
+
+    let new_client_state = SovTmClientState {
+        rollup_id: subject_client_state.rollup_id,
+        latest_height,
+        frozen_height: None,
+        upgrade_path: subject_client_state.upgrade_path,
+        da_params: TmClientParams {
+            chain_id,
+            trusting_period,
+            ..subject_client_state.da_params
+        },
+    };
+
+    let host_timestamp = E::host_timestamp(ctx)?;
+    let host_height = E::host_height(ctx)?;
+
+    ctx.store_client_state(
+        ClientStatePath::new(subject_client_id.clone()),
+        new_client_state.into(),
+    )?;
+
+    ctx.store_update_meta(
+        subject_client_id.clone(),
+        latest_height,
+        host_timestamp,
+        host_height,
+    )?;
+
+    Ok(())
 }

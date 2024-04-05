@@ -20,6 +20,10 @@ impl ConsensusState {
         &self.0
     }
 
+    pub fn into_inner(self) -> SovTmConsensusState {
+        self.0
+    }
+
     pub fn timestamp(&self) -> Time {
         self.0.da_params.timestamp
     }

@@ -329,7 +329,7 @@ impl TryFrom<AnyConsensusState> for SovTmConsensusState {
 
     fn try_from(cs: AnyConsensusState) -> Result<SovTmConsensusState, Self::Error> {
         match cs {
-            AnyConsensusState::Sovereign(cs) => Ok(cs.inner().clone()),
+            AnyConsensusState::Sovereign(cs) => Ok(cs.into_inner()),
             _ => Err(ClientError::UnknownConsensusStateType {
                 consensus_state_type: "".to_string(),
             }),
