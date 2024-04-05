@@ -25,7 +25,7 @@ where
 {
     /// TODO: Should figure out how can access the proof from the context
     fn get_proof(&self, height: Height, path: &Path) -> Option<Vec<u8>> {
-        let result = match path {
+        match path {
             Path::ClientState(client_state_path) => {
                 let mut archival_working_set = self
                     .working_set
@@ -37,6 +37,7 @@ where
                     .get_with_proof(&client_state_path.0, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             Path::ClientConsensusState(client_consensus_state_path) => {
                 let mut archival_working_set = self
@@ -49,6 +50,7 @@ where
                     .get_with_proof(client_consensus_state_path, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             Path::ClientConnection(client_connection_path) => {
                 let mut archival_working_set = self
@@ -61,6 +63,7 @@ where
                     .get_with_proof(client_connection_path, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             Path::Connection(connection_path) => {
                 let mut archival_working_set = self
@@ -73,6 +76,7 @@ where
                     .get_with_proof(connection_path, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             Path::ChannelEnd(channel_end_path) => {
                 let mut archival_working_set = self
@@ -85,6 +89,7 @@ where
                     .get_with_proof(channel_end_path, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             Path::SeqSend(seq_send_path) => {
                 let mut archival_working_set = self
@@ -97,6 +102,7 @@ where
                     .get_with_proof(seq_send_path, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             Path::SeqRecv(seq_recv_path) => {
                 let mut archival_working_set = self
@@ -109,6 +115,7 @@ where
                     .get_with_proof(seq_recv_path, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             Path::Commitment(commitment_path) => {
                 let mut archival_working_set = self
@@ -121,6 +128,7 @@ where
                     .get_with_proof(commitment_path, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             Path::Ack(ack_path) => {
                 let mut archival_working_set = self
@@ -133,6 +141,7 @@ where
                     .get_with_proof(ack_path, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             Path::Receipt(receipt_path) => {
                 let mut archival_working_set = self
@@ -145,6 +154,7 @@ where
                     .get_with_proof(receipt_path, &mut archival_working_set)
                     .proof
                     .try_to_vec()
+                    .ok()
             }
             // not required; but should filled in for completeness
             Path::NextClientSequence(_)
@@ -154,10 +164,8 @@ where
             | Path::ClientUpdateHeight(_)
             | Path::Ports(_)
             | Path::SeqAck(_)
-            | Path::UpgradeClient(_) => todo!(),
-        };
-
-        result.ok()
+            | Path::UpgradeClient(_) => None,
+        }
     }
 }
 
