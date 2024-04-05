@@ -31,7 +31,7 @@ pub struct Context<'a, C: ClientType<'a>> {
     env: Env,
     client_id: ClientId,
     checksum: Option<Checksum>,
-    recovery_prefix: MigrationPrefix,
+    migration_prefix: MigrationPrefix,
     client_type: std::marker::PhantomData<C>,
 }
 
@@ -45,7 +45,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
             env,
             client_id,
             checksum: None,
-            recovery_prefix: MigrationPrefix::None,
+            migration_prefix: MigrationPrefix::None,
             client_type: std::marker::PhantomData::<C>,
         })
     }
@@ -59,7 +59,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
             env,
             client_id,
             checksum: None,
-            recovery_prefix: MigrationPrefix::None,
+            migration_prefix: MigrationPrefix::None,
             client_type: std::marker::PhantomData::<C>,
         })
     }
@@ -81,16 +81,16 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
     }
 
     pub fn set_subject_prefix(&mut self) {
-        self.recovery_prefix = MigrationPrefix::Subject;
+        self.migration_prefix = MigrationPrefix::Subject;
     }
 
     pub fn set_substitute_prefix(&mut self) {
-        self.recovery_prefix = MigrationPrefix::Substitute;
+        self.migration_prefix = MigrationPrefix::Substitute;
     }
 
     pub fn prefixed_key(&self, key: impl AsRef<[u8]>) -> Vec<u8> {
         let mut prefixed_key = Vec::new();
-        prefixed_key.extend_from_slice(self.recovery_prefix.key());
+        prefixed_key.extend_from_slice(self.migration_prefix.key());
         prefixed_key.extend_from_slice(key.as_ref());
 
         prefixed_key
