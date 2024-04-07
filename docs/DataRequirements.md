@@ -172,9 +172,9 @@ endpoint in the list is the least important and least frequently required.
     either by the DA layer or the rollup node, including:
 
   - `ledger_getAggregatedProof`:
-    - Returns the proof of `AggregatedProofData` type.
-    - Used to construct the IBC header for passing into the rollup clients, so
-      they can verify aggregated proof and update their client state. By
+    - Returns a response of `AggregatedProof` type.
+    - Used to construct the IBC header for submission into the rollup light
+      clients, so they can verify aggregated proof and update their state. By
       default, it returns the latest published aggregated proof, but we should
       be able to query for a specific height by passing e.g. `proofIdentifier`.
 
@@ -185,7 +185,9 @@ endpoint in the list is the least important and least frequently required.
 
 - Priority: High
 
-- Status: [Available](https://github.com/informalsystems/sovereign-sdk-wip/blob/7d5595990c691e50d506e2b732b02b363d23ae36/full-node/sov-ledger-rpc/src/server.rs#L183-L203)
+- Status:
+  [Available](https://github.com/informalsystems/sovereign-sdk-wip/blob/7d5595990c691e50d506e2b732b02b363d23ae36/full-node/sov-ledger-rpc/src/server.rs#L183-L203).
+  Returns the latest aggregated proof.
 
 - Remark:
   - When clearing packets for a height range beyond a single proof's coverage,
