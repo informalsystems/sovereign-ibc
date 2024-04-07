@@ -7,7 +7,7 @@ version      = { workspace = true }
 authors      = { workspace = true }
 repository   = { workspace = true }
 publish      = false
-readme       = "README.md"
+readme       = "./../README.md"
 
 [lints]
 workspace = true
