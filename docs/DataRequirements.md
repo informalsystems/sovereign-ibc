@@ -36,7 +36,7 @@ endpoint in the list is the least important and least frequently required.
     - [`accounts_getAccount`](#accounts_getaccount)
     - [`ledger_rollupStatus`](#ledger_rollupstatus)
     - [`<namespace>_health`](#namespace_health)
-    - [IBC modules RPC](#ibc-modules-rpc)
+    - [IBC modules](#ibc-modules)
       - [Channel endpoints](#channel-endpoints)
       - [Client endpoints](#client-endpoints)
       - [Connection endpoints](#connection-endpoints)
@@ -57,13 +57,13 @@ endpoint in the list is the least important and least frequently required.
 
 - Status:
   - The
-    [`sequencer_publishBatch`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/cca1729445741aadbec2490c14ca2090afdc878b/full-node/sov-sequencer/src/lib.rs#L74-L90)
+    [`sequencer_publishBatch`](https://github.com/informalsystems/sovereign-sdk-wip/blob/cfdec9397a7d8cb8c64d901b8b573b2160c7a3ed/full-node/sov-sequencer/src/lib.rs#L140-L155)
     method works for this purpose. It takes an optional parameter where we can
     put a list of transactions, and then it will (1) insert all the transactions
     into the mempool, and (2) trigger the mempool to create a batch and post it
     on the DA layer.
   - There is also a
-    [`sequencer_acceptTx`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/190863c29835af9090e38d79284b24406c33758c/full-node/sov-sequencer/src/lib.rs#L56-L64)
+    [`sequencer_acceptTx`](https://github.com/informalsystems/sovereign-sdk-wip/blob/cfdec9397a7d8cb8c64d901b8b573b2160c7a3ed/full-node/sov-sequencer/src/lib.rs#L156-L167)
     method, which stores a single transaction into the mempool.
 
 ### `sequencer_txStatus`
@@ -74,9 +74,11 @@ endpoint in the list is the least important and least frequently required.
 
 - Priority: Low
 
-- Status: There is a [web socket
-  mechanism](https://github.com/sovereign-labs/sovereign-sdk-wip/blob/41779c30bf1b4b9dd3f6408a174d942f30bb401a/full-node/sov-sequencer/tests/tx_status_subscription_rpc.rs#L52)
-  allows us to subscribe for tx status, but no RPC method available yet.
+- Status: There is a
+  [socket](https://github.com/informalsystems/sovereign-sdk-wip/blob/cfdec9397a7d8cb8c64d901b8b573b2160c7a3ed/full-node/sov-sequencer/src/lib.rs#L178-L185)
+  endpoint and [RPC
+  method](https://github.com/informalsystems/sovereign-sdk-wip/blob/cfdec9397a7d8cb8c64d901b8b573b2160c7a3ed/full-node/sov-sequencer/src/lib.rs#L169-L177)
+  available.
 
 ### `sequencer_health`
 
@@ -120,7 +122,7 @@ endpoint in the list is the least important and least frequently required.
      - Priority: Low
 
 - Status:
-  - Available
+  - [Available](https://github.com/informalsystems/sovereign-sdk-wip/blob/7d5595990c691e50d506e2b732b02b363d23ae36/full-node/sov-ledger-rpc/src/server.rs#L148-L154)
   - Additionally worth noting there is a `ledger_getEvents` RPC method enabling
     to search for a single event using the provided
     [`EventIdentifier`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/main/rollup-interface/src/node/rpc/mod.rs#L80-L92),
@@ -183,7 +185,7 @@ endpoint in the list is the least important and least frequently required.
 
 - Priority: High
 
-- Status: Available
+- Status: [Available](https://github.com/informalsystems/sovereign-sdk-wip/blob/7d5595990c691e50d506e2b732b02b363d23ae36/full-node/sov-ledger-rpc/src/server.rs#L183-L203)
 
 - Remark:
   - When clearing packets for a height range beyond a single proof's coverage,
@@ -216,7 +218,7 @@ endpoint in the list is the least important and least frequently required.
 
 - Status:
   - There is an
-    [`accounts_getAccount`](https://github.com/informalsystems/sovereign-sdk/blob/d42e289f26b9824b5ed54dbfbda94007dee305b2/module-system/module-implementations/sov-accounts/src/query.rs#L26-L45)
+    [`accounts_getAccount`](https://github.com/informalsystems/sovereign-sdk-wip/blob/2bcb00f98dabbc8ce56abfe9babdfe5fb3979b7b/module-system/module-implementations/sov-accounts/src/rpc.rs#L23-L39)
     RPC endpoint which appears to perform the same job as `query_account` on
     Cosmos chains.
 
@@ -263,7 +265,7 @@ endpoint in the list is the least important and least frequently required.
   [`health`](https://github.com/Sovereign-Labs/sovereign-sdk/blob/1adbfc963bb930edfa0efe6030262dfb70acf199/module-system/sov-modules-macros/src/rpc/rpc_gen.rs#L339-L343)
   method to check the health of the RPC server.
 
-### IBC modules RPC
+### IBC modules
 
 - Objective:
   - Queries client, connection and channel-associated data and states.
@@ -342,7 +344,7 @@ with a specified channel.
 
 - Priority: Low
 
-- Status: Available
+- Status: [Available](https://github.com/informalsystems/sovereign-sdk-wip/blob/7d5595990c691e50d506e2b732b02b363d23ae36/full-node/sov-ledger-rpc/src/server.rs#L215-L223)
 
 ### `ledger_subscribeSlots`
 
