@@ -44,17 +44,17 @@ where
                 .proof
                 .try_to_vec()
                 .ok(),
-            Path::ClientConnection(client_connection_path) => self
-                .ibc
-                .client_connections_map
-                .get_with_proof(client_connection_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
             Path::Connection(connection_path) => self
                 .ibc
                 .connection_end_map
                 .get_with_proof(connection_path, &mut archival_working_set)
+                .proof
+                .try_to_vec()
+                .ok(),
+            Path::ClientConnection(client_connection_path) => self
+                .ibc
+                .client_connections_map
+                .get_with_proof(client_connection_path, &mut archival_working_set)
                 .proof
                 .try_to_vec()
                 .ok(),
