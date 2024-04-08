@@ -15,15 +15,19 @@ functionalities, including:
 
 - `sov-ibc-transfer`: This module is dedicated to integrating ICS-20 application
   and handling the intricate IBC transfer functionalities within Sovereign SDK
-  rollups. It works hand in hand with the `sov-bank` module for executing ICS20
+  rollups. It works hand in hand with the `sov-bank` module for executing ICS-20
   packets.
 
 - `sov-consensus-state-tracker`: Serving as a custom "kernel" module, focuses on
-  tracking the consensus state of the Data Availability (DA) layer. It
-  consistently retrieves the DA's consensus state, along with the rollup's
-  latest height and timestamp during each slot execution. This ensures that the
-  `sov-ibc` module remains synchronized with the latest states, which is vital
-  for `ibc-rs` handlers to accurately process incoming packets.
+  tracking the consensus state of the Data Availability (DA) layer. This module
+  is not an IBC module per se, but it is essential for consistently retrieving
+  the DA's consensus state, along with the rollup's latest height and timestamp
+  during each slot execution. This ensures that the `sov-ibc` module remains
+  synchronized with the latest states, which is vital for `ibc-rs` handlers to
+  accurately process incoming packets.
+  - **Note**: Currently, this module supports `mock-da` and `celestia-da`.
+    Depending on which DA layer is used, the corresponding DA feature flag
+    should be enabled.
 
 ## Available RPC Methods
 
@@ -33,8 +37,8 @@ module exposes a set of methods for fetching their Id and status, as follows:
 
 - `ibc_moduleId`
 - `ibc_health`
-- `ibcTransfer_moduleId`
-- `ibcTransfer_health`
+- `transfer_moduleId`
+- `transfer_health`
 
 Here is an overview of the RPC methods available for each module:
 
@@ -78,8 +82,8 @@ Here is an overview of the RPC methods available for each module:
 
 ### `sov-ibc-transfer` RPC Methods
 
-- `ibcTransfer_escrowedToken`: Searches the list of escrowed tokens based on the
+- `transfer_escrowedToken`: Searches the list of escrowed tokens based on the
   provided token denomination and returns the corresponding token ID, if
   available.
-- `ibcTransfer_mintedToken` : Searches the list of minted tokens based on the provided
+- `transfer_mintedToken` : Searches the list of minted tokens based on the provided
   token denomination and returns the corresponding token ID, if available.

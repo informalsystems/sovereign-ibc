@@ -6,8 +6,8 @@ rust-version = { workspace = true }
 version      = { workspace = true }
 authors      = { workspace = true }
 repository   = { workspace = true }
-publish      = false
 readme       = "./../README.md"
+publish      = false
 
 [lints]
 workspace = true
@@ -28,7 +28,7 @@ uint       = "0.9"
 # ibc dependencies
 ibc-app-transfer = { workspace = true, features = ["borsh", "schema"] }
 ibc-core         = { workspace = true }
-tendermint = { workspace = true } # Temporary dependency used for implementing the consensus_state method
+tendermint       = { workspace = true } # Temporary dependency used for implementing the consensus_state method
 
 # sovereign dependencies
 sov-mock-da          = { workspace = true, features = ["native"], optional = true }
