@@ -1,3 +1,15 @@
+//! Defines the aggregated proof data structures, and their conversions to and
+//! from the raw Protobuf types for the Sovereign SDK rollups.
+//!
+//! Note: Since Rust protobuf types currently live in `sovereign-ibc`,
+//! additionally we are in the midst of development where aggregated proof
+//! definitions are evolving, and want to leverage client-specific methods and
+//! implementations. As a result, we're keeping a set of domain types identical
+//! to those in the Sovereign SDK, at least for now. This facilitates easier
+//! development and minimizes dependencies on the Sovereign SDK repository.
+//! Looking ahead, we may consider merging these two into a potential shared
+//! client-side library.
+
 use core::fmt::{Display, Error as FmtError, Formatter};
 
 use ibc_core::client::types::Height;
