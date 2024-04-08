@@ -87,19 +87,19 @@ pub mod test_util {
 
     use ibc_client_tendermint::types::Header as TmHeader;
 
-    use crate::client_message::{AggregatedProofData, SovTmHeader};
+    use crate::client_message::{AggregatedProof, SovTmHeader};
     #[derive(typed_builder::TypedBuilder, Debug)]
     #[builder(build_method(into = SovTmHeader))]
     pub struct HeaderConfig {
         pub da_header: TmHeader,
-        pub aggregated_proof_data: AggregatedProofData,
+        pub aggregated_proof: AggregatedProof,
     }
 
     impl From<HeaderConfig> for SovTmHeader {
         fn from(config: HeaderConfig) -> Self {
             Self {
                 da_header: config.da_header,
-                aggregated_proof_data: config.aggregated_proof_data,
+                aggregated_proof: config.aggregated_proof,
             }
         }
     }

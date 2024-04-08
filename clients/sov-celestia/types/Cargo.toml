@@ -41,6 +41,9 @@ tendermint                       = { workspace = true }
 tendermint-proto                 = { workspace = true }
 tendermint-light-client-verifier = { workspace = true }
 
+# sovereign dependencies
+sov-rollup-interface = { workspace = true }
+
 [features]
 default = ["std"]
 std = [

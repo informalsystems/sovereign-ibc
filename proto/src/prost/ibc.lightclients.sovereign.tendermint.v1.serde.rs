@@ -289,8 +289,8 @@ impl serde::Serialize for Header {
         if let Some(v) = self.tendermint_header.as_ref() {
             struct_ser.serialize_field("tendermintHeader", v)?;
         }
-        if let Some(v) = self.aggregated_proof_data.as_ref() {
-            struct_ser.serialize_field("aggregatedProofData", v)?;
+        if let Some(v) = self.aggregated_proof.as_ref() {
+            struct_ser.serialize_field("aggregatedProof", v)?;
         }
         struct_ser.end()
     }
@@ -304,14 +304,14 @@ impl<'de> serde::Deserialize<'de> for Header {
         const FIELDS: &[&str] = &[
             "tendermint_header",
             "tendermintHeader",
-            "aggregated_proof_data",
-            "aggregatedProofData",
+            "aggregated_proof",
+            "aggregatedProof",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             TendermintHeader,
-            AggregatedProofData,
+            AggregatedProof,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> core::result::Result<GeneratedField, D::Error>
@@ -334,7 +334,7 @@ impl<'de> serde::Deserialize<'de> for Header {
                     {
                         match value {
                             "tendermintHeader" | "tendermint_header" => Ok(GeneratedField::TendermintHeader),
-                            "aggregatedProofData" | "aggregated_proof_data" => Ok(GeneratedField::AggregatedProofData),
+                            "aggregatedProof" | "aggregated_proof" => Ok(GeneratedField::AggregatedProof),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -355,7 +355,7 @@ impl<'de> serde::Deserialize<'de> for Header {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut tendermint_header__ = None;
-                let mut aggregated_proof_data__ = None;
+                let mut aggregated_proof__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::TendermintHeader => {
@@ -364,17 +364,17 @@ impl<'de> serde::Deserialize<'de> for Header {
                             }
                             tendermint_header__ = map_.next_value()?;
                         }
-                        GeneratedField::AggregatedProofData => {
-                            if aggregated_proof_data__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("aggregatedProofData"));
+                        GeneratedField::AggregatedProof => {
+                            if aggregated_proof__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("aggregatedProof"));
                             }
-                            aggregated_proof_data__ = map_.next_value()?;
+                            aggregated_proof__ = map_.next_value()?;
                         }
                     }
                 }
                 Ok(Header {
                     tendermint_header: tendermint_header__,
-                    aggregated_proof_data: aggregated_proof_data__,
+                    aggregated_proof: aggregated_proof__,
                 })
             }
         }

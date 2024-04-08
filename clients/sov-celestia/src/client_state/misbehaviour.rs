@@ -71,7 +71,7 @@ where
     )?;
 
     // TODO: Determine what sort of checks we need to carry out for detecting
-    // `AggregatedProofData` misbehaviour.
+    // `AggregatedProof` misbehaviour.
 
     Ok(())
 }

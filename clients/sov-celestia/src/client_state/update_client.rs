@@ -39,8 +39,8 @@ where
         verifier,
     )?;
 
-    // TODO: Implement the verification of the `AggregatedProofData`.
-    // aggregated_proof_date.verify()?;
+    // TODO: Implement the verification of the `AggregatedProof`.
+    // aggregated_proof.verify()?;
 
     Ok(())
 }
