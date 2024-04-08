@@ -221,6 +221,8 @@ impl<'a, S> ProvableContext for IbcContext<'a, S>
 where
     S: Spec,
 {
+    // NOTE: this is not efficient if used a separate `get_value`
+    // As, `get_with_proof` will retrieve the value anyway
     fn get_proof(&self, height: Height, path: &Path) -> Option<Vec<u8>> {
         let mut archival_working_set = self
             .working_set
