@@ -221,8 +221,9 @@ impl<'a, S> ProvableContext for IbcContext<'a, S>
 where
     S: Spec,
 {
-    // NOTE: this is not efficient if used a separate `get_value`
-    // As, `get_with_proof` will retrieve the value anyway
+    // NOTE: This is not efficient if used with a separate `get` call which returns only values.
+    // Because `get_with_proof` will retrieve proof along with the value anyway.
+    // Currently there is no way of retrieving only the proof.
     fn get_proof(&self, height: Height, path: &Path) -> Option<Vec<u8>> {
         let mut archival_working_set = self
             .working_set
