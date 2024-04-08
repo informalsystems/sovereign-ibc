@@ -1,23 +1,221 @@
 use borsh::BorshSerialize;
 use ibc_client_tendermint::types::client_type as tm_client_type;
-use ibc_core::channel::types::channel::IdentifiedChannelEnd;
+use ibc_core::channel::types::channel::{ChannelEnd, IdentifiedChannelEnd};
+use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
 use ibc_core::channel::types::error::ChannelError;
-use ibc_core::channel::types::packet::PacketState;
+use ibc_core::channel::types::packet::{PacketState, Receipt};
 use ibc_core::client::context::ClientValidationContext;
 use ibc_core::client::types::Height;
 use ibc_core::connection::types::error::ConnectionError;
-use ibc_core::connection::types::IdentifiedConnectionEnd;
+use ibc_core::connection::types::{ConnectionEnd, IdentifiedConnectionEnd};
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::identifiers::{ChannelId, ClientId, ConnectionId, PortId, Sequence};
 use ibc_core::host::types::path::{
-    AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath, Path,
-    ReceiptPath,
+    AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath,
+    ConnectionPath, Path, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath, UpgradeClientPath,
 };
 use ibc_core::host::{ClientStateRef, ConsensusStateRef, ValidationContext};
 use ibc_query::core::context::{ProvableContext, QueryContext};
+use sov_celestia_client::client_state::ClientState as HostClientState;
+use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_modules_api::Spec;
 
 use crate::context::IbcContext;
+use crate::helpers::StorageValue;
+
+impl<'a, S> IbcContext<'a, S>
+where
+    S: Spec,
+{
+    pub fn dyn_client_state<SV>(&self, client_id: &ClientId) -> SV::Output
+    where
+        SV: StorageValue<ClientStateRef<Self>>,
+    {
+        SV::value_at_key(
+            client_id,
+            &self.ibc.client_state_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_client_consensus_state<SV>(
+        &self,
+        client_id: &ClientId,
+        revision_number: u64,
+        revision_height: u64,
+    ) -> SV::Output
+    where
+        SV: StorageValue<ConsensusStateRef<Self>>,
+    {
+        let client_consensus_state_path =
+            &ClientConsensusStatePath::new(client_id.clone(), revision_number, revision_height);
+
+        SV::value_at_key(
+            client_consensus_state_path,
+            &self.ibc.consensus_state_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_upgraded_client_state<SV>(&self, height: u64) -> SV::Output
+    where
+        SV: StorageValue<HostClientState>,
+    {
+        let upgrade_client_path = &UpgradeClientPath::UpgradedClientState(height);
+
+        SV::value_at_key(
+            upgrade_client_path,
+            &self.ibc.upgraded_client_state_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_upgraded_consensus_state<SV>(&self, height: u64) -> SV::Output
+    where
+        SV: StorageValue<HostConsensusState>,
+    {
+        let upgrade_client_consensus_path =
+            &UpgradeClientPath::UpgradedClientConsensusState(height);
+
+        SV::value_at_key(
+            upgrade_client_consensus_path,
+            &self.ibc.upgraded_consensus_state_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_connection_end<SV>(&self, connection_id: &ConnectionId) -> SV::Output
+    where
+        SV: StorageValue<ConnectionEnd>,
+    {
+        let connection_path = &ConnectionPath::new(connection_id);
+
+        SV::value_at_key(
+            connection_path,
+            &self.ibc.connection_end_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_client_connections<SV>(&self, client_id: &ClientId) -> SV::Output
+    where
+        SV: StorageValue<Vec<ConnectionId>>,
+    {
+        let client_connection_path = &ClientConnectionPath::new(client_id.clone());
+
+        SV::value_at_key(
+            client_connection_path,
+            &self.ibc.client_connections_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_channel_end<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    where
+        SV: StorageValue<ChannelEnd>,
+    {
+        let channel_end_path = &ChannelEndPath::new(port_id, channel_id);
+
+        SV::value_at_key(
+            channel_end_path,
+            &self.ibc.channel_end_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_send_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    where
+        SV: StorageValue<Sequence>,
+    {
+        let seq_send_path = &SeqSendPath::new(port_id, channel_id);
+
+        SV::value_at_key(
+            seq_send_path,
+            &self.ibc.send_sequence_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_recv_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    where
+        SV: StorageValue<Sequence>,
+    {
+        let seq_recv_path = &SeqRecvPath::new(port_id, channel_id);
+
+        SV::value_at_key(
+            seq_recv_path,
+            &self.ibc.recv_sequence_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_ack_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    where
+        SV: StorageValue<Sequence>,
+    {
+        let seq_ack_path = &SeqAckPath::new(port_id, channel_id);
+
+        SV::value_at_key(
+            seq_ack_path,
+            &self.ibc.ack_sequence_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_packet_commitment<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+        sequence: Sequence,
+    ) -> SV::Output
+    where
+        SV: StorageValue<PacketCommitment>,
+    {
+        let commitment_path = &CommitmentPath::new(port_id, channel_id, sequence);
+
+        SV::value_at_key(
+            commitment_path,
+            &self.ibc.packet_commitment_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_packet_receipt<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+        sequence: Sequence,
+    ) -> SV::Output
+    where
+        SV: StorageValue<Receipt>,
+    {
+        let receipt_path = &ReceiptPath::new(port_id, channel_id, sequence);
+
+        SV::value_at_key(
+            receipt_path,
+            &self.ibc.packet_receipt_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn dyn_packet_acknowledgement<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+        sequence: Sequence,
+    ) -> SV::Output
+    where
+        SV: StorageValue<AcknowledgementCommitment>,
+    {
+        let ack_path = &AckPath::new(port_id, channel_id, sequence);
+
+        SV::value_at_key(
+            ack_path,
+            &self.ibc.packet_ack_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+}
 
 impl<'a, S> ProvableContext for IbcContext<'a, S>
 where
