@@ -293,8 +293,13 @@ impl<S: Spec> Ibc<S> {
         let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
 
         let connection_end = ibc_ctx
-            .connection_end(&request.connection_id)
-            .map_err(to_jsonrpsee_error)?;
+            .dyn_connection_end::<WithoutProof<_>>(&request.connection_id)
+            .ok_or_else(|| {
+                to_jsonrpsee_error(format!(
+                    "Connection not found for connection id {:?}",
+                    request.connection_id
+                ))
+            })?;
 
         let (client_state, proof) =
             ibc_ctx.dyn_client_state::<WithProof<_>>(connection_end.client_id());
@@ -327,8 +332,13 @@ impl<S: Spec> Ibc<S> {
         let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
 
         let connection_end = ibc_ctx
-            .connection_end(&request.connection_id)
-            .map_err(to_jsonrpsee_error)?;
+            .dyn_connection_end::<WithoutProof<_>>(&request.connection_id)
+            .ok_or_else(|| {
+                to_jsonrpsee_error(format!(
+                    "Connection not found for connection id {:?}",
+                    request.connection_id
+                ))
+            })?;
 
         let (consensus_state, proof) = ibc_ctx.dyn_client_consensus_state::<WithProof<_>>(
             connection_end.client_id(),
