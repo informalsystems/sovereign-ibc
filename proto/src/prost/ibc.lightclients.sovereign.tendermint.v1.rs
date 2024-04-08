@@ -133,8 +133,8 @@ pub struct Header {
     >,
     /// the rollup aggregated proof data
     #[prost(message, optional, tag = "2")]
-    pub aggregated_proof_data: ::core::option::Option<
-        super::super::super::super::super::sovereign::types::v1::AggregatedProofData,
+    pub aggregated_proof: ::core::option::Option<
+        super::super::super::super::super::sovereign::types::v1::AggregatedProof,
     >,
 }
 impl ::prost::Name for Header {

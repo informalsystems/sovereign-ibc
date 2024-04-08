@@ -4,21 +4,21 @@ package sovereign.types.v1;
 
 import "gogoproto/gogo.proto";
 
-// AggregatedProofData is the overarching structure, encompassing public input,
-// proof data information, and aggregated proof bytes.
-message AggregatedProofData {
-  // the public input of the aggregated proof
-  AggregatedProofPublicData public_input = 1;
+// AggregatedProof is the overarching structure, encompassing public data, proof
+// data information, and aggregated proof bytes.
+message AggregatedProof {
+  // the public data of the aggregated proof
+  AggregatedProofPublicData public_data = 1;
   // the aggregated proof bytes
-  AggregatedProof aggregated_proof = 2;
+  SerializedAggregatedProof serialized_proof = 2;
 }
 
-// AggregatedProofPublicInput defines the public properties of the
+// AggregatedProofPublicData defines the public properties of the
 // AggregatedProof for the Sovereign SDK rollups, utilized for verifying the
 // proof.
 message AggregatedProofPublicData {
   // The set of validity conditions for each block of the aggregated proof.
-  repeated ValidityCondition validity_conditions = 1 [
+  repeated SerializedValidityCondition validity_conditions = 1 [
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"validity_conditions\""
   ];
@@ -45,16 +45,16 @@ message AggregatedProofPublicData {
   ];
 }
 
-// AggregatedProof defines the aggregated proof structure for the Sovereign SDK
-// rollups.
-message AggregatedProof {
-  // the rollup aggregated proof bytes covering a range of DA blocks
-  bytes proof = 1;
+// SerializedAggregatedProof defines the raw aggregated proof structure for the
+// Sovereign SDK rollups.
+message SerializedAggregatedProof {
+  // the rollup raw aggregated proof bytes covering a range of DA blocks
+  bytes raw_aggregated_proof = 1;
 }
 
-// ValidityCondition defines the validity condition for each block of the
-// aggregated proof
-message ValidityCondition {
+// SerializedValidityCondition defines the serialized validity condition for
+// each block of the aggregated proof
+message SerializedValidityCondition {
   // the validity condition
   bytes validity_condition = 1;
 }

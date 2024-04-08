@@ -1,87 +1,114 @@
+//! Defines the aggregated proof data structures, and their conversions to and
+//! from the raw Protobuf types for the Sovereign SDK rollups.
+//!
+//! Note: Since Rust protobuf types currently live in `sovereign-ibc`,
+//! additionally we are in the midst of development where aggregated proof
+//! definitions are evolving, and want to leverage client-specific methods and
+//! implementations. As a result, we're keeping a set of domain types identical
+//! to those in the Sovereign SDK, at least for now. This facilitates easier
+//! development and minimizes dependencies on the Sovereign SDK repository.
+//! Looking ahead, we may consider merging these two into a potential shared
+//! client-side library.
+
 use core::fmt::{Display, Error as FmtError, Formatter};
 
 use ibc_core::client::types::Height;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Protobuf;
+use sov_rollup_interface::zk::aggregated_proof::{
+    AggregatedProof as SovAggregatedProof,
+    AggregatedProofPublicData as SovAggregatedProofPublicData, CodeCommitment as SovCodeCommitment,
+    SerializedAggregatedProof as SovSerializedAggregatedProof,
+};
 
 use crate::client_message::pretty::PrettySlice;
 use crate::error::Error;
 use crate::proto::types::v1::{
-    AggregatedProof as RawAggregatedProof, AggregatedProofData as RawAggregatedProofData,
+    AggregatedProof as RawAggregatedProof,
     AggregatedProofPublicData as RawAggregatedProofPublicData, CodeCommitment as RawCodeCommitment,
-    ValidityCondition as RawValidityCondition,
+    SerializedAggregatedProof as RawSerializedAggregatedProof,
+    SerializedValidityCondition as RawSerializedValidityCondition,
 };
 
 /// Defines the aggregated proof data structure for the Sovereign SDK rollups
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AggregatedProofData {
-    pub public_input: AggregatedProofPublicData,
-    pub aggregated_proof: AggregatedProof,
+pub struct AggregatedProof {
+    pub public_data: AggregatedProofPublicData,
+    pub serialized_proof: SerializedAggregatedProof,
 }
 
-impl AggregatedProofData {
-    pub fn new(public_input: AggregatedProofPublicData, aggregated_proof: AggregatedProof) -> Self {
+impl AggregatedProof {
+    pub fn new(
+        public_data: AggregatedProofPublicData,
+        serialized_proof: SerializedAggregatedProof,
+    ) -> Self {
         Self {
-            public_input,
-            aggregated_proof,
+            public_data,
+            serialized_proof,
         }
     }
 
-    pub fn public_input(&self) -> &AggregatedProofPublicData {
-        &self.public_input
+    pub fn public_data(&self) -> &AggregatedProofPublicData {
+        &self.public_data
     }
 
-    pub fn aggregated_proof(&self) -> &AggregatedProof {
-        &self.aggregated_proof
+    pub fn serialized_proof(&self) -> &SerializedAggregatedProof {
+        &self.serialized_proof
     }
 
     pub fn validate_basic(&self) -> Result<(), Error> {
-        self.public_input.basic_validate()?;
+        self.public_data.basic_validate()?;
 
-        if self.aggregated_proof.is_empty() {
-            return Err(Error::empty("aggregated proof"));
+        if self.serialized_proof.is_empty() {
+            return Err(Error::empty("serialized proof"));
         }
 
         Ok(())
     }
 }
 
-impl Display for AggregatedProofData {
+impl Display for AggregatedProof {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "AggregatedProofData {{ aggregated_proof_public_input: {}, aggregated_proof: {} }}",
-            &self.public_input, self.aggregated_proof
+            "AggregatedProof {{ aggregated_proof_public_data: {}, serialized_proof: {} }}",
+            &self.public_data, self.serialized_proof
         )
     }
 }
 
-impl Protobuf<RawAggregatedProofData> for AggregatedProofData {}
+impl Protobuf<RawAggregatedProof> for AggregatedProof {}
 
-impl TryFrom<RawAggregatedProofData> for AggregatedProofData {
+impl TryFrom<RawAggregatedProof> for AggregatedProof {
     type Error = Error;
 
-    fn try_from(raw: RawAggregatedProofData) -> Result<Self, Self::Error> {
+    fn try_from(raw: RawAggregatedProof) -> Result<Self, Self::Error> {
         Ok(Self {
-            public_input: raw
-                .public_input
-                .ok_or(Error::missing("public input"))?
+            public_data: raw
+                .public_data
+                .ok_or(Error::missing("public data"))?
                 .try_into()?,
-            aggregated_proof: raw
-                .aggregated_proof
-                .ok_or(Error::missing("aggregated proof"))?
+            serialized_proof: raw
+                .serialized_proof
+                .ok_or(Error::missing("serialized proof"))?
                 .into(),
         })
     }
 }
 
-impl From<AggregatedProofData> for RawAggregatedProofData {
-    fn from(value: AggregatedProofData) -> Self {
+impl From<AggregatedProof> for RawAggregatedProof {
+    fn from(value: AggregatedProof) -> Self {
         Self {
-            public_input: Some(value.public_input.into()),
-            aggregated_proof: Some(value.aggregated_proof.into()),
+            public_data: Some(value.public_data.into()),
+            serialized_proof: Some(value.serialized_proof.into()),
         }
+    }
+}
+
+impl From<AggregatedProof> for SovAggregatedProof {
+    fn from(value: AggregatedProof) -> Self {
+        Self::new(value.serialized_proof.into(), value.public_data.into())
     }
 }
 
@@ -94,7 +121,7 @@ pub struct AggregatedProofPublicData {
     pub initial_slot_number: Height,
     pub final_slot_number: Height,
     pub genesis_state_root: Root,
-    pub input_state_root: Root,
+    pub initial_state_root: Root,
     pub final_state_root: Root,
     pub initial_slot_hash: Vec<u8>,
     pub final_slot_hash: Vec<u8>,
@@ -160,17 +187,37 @@ impl Display for AggregatedProofPublicData {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(
                 f,
-                "AggregatedProofPublicData {{ validity_conditions: {}, initial_slot_number: {}, final_slot_number: {}, initial_slot_hash: {}, final_slot_hash: {}, genesis_state_root: {}, input_state_root: {}, post_state_root: {}, code_commitment: {} }}",
+                "AggregatedProofPublicData {{ validity_conditions: {}, initial_slot_number: {}, final_slot_number: {}, initial_slot_hash: {}, final_slot_hash: {}, genesis_state_root: {}, initial_state_root: {}, final_state_root: {}, code_commitment: {} }}",
                 PrettySlice(&self.validity_conditions),
                 self.initial_slot_number,
                 self.final_slot_number,
                 hex::encode(self.genesis_state_root.as_ref()),
-                hex::encode(self.input_state_root.as_ref()),
+                hex::encode(self.initial_state_root.as_ref()),
                 hex::encode(self.final_state_root.as_ref()),
                 hex::encode(&self.initial_slot_hash),
                 hex::encode(&self.final_slot_hash),
                 self.code_commitment,
             )
+    }
+}
+
+impl From<AggregatedProofPublicData> for SovAggregatedProofPublicData {
+    fn from(value: AggregatedProofPublicData) -> Self {
+        Self {
+            validity_conditions: value
+                .validity_conditions
+                .into_iter()
+                .map(|vc| vc.0)
+                .collect(),
+            initial_slot_number: value.initial_slot_number.revision_height(),
+            final_slot_number: value.final_slot_number.revision_height(),
+            genesis_state_root: value.genesis_state_root.into(),
+            initial_state_root: value.initial_state_root.into(),
+            final_state_root: value.final_state_root.into(),
+            initial_slot_hash: value.initial_slot_hash,
+            final_slot_hash: value.final_slot_hash,
+            code_commitment: value.code_commitment.into(),
+        }
     }
 }
 
@@ -189,7 +236,7 @@ impl TryFrom<RawAggregatedProofPublicData> for AggregatedProofPublicData {
             initial_slot_number: Height::new(0, raw.initial_slot_number)?,
             final_slot_number: Height::new(0, raw.final_slot_number)?,
             genesis_state_root: raw.genesis_state_root.try_into()?,
-            input_state_root: raw.initial_state_root.try_into()?,
+            initial_state_root: raw.initial_state_root.try_into()?,
             final_state_root: raw.final_state_root.try_into()?,
             initial_slot_hash: raw.initial_slot_hash,
             final_slot_hash: raw.final_slot_hash,
@@ -212,7 +259,7 @@ impl From<AggregatedProofPublicData> for RawAggregatedProofPublicData {
             initial_slot_number: value.initial_slot_number.revision_height(),
             final_slot_number: value.final_slot_number.revision_height(),
             genesis_state_root: value.genesis_state_root.into(),
-            initial_state_root: value.input_state_root.into(),
+            initial_state_root: value.initial_state_root.into(),
             final_state_root: value.final_state_root.into(),
             initial_slot_hash: value.initial_slot_hash,
             final_slot_hash: value.final_slot_hash,
@@ -227,6 +274,10 @@ impl From<AggregatedProofPublicData> for RawAggregatedProofPublicData {
 pub struct ValidityCondition(Vec<u8>);
 
 impl ValidityCondition {
+    pub fn into_inner(self) -> Vec<u8> {
+        self.0
+    }
+
     pub fn as_slice(&self) -> &[u8] {
         &self.0
     }
@@ -251,15 +302,15 @@ impl From<Vec<u8>> for ValidityCondition {
     }
 }
 
-impl Protobuf<RawValidityCondition> for ValidityCondition {}
+impl Protobuf<RawSerializedValidityCondition> for ValidityCondition {}
 
-impl From<RawValidityCondition> for ValidityCondition {
-    fn from(raw: RawValidityCondition) -> Self {
+impl From<RawSerializedValidityCondition> for ValidityCondition {
+    fn from(raw: RawSerializedValidityCondition) -> Self {
         Self(raw.validity_condition)
     }
 }
 
-impl From<ValidityCondition> for RawValidityCondition {
+impl From<ValidityCondition> for RawSerializedValidityCondition {
     fn from(value: ValidityCondition) -> Self {
         Self {
             validity_condition: value.0,
@@ -273,6 +324,10 @@ impl From<ValidityCondition> for RawValidityCondition {
 pub struct CodeCommitment(Vec<u8>);
 
 impl CodeCommitment {
+    pub fn into_inner(self) -> Vec<u8> {
+        self.0
+    }
+
     pub fn as_slice(&self) -> &[u8] {
         &self.0
     }
@@ -308,16 +363,26 @@ impl From<RawCodeCommitment> for CodeCommitment {
 impl From<CodeCommitment> for RawCodeCommitment {
     fn from(value: CodeCommitment) -> Self {
         Self {
-            code_commitment: value.0,
+            code_commitment: value.0.to_vec(),
         }
+    }
+}
+
+impl From<CodeCommitment> for SovCodeCommitment {
+    fn from(value: CodeCommitment) -> Self {
+        Self(value.0)
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AggregatedProof(Vec<u8>);
+pub struct SerializedAggregatedProof(Vec<u8>);
 
-impl AggregatedProof {
+impl SerializedAggregatedProof {
+    pub fn into_inner(self) -> Vec<u8> {
+        self.0
+    }
+
     pub fn as_slice(&self) -> &[u8] {
         &self.0
     }
@@ -327,32 +392,42 @@ impl AggregatedProof {
     }
 }
 
-impl Display for AggregatedProof {
+impl Display for SerializedAggregatedProof {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         if self.0.is_empty() {
-            return write!(f, "AggregatedProof([])");
+            return write!(f, "SerializedAggregatedProof([])");
         }
-        write!(f, "AggregatedProof(0x{})", hex::encode(&self.0))
+        write!(f, "SerializedAggregatedProof(0x{})", hex::encode(&self.0))
     }
 }
 
-impl From<Vec<u8>> for AggregatedProof {
+impl From<Vec<u8>> for SerializedAggregatedProof {
     fn from(proof: Vec<u8>) -> Self {
         Self(proof)
     }
 }
 
-impl Protobuf<RawAggregatedProof> for AggregatedProof {}
+impl Protobuf<RawSerializedAggregatedProof> for SerializedAggregatedProof {}
 
-impl From<RawAggregatedProof> for AggregatedProof {
-    fn from(raw: RawAggregatedProof) -> Self {
-        Self(raw.proof)
+impl From<RawSerializedAggregatedProof> for SerializedAggregatedProof {
+    fn from(raw: RawSerializedAggregatedProof) -> Self {
+        Self(raw.raw_aggregated_proof)
     }
 }
 
-impl From<AggregatedProof> for RawAggregatedProof {
-    fn from(value: AggregatedProof) -> Self {
-        Self { proof: value.0 }
+impl From<SerializedAggregatedProof> for RawSerializedAggregatedProof {
+    fn from(value: SerializedAggregatedProof) -> Self {
+        Self {
+            raw_aggregated_proof: value.0,
+        }
+    }
+}
+
+impl From<SerializedAggregatedProof> for SovSerializedAggregatedProof {
+    fn from(value: SerializedAggregatedProof) -> Self {
+        Self {
+            raw_aggregated_proof: value.0,
+        }
     }
 }
 
