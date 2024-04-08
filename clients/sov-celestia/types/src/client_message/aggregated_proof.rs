@@ -4,7 +4,9 @@ use ibc_core::client::types::Height;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Protobuf;
 use sov_rollup_interface::zk::aggregated_proof::{
+    AggregatedProof as SovAggregatedProof,
     AggregatedProofPublicData as SovAggregatedProofPublicData, CodeCommitment as SovCodeCommitment,
+    SerializedAggregatedProof as SovSerializedAggregatedProof,
 };
 
 use crate::client_message::pretty::PrettySlice;
@@ -89,6 +91,12 @@ impl From<AggregatedProof> for RawAggregatedProof {
             public_data: Some(value.public_data.into()),
             serialized_proof: Some(value.serialized_proof.into()),
         }
+    }
+}
+
+impl From<AggregatedProof> for SovAggregatedProof {
+    fn from(value: AggregatedProof) -> Self {
+        Self::new(value.serialized_proof.into(), value.public_data.into())
     }
 }
 
@@ -396,6 +404,14 @@ impl From<RawSerializedAggregatedProof> for SerializedAggregatedProof {
 }
 
 impl From<SerializedAggregatedProof> for RawSerializedAggregatedProof {
+    fn from(value: SerializedAggregatedProof) -> Self {
+        Self {
+            raw_aggregated_proof: value.0,
+        }
+    }
+}
+
+impl From<SerializedAggregatedProof> for SovSerializedAggregatedProof {
     fn from(value: SerializedAggregatedProof) -> Self {
         Self {
             raw_aggregated_proof: value.0,
