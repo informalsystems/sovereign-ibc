@@ -102,7 +102,9 @@ impl<V> StorageValue<V> for WithProof<V> {
         (
             result
                 .value
+                // if panics, somehow an invalid value was stored in the map
                 .map(|bytes| store.codec().value_codec().decode_unwrap(bytes.value())),
+            // if panics, somehow an invalid proof is returned
             result.proof.try_to_vec().expect("no error"),
         )
     }
