@@ -59,7 +59,7 @@ pub trait StorageValue<V> {
         <C as StateCodec>::KeyCodec: StateItemCodec<K>;
 }
 
-/// Implementation of `StorageValue` for values without proofs.
+/// Implementation of [`StorageValue`] for values without proofs.
 pub struct WithoutProof<V>(PhantomData<V>);
 
 impl<V> StorageValue<V> for WithoutProof<V> {
@@ -80,7 +80,7 @@ impl<V> StorageValue<V> for WithoutProof<V> {
     }
 }
 
-/// Implementation of `StorageValue` for values with proofs.
+/// Implementation of [`StorageValue`] for values with proofs.
 pub struct WithProof<V>(PhantomData<V>);
 
 impl<V> StorageValue<V> for WithProof<V> {
