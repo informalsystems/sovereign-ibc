@@ -586,7 +586,8 @@ impl<S: Spec> Ibc<S> {
             request.sequence,
         );
 
-        // receipt models a set
+        // packet_receipt_map models a set using constant unit value.
+        // if value exists in the map, it means the receipt is present.
         Ok(QueryPacketReceiptResponse::new(
             receipt.is_some(),
             proof,
