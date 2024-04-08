@@ -597,7 +597,8 @@ impl<S: Spec> Ibc<S> {
         );
 
         // packet_receipt_map models a set using constant unit value.
-        // if value exists in the map, it means the receipt is present.
+        // when the key (doesn't) exists in the map,
+        // the receipt is (not) present and returns a (non) membership proof
         Ok(QueryPacketReceiptResponse::new(
             receipt.is_some(),
             proof,
