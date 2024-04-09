@@ -16,6 +16,7 @@ use ibc_core::host::types::path::{
 };
 use ibc_core::host::{ClientStateRef, ConsensusStateRef, ValidationContext};
 use ibc_query::core::context::{ProvableContext, QueryContext};
+use jsonrpsee::core::RpcResult;
 use sov_celestia_client::client_state::ClientState as HostClientState;
 use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_modules_api::Spec;
@@ -27,7 +28,7 @@ impl<'a, S> IbcContext<'a, S>
 where
     S: Spec,
 {
-    pub fn query_client_state<SV>(&self, client_id: &ClientId) -> SV::Output
+    pub fn query_client_state<SV>(&self, client_id: &ClientId) -> RpcResult<SV::Output>
     where
         SV: StorageValue<ClientStateRef<Self>>,
     {
@@ -43,7 +44,7 @@ where
         client_id: &ClientId,
         revision_number: u64,
         revision_height: u64,
-    ) -> SV::Output
+    ) -> RpcResult<SV::Output>
     where
         SV: StorageValue<ConsensusStateRef<Self>>,
     {
@@ -57,7 +58,7 @@ where
         )
     }
 
-    pub fn query_upgraded_client_state<SV>(&self, height: u64) -> SV::Output
+    pub fn query_upgraded_client_state<SV>(&self, height: u64) -> RpcResult<SV::Output>
     where
         SV: StorageValue<HostClientState>,
     {
@@ -70,7 +71,7 @@ where
         )
     }
 
-    pub fn query_upgraded_consensus_state<SV>(&self, height: u64) -> SV::Output
+    pub fn query_upgraded_consensus_state<SV>(&self, height: u64) -> RpcResult<SV::Output>
     where
         SV: StorageValue<HostConsensusState>,
     {
@@ -84,7 +85,7 @@ where
         )
     }
 
-    pub fn query_connection_end<SV>(&self, connection_id: &ConnectionId) -> SV::Output
+    pub fn query_connection_end<SV>(&self, connection_id: &ConnectionId) -> RpcResult<SV::Output>
     where
         SV: StorageValue<ConnectionEnd>,
     {
@@ -97,7 +98,7 @@ where
         )
     }
 
-    pub fn query_client_connections<SV>(&self, client_id: &ClientId) -> SV::Output
+    pub fn query_client_connections<SV>(&self, client_id: &ClientId) -> RpcResult<SV::Output>
     where
         SV: StorageValue<Vec<ConnectionId>>,
     {
@@ -110,7 +111,11 @@ where
         )
     }
 
-    pub fn query_channel_end<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    pub fn query_channel_end<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+    ) -> RpcResult<SV::Output>
     where
         SV: StorageValue<ChannelEnd>,
     {
@@ -123,7 +128,11 @@ where
         )
     }
 
-    pub fn query_send_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    pub fn query_send_sequence<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+    ) -> RpcResult<SV::Output>
     where
         SV: StorageValue<Sequence>,
     {
@@ -136,7 +145,11 @@ where
         )
     }
 
-    pub fn query_recv_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    pub fn query_recv_sequence<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+    ) -> RpcResult<SV::Output>
     where
         SV: StorageValue<Sequence>,
     {
@@ -149,7 +162,11 @@ where
         )
     }
 
-    pub fn query_ack_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    pub fn query_ack_sequence<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+    ) -> RpcResult<SV::Output>
     where
         SV: StorageValue<Sequence>,
     {
@@ -167,7 +184,7 @@ where
         port_id: &PortId,
         channel_id: &ChannelId,
         sequence: Sequence,
-    ) -> SV::Output
+    ) -> RpcResult<SV::Output>
     where
         SV: StorageValue<PacketCommitment>,
     {
@@ -185,7 +202,7 @@ where
         port_id: &PortId,
         channel_id: &ChannelId,
         sequence: Sequence,
-    ) -> SV::Output
+    ) -> RpcResult<SV::Output>
     where
         SV: StorageValue<Receipt>,
     {
@@ -203,7 +220,7 @@ where
         port_id: &PortId,
         channel_id: &ChannelId,
         sequence: Sequence,
-    ) -> SV::Output
+    ) -> RpcResult<SV::Output>
     where
         SV: StorageValue<AcknowledgementCommitment>,
     {
