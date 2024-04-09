@@ -234,112 +234,69 @@ where
             Path::ClientState(client_state_path) => self
                 .ibc
                 .client_state_map
-                .get_with_proof(&client_state_path.0, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(&client_state_path.0, &mut archival_working_set),
             Path::ClientConsensusState(client_consensus_state_path) => self
                 .ibc
                 .consensus_state_map
-                .get_with_proof(client_consensus_state_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(client_consensus_state_path, &mut archival_working_set),
             Path::Connection(connection_path) => self
                 .ibc
                 .connection_end_map
-                .get_with_proof(connection_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(connection_path, &mut archival_working_set),
             Path::ClientConnection(client_connection_path) => self
                 .ibc
                 .client_connections_map
-                .get_with_proof(client_connection_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(client_connection_path, &mut archival_working_set),
             Path::ChannelEnd(channel_end_path) => self
                 .ibc
                 .channel_end_map
-                .get_with_proof(channel_end_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(channel_end_path, &mut archival_working_set),
             Path::SeqSend(seq_send_path) => self
                 .ibc
                 .send_sequence_map
-                .get_with_proof(seq_send_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(seq_send_path, &mut archival_working_set),
             Path::SeqRecv(seq_recv_path) => self
                 .ibc
                 .recv_sequence_map
-                .get_with_proof(seq_recv_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(seq_recv_path, &mut archival_working_set),
             Path::Commitment(commitment_path) => self
                 .ibc
                 .packet_commitment_map
-                .get_with_proof(commitment_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(commitment_path, &mut archival_working_set),
             Path::Ack(ack_path) => self
                 .ibc
                 .packet_ack_map
-                .get_with_proof(ack_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(ack_path, &mut archival_working_set),
             Path::Receipt(receipt_path) => self
                 .ibc
                 .packet_receipt_map
-                .get_with_proof(receipt_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(receipt_path, &mut archival_working_set),
             // not required in ibc-core; but still implemented
             Path::NextClientSequence(_) => self
                 .ibc
                 .client_counter
-                .get_with_proof(&mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(&mut archival_working_set),
             Path::NextConnectionSequence(_) => self
                 .ibc
                 .connection_counter
-                .get_with_proof(&mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(&mut archival_working_set),
             Path::NextChannelSequence(_) => self
                 .ibc
                 .channel_counter
-                .get_with_proof(&mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(&mut archival_working_set),
             Path::UpgradeClient(upgrade_client_path) => self
                 .ibc
                 .upgraded_client_state_map
-                .get_with_proof(upgrade_client_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(upgrade_client_path, &mut archival_working_set),
             Path::SeqAck(seq_ack_path) => self
                 .ibc
                 .ack_sequence_map
-                .get_with_proof(seq_ack_path, &mut archival_working_set)
-                .proof
-                .try_to_vec()
-                .ok(),
+                .get_with_proof(seq_ack_path, &mut archival_working_set),
             // not required, also not implemented; so `None` is returned
-            Path::ClientUpdateTime(_) | Path::ClientUpdateHeight(_) | Path::Ports(_) => None,
+            Path::ClientUpdateTime(_) | Path::ClientUpdateHeight(_) | Path::Ports(_) => None?,
         }
+        .try_to_vec()
+        .ok()
     }
 }
 
