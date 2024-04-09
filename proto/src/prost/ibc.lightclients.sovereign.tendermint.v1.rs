@@ -3,16 +3,21 @@
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ClientState {
-    /// the rollup identifier
-    #[prost(string, tag = "1")]
-    pub rollup_id: ::prost::alloc::string::String,
-    /// the latest height the client was updated to
+    /// the genesis state root of the rollup
+    #[prost(bytes = "vec", tag = "1")]
+    pub genesis_state_root: ::prost::alloc::vec::Vec<u8>,
+    /// the code commitment of the aggregated proof circuit
     #[prost(message, optional, tag = "2")]
+    pub code_commitment: ::core::option::Option<
+        super::super::super::super::super::sovereign::types::v1::CodeCommitment,
+    >,
+    /// the latest height the client was updated to
+    #[prost(message, optional, tag = "3")]
     pub latest_height: ::core::option::Option<
         ::ibc_proto::ibc::core::client::v1::Height,
     >,
     /// the height when the client was frozen due to a misbehaviour
-    #[prost(message, optional, tag = "3")]
+    #[prost(message, optional, tag = "4")]
     pub frozen_height: ::core::option::Option<
         ::ibc_proto::ibc::core::client::v1::Height,
     >,
@@ -21,10 +26,10 @@ pub struct ClientState {
     /// NOTE: ClientState must stored under
     /// `{upgradePath}/{upgradeHeight}/clientState` ConsensusState must be stored
     /// under `{upgradepath}/{upgradeHeight}/consensusState`
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "5")]
     pub upgrade_path: ::prost::alloc::string::String,
     /// the tendermint-specific client state parameters
-    #[prost(message, optional, tag = "5")]
+    #[prost(message, optional, tag = "6")]
     pub tendermint_params: ::core::option::Option<TendermintClientParams>,
 }
 impl ::prost::Name for ClientState {

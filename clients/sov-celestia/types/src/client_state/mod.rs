@@ -28,6 +28,7 @@ pub mod test_util {
     use tendermint::Hash;
 
     use super::*;
+    use crate::client_message::{CodeCommitment, Root};
     use crate::consensus_state::{SovTmConsensusState, TmConsensusParams};
 
     pub fn mock_celestia_chain_id() -> ChainId {
@@ -37,7 +38,10 @@ pub mod test_util {
     #[derive(typed_builder::TypedBuilder, Debug)]
     #[builder(build_method(into = SovTmClientState))]
     pub struct ClientStateConfig {
-        pub rollup_id: ChainId,
+        #[builder(default = Root::from([0; 32]))]
+        pub genesis_state_root: Root,
+        #[builder(default = CodeCommitment::from(vec![1; 32]))]
+        pub code_commitment: CodeCommitment,
         pub latest_height: Height,
         #[builder(default)]
         pub frozen_height: Option<Height>,
@@ -49,7 +53,8 @@ pub mod test_util {
     impl From<ClientStateConfig> for SovTmClientState {
         fn from(config: ClientStateConfig) -> Self {
             ClientState::new(
-                config.rollup_id,
+                config.genesis_state_root,
+                config.code_commitment,
                 config.latest_height,
                 config.frozen_height,
                 config.upgrade_path,
@@ -104,11 +109,10 @@ pub mod test_util {
         }
     }
 
-    pub fn dummy_sov_client_state(rollup_id: ChainId, latest_height: Height) -> SovTmClientState {
-        let tendermint_params = TendermintParamsConfig::builder().build();
+    pub fn dummy_sov_client_state(chain_id: ChainId, latest_height: Height) -> SovTmClientState {
+        let tendermint_params = TendermintParamsConfig::builder().chain_id(chain_id).build();
 
         ClientStateConfig::builder()
-            .rollup_id(rollup_id)
             .latest_height(latest_height)
             .tendermint_params(tendermint_params)
             .build()
@@ -132,7 +136,6 @@ pub mod test_util {
             .build();
 
         let client_state = ClientStateConfig::builder()
-            .rollup_id("mock-celestia-0".parse().expect("Never fails"))
             .latest_height(Height::new(0, 1).expect("Never fails"))
             .tendermint_params(tendermint_params)
             .build();

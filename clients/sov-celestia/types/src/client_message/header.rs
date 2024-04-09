@@ -49,7 +49,7 @@ impl SovTmHeader {
 
     /// Returns the height of the Sovereign-Tendermint header.
     pub fn height(&self) -> Height {
-        self.aggregated_proof.public_data.final_slot_number()
+        self.aggregated_proof.final_slot_number()
     }
 
     /// Returns the trusted height of the Sovereign-Tendermint header, which
@@ -67,7 +67,7 @@ impl SovTmHeader {
 
         if self.height() != self.da_header.height() {
             return Err(Error::mismatch(format!(
-                "DA header height {} does not match aggregated proof height(rollup slot number) {}",
+                "DA header height {} does not match aggregated proof height(slot number) {}",
                 self.da_header.height(),
                 self.height()
             )))?;

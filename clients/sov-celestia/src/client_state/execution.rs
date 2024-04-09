@@ -77,7 +77,7 @@ where
         substitute_client_state: Any,
     ) -> Result<(), ClientError> {
         update_on_recovery(
-            self.inner(),
+            self.inner().clone(),
             ctx,
             subject_client_id,
             substitute_client_state,
@@ -206,7 +206,7 @@ where
 }
 
 pub fn update_state_on_upgrade<E>(
-    _client_state: &SovTmClientState,
+    client_state: &SovTmClientState,
     ctx: &mut E,
     client_id: &ClientId,
     upgraded_client_state: Any,
@@ -222,16 +222,24 @@ where
 
     upgraded_client_state.zero_custom_fields();
 
-    // Construct new client state and consensus state relayer chosen client
-    // parameters are ignored. All chain-chosen parameters come from
-    // committed client, all client-chosen parameters come from current
-    // client.
+    // Constructs the new client state. All rollup-chosen parameters come from
+    // `upgraded_client_state` except the `genesis_state_root`. All
+    // relayer-chosen parameters come from the current client.
+    let new_da_params = TmClientParams::new(
+        upgraded_client_state.da_params.chain_id,
+        client_state.da_params.trust_level,
+        client_state.da_params.trusting_period,
+        upgraded_client_state.da_params.unbonding_period,
+        client_state.da_params.max_clock_drift,
+    );
+
     let new_client_state = SovTmClientState::new(
-        upgraded_client_state.rollup_id,
+        client_state.genesis_state_root.clone(),
+        upgraded_client_state.code_commitment,
         upgraded_client_state.latest_height,
         None,
         upgraded_client_state.upgrade_path,
-        upgraded_client_state.da_params,
+        new_da_params,
     );
 
     // The new consensus state is merely used as a trusted kernel against
@@ -287,7 +295,7 @@ where
 /// verified substitute client state in response to a successful client
 /// recovery.
 pub fn update_on_recovery<E>(
-    subject_client_state: &SovTmClientState,
+    subject_client_state: SovTmClientState,
     ctx: &mut E,
     subject_client_id: &ClientId,
     substitute_client_state: Any,
@@ -303,17 +311,18 @@ where
     let trusting_period = substitute_client_state.da_params.trusting_period;
     let latest_height = substitute_client_state.latest_height;
 
-    let new_client_state = SovTmClientState {
-        rollup_id: subject_client_state.rollup_id.clone(),
+    let new_client_state = SovTmClientState::new(
+        subject_client_state.genesis_state_root,
+        subject_client_state.code_commitment,
         latest_height,
-        frozen_height: None,
-        upgrade_path: subject_client_state.upgrade_path.clone(),
-        da_params: TmClientParams {
+        None,
+        subject_client_state.upgrade_path,
+        TmClientParams {
             chain_id,
             trusting_period,
             ..subject_client_state.da_params
         },
-    };
+    );
 
     let host_timestamp = E::host_timestamp(ctx)?;
     let host_height = E::host_height(ctx)?;

@@ -89,7 +89,6 @@ impl Fixture {
             .build();
 
         let sov_client_state = ClientStateConfig::builder()
-            .rollup_id(self.chain_id.clone())
             .latest_height(self.trusted_height)
             .tendermint_params(tendermint_params)
             .build();
