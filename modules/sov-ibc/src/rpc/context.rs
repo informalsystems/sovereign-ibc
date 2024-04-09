@@ -27,7 +27,7 @@ impl<'a, S> IbcContext<'a, S>
 where
     S: Spec,
 {
-    pub fn dyn_client_state<SV>(&self, client_id: &ClientId) -> SV::Output
+    pub fn query_client_state<SV>(&self, client_id: &ClientId) -> SV::Output
     where
         SV: StorageValue<ClientStateRef<Self>>,
     {
@@ -38,7 +38,7 @@ where
         )
     }
 
-    pub fn dyn_client_consensus_state<SV>(
+    pub fn query_client_consensus_state<SV>(
         &self,
         client_id: &ClientId,
         revision_number: u64,
@@ -57,7 +57,7 @@ where
         )
     }
 
-    pub fn dyn_upgraded_client_state<SV>(&self, height: u64) -> SV::Output
+    pub fn query_upgraded_client_state<SV>(&self, height: u64) -> SV::Output
     where
         SV: StorageValue<HostClientState>,
     {
@@ -70,7 +70,7 @@ where
         )
     }
 
-    pub fn dyn_upgraded_consensus_state<SV>(&self, height: u64) -> SV::Output
+    pub fn query_upgraded_consensus_state<SV>(&self, height: u64) -> SV::Output
     where
         SV: StorageValue<HostConsensusState>,
     {
@@ -84,7 +84,7 @@ where
         )
     }
 
-    pub fn dyn_connection_end<SV>(&self, connection_id: &ConnectionId) -> SV::Output
+    pub fn query_connection_end<SV>(&self, connection_id: &ConnectionId) -> SV::Output
     where
         SV: StorageValue<ConnectionEnd>,
     {
@@ -97,7 +97,7 @@ where
         )
     }
 
-    pub fn dyn_client_connections<SV>(&self, client_id: &ClientId) -> SV::Output
+    pub fn query_client_connections<SV>(&self, client_id: &ClientId) -> SV::Output
     where
         SV: StorageValue<Vec<ConnectionId>>,
     {
@@ -110,7 +110,7 @@ where
         )
     }
 
-    pub fn dyn_channel_end<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    pub fn query_channel_end<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
     where
         SV: StorageValue<ChannelEnd>,
     {
@@ -123,7 +123,7 @@ where
         )
     }
 
-    pub fn dyn_send_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    pub fn query_send_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
     where
         SV: StorageValue<Sequence>,
     {
@@ -136,7 +136,7 @@ where
         )
     }
 
-    pub fn dyn_recv_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    pub fn query_recv_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
     where
         SV: StorageValue<Sequence>,
     {
@@ -149,7 +149,7 @@ where
         )
     }
 
-    pub fn dyn_ack_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
+    pub fn query_ack_sequence<SV>(&self, port_id: &PortId, channel_id: &ChannelId) -> SV::Output
     where
         SV: StorageValue<Sequence>,
     {
@@ -162,7 +162,7 @@ where
         )
     }
 
-    pub fn dyn_packet_commitment<SV>(
+    pub fn query_packet_commitment<SV>(
         &self,
         port_id: &PortId,
         channel_id: &ChannelId,
@@ -180,7 +180,7 @@ where
         )
     }
 
-    pub fn dyn_packet_receipt<SV>(
+    pub fn query_packet_receipt<SV>(
         &self,
         port_id: &PortId,
         channel_id: &ChannelId,
@@ -198,7 +198,7 @@ where
         )
     }
 
-    pub fn dyn_packet_acknowledgement<SV>(
+    pub fn query_packet_acknowledgement<SV>(
         &self,
         port_id: &PortId,
         channel_id: &ChannelId,
