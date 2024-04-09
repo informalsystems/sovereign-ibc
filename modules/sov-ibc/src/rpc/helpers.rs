@@ -49,7 +49,7 @@ pub trait StorageValue<V> {
     type Output;
     fn value_at_key<K, C, S>(
         key: &K,
-        store: &StateMap<K, V, C>,
+        state_map: &StateMap<K, V, C>,
         working_set: &mut WorkingSet<S>,
     ) -> Self::Output
     where
@@ -67,7 +67,7 @@ impl<V> StorageValue<V> for WithoutProof<V> {
 
     fn value_at_key<K, C, S>(
         key: &K,
-        store: &StateMap<K, V, C>,
+        state_map: &StateMap<K, V, C>,
         working_set: &mut WorkingSet<S>,
     ) -> Self::Output
     where
@@ -76,7 +76,7 @@ impl<V> StorageValue<V> for WithoutProof<V> {
         <C as StateCodec>::ValueCodec: StateItemCodec<V>,
         <C as StateCodec>::KeyCodec: StateItemCodec<K>,
     {
-        store.get(key, working_set)
+        state_map.get(key, working_set)
     }
 }
 
@@ -88,7 +88,7 @@ impl<V> StorageValue<V> for WithProof<V> {
 
     fn value_at_key<K, C, S>(
         key: &K,
-        store: &StateMap<K, V, C>,
+        state_map: &StateMap<K, V, C>,
         working_set: &mut WorkingSet<S>,
     ) -> Self::Output
     where
@@ -97,13 +97,13 @@ impl<V> StorageValue<V> for WithProof<V> {
         <C as StateCodec>::ValueCodec: StateItemCodec<V>,
         <C as StateCodec>::KeyCodec: StateItemCodec<K>,
     {
-        let result = store.get_with_proof(key, working_set);
+        let result = state_map.get_with_proof(key, working_set);
 
         (
             result
                 .value
                 // if panics, somehow an invalid value was stored in the map
-                .map(|bytes| store.codec().value_codec().decode_unwrap(bytes.value())),
+                .map(|bytes| state_map.codec().value_codec().decode_unwrap(bytes.value())),
             // if panics, somehow an invalid proof is returned
             result.proof.try_to_vec().expect("no error"),
         )
