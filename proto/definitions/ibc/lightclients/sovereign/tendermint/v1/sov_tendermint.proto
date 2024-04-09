@@ -16,7 +16,7 @@ message ClientState {
   option (gogoproto.goproto_getters) = false;
 
   // the genesis state root of the rollup
-  bytes genesis_state_root = 1;
+  bytes genesis_state_root = 1 [(gogoproto.moretags) = "yaml:\"genesis_state_root\""];
   // the code commitment of the aggregated proof circuit
   .sovereign.types.v1.CodeCommitment code_commitment = 2 [
     (gogoproto.nullable) = false,
