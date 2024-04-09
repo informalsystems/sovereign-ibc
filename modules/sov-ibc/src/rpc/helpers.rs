@@ -51,7 +51,7 @@ pub trait StorageValue<V> {
         key: &K,
         state_map: &StateMap<K, V, C>,
         working_set: &mut WorkingSet<S>,
-    ) -> Self::Output
+    ) -> RpcResult<Self::Output>
     where
         S: Spec,
         C: StateCodec,
@@ -69,14 +69,14 @@ impl<V> StorageValue<V> for WithoutProof<V> {
         key: &K,
         state_map: &StateMap<K, V, C>,
         working_set: &mut WorkingSet<S>,
-    ) -> Self::Output
+    ) -> RpcResult<Self::Output>
     where
         S: Spec,
         C: StateCodec,
         <C as StateCodec>::ValueCodec: StateItemCodec<V>,
         <C as StateCodec>::KeyCodec: StateItemCodec<K>,
     {
-        state_map.get(key, working_set)
+        Ok(state_map.get(key, working_set))
     }
 }
 
@@ -90,7 +90,7 @@ impl<V> StorageValue<V> for WithProof<V> {
         key: &K,
         state_map: &StateMap<K, V, C>,
         working_set: &mut WorkingSet<S>,
-    ) -> Self::Output
+    ) -> RpcResult<Self::Output>
     where
         S: Spec,
         C: StateCodec,
@@ -99,13 +99,13 @@ impl<V> StorageValue<V> for WithProof<V> {
     {
         let result = state_map.get_with_proof(key, working_set);
 
-        (
+        Ok((
             result
                 .value
-                // if panics, somehow an invalid value was stored in the map
-                .map(|bytes| state_map.codec().value_codec().decode_unwrap(bytes.value())),
-            // if panics, somehow an invalid proof is returned
-            result.proof.try_to_vec().expect("no error"),
-        )
+                .map(|bytes| state_map.codec().value_codec().try_decode(bytes.value()))
+                .transpose()
+                .map_err(|e| to_jsonrpsee_error(format!("{e:?}")))?,
+            result.proof.try_to_vec().map_err(to_jsonrpsee_error)?,
+        ))
     }
 }
