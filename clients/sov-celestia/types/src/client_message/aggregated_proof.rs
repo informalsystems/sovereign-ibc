@@ -57,6 +57,26 @@ impl AggregatedProof {
         &self.serialized_proof
     }
 
+    pub fn initial_slot_number(&self) -> Height {
+        self.public_data.initial_slot_number
+    }
+
+    pub fn final_slot_number(&self) -> Height {
+        self.public_data.final_slot_number
+    }
+
+    pub fn genesis_state_root(&self) -> &Root {
+        &self.public_data.genesis_state_root
+    }
+
+    pub fn final_state_root(&self) -> &Root {
+        &self.public_data.final_state_root
+    }
+
+    pub fn code_commitment(&self) -> &CodeCommitment {
+        &self.public_data.code_commitment
+    }
+
     pub fn validate_basic(&self) -> Result<(), Error> {
         self.public_data.basic_validate()?;
 
@@ -129,26 +149,6 @@ pub struct AggregatedProofPublicData {
 }
 
 impl AggregatedProofPublicData {
-    pub fn initial_slot_number(&self) -> Height {
-        self.initial_slot_number
-    }
-
-    pub fn final_slot_number(&self) -> Height {
-        self.final_slot_number
-    }
-
-    pub fn genesis_state_root(&self) -> &Root {
-        &self.genesis_state_root
-    }
-
-    pub fn final_state_root(&self) -> &Root {
-        &self.final_state_root
-    }
-
-    pub fn code_commitment(&self) -> &CodeCommitment {
-        &self.code_commitment
-    }
-
     pub fn basic_validate(&self) -> Result<(), Error> {
         if self.validity_conditions.is_empty() {
             return Err(Error::empty("validity conditions"));
@@ -335,6 +335,10 @@ impl CodeCommitment {
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
+
+    pub fn matches(&self, other: &CodeCommitment) -> bool {
+        self.0 == other.0
+    }
 }
 
 impl Display for CodeCommitment {
@@ -435,6 +439,12 @@ impl From<SerializedAggregatedProof> for SovSerializedAggregatedProof {
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Root([u8; 32]);
+
+impl Root {
+    pub fn matches(&self, other: &Root) -> bool {
+        self.0 == other.0
+    }
+}
 
 impl AsRef<[u8; 32]> for Root {
     fn as_ref(&self) -> &[u8; 32] {

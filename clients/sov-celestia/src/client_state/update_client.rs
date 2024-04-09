@@ -4,7 +4,10 @@ use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::{ChainId, ClientId};
 use ibc_core::host::types::path::ClientConsensusStatePath;
-use sov_celestia_client_types::client_message::SovTmHeader;
+use sov_celestia_client_types::client_message::{
+    AggregatedProof, CodeCommitment, Root, SovTmHeader,
+};
+use sov_celestia_client_types::client_state::SovTmClientState;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 use sov_celestia_client_types::error::IntoResult;
 use tendermint_light_client_verifier::options::Options;
@@ -17,10 +20,9 @@ use crate::context::{ConsensusStateConverter, ValidationContext as SovValidation
 /// of the DA header and the aggregated proof date validation.
 pub fn verify_header<V>(
     ctx: &V,
+    client_state: &SovTmClientState,
     header: &SovTmHeader,
     client_id: &ClientId,
-    chain_id: &ChainId,
-    options: &Options,
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
@@ -34,13 +36,17 @@ where
         ctx,
         &header.da_header,
         client_id,
-        chain_id,
-        options,
+        client_state.chain_id(),
+        &client_state.as_light_client_options()?,
         verifier,
     )?;
 
-    // TODO: Implement the verification of the `AggregatedProof`.
-    // aggregated_proof.verify()?;
+    verify_aggregated_proof(
+        ctx,
+        client_state.genesis_state_root(),
+        client_state.code_commitment(),
+        &header.aggregated_proof,
+    )?;
 
     Ok(())
 }
@@ -122,6 +128,34 @@ where
         .verifier()
         .verify_update_header(untrusted_state, trusted_state, options, now)
         .into_result()?;
+
+    Ok(())
+}
+
+pub fn verify_aggregated_proof<V>(
+    _ctx: &V,
+    genesis_state_root: &Root,
+    code_commitment: &CodeCommitment,
+    aggregated_proof: &AggregatedProof,
+) -> Result<(), ClientError>
+where
+    V: SovValidationContext,
+    V::ConsensusStateRef: ConsensusStateConverter,
+{
+    if !genesis_state_root.matches(aggregated_proof.genesis_state_root()) {
+        return Err(ClientError::Other {
+            description: "genesis state root does not match".to_string(),
+        });
+    }
+
+    if !code_commitment.matches(aggregated_proof.code_commitment()) {
+        return Err(ClientError::Other {
+            description: "code commitment does not match".to_string(),
+        });
+    }
+
+    // TODO: Implement the verification of the `AggregatedProof`.
+    // aggregated_proof.verify()?;
 
     Ok(())
 }

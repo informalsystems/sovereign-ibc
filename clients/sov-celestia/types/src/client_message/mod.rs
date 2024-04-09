@@ -116,7 +116,7 @@ pub mod test_util {
         pub initial_slot_hash: Vec<u8>,
         #[builder(default = vec![0; 32])]
         pub final_slot_hash: Vec<u8>,
-        #[builder(default = CodeCommitment::from(vec![0; 32]))]
+        #[builder(default = CodeCommitment::from(vec![1; 32]))]
         pub code_commitment: CodeCommitment,
     }
 

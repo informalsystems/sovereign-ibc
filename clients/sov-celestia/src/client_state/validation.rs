@@ -71,25 +71,11 @@ where
     match client_message.type_url.as_str() {
         SOV_TENDERMINT_HEADER_TYPE_URL => {
             let header = SovTmHeader::try_from(client_message)?;
-            verify_header(
-                ctx,
-                &header,
-                client_id,
-                client_state.chain_id(),
-                &client_state.as_light_client_options()?,
-                verifier,
-            )
+            verify_header(ctx, client_state, &header, client_id, verifier)
         }
         SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
             let misbehaviour = SovTmMisbehaviour::try_from(client_message)?;
-            verify_misbehaviour(
-                ctx,
-                &misbehaviour,
-                client_id,
-                client_state.chain_id(),
-                &client_state.as_light_client_options()?,
-                verifier,
-            )
+            verify_misbehaviour(ctx, client_state, &misbehaviour, client_id, verifier)
         }
         _ => Err(ClientError::InvalidUpdateClientMessage),
     }
@@ -186,7 +172,8 @@ where
     V::ConsensusStateRef: ConsensusStateConverter,
 {
     let SovTmClientState {
-        rollup_id: subject_rollup_id,
+        genesis_state_root: subject_genesis_state_root,
+        code_commitment: subject_code_commitment,
         latest_height: _,
         frozen_height: _,
         upgrade_path: subject_upgrade_path,
@@ -196,14 +183,16 @@ where
     let substitute_client_state = SovTmClientState::try_from(substitute_client_state)?;
 
     let SovTmClientState {
-        rollup_id: substitute_rollup_id,
+        genesis_state_root: substitute_genesis_state_root,
+        code_commitment: substitute_code_commitment,
         latest_height: _,
         frozen_height: _,
         upgrade_path: substitute_upgrade_path,
         da_params: substitute_da_params,
     } = substitute_client_state;
 
-    (subject_rollup_id == &substitute_rollup_id
+    (subject_genesis_state_root == &substitute_genesis_state_root
+        && subject_code_commitment == &substitute_code_commitment
         && subject_upgrade_path == &substitute_upgrade_path
         && subject_da_params.trust_level == substitute_da_params.trust_level
         && subject_da_params.max_clock_drift == substitute_da_params.max_clock_drift

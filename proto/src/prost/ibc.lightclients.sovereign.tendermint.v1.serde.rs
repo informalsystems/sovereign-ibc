@@ -21,9 +21,16 @@ impl serde::Serialize for ClientState {
         if true {
             len += 1;
         }
+        if true {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("ibc.lightclients.sovereign.tendermint.v1.ClientState", len)?;
         if true {
-            struct_ser.serialize_field("rollupId", &self.rollup_id)?;
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("genesisStateRoot", pbjson::private::base64::encode(&self.genesis_state_root).as_str())?;
+        }
+        if let Some(v) = self.code_commitment.as_ref() {
+            struct_ser.serialize_field("codeCommitment", v)?;
         }
         if let Some(v) = self.latest_height.as_ref() {
             struct_ser.serialize_field("latestHeight", v)?;
@@ -47,8 +54,10 @@ impl<'de> serde::Deserialize<'de> for ClientState {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "rollup_id",
-            "rollupId",
+            "genesis_state_root",
+            "genesisStateRoot",
+            "code_commitment",
+            "codeCommitment",
             "latest_height",
             "latestHeight",
             "frozen_height",
@@ -61,7 +70,8 @@ impl<'de> serde::Deserialize<'de> for ClientState {
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            RollupId,
+            GenesisStateRoot,
+            CodeCommitment,
             LatestHeight,
             FrozenHeight,
             UpgradePath,
@@ -87,7 +97,8 @@ impl<'de> serde::Deserialize<'de> for ClientState {
                         E: serde::de::Error,
                     {
                         match value {
-                            "rollupId" | "rollup_id" => Ok(GeneratedField::RollupId),
+                            "genesisStateRoot" | "genesis_state_root" => Ok(GeneratedField::GenesisStateRoot),
+                            "codeCommitment" | "code_commitment" => Ok(GeneratedField::CodeCommitment),
                             "latestHeight" | "latest_height" => Ok(GeneratedField::LatestHeight),
                             "frozenHeight" | "frozen_height" => Ok(GeneratedField::FrozenHeight),
                             "upgradePath" | "upgrade_path" => Ok(GeneratedField::UpgradePath),
@@ -111,18 +122,27 @@ impl<'de> serde::Deserialize<'de> for ClientState {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut rollup_id__ = None;
+                let mut genesis_state_root__ = None;
+                let mut code_commitment__ = None;
                 let mut latest_height__ = None;
                 let mut frozen_height__ = None;
                 let mut upgrade_path__ = None;
                 let mut tendermint_params__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
-                        GeneratedField::RollupId => {
-                            if rollup_id__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("rollupId"));
+                        GeneratedField::GenesisStateRoot => {
+                            if genesis_state_root__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("genesisStateRoot"));
                             }
-                            rollup_id__ = Some(map_.next_value()?);
+                            genesis_state_root__ = 
+                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::CodeCommitment => {
+                            if code_commitment__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("codeCommitment"));
+                            }
+                            code_commitment__ = map_.next_value()?;
                         }
                         GeneratedField::LatestHeight => {
                             if latest_height__.is_some() {
@@ -151,7 +171,8 @@ impl<'de> serde::Deserialize<'de> for ClientState {
                     }
                 }
                 Ok(ClientState {
-                    rollup_id: rollup_id__.unwrap_or_default(),
+                    genesis_state_root: genesis_state_root__.unwrap_or_default(),
+                    code_commitment: code_commitment__,
                     latest_height: latest_height__,
                     frozen_height: frozen_height__,
                     upgrade_path: upgrade_path__.unwrap_or_default(),
