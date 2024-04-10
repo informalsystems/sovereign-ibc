@@ -86,11 +86,17 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
             })
     }
 
+    /// Creates a new token with the specified `token_name` and mints an initial
+    /// balance to the `minter_address`.
+    ///
+    /// Note: The mint authority must be held by the `IbcTransfer` module, so the
+    /// `authorized_minters` is set to the `IbcTransfer` address. Also, remember
+    /// that the `token_name` is a denom prefixed with IBC and originates from the
+    /// counterparty chain.
     fn create_token(
         &self,
         token_name: String,
         minter_address: S::Address,
-        authorized_minters: Vec<S::Address>,
     ) -> Result<TokenId, TokenTransferError> {
         // Using a different salt will result in a different token
         // address. Since ICS-20 tokens coming from other chains are
@@ -115,7 +121,7 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
                 salt,
                 initial_balance,
                 minter_address,
-                authorized_minters,
+                vec![self.ibc_transfer.address.clone()],
                 &context,
                 &mut self.working_set.borrow_mut(),
             )
@@ -383,11 +389,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
 
             match maybe_token_id {
                 Some(token_id) => token_id,
-                None => self.create_token(
-                    token_name,
-                    account.address.clone(),
-                    vec![self.ibc_transfer.address.clone()],
-                )?,
+                None => self.create_token(token_name, account.address.clone())?,
             }
         };
 
