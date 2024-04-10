@@ -52,7 +52,7 @@ bytes       = { version = "1.2.1", default-features = false }
 derive_more = { version = "0.99.11", features = ["from", "try_into"] }
 digest      = "0.10.6"
 hex         = "0.4.3"
-jmt         = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
+jmt         = { version = "0.9.0" }
 jsonrpsee   = { version = "0.20.1", features = ["jsonrpsee-types", "macros", "client", "server"] }
 prost       = { version = "0.12", default-features = false }
 prost-build = { version = "0.12", default-features = false }
@@ -87,29 +87,44 @@ tendermint-testgen    = { version = "0.34", default-features = false }
 tendermint-light-client-verifier = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-bank                   = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-sov-celestia-adapter       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-sov-mock-da                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-sov-modules-api            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-sov-modules-core           = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-sov-state                  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-sov-rollup-interface       = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-bank                   = { version = "0.3.0" }
+sov-celestia-adapter       = { version = "0.3.0" }
+sov-mock-da                = { version = "0.3.0" }
+sov-modules-api            = { version = "0.3.0" }
+sov-modules-core           = { version = "0.3.0" }
+sov-state                  = { version = "0.3.0" }
+sov-rollup-interface       = { version = "0.3.0" }
 
 ### utilized only by `sov-ibc-mocks`
-sov-chain-state            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-sov-kernels                = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-sov-mock-zkvm              = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-sov-prover-storage-manager = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
-const-rollup-config        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-chain-state            = { version = "0.3.0" }
+sov-kernels                = { version = "0.3.0" }
+sov-mock-zkvm              = { version = "0.3.0" }
+sov-prover-storage-manager = { version = "0.3.0" }
+const-rollup-config        = { version = "0.3.0" }
 
 [patch.crates-io]
 
-ibc-core              = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-core-client       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-core-host-cosmos  = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-client-tendermint = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-client-wasm-types = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-app-transfer      = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-query             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc-core                    = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc-core-client             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc-core-host-cosmos        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc-client-tendermint       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc-client-wasm-types       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc-app-transfer            = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc-primitives              = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc-query                   = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc-testkit                 = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+
+sov-bank                    = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-celestia-adapter        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-mock-da                 = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-modules-api             = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-modules-core            = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-state                   = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-rollup-interface        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-chain-state             = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-kernels                 = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-mock-zkvm               = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+sov-prover-storage-manager  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+const-rollup-config         = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
+
+jmt                         = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
