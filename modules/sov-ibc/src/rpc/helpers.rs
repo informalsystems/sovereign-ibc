@@ -4,7 +4,7 @@ use std::rc::Rc;
 use ibc_core::client::types::Height;
 use ibc_core::host::ValidationContext;
 use jsonrpsee::core::RpcResult;
-use jsonrpsee::types::ErrorObjectOwned;
+use sov_ibc_transfer::to_jsonrpsee_error;
 use sov_modules_api::{Spec, WorkingSet};
 
 use crate::context::IbcContext;
@@ -30,13 +30,4 @@ impl<S: Spec> Ibc<S> {
             }
         }
     }
-}
-
-/// Creates an jsonrpsee error object
-pub fn to_jsonrpsee_error(err: impl ToString) -> ErrorObjectOwned {
-    ErrorObjectOwned::owned(
-        jsonrpsee::types::error::UNKNOWN_ERROR_CODE,
-        err.to_string(),
-        None::<String>,
-    )
 }

@@ -44,13 +44,13 @@ use ibc_query::core::connection::{
 use jsonrpsee::core::RpcResult;
 use sov_celestia_client::client_state::ClientState as HostClientState;
 use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
+use sov_ibc_transfer::to_jsonrpsee_error;
 use sov_modules_api::macros::rpc_gen;
 use sov_modules_api::{ProvenStateAccessor, Spec, WorkingSet};
 use sov_state::storage::{SlotKey, StateCodec, StateItemCodec};
 
 use crate::clients::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;
-use crate::helpers::to_jsonrpsee_error;
 use crate::Ibc;
 
 /// Structure returned by the `client_state` rpc method.
