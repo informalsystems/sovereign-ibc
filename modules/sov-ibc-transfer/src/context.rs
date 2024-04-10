@@ -50,6 +50,22 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
         }
     }
 
+    /// Stores mapping from "denom to token ID" and vice versa for an IBC-minted
+    /// token.s
+    fn record_minted_token(&self, token_id: TokenId, token_name: String) {
+        self.ibc_transfer.minted_token_id_to_name.set(
+            &token_id,
+            &token_name,
+            *self.working_set.borrow_mut(),
+        );
+
+        self.ibc_transfer.minted_token_name_to_id.set(
+            &token_name,
+            &token_id,
+            *self.working_set.borrow_mut(),
+        );
+    }
+
     /// Obtains the escrow address for a given port and channel pair by looking
     /// up the cache. If the cache does not contain the address, it is computed
     /// and stored in the cache.
@@ -68,6 +84,46 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
                 );
                 escrow_account
             })
+    }
+
+    fn create_token(
+        &self,
+        token_name: String,
+        minter_address: S::Address,
+        authorized_minters: Vec<S::Address>,
+    ) -> Result<TokenId, TokenTransferError> {
+        // Using a different salt will result in a different token
+        // address. Since ICS-20 tokens coming from other chains are
+        // guaranteed to have unique names, we don't need to use
+        // different salt values.
+        let salt = 0u64;
+
+        let initial_balance = 0;
+
+        // Make sure to use `ibc_transfer` address as the sender
+        let context = Context::new(
+            self.ibc_transfer.address.clone(),
+            self.sdk_context.sequencer().clone(),
+            self.sdk_context.visible_slot_number(),
+        );
+
+        let new_token_id = self
+            .ibc_transfer
+            .bank
+            .create_token(
+                token_name.clone(),
+                salt,
+                initial_balance,
+                minter_address,
+                authorized_minters,
+                &context,
+                &mut self.working_set.borrow_mut(),
+            )
+            .map_err(|err| TokenTransferError::Other(err.to_string()))?;
+
+        self.record_minted_token(new_token_id, token_name);
+
+        Ok(new_token_id)
     }
 
     /// Transfers `amount` tokens from `from_account` to `to_account`
@@ -152,14 +208,15 @@ where
             ));
         }
 
-        let minted_token_id = {
-            self.ibc_transfer
-                .minted_token_name_to_id
-                .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
-                .ok_or(TokenTransferError::InvalidCoin {
-                    coin: coin.to_string(),
-                })?
-        };
+        let token_name = coin.denom.to_string();
+
+        let minted_token_id = self
+            .ibc_transfer
+            .minted_token_name_to_id
+            .get(&token_name, *self.working_set.borrow_mut())
+            .ok_or(TokenTransferError::InvalidCoin {
+                coin: coin.to_string(),
+            })?;
 
         let sender_balance: u64 = self
             .ibc_transfer
@@ -169,9 +226,7 @@ where
                 minted_token_id,
                 *self.working_set.borrow_mut(),
             )
-            .ok_or(TokenTransferError::InvalidCoin {
-                coin: coin.denom.to_string(),
-            })?;
+            .ok_or(TokenTransferError::InvalidCoin { coin: token_name })?;
 
         let sender_balance: Amount = sender_balance.into();
 
@@ -211,9 +266,10 @@ where
             .minted_token_id_to_name
             .get(&token_id, *self.working_set.borrow_mut())
         {
-            return Err(TokenTransferError::Other(
-                format!("Token with ID '{token_id}' is an IBC-created token and cannot be escrowed. Use '{token_name}' as denom for sending back an IBC token to the source chain"),
-            ));
+            return Err(TokenTransferError::Other(format!(
+                "Token with ID '{token_id}' is an IBC-created token and cannot be escrowed. \
+                Use '{token_name}' as denom for sending back an IBC token to the source chain"
+            )));
         }
 
         let sender_balance: u64 = self
@@ -272,9 +328,10 @@ where
             .minted_token_id_to_name
             .get(&token_id, *self.working_set.borrow_mut())
         {
-            return Err(TokenTransferError::Other(
-                    format!("Token with ID '{token_id}' is an IBC-created token and cannot be unescrowed. Use '{token_name}' as denom for receiving an IBC token from the source chain")
-                ));
+            return Err(TokenTransferError::Other(format!(
+                "Token with ID '{token_id}' is an IBC-created token and cannot be unescrowed.\
+                    Use '{token_name}' as denom for receiving an IBC token from the source chain"
+            )));
         }
 
         // ensure that escrow account has enough balance
@@ -311,7 +368,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         account: &Self::AccountId,
         coin: &PrefixedCoin,
     ) -> Result<(), TokenTransferError> {
-        let denom = coin.denom.to_string();
+        let token_name = coin.denom.to_string();
 
         // 1. if token ID doesn't exist in `minted_tokens`, then create a new
         //    token and store in `minted_tokens`
@@ -319,59 +376,15 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
             let maybe_token_id = self
                 .ibc_transfer
                 .minted_token_name_to_id
-                .get(&denom, *self.working_set.borrow_mut());
+                .get(&token_name, *self.working_set.borrow_mut());
 
             match maybe_token_id {
                 Some(token_id) => token_id,
-                // Create a new token
-                None => {
-                    let token_name = coin.denom.to_string();
-                    // Using a different salt will result in a different token
-                    // address. Since ICS-20 tokens coming from other chains are
-                    // guaranteed to have unique names, we don't need to use
-                    // different salt values.
-                    let salt = 0u64;
-                    let initial_balance = 0;
-                    // Note: unused since initial_balance = 0
-                    let minter_address = account.address.clone();
-                    // Only the transfer module is allowed to mint
-                    let authorized_minters = vec![self.ibc_transfer.address.clone()];
-                    // Make sure to use `ibc_transfer` address as the sender
-                    let context = Context::new(
-                        self.ibc_transfer.address.clone(),
-                        self.sdk_context.sequencer().clone(),
-                        self.sdk_context.visible_slot_number(),
-                    );
-                    let new_token_id = self
-                        .ibc_transfer
-                        .bank
-                        .create_token(
-                            token_name,
-                            salt,
-                            initial_balance,
-                            minter_address,
-                            authorized_minters,
-                            &context,
-                            &mut self.working_set.borrow_mut(),
-                        )
-                        .map_err(|err| TokenTransferError::Other(err.to_string()))?;
-
-                    // Stores mapping from "denom to token ID" of the IBC-minted token
-                    self.ibc_transfer.minted_token_name_to_id.set(
-                        &denom,
-                        &new_token_id,
-                        *self.working_set.borrow_mut(),
-                    );
-
-                    // Stores mapping from "token ID to denom" of the IBC-minted token
-                    self.ibc_transfer.minted_token_id_to_name.set(
-                        &new_token_id,
-                        &denom,
-                        *self.working_set.borrow_mut(),
-                    );
-
-                    new_token_id
-                }
+                None => self.create_token(
+                    token_name,
+                    account.address.clone(),
+                    vec![self.ibc_transfer.address.clone()],
+                )?,
             }
         };
 

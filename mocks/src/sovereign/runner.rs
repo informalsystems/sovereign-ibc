@@ -114,7 +114,7 @@ where
             self.runtime()
                 .dispatch_call(m.clone(), &mut working_set, &self.rollup_ctx())
                 .unwrap_or_else(|e| {
-                    info!("rollup: error executing message: {:?}", e);
+                    info!("rollup: error executing message: {e:?}");
                     CallResponse::default()
                 });
         }
