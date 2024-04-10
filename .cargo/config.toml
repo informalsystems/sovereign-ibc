@@ -1,10 +1,10 @@
 
 [patch.crates-io]
 
-sov-ibc                         = { path = "modules/sov-ibc" }
-sov-ibc-transfer                = { path = "modules/sov-ibc-transfer" }
-sov-consensus-state-tracker     = { path = "modules/sov-consensus-state-tracker" }
-sov-celestia-client             = { path = "clients/sov-celestia" }
+sov-ibc                     = { path = "modules/sov-ibc" }
+sov-ibc-transfer            = { path = "modules/sov-ibc-transfer" }
+sov-consensus-state-tracker = { path = "modules/sov-consensus-state-tracker" }
+sov-celestia-client         = { path = "clients/sov-celestia" }
 
 ibc-core                    = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 ibc-core-client             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
@@ -16,7 +16,7 @@ ibc-primitives              = { git = "https://github.com/cosmos/ibc-rs.git", re
 ibc-query                   = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 ibc-testkit                 = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 
-basecoin                    = { git = "https://github.com/informalsystems/basecoin-rs.git", branch = "soares/git-deps-in-patch" }
+basecoin                    = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "75fbb86" }
 
 sov-bank                    = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
 sov-celestia-adapter        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
