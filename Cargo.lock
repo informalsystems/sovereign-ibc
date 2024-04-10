@@ -569,7 +569,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=90886ab#90886abafbcd65a914fb8396cf850686b7d89f94"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=75fbb86#75fbb86374d2369383aa3f819d1296bad64759b1"
 dependencies = [
  "basecoin-app",
  "basecoin-modules",
@@ -591,7 +591,7 @@ dependencies = [
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=90886ab#90886abafbcd65a914fb8396cf850686b7d89f94"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=75fbb86#75fbb86374d2369383aa3f819d1296bad64759b1"
 dependencies = [
  "basecoin-modules",
  "basecoin-store",
@@ -610,14 +610,14 @@ dependencies = [
 [[package]]
 name = "basecoin-modules"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=90886ab#90886abafbcd65a914fb8396cf850686b7d89f94"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=75fbb86#75fbb86374d2369383aa3f819d1296bad64759b1"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
  "cosmrs",
  "derive_more",
  "displaydoc",
- "ibc",
+ "ibc 0.51.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ibc-proto",
  "ibc-query",
  "ics23",
@@ -627,7 +627,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.10.8",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
+ "sov-celestia-client",
  "tendermint 0.34.1",
  "tendermint-rpc",
  "tonic",
@@ -637,7 +637,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=90886ab#90886abafbcd65a914fb8396cf850686b7d89f94"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=75fbb86#75fbb86374d2369383aa3f819d1296bad64759b1"
 dependencies = [
  "displaydoc",
  "ics23",
@@ -2540,13 +2540,27 @@ dependencies = [
 [[package]]
 name = "ibc"
 version = "0.51.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67#c579628c672bdb384ae4ef3cb02a7455c9d03386"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8af2325614ae3274b2e70834bea56c1fa2758d802d364d89992b0fe820847fca"
 dependencies = [
- "ibc-apps",
- "ibc-clients",
+ "ibc-apps 0.51.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ibc-clients 0.51.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ibc-core",
  "ibc-core-host-cosmos",
- "ibc-derive",
+ "ibc-derive 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ibc-primitives",
+]
+
+[[package]]
+name = "ibc"
+version = "0.51.0"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67#c579628c672bdb384ae4ef3cb02a7455c9d03386"
+dependencies = [
+ "ibc-apps 0.51.0 (git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67)",
+ "ibc-clients 0.51.0 (git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67)",
+ "ibc-core",
+ "ibc-core-host-cosmos",
+ "ibc-derive 0.6.1 (git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67)",
  "ibc-primitives",
 ]
 
@@ -2604,6 +2618,15 @@ dependencies = [
  "schemars",
  "serde",
  "uint",
+]
+
+[[package]]
+name = "ibc-apps"
+version = "0.51.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5325b71c21ea45f8a7f8df412e72a01b50f230b08b4120d6a233aeb4bf7b4a54"
+dependencies = [
+ "ibc-app-transfer",
 ]
 
 [[package]]
@@ -2667,6 +2690,16 @@ dependencies = [
 [[package]]
 name = "ibc-clients"
 version = "0.51.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2cf6dce5f55eac4930a6e00808cd91d9eccffcb8b5d7c4717b57e9a11217be90"
+dependencies = [
+ "ibc-client-tendermint",
+ "ibc-client-wasm-types",
+]
+
+[[package]]
+name = "ibc-clients"
+version = "0.51.0"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67#c579628c672bdb384ae4ef3cb02a7455c9d03386"
 dependencies = [
  "ibc-client-tendermint",
@@ -2685,7 +2718,7 @@ dependencies = [
  "ibc-core-handler",
  "ibc-core-host",
  "ibc-core-router",
- "ibc-derive",
+ "ibc-derive 0.6.1 (git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67)",
  "ibc-primitives",
 ]
 
@@ -2958,6 +2991,17 @@ dependencies = [
 [[package]]
 name = "ibc-derive"
 version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f5010acf3b7fec09c24d05b946424a9f7884f9647ed837c1a1676d3eabac154"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.55",
+]
+
+[[package]]
+name = "ibc-derive"
+version = "0.6.1"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67#c579628c672bdb384ae4ef3cb02a7455c9d03386"
 dependencies = [
  "proc-macro2",
@@ -3011,7 +3055,7 @@ version = "0.51.0"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67#c579628c672bdb384ae4ef3cb02a7455c9d03386"
 dependencies = [
  "displaydoc",
- "ibc",
+ "ibc 0.51.0 (git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67)",
  "ibc-proto",
  "schemars",
  "serde",
@@ -3025,7 +3069,7 @@ source = "git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67#c579628c672bdb
 dependencies = [
  "derive_more",
  "displaydoc",
- "ibc",
+ "ibc 0.51.0 (git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67)",
  "ibc-proto",
  "parking_lot",
  "subtle-encoding",
@@ -5494,31 +5538,11 @@ dependencies = [
  "schemars",
  "serde",
  "sha2 0.10.8",
- "sov-celestia-client-types 0.1.0",
+ "sov-celestia-client-types",
  "tendermint 0.34.1",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.1",
  "typed-builder",
-]
-
-[[package]]
-name = "sov-celestia-client"
-version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72#acdfdf72fc5aebdd98ffd868007f531661984bee"
-dependencies = [
- "borsh",
- "derive_more",
- "ibc-client-tendermint",
- "ibc-core",
- "ics23",
- "jmt",
- "prost",
- "serde",
- "sha2 0.10.8",
- "sov-celestia-client-types 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
- "tendermint 0.34.1",
- "tendermint-light-client-verifier",
- "tendermint-proto 0.34.1",
 ]
 
 [[package]]
@@ -5534,7 +5558,7 @@ dependencies = [
  "ibc-core",
  "prost",
  "serde",
- "sov-celestia-client 0.1.0",
+ "sov-celestia-client",
  "tendermint-testgen",
  "test-log",
  "thiserror",
@@ -5557,31 +5581,7 @@ dependencies = [
  "prost",
  "schemars",
  "serde",
- "sov-ibc-proto 0.1.0",
- "sov-rollup-interface",
- "tendermint 0.34.1",
- "tendermint-light-client-verifier",
- "tendermint-proto 0.34.1",
- "typed-builder",
-]
-
-[[package]]
-name = "sov-celestia-client-types"
-version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72#acdfdf72fc5aebdd98ffd868007f531661984bee"
-dependencies = [
- "base64 0.21.7",
- "bytes",
- "derive_more",
- "hex",
- "ibc-client-tendermint",
- "ibc-client-wasm-types",
- "ibc-core",
- "ics23",
- "jmt",
- "prost",
- "serde",
- "sov-ibc-proto 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
+ "sov-ibc-proto",
  "sov-rollup-interface",
  "tendermint 0.34.1",
  "tendermint-light-client-verifier",
@@ -5620,32 +5620,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sov-celestia-adapter",
- "sov-celestia-client 0.1.0",
- "sov-ibc 0.1.0",
- "sov-mock-da",
- "sov-modules-api",
- "sov-modules-core",
- "sov-rollup-interface",
- "tendermint 0.34.1",
- "thiserror",
- "uint",
-]
-
-[[package]]
-name = "sov-consensus-state-tracker"
-version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72#acdfdf72fc5aebdd98ffd868007f531661984bee"
-dependencies = [
- "anyhow",
- "base64 0.21.7",
- "borsh",
- "ibc-app-transfer",
- "ibc-core",
- "prost",
- "serde",
- "sov-celestia-adapter",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
- "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
+ "sov-celestia-client",
+ "sov-ibc",
  "sov-mock-da",
  "sov-modules-api",
  "sov-modules-core",
@@ -5693,38 +5669,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.8",
- "sov-celestia-client 0.1.0",
- "sov-ibc-transfer 0.1.0",
- "sov-modules-api",
- "sov-rollup-interface",
- "sov-state",
- "thiserror",
- "time",
- "tracing",
-]
-
-[[package]]
-name = "sov-ibc"
-version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72#acdfdf72fc5aebdd98ffd868007f531661984bee"
-dependencies = [
- "ahash 0.8.6",
- "anyhow",
- "base64 0.21.7",
- "borsh",
- "derive_more",
- "ibc-app-transfer",
- "ibc-client-tendermint",
- "ibc-core",
- "ibc-query",
- "jsonrpsee",
- "prost",
- "schemars",
- "serde",
- "serde_json",
- "sha2 0.10.8",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
+ "sov-celestia-client",
+ "sov-ibc-transfer",
  "sov-modules-api",
  "sov-rollup-interface",
  "sov-state",
@@ -5755,11 +5701,11 @@ dependencies = [
  "serde_json",
  "sha2 0.10.8",
  "sov-bank",
- "sov-celestia-client 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
+ "sov-celestia-client",
  "sov-chain-state",
- "sov-consensus-state-tracker 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
- "sov-ibc 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
- "sov-ibc-transfer 0.1.0 (git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72)",
+ "sov-consensus-state-tracker",
+ "sov-ibc",
+ "sov-ibc-transfer",
  "sov-kernels",
  "sov-mock-zkvm",
  "sov-modules-api",
@@ -5791,18 +5737,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sov-ibc-proto"
-version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72#acdfdf72fc5aebdd98ffd868007f531661984bee"
-dependencies = [
- "ibc-proto",
- "informalsystems-pbjson",
- "prost",
- "serde",
- "tendermint-proto 0.34.1",
-]
-
-[[package]]
 name = "sov-ibc-proto-compiler"
 version = "0.1.0"
 dependencies = [
@@ -5817,28 +5751,6 @@ dependencies = [
 [[package]]
 name = "sov-ibc-transfer"
 version = "0.1.0"
-dependencies = [
- "anyhow",
- "base64 0.21.7",
- "borsh",
- "ibc-app-transfer",
- "ibc-core",
- "jsonrpsee",
- "prost",
- "schemars",
- "serde",
- "serde_json",
- "sov-bank",
- "sov-modules-api",
- "sov-rollup-interface",
- "thiserror",
- "uint",
-]
-
-[[package]]
-name = "sov-ibc-transfer"
-version = "0.1.0"
-source = "git+https://github.com/informalsystems/sovereign-ibc.git?rev=acdfdf72#acdfdf72fc5aebdd98ffd868007f531661984bee"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
