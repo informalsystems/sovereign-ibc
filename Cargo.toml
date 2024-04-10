@@ -80,6 +80,8 @@ ibc-testkit           = { version = "0.51.0", default-features = false }
 # a more efficient approach.
 ibc-proto             = { version = "0.42.2", default-features = false }
 
+basecoin              = { version = "0.1.0" }
+
 # cosmos dependencies
 tendermint            = { version = "0.34", default-features = false }
 tendermint-proto      = { version = "0.34", default-features = false }
@@ -104,6 +106,11 @@ const-rollup-config        = { version = "0.3.0" }
 
 [patch.crates-io]
 
+sov-ibc                         = { path = "modules/sov-ibc" }
+sov-ibc-transfer                = { path = "modules/sov-ibc-transfer" }
+sov-consensus-state-tracker     = { path = "modules/sov-consensus-state-tracker" }
+sov-celestia-client             = { path = "clients/sov-celestia" }
+
 ibc-core                    = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 ibc-core-client             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 ibc-core-host-cosmos        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
@@ -113,6 +120,8 @@ ibc-app-transfer            = { git = "https://github.com/cosmos/ibc-rs.git", re
 ibc-primitives              = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 ibc-query                   = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 ibc-testkit                 = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+
+basecoin                    = { git = "https://github.com/informalsystems/basecoin-rs.git", branch = "soares/git-deps-in-patch" }
 
 sov-bank                    = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
 sov-celestia-adapter        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
