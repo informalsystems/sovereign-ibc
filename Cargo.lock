@@ -5582,7 +5582,6 @@ dependencies = [
  "schemars",
  "serde",
  "sov-ibc-proto",
- "sov-rollup-interface",
  "tendermint 0.34.1",
  "tendermint-light-client-verifier",
  "tendermint-proto 0.34.1",
