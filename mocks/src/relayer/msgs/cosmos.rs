@@ -2,12 +2,10 @@
 
 use std::str::FromStr;
 
-use base64::engine::general_purpose;
-use base64::Engine;
 use basecoin::modules::ibc::AnyClientState;
 use ibc_app_transfer::types::msgs::transfer::MsgTransfer;
 use ibc_app_transfer::types::packet::PacketData;
-use ibc_app_transfer::types::{Coin, Memo, PrefixedDenom};
+use ibc_app_transfer::types::{Coin, PrefixedDenom};
 use ibc_core::channel::types::msgs::MsgRecvPacket;
 use ibc_core::channel::types::packet::Packet;
 use ibc_core::channel::types::timeout::TimeoutHeight;
@@ -100,17 +98,6 @@ where
 
     /// Builds a Cosmos chain token transfer message; serialized to Any
     pub fn build_msg_transfer_for_cos(&self, config: &TransferTestConfig) -> MsgTransfer {
-        let memo = match config.sov_token_id {
-            Some(token_id) => {
-                let mut token_id_buf = String::new();
-
-                general_purpose::STANDARD_NO_PAD.encode_string(token_id, &mut token_id_buf);
-
-                token_id_buf.into()
-            }
-            None => Memo::from_str("").unwrap(),
-        };
-
         let packet_data = PacketData {
             token: Coin {
                 denom: PrefixedDenom::from_str(&config.cos_denom).unwrap(),
@@ -118,7 +105,7 @@ where
             },
             sender: Signer::from(config.cos_address.clone()),
             receiver: Signer::from(config.sov_address.to_string()),
-            memo,
+            memo: config.memo.clone(),
         };
 
         MsgTransfer {

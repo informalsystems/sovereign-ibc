@@ -16,7 +16,6 @@ workspace = true
 # external dependencies
 anyhow        = { workspace = true }
 async-trait   = { version = "0.1.74", default-features = false }
-base64        = { workspace = true }
 borsh         = { workspace = true }
 jmt           = { workspace = true }
 prost         = { workspace = true }

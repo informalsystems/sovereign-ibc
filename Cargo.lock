@@ -5545,7 +5545,6 @@ dependencies = [
 name = "sov-celestia-client-types"
 version = "0.1.0"
 dependencies = [
- "base64 0.21.7",
  "bytes",
  "derive_more",
  "hex",
@@ -5610,7 +5609,6 @@ name = "sov-consensus-state-tracker"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "base64 0.21.7",
  "borsh",
  "ibc-app-transfer",
  "ibc-core",
@@ -5739,7 +5737,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "base64 0.21.7",
  "basecoin",
  "borsh",
  "const-rollup-config",
@@ -5819,8 +5816,8 @@ name = "sov-ibc-transfer"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "base64 0.21.7",
  "borsh",
+ "derive_more",
  "ibc-app-transfer",
  "ibc-core",
  "jsonrpsee",

@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
-use sov_bank::{CallMessage as BankCallMessage, TokenId};
+use sov_bank::{CallMessage as BankCallMessage, TokenConfig, TokenId};
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
 use sov_celestia_client::types::client_message::SovTmHeader;
 use sov_consensus_state_tracker::{ConsensusStateTracker, HasConsensusState};
@@ -18,6 +18,7 @@ use sov_modules_api::{Context, Spec, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 
+use super::DEFAULT_SALT;
 use crate::cosmos::MockTendermint;
 use crate::sovereign::runtime::RuntimeCall;
 use crate::sovereign::Runtime;
@@ -153,25 +154,25 @@ where
             .unwrap()
     }
 
-    /// Returns token ID of an IBC denom
+    pub fn get_token_id(&self, token_config: TokenConfig<S>) -> Option<TokenId> {
+        self.runtime()
+            .bank
+            .token_id(
+                token_config.token_name,
+                token_config.address_and_balances[0].0.clone(),
+                DEFAULT_SALT,
+            )
+            .ok()
+    }
+
+    /// Searches the transfer module by given token denom and returns the token
+    /// ID if the token has been minted.
     pub fn get_minted_token_id(&self, token_denom: String) -> Option<TokenId> {
         let mut working_set = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .ibc_transfer
             .minted_token(token_denom, &mut working_set)
-            .map(|token| token.token_id)
-            .ok()
-    }
-
-    /// Searches the transfer module to retrieve the ID of the token ID in
-    /// escrow based on its name(denom).
-    pub fn get_escrowed_token_id(&self, token_denom: String) -> Option<TokenId> {
-        let mut working_set = WorkingSet::new(self.prover_storage());
-
-        self.runtime()
-            .ibc_transfer
-            .escrowed_token(token_denom, &mut working_set)
             .map(|token| token.token_id)
             .ok()
     }

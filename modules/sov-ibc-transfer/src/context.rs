@@ -1,9 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::str::FromStr;
 
-use base64::engine::general_purpose;
-use base64::Engine;
-use borsh::BorshDeserialize;
 use ibc_app_transfer::context::{TokenTransferExecutionContext, TokenTransferValidationContext};
 use ibc_app_transfer::module::{
     on_acknowledgement_packet_validate, on_chan_open_ack_validate, on_chan_open_confirm_validate,
@@ -27,7 +25,7 @@ use sov_modules_api::{Context, Spec, WorkingSet};
 use uint::FromDecStrErr;
 
 use super::IbcTransfer;
-use crate::utils::compute_escrow_address;
+use crate::utils::{compute_escrow_address, SovereignMemo};
 
 /// We need to create a wrapper around the `Transfer` module and `WorkingSet`,
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
@@ -148,11 +146,7 @@ where
         coin: &PrefixedCoin,
         memo: &Memo,
     ) -> Result<(), TokenTransferError> {
-        let token_id_buf = general_purpose::STANDARD_NO_PAD
-            .decode(memo.as_ref())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
-
-        let token_id = BorshDeserialize::deserialize(&mut token_id_buf.as_slice())
+        let sov_memo: SovereignMemo = serde_json::from_str(memo.as_ref())
             .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
 
         let expected_token_id = {
@@ -164,7 +158,7 @@ where
                 })?
         };
 
-        if token_id != expected_token_id {
+        if sov_memo.token_id() != expected_token_id {
             return Err(TokenTransferError::InvalidCoin {
                 coin: coin.to_string(),
             });
@@ -175,7 +169,7 @@ where
             .bank
             .get_balance_of(
                 account.address.clone(),
-                token_id,
+                sov_memo.token_id(),
                 *self.working_set.borrow_mut(),
             )
             .ok_or(TokenTransferError::InvalidCoin {
@@ -203,25 +197,16 @@ where
         coin: &PrefixedCoin,
         memo: &Memo,
     ) -> Result<(), TokenTransferError> {
-        let token_id_buf = general_purpose::STANDARD_NO_PAD
-            .decode(memo.as_ref())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
-
-        let token_id = BorshDeserialize::deserialize(&mut token_id_buf.as_slice())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
-
-        let token_name = self
-            .ibc_transfer
-            .bank
-            .get_token_name(&token_id, &mut self.working_set.borrow_mut())
-            .ok_or(TokenTransferError::Other(format!(
-                "No token with address {token_id}",
-            )))?;
-
-        if token_name != coin.denom.to_string() {
-            return Err(TokenTransferError::InvalidCoin {
+        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
+            TokenTransferError::InvalidCoin {
                 coin: coin.to_string(),
-            });
+            }
+        })?;
+
+        if !memo.as_ref().is_empty() {
+            return Err(TokenTransferError::Other(
+                "Memo must be empty when escrowing tokens".to_string(),
+            ));
         }
 
         let sender_balance: u64 = self
@@ -271,14 +256,12 @@ where
     ) -> Result<(), TokenTransferError> {
         // ensure that escrow account has enough balance
         let escrow_balance: Amount = {
-            let token_id = {
-                self.ibc_transfer
-                    .escrowed_tokens
-                    .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
-                    .ok_or(TokenTransferError::InvalidCoin {
-                        coin: coin.to_string(),
-                    })?
-            };
+            let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
+                TokenTransferError::InvalidCoin {
+                    coin: coin.to_string(),
+                }
+            })?;
+
             let escrow_address = self.obtain_escrow_address(port_id, channel_id);
 
             let escrow_balance = self
@@ -428,29 +411,20 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         port_id: &PortId,
         channel_id: &ChannelId,
         coin: &PrefixedCoin,
-        memo: &Memo,
+        _memo: &Memo,
     ) -> Result<(), TokenTransferError> {
-        let token_id_buf = general_purpose::STANDARD_NO_PAD
-            .decode(memo.as_ref())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
-
-        let token_id: TokenId = BorshDeserialize::deserialize(&mut token_id_buf.as_slice())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
-
         // The token name on the Sovereign SDK chains is not guaranteed to be
         // unique, and hence we must use the token ID (which is guaranteed to be
         // unique) as the ICS-20 denom to ensure uniqueness.
-        let denom = token_id.to_string();
+        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
+            TokenTransferError::InvalidCoin {
+                coin: coin.to_string(),
+            }
+        })?;
 
-        // 1. ensure that token exists in `self.escrowed_tokens` map, which is
-        // necessary information when unescrowing tokens
-        self.ibc_transfer
-            .escrowed_tokens
-            .set(&denom, &token_id, *self.working_set.borrow_mut());
-
-        // 2. transfer coins to escrow account
         let escrow_account = self.obtain_escrow_address(port_id, channel_id);
 
+        // transfer coins to escrow account
         self.transfer(
             token_id,
             &from_account.address,
@@ -471,18 +445,15 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         channel_id: &ChannelId,
         coin: &PrefixedCoin,
     ) -> Result<(), TokenTransferError> {
-        let token_id = self
-            .ibc_transfer
-            .escrowed_tokens
-            .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
-            .ok_or(TokenTransferError::InvalidCoin {
+        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
+            TokenTransferError::InvalidCoin {
                 coin: coin.to_string(),
-            })?;
-
-        // transfer coins out of escrow account to `to_account`
+            }
+        })?;
 
         let escrow_account = self.obtain_escrow_address(port_id, channel_id);
 
+        // transfer coins out of escrow account to `to_account`
         self.transfer(token_id, &escrow_account, &to_account.address, &coin.amount)?;
 
         Ok(())

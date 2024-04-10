@@ -19,7 +19,6 @@ workspace = true
 
 [dependencies]
 # external dependencies
-base64        = { workspace = true, features = ["alloc"] }
 bytes         = { workspace = true }
 hex           = { version = "0.4.3" }
 jmt           = { workspace = true }
