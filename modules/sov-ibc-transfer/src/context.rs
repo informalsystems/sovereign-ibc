@@ -336,6 +336,12 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
                     let minter_address = account.address.clone();
                     // Only the transfer module is allowed to mint
                     let authorized_minters = vec![self.ibc_transfer.address.clone()];
+                    // Make sure to use `ibc_transfer` address as the sender
+                    let context = Context::new(
+                        self.ibc_transfer.address.clone(),
+                        self.sdk_context.sequencer().clone(),
+                        self.sdk_context.visible_slot_number(),
+                    );
                     let new_token_id = self
                         .ibc_transfer
                         .bank
@@ -345,7 +351,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
                             initial_balance,
                             minter_address,
                             authorized_minters,
-                            &self.sdk_context,
+                            &context,
                             &mut self.working_set.borrow_mut(),
                         )
                         .map_err(|err| TokenTransferError::Other(err.to_string()))?;
