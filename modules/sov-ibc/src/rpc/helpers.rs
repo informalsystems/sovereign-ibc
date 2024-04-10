@@ -45,13 +45,13 @@ pub fn to_jsonrpsee_error(err: impl ToString) -> ErrorObjectOwned {
 }
 
 /// Trait for proof agnostic storage value retrieval.
-pub trait StorageValue<V> {
-    type Output;
-    fn value_at_key<K, C, S>(
+pub trait StorageValue {
+    type Output<V>;
+    fn value_at_key<K, V, C, S>(
         key: &K,
         state_map: &StateMap<K, V, C>,
         working_set: &mut WorkingSet<S>,
-    ) -> RpcResult<Self::Output>
+    ) -> RpcResult<Self::Output<V>>
     where
         S: Spec,
         C: StateCodec,
@@ -60,16 +60,16 @@ pub trait StorageValue<V> {
 }
 
 /// Implementation of [`StorageValue`] for values without proofs.
-pub struct WithoutProof<V>(PhantomData<V>);
+pub struct WithoutProof;
 
-impl<V> StorageValue<V> for WithoutProof<V> {
-    type Output = Option<V>;
+impl StorageValue for WithoutProof {
+    type Output<V> = Option<V>;
 
-    fn value_at_key<K, C, S>(
+    fn value_at_key<K, V, C, S>(
         key: &K,
         state_map: &StateMap<K, V, C>,
         working_set: &mut WorkingSet<S>,
-    ) -> RpcResult<Self::Output>
+    ) -> RpcResult<Self::Output<V>>
     where
         S: Spec,
         C: StateCodec,
@@ -81,16 +81,16 @@ impl<V> StorageValue<V> for WithoutProof<V> {
 }
 
 /// Implementation of [`StorageValue`] for values with proofs.
-pub struct WithProof<V>(PhantomData<V>);
+pub struct WithProof;
 
-impl<V> StorageValue<V> for WithProof<V> {
-    type Output = (Option<V>, Vec<u8>);
+impl StorageValue for WithProof {
+    type Output<V> = (Option<V>, Vec<u8>);
 
-    fn value_at_key<K, C, S>(
+    fn value_at_key<K, V, C, S>(
         key: &K,
         state_map: &StateMap<K, V, C>,
         working_set: &mut WorkingSet<S>,
-    ) -> RpcResult<Self::Output>
+    ) -> RpcResult<Self::Output<V>>
     where
         S: Spec,
         C: StateCodec,
