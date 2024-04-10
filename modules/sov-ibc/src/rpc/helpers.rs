@@ -50,7 +50,7 @@ pub fn to_jsonrpsee_error(err: impl ToString) -> ErrorObjectOwned {
 /// [`WithProof`] and [`WithoutProof`] respectively.
 ///
 /// This trait allows to have a single query methods for both cases, e.g.:
-
+///
 /// let (client_state, proof) = ibc_ctx.query_client_state::<WithProof>(client_id)?;
 /// let client_state = ibc_ctx.query_client_state::<WithoutProof>(client_id)?;
 ///
