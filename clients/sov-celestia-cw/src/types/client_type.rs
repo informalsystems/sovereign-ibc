@@ -41,7 +41,7 @@ impl TryFrom<AnyConsensusState> for SovTmConsensusState {
 
     fn try_from(value: AnyConsensusState) -> Result<Self, Self::Error> {
         match value {
-            AnyConsensusState::Sovereign(state) => Ok(state.inner().clone()),
+            AnyConsensusState::Sovereign(state) => Ok(state.into_inner()),
         }
     }
 }

@@ -9,10 +9,15 @@ impl serde::Serialize for AggregatedProof {
         if true {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("sovereign.types.v1.AggregatedProof", len)?;
         if true {
-            #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("proof", pbjson::private::base64::encode(&self.proof).as_str())?;
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("sovereign.types.v1.AggregatedProof", len)?;
+        if let Some(v) = self.public_data.as_ref() {
+            struct_ser.serialize_field("publicData", v)?;
+        }
+        if let Some(v) = self.serialized_proof.as_ref() {
+            struct_ser.serialize_field("serializedProof", v)?;
         }
         struct_ser.end()
     }
@@ -24,12 +29,16 @@ impl<'de> serde::Deserialize<'de> for AggregatedProof {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "proof",
+            "public_data",
+            "publicData",
+            "serialized_proof",
+            "serializedProof",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            Proof,
+            PublicData,
+            SerializedProof,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> core::result::Result<GeneratedField, D::Error>
@@ -51,7 +60,8 @@ impl<'de> serde::Deserialize<'de> for AggregatedProof {
                         E: serde::de::Error,
                     {
                         match value {
-                            "proof" => Ok(GeneratedField::Proof),
+                            "publicData" | "public_data" => Ok(GeneratedField::PublicData),
+                            "serializedProof" | "serialized_proof" => Ok(GeneratedField::SerializedProof),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -71,135 +81,31 @@ impl<'de> serde::Deserialize<'de> for AggregatedProof {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut proof__ = None;
+                let mut public_data__ = None;
+                let mut serialized_proof__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
-                        GeneratedField::Proof => {
-                            if proof__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("proof"));
+                        GeneratedField::PublicData => {
+                            if public_data__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("publicData"));
                             }
-                            proof__ = 
-                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
-                            ;
+                            public_data__ = map_.next_value()?;
+                        }
+                        GeneratedField::SerializedProof => {
+                            if serialized_proof__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("serializedProof"));
+                            }
+                            serialized_proof__ = map_.next_value()?;
                         }
                     }
                 }
                 Ok(AggregatedProof {
-                    proof: proof__.unwrap_or_default(),
+                    public_data: public_data__,
+                    serialized_proof: serialized_proof__,
                 })
             }
         }
         deserializer.deserialize_struct("sovereign.types.v1.AggregatedProof", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for AggregatedProofData {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if true {
-            len += 1;
-        }
-        if true {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("sovereign.types.v1.AggregatedProofData", len)?;
-        if let Some(v) = self.public_input.as_ref() {
-            struct_ser.serialize_field("publicInput", v)?;
-        }
-        if let Some(v) = self.aggregated_proof.as_ref() {
-            struct_ser.serialize_field("aggregatedProof", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for AggregatedProofData {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "public_input",
-            "publicInput",
-            "aggregated_proof",
-            "aggregatedProof",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            PublicInput,
-            AggregatedProof,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> core::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> core::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "publicInput" | "public_input" => Ok(GeneratedField::PublicInput),
-                            "aggregatedProof" | "aggregated_proof" => Ok(GeneratedField::AggregatedProof),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = AggregatedProofData;
-
-            fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                formatter.write_str("struct sovereign.types.v1.AggregatedProofData")
-            }
-
-            fn visit_map<V>(self, mut map_: V) -> core::result::Result<AggregatedProofData, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut public_input__ = None;
-                let mut aggregated_proof__ = None;
-                while let Some(k) = map_.next_key()? {
-                    match k {
-                        GeneratedField::PublicInput => {
-                            if public_input__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("publicInput"));
-                            }
-                            public_input__ = map_.next_value()?;
-                        }
-                        GeneratedField::AggregatedProof => {
-                            if aggregated_proof__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("aggregatedProof"));
-                            }
-                            aggregated_proof__ = map_.next_value()?;
-                        }
-                    }
-                }
-                Ok(AggregatedProofData {
-                    public_input: public_input__,
-                    aggregated_proof: aggregated_proof__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("sovereign.types.v1.AggregatedProofData", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for AggregatedProofPublicData {
@@ -554,7 +460,7 @@ impl<'de> serde::Deserialize<'de> for CodeCommitment {
         deserializer.deserialize_struct("sovereign.types.v1.CodeCommitment", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for ValidityCondition {
+impl serde::Serialize for SerializedAggregatedProof {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
     where
@@ -565,7 +471,102 @@ impl serde::Serialize for ValidityCondition {
         if true {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("sovereign.types.v1.ValidityCondition", len)?;
+        let mut struct_ser = serializer.serialize_struct("sovereign.types.v1.SerializedAggregatedProof", len)?;
+        if true {
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("rawAggregatedProof", pbjson::private::base64::encode(&self.raw_aggregated_proof).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for SerializedAggregatedProof {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "raw_aggregated_proof",
+            "rawAggregatedProof",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            RawAggregatedProof,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> core::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> core::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "rawAggregatedProof" | "raw_aggregated_proof" => Ok(GeneratedField::RawAggregatedProof),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = SerializedAggregatedProof;
+
+            fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                formatter.write_str("struct sovereign.types.v1.SerializedAggregatedProof")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> core::result::Result<SerializedAggregatedProof, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut raw_aggregated_proof__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::RawAggregatedProof => {
+                            if raw_aggregated_proof__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rawAggregatedProof"));
+                            }
+                            raw_aggregated_proof__ = 
+                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(SerializedAggregatedProof {
+                    raw_aggregated_proof: raw_aggregated_proof__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("sovereign.types.v1.SerializedAggregatedProof", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for SerializedValidityCondition {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if true {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("sovereign.types.v1.SerializedValidityCondition", len)?;
         if true {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("validityCondition", pbjson::private::base64::encode(&self.validity_condition).as_str())?;
@@ -573,7 +574,7 @@ impl serde::Serialize for ValidityCondition {
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for ValidityCondition {
+impl<'de> serde::Deserialize<'de> for SerializedValidityCondition {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
     where
@@ -618,13 +619,13 @@ impl<'de> serde::Deserialize<'de> for ValidityCondition {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = ValidityCondition;
+            type Value = SerializedValidityCondition;
 
             fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                formatter.write_str("struct sovereign.types.v1.ValidityCondition")
+                formatter.write_str("struct sovereign.types.v1.SerializedValidityCondition")
             }
 
-            fn visit_map<V>(self, mut map_: V) -> core::result::Result<ValidityCondition, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> core::result::Result<SerializedValidityCondition, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -641,11 +642,11 @@ impl<'de> serde::Deserialize<'de> for ValidityCondition {
                         }
                     }
                 }
-                Ok(ValidityCondition {
+                Ok(SerializedValidityCondition {
                     validity_condition: validity_condition__.unwrap_or_default(),
                 })
             }
         }
-        deserializer.deserialize_struct("sovereign.types.v1.ValidityCondition", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("sovereign.types.v1.SerializedValidityCondition", FIELDS, GeneratedVisitor)
     }
 }

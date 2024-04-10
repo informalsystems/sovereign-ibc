@@ -1,23 +1,23 @@
-/// AggregatedProofData is the overarching structure, encompassing public input,
-/// proof data information, and aggregated proof bytes.
+/// AggregatedProof is the overarching structure, encompassing public data, proof
+/// data information, and aggregated proof bytes.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct AggregatedProofData {
-    /// the public input of the aggregated proof
+pub struct AggregatedProof {
+    /// the public data of the aggregated proof
     #[prost(message, optional, tag = "1")]
-    pub public_input: ::core::option::Option<AggregatedProofPublicData>,
+    pub public_data: ::core::option::Option<AggregatedProofPublicData>,
     /// the aggregated proof bytes
     #[prost(message, optional, tag = "2")]
-    pub aggregated_proof: ::core::option::Option<AggregatedProof>,
+    pub serialized_proof: ::core::option::Option<SerializedAggregatedProof>,
 }
-impl ::prost::Name for AggregatedProofData {
-    const NAME: &'static str = "AggregatedProofData";
+impl ::prost::Name for AggregatedProof {
+    const NAME: &'static str = "AggregatedProof";
     const PACKAGE: &'static str = "sovereign.types.v1";
     fn full_name() -> ::prost::alloc::string::String {
         ::prost::alloc::format!("sovereign.types.v1.{}", Self::NAME)
     }
 }
-/// AggregatedProofPublicInput defines the public properties of the
+/// AggregatedProofPublicData defines the public properties of the
 /// AggregatedProof for the Sovereign SDK rollups, utilized for verifying the
 /// proof.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -25,7 +25,7 @@ impl ::prost::Name for AggregatedProofData {
 pub struct AggregatedProofPublicData {
     /// The set of validity conditions for each block of the aggregated proof.
     #[prost(message, repeated, tag = "1")]
-    pub validity_conditions: ::prost::alloc::vec::Vec<ValidityCondition>,
+    pub validity_conditions: ::prost::alloc::vec::Vec<SerializedValidityCondition>,
     /// the initial slot number of the rollup from which the proof captures the
     /// rollup's transition from the initial state root.
     #[prost(uint64, tag = "2")]
@@ -60,33 +60,33 @@ impl ::prost::Name for AggregatedProofPublicData {
         ::prost::alloc::format!("sovereign.types.v1.{}", Self::NAME)
     }
 }
-/// AggregatedProof defines the aggregated proof structure for the Sovereign SDK
-/// rollups.
+/// SerializedAggregatedProof defines the raw aggregated proof structure for the
+/// Sovereign SDK rollups.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct AggregatedProof {
-    /// the rollup aggregated proof bytes covering a range of DA blocks
+pub struct SerializedAggregatedProof {
+    /// the rollup raw aggregated proof bytes covering a range of DA blocks
     #[prost(bytes = "vec", tag = "1")]
-    pub proof: ::prost::alloc::vec::Vec<u8>,
+    pub raw_aggregated_proof: ::prost::alloc::vec::Vec<u8>,
 }
-impl ::prost::Name for AggregatedProof {
-    const NAME: &'static str = "AggregatedProof";
+impl ::prost::Name for SerializedAggregatedProof {
+    const NAME: &'static str = "SerializedAggregatedProof";
     const PACKAGE: &'static str = "sovereign.types.v1";
     fn full_name() -> ::prost::alloc::string::String {
         ::prost::alloc::format!("sovereign.types.v1.{}", Self::NAME)
     }
 }
-/// ValidityCondition defines the validity condition for each block of the
-/// aggregated proof
+/// SerializedValidityCondition defines the serialized validity condition for
+/// each block of the aggregated proof
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct ValidityCondition {
+pub struct SerializedValidityCondition {
     /// the validity condition
     #[prost(bytes = "vec", tag = "1")]
     pub validity_condition: ::prost::alloc::vec::Vec<u8>,
 }
-impl ::prost::Name for ValidityCondition {
-    const NAME: &'static str = "ValidityCondition";
+impl ::prost::Name for SerializedValidityCondition {
+    const NAME: &'static str = "SerializedValidityCondition";
     const PACKAGE: &'static str = "sovereign.types.v1";
     fn full_name() -> ::prost::alloc::string::String {
         ::prost::alloc::format!("sovereign.types.v1.{}", Self::NAME)

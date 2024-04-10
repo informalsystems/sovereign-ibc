@@ -8,7 +8,7 @@ use ibc_core::primitives::Timestamp;
 use tendermint::chain::Id as TmChainId;
 use tendermint_light_client_verifier::types::TrustedBlockState;
 
-use super::aggregated_proof::AggregatedProofData;
+use super::aggregated_proof::AggregatedProof;
 use crate::consensus_state::SovTmConsensusState;
 use crate::error::Error;
 use crate::proto::tendermint::v1::Header as RawSovTmHeader;
@@ -19,7 +19,7 @@ pub const SOV_TENDERMINT_HEADER_TYPE_URL: &str = "/ibc.lightclients.sovereign.te
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Header<H: Clone> {
     pub da_header: H,
-    pub aggregated_proof_data: AggregatedProofData,
+    pub aggregated_proof: AggregatedProof,
 }
 
 impl<H: Clone> Debug for Header<H> {
@@ -32,8 +32,8 @@ impl<H: Clone + Display> Display for Header<H> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "Header {{ da_header: {}, aggregated_proof_data: {} }}",
-            &self.da_header, &self.aggregated_proof_data
+            "Header {{ da_header: {}, aggregated_proof: {} }}",
+            &self.da_header, &self.aggregated_proof
         )
     }
 }
@@ -49,7 +49,7 @@ impl SovTmHeader {
 
     /// Returns the height of the Sovereign-Tendermint header.
     pub fn height(&self) -> Height {
-        self.aggregated_proof_data.public_input.final_slot_number()
+        self.aggregated_proof.final_slot_number()
     }
 
     /// Returns the trusted height of the Sovereign-Tendermint header, which
@@ -63,11 +63,11 @@ impl SovTmHeader {
     pub fn validate_basic(&self) -> Result<(), Error> {
         self.da_header.validate_basic().map_err(Error::source)?;
 
-        self.aggregated_proof_data.validate_basic()?;
+        self.aggregated_proof.validate_basic()?;
 
         if self.height() != self.da_header.height() {
             return Err(Error::mismatch(format!(
-                "DA header height {} does not match aggregated proof height(rollup slot number) {}",
+                "DA header height {} does not match aggregated proof height(slot number) {}",
                 self.da_header.height(),
                 self.height()
             )))?;
@@ -109,14 +109,14 @@ impl TryFrom<RawSovTmHeader> for SovTmHeader {
 
         let da_header = TmHeader::try_from(raw_da_header).map_err(Error::source)?;
 
-        let aggregated_proof_data = value
-            .aggregated_proof_data
+        let aggregated_proof = value
+            .aggregated_proof
             .ok_or(Error::missing("missing aggregated proof"))?
             .try_into()?;
 
         Ok(Header {
             da_header,
-            aggregated_proof_data,
+            aggregated_proof,
         })
     }
 }
@@ -125,7 +125,7 @@ impl From<SovTmHeader> for RawSovTmHeader {
     fn from(value: SovTmHeader) -> RawSovTmHeader {
         RawSovTmHeader {
             tendermint_header: Some(value.da_header.into()),
-            aggregated_proof_data: Some(value.aggregated_proof_data.into()),
+            aggregated_proof: Some(value.aggregated_proof.into()),
         }
     }
 }

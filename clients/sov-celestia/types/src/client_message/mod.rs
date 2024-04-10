@@ -84,24 +84,24 @@ pub mod test_util {
     // -------------------------------------------------------------------------
 
     #[derive(typed_builder::TypedBuilder, Debug)]
-    #[builder(build_method(into = AggregatedProofData))]
-    pub struct AggregatedProofDataConfig {
-        pub public_input: PublicInputConfig,
+    #[builder(build_method(into = AggregatedProof))]
+    pub struct AggregatedProofConfig {
+        pub public_data: PublicDataConfig,
         #[builder(default = vec![0; 32].into())]
-        pub aggregated_proof: AggregatedProof,
+        pub serialized_proof: SerializedAggregatedProof,
     }
 
-    impl From<AggregatedProofDataConfig> for AggregatedProofData {
-        fn from(config: AggregatedProofDataConfig) -> Self {
+    impl From<AggregatedProofConfig> for AggregatedProof {
+        fn from(config: AggregatedProofConfig) -> Self {
             Self {
-                public_input: config.public_input.into(),
-                aggregated_proof: config.aggregated_proof,
+                public_data: config.public_data.into(),
+                serialized_proof: config.serialized_proof,
             }
         }
     }
 
     #[derive(typed_builder::TypedBuilder, Debug)]
-    pub struct PublicInputConfig {
+    pub struct PublicDataConfig {
         #[builder(default = vec![vec![0; 32].into()])]
         pub validity_conditions: Vec<ValidityCondition>,
         pub initial_slot_number: Height,
@@ -109,25 +109,25 @@ pub mod test_util {
         #[builder(default = Root::from([0; 32]))]
         pub genesis_state_root: Root,
         #[builder(default = Root::from([0; 32]))]
-        pub input_state_root: Root,
+        pub initial_state_root: Root,
         #[builder(default = Root::from([0; 32]))]
         pub final_state_root: Root,
         #[builder(default = vec![0; 32])]
         pub initial_slot_hash: Vec<u8>,
         #[builder(default = vec![0; 32])]
         pub final_slot_hash: Vec<u8>,
-        #[builder(default = CodeCommitment::from(vec![0; 32]))]
+        #[builder(default = CodeCommitment::from(vec![1; 32]))]
         pub code_commitment: CodeCommitment,
     }
 
-    impl From<PublicInputConfig> for AggregatedProofPublicData {
-        fn from(config: PublicInputConfig) -> Self {
+    impl From<PublicDataConfig> for AggregatedProofPublicData {
+        fn from(config: PublicDataConfig) -> Self {
             Self {
                 validity_conditions: config.validity_conditions,
                 initial_slot_number: config.initial_slot_number,
                 final_slot_number: config.final_slot_number,
                 genesis_state_root: config.genesis_state_root,
-                input_state_root: config.input_state_root,
+                initial_state_root: config.initial_state_root,
                 final_state_root: config.final_state_root,
                 initial_slot_hash: config.initial_slot_hash,
                 final_slot_hash: config.final_slot_hash,
@@ -142,9 +142,9 @@ pub mod test_util {
         final_slot_number: Height,
         final_state_root: Root,
     ) -> SovTmHeader {
-        let aggregated_proof_data = AggregatedProofDataConfig::builder()
-            .public_input(
-                PublicInputConfig::builder()
+        let aggregated_proof = AggregatedProofConfig::builder()
+            .public_data(
+                PublicDataConfig::builder()
                     .initial_slot_number(initial_slot_number)
                     .final_slot_number(final_slot_number)
                     .final_state_root(final_state_root)
@@ -154,7 +154,7 @@ pub mod test_util {
 
         HeaderConfig::builder()
             .da_header(da_header)
-            .aggregated_proof_data(aggregated_proof_data)
+            .aggregated_proof(aggregated_proof)
             .build()
     }
 }

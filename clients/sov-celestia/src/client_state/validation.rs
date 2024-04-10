@@ -51,7 +51,7 @@ where
     }
 
     fn check_substitute(&self, ctx: &V, substitute_client_state: Any) -> Result<(), ClientError> {
-        unimplemented!()
+        check_substitute::<V>(self.inner(), substitute_client_state)
     }
 }
 
@@ -71,25 +71,11 @@ where
     match client_message.type_url.as_str() {
         SOV_TENDERMINT_HEADER_TYPE_URL => {
             let header = SovTmHeader::try_from(client_message)?;
-            verify_header(
-                ctx,
-                &header,
-                client_id,
-                client_state.chain_id(),
-                &client_state.as_light_client_options()?,
-                verifier,
-            )
+            verify_header(ctx, client_state, &header, client_id, verifier)
         }
         SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
             let misbehaviour = SovTmMisbehaviour::try_from(client_message)?;
-            verify_misbehaviour(
-                ctx,
-                &misbehaviour,
-                client_id,
-                client_state.chain_id(),
-                &client_state.as_light_client_options()?,
-                verifier,
-            )
+            verify_misbehaviour(ctx, client_state, &misbehaviour, client_id, verifier)
         }
         _ => Err(ClientError::InvalidUpdateClientMessage),
     }
@@ -170,4 +156,47 @@ where
     }
 
     Ok(Status::Active)
+}
+
+/// the client recovery validation step.
+///
+/// The subject and substitute client states match if all their respective
+/// client state parameters match except for frozen height, latest height,
+/// trusting period, and chain ID.
+pub fn check_substitute<V>(
+    subject_client_state: &SovTmClientState,
+    substitute_client_state: Any,
+) -> Result<(), ClientError>
+where
+    V: SovValidationContext,
+    V::ConsensusStateRef: ConsensusStateConverter,
+{
+    let SovTmClientState {
+        genesis_state_root: subject_genesis_state_root,
+        code_commitment: subject_code_commitment,
+        latest_height: _,
+        frozen_height: _,
+        upgrade_path: subject_upgrade_path,
+        da_params: subject_da_params,
+    } = subject_client_state;
+
+    let substitute_client_state = SovTmClientState::try_from(substitute_client_state)?;
+
+    let SovTmClientState {
+        genesis_state_root: substitute_genesis_state_root,
+        code_commitment: substitute_code_commitment,
+        latest_height: _,
+        frozen_height: _,
+        upgrade_path: substitute_upgrade_path,
+        da_params: substitute_da_params,
+    } = substitute_client_state;
+
+    (subject_genesis_state_root == &substitute_genesis_state_root
+        && subject_code_commitment == &substitute_code_commitment
+        && subject_upgrade_path == &substitute_upgrade_path
+        && subject_da_params.trust_level == substitute_da_params.trust_level
+        && subject_da_params.max_clock_drift == substitute_da_params.max_clock_drift
+        && subject_da_params.unbonding_period == substitute_da_params.unbonding_period)
+        .then_some(())
+        .ok_or(ClientError::ClientRecoveryStateMismatch)
 }

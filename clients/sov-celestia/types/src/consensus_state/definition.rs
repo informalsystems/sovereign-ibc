@@ -120,8 +120,8 @@ impl From<SovTmHeader> for SovTmConsensusState {
         Self {
             root: CommitmentRoot::from_bytes(
                 header
-                    .aggregated_proof_data
-                    .public_input
+                    .aggregated_proof
+                    .public_data
                     .final_state_root
                     .as_ref(),
             ),

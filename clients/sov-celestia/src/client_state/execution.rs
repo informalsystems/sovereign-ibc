@@ -8,7 +8,7 @@ use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Any;
 use sov_celestia_client_types::client_message::Header;
-use sov_celestia_client_types::client_state::SovTmClientState;
+use sov_celestia_client_types::client_state::{SovTmClientState, TmClientParams};
 use sov_celestia_client_types::consensus_state::{
     ConsensusState as ConsensusStateType, SovTmConsensusState, TmConsensusParams,
 };
@@ -76,7 +76,12 @@ where
         subject_client_id: &ClientId,
         substitute_client_state: Any,
     ) -> Result<(), ClientError> {
-        unimplemented!()
+        update_on_recovery(
+            self.inner().clone(),
+            ctx,
+            subject_client_id,
+            substitute_client_state,
+        )
     }
 }
 
@@ -201,7 +206,7 @@ where
 }
 
 pub fn update_state_on_upgrade<E>(
-    _client_state: &SovTmClientState,
+    client_state: &SovTmClientState,
     ctx: &mut E,
     client_id: &ClientId,
     upgraded_client_state: Any,
@@ -217,15 +222,24 @@ where
 
     upgraded_client_state.zero_custom_fields();
 
-    // Construct new client state and consensus state relayer chosen client
-    // parameters are ignored. All chain-chosen parameters come from
-    // committed client, all client-chosen parameters come from current
-    // client.
+    // Constructs the new client state. All rollup-chosen parameters come from
+    // `upgraded_client_state` except the `genesis_state_root`. All
+    // relayer-chosen parameters come from the current client.
+    let new_da_params = TmClientParams::new(
+        upgraded_client_state.da_params.chain_id,
+        client_state.da_params.trust_level,
+        client_state.da_params.trusting_period,
+        upgraded_client_state.da_params.unbonding_period,
+        client_state.da_params.max_clock_drift,
+    );
+
     let new_client_state = SovTmClientState::new(
-        upgraded_client_state.rollup_id,
+        client_state.genesis_state_root.clone(),
+        upgraded_client_state.code_commitment,
         upgraded_client_state.latest_height,
+        None,
         upgraded_client_state.upgrade_path,
-        upgraded_client_state.da_params,
+        new_da_params,
     );
 
     // The new consensus state is merely used as a trusted kernel against
@@ -274,4 +288,56 @@ where
     )?;
 
     Ok(latest_height)
+}
+
+/// Update the client's chain ID, trusting period, latest height, processed
+/// height, and processed time metadata values to those values provided by a
+/// verified substitute client state in response to a successful client
+/// recovery.
+pub fn update_on_recovery<E>(
+    subject_client_state: SovTmClientState,
+    ctx: &mut E,
+    subject_client_id: &ClientId,
+    substitute_client_state: Any,
+) -> Result<(), ClientError>
+where
+    E: SovExecutionContext,
+    E::ClientStateRef: From<SovTmClientState>,
+    E::ConsensusStateRef: ConsensusStateConverter,
+{
+    let substitute_client_state = ClientState::try_from(substitute_client_state)?.into_inner();
+
+    let chain_id = substitute_client_state.da_params.chain_id;
+    let trusting_period = substitute_client_state.da_params.trusting_period;
+    let latest_height = substitute_client_state.latest_height;
+
+    let new_client_state = SovTmClientState::new(
+        subject_client_state.genesis_state_root,
+        subject_client_state.code_commitment,
+        latest_height,
+        None,
+        subject_client_state.upgrade_path,
+        TmClientParams {
+            chain_id,
+            trusting_period,
+            ..subject_client_state.da_params
+        },
+    );
+
+    let host_timestamp = E::host_timestamp(ctx)?;
+    let host_height = E::host_height(ctx)?;
+
+    ctx.store_client_state(
+        ClientStatePath::new(subject_client_id.clone()),
+        new_client_state.into(),
+    )?;
+
+    ctx.store_update_meta(
+        subject_client_id.clone(),
+        latest_height,
+        host_timestamp,
+        host_height,
+    )?;
+
+    Ok(())
 }

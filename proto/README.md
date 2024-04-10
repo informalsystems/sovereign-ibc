@@ -1,11 +1,12 @@
-# sov-ibc-proto
+<div align="center">
+    <h1>sov-ibc-proto</h1>
+</div>
 
-sov-ibc-proto encompasses essential protobuf definitions, a compiler, and
-Rust-generated data structures crucial for IBC consumers, including IBC
-relayers, modules, or light clients. This directory comprises the following
-components:
+Encompasses essential protobuf definitions, a compiler, and Rust-generated data
+structures crucial for IBC consumers, including IBC relayers, modules, or light
+clients. This directory comprises the following components:
 
-- **Definitions**: Contains .proto files for both Sovereign SDK rollups and
+- **Definitions**: Contains `.proto` files for both Sovereign SDK rollups and
   light clients, providing the foundational protobuf definitions.
 
 - **Compiler**: Includes a binary used by the `sync-protobuf.sh` script. This
@@ -13,8 +14,8 @@ components:
   definitions.
 
 - **Library**: The `sov-ibc-proto` crate encapsulates the Protobuf-generated
-data structures required for interacting either with IBC modules or light
-clients.
+data structures required for interacting either with Sovereign IBC modules or
+light clients.
 
 ## Code Generation
 

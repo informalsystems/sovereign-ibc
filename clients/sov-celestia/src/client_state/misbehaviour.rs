@@ -1,10 +1,10 @@
 use ibc_client_tendermint::client_state::verify_misbehaviour_header;
 use ibc_client_tendermint::context::TmVerifier;
 use ibc_core::client::types::error::ClientError;
-use ibc_core::host::types::identifiers::{ChainId, ClientId};
+use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use sov_celestia_client_types::client_message::SovTmMisbehaviour;
-use tendermint_light_client_verifier::options::Options;
+use sov_celestia_client_types::client_state::SovTmClientState;
 
 use crate::context::{ConsensusStateConverter, ValidationContext as SovValidationContext};
 
@@ -12,10 +12,9 @@ use crate::context::{ConsensusStateConverter, ValidationContext as SovValidation
 /// have convinced the light client.
 pub fn verify_misbehaviour<V>(
     ctx: &V,
+    client_state: &SovTmClientState,
     misbehaviour: &SovTmMisbehaviour,
     client_id: &ClientId,
-    chain_id: &ChainId,
-    options: &Options,
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
@@ -52,8 +51,8 @@ where
 
     verify_misbehaviour_header(
         &header_1.da_header,
-        chain_id,
-        options,
+        client_state.chain_id(),
+        &client_state.as_light_client_options()?,
         trusted_consensus_state_1.timestamp(),
         trusted_consensus_state_1.da_params.next_validators_hash,
         current_timestamp,
@@ -62,8 +61,8 @@ where
 
     verify_misbehaviour_header(
         &header_2.da_header,
-        chain_id,
-        options,
+        client_state.chain_id(),
+        &client_state.as_light_client_options()?,
         trusted_consensus_state_2.timestamp(),
         trusted_consensus_state_2.da_params.next_validators_hash,
         current_timestamp,
@@ -71,7 +70,7 @@ where
     )?;
 
     // TODO: Determine what sort of checks we need to carry out for detecting
-    // `AggregatedProofData` misbehaviour.
+    // `AggregatedProof` misbehaviour.
 
     Ok(())
 }

@@ -17,7 +17,9 @@ use ibc_core::primitives::proto::{Any, Protobuf};
 use prost::Message;
 use sov_celestia_client::types::codec::AnyCodec;
 
-use crate::types::{parse_height, ClientType, ContractError, GenesisMetadata, HeightTravel};
+use crate::types::{
+    parse_height, ClientType, ContractError, GenesisMetadata, HeightTravel, MigrationPrefix,
+};
 
 type Checksum = Vec<u8>;
 
@@ -29,6 +31,7 @@ pub struct Context<'a, C: ClientType<'a>> {
     env: Env,
     client_id: ClientId,
     checksum: Option<Checksum>,
+    migration_prefix: MigrationPrefix,
     client_type: std::marker::PhantomData<C>,
 }
 
@@ -42,6 +45,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
             env,
             client_id,
             checksum: None,
+            migration_prefix: MigrationPrefix::None,
             client_type: std::marker::PhantomData::<C>,
         })
     }
@@ -55,6 +59,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
             env,
             client_id,
             checksum: None,
+            migration_prefix: MigrationPrefix::None,
             client_type: std::marker::PhantomData::<C>,
         })
     }
@@ -75,10 +80,28 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
         self.checksum = Some(checksum);
     }
 
+    pub fn set_subject_prefix(&mut self) {
+        self.migration_prefix = MigrationPrefix::Subject;
+    }
+
+    pub fn set_substitute_prefix(&mut self) {
+        self.migration_prefix = MigrationPrefix::Substitute;
+    }
+
+    pub fn prefixed_key(&self, key: impl AsRef<[u8]>) -> Vec<u8> {
+        let mut prefixed_key = Vec::new();
+        prefixed_key.extend_from_slice(self.migration_prefix.key());
+        prefixed_key.extend_from_slice(key.as_ref());
+
+        prefixed_key
+    }
+
     pub fn retrieve(&self, key: impl AsRef<[u8]>) -> Result<Vec<u8>, ClientError> {
+        let prefixed_key = self.prefixed_key(key);
+
         let value = self
             .storage_ref()
-            .get(key.as_ref())
+            .get(prefixed_key.as_ref())
             .ok_or(ClientError::Other {
                 description: "key not found".to_string(),
             })?;
@@ -128,7 +151,7 @@ impl<'a, C: ClientType<'a>> Context<'a, C> {
 
     pub fn client_update_time_key(&self, height: &Height) -> Vec<u8> {
         let client_update_time_path = ClientUpdateTimePath::new(
-            self.client_id().clone(),
+            self.client_id(),
             height.revision_number(),
             height.revision_height(),
         );

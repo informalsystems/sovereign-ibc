@@ -15,15 +15,20 @@ import "sovereign/types/v1/types.proto";
 message ClientState {
   option (gogoproto.goproto_getters) = false;
 
-  // the rollup identifier
-  string rollup_id = 1;
+  // the genesis state root of the rollup
+  bytes genesis_state_root = 1 [(gogoproto.moretags) = "yaml:\"genesis_state_root\""];
+  // the code commitment of the aggregated proof circuit
+  .sovereign.types.v1.CodeCommitment code_commitment = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"code_commitment\""
+  ];
   // the latest height the client was updated to
-  ibc.core.client.v1.Height latest_height = 2 [
+  ibc.core.client.v1.Height latest_height = 3 [
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"latest_height\""
   ];
   // the height when the client was frozen due to a misbehaviour
-  ibc.core.client.v1.Height frozen_height = 3 [
+  ibc.core.client.v1.Height frozen_height = 4 [
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"frozen_height\""
   ];
@@ -32,9 +37,9 @@ message ClientState {
   // NOTE: ClientState must stored under
   // `{upgradePath}/{upgradeHeight}/clientState` ConsensusState must be stored
   // under `{upgradepath}/{upgradeHeight}/consensusState`
-  string upgrade_path = 4 [(gogoproto.moretags) = "yaml:\"upgrade_path\""];
+  string upgrade_path = 5 [(gogoproto.moretags) = "yaml:\"upgrade_path\""];
   // the tendermint-specific client state parameters
-  TendermintClientParams tendermint_params = 5 [
+  TendermintClientParams tendermint_params = 6 [
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"tendermint_params\""
   ];
@@ -117,9 +122,9 @@ message Header {
     (gogoproto.moretags) = "yaml:\"tendermint_header\""
   ];
   // the rollup aggregated proof data
-  .sovereign.types.v1.AggregatedProofData aggregated_proof_data = 2 [
+  .sovereign.types.v1.AggregatedProof aggregated_proof = 2 [
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"aggregated_proof_data\""
+    (gogoproto.moretags) = "yaml:\"aggregated_proof\""
   ];
 }
 

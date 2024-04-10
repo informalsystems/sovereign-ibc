@@ -11,6 +11,7 @@ use ibc_core::primitives::ZERO_DURATION;
 use tendermint_light_client_verifier::options::Options;
 
 use super::TmClientParams;
+use crate::client_message::{CodeCommitment, Root};
 use crate::error::Error;
 use crate::proto::tendermint::v1::ClientState as RawClientState;
 
@@ -21,7 +22,8 @@ pub const SOV_TENDERMINT_CLIENT_STATE_TYPE_URL: &str =
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct ClientState<Da> {
-    pub rollup_id: ChainId,
+    pub genesis_state_root: Root,
+    pub code_commitment: CodeCommitment,
     pub latest_height: Height,
     pub frozen_height: Option<Height>,
     pub upgrade_path: UpgradePath,
@@ -30,22 +32,29 @@ pub struct ClientState<Da> {
 
 impl<Da> ClientState<Da> {
     pub fn new(
-        rollup_id: ChainId,
+        genesis_state_root: Root,
+        code_commitment: CodeCommitment,
         latest_height: Height,
+        frozen_height: Option<Height>,
         upgrade_path: UpgradePath,
         da_params: Da,
     ) -> Self {
         Self {
-            rollup_id,
+            genesis_state_root,
+            code_commitment,
             latest_height,
-            frozen_height: None,
+            frozen_height,
             upgrade_path,
             da_params,
         }
     }
 
-    pub fn rollup_id(&self) -> &ChainId {
-        &self.rollup_id
+    pub fn genesis_state_root(&self) -> &Root {
+        &self.genesis_state_root
+    }
+
+    pub fn code_commitment(&self) -> &CodeCommitment {
+        &self.code_commitment
     }
 
     pub fn latest_height(&self) -> Height {
@@ -107,16 +116,17 @@ impl TryFrom<RawClientState> for SovTmClientState {
     type Error = ClientError;
 
     fn try_from(raw: RawClientState) -> Result<Self, Self::Error> {
-        let rollup_id = raw.rollup_id.parse().map_err(Error::source)?;
+        let genesis_state_root = raw.genesis_state_root.try_into()?;
+
+        let code_commitment = raw
+            .code_commitment
+            .ok_or(Error::missing("code_commitment"))?
+            .into();
 
         let latest_height = raw
             .latest_height
             .ok_or(Error::missing("latest_height"))?
             .try_into()?;
-
-        if raw.frozen_height.is_some() {
-            return Err(Error::invalid("frozen_height is not supported"))?;
-        }
 
         let upgrade_path = raw.upgrade_path;
 
@@ -126,8 +136,10 @@ impl TryFrom<RawClientState> for SovTmClientState {
             .try_into()?;
 
         Ok(Self::new(
-            rollup_id,
+            genesis_state_root,
+            code_commitment,
             latest_height,
+            raw.frozen_height.map(TryInto::try_into).transpose()?,
             upgrade_path.try_into()?,
             tendermint_params,
         ))
@@ -137,7 +149,8 @@ impl TryFrom<RawClientState> for SovTmClientState {
 impl From<SovTmClientState> for RawClientState {
     fn from(value: SovTmClientState) -> Self {
         Self {
-            rollup_id: value.rollup_id.to_string(),
+            genesis_state_root: value.genesis_state_root.into(),
+            code_commitment: Some(value.code_commitment.into()),
             latest_height: Some(value.latest_height.into()),
             frozen_height: value.frozen_height.map(|h| h.into()),
             upgrade_path: value.upgrade_path.0,
