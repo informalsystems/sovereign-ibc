@@ -7,7 +7,6 @@ use ibc_core::primitives::ToProto;
 use sov_bank::TokenConfig;
 use sov_ibc::call::CallMessage;
 use sov_ibc::clients::AnyClientState;
-use sov_ibc_transfer::utils::SovereignMemo;
 use test_log::test;
 
 use crate::configs::TransferTestConfig;
@@ -142,10 +141,8 @@ async fn test_mint_burn_on_sov() {
 
     // set transfer parameters
     let gas_token = relayer_builder.setup_cfg().gas_token_config();
-    let sov_memo = serde_json::to_string(&SovereignMemo::new(gas_token.token_id)).unwrap();
     let mut cfg = TransferTestConfig::builder()
         .sov_address(gas_token.address_and_balances[0].0)
-        .memo(sov_memo.into())
         .build();
 
     // Fake token with the same parameters as the gas token but a different name
@@ -280,11 +277,8 @@ async fn test_mint_burn_on_sov() {
     // -----------------------------------------------------------------------
 
     cfg.sov_denom = "transfer/channel-0/basecoin".to_string();
-    cfg.memo = serde_json::to_string(&SovereignMemo::new(minted_token_id))
-        .unwrap()
-        .into();
 
-    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
+    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg.clone());
 
     rly.src_chain_ctx()
         .submit_msgs(vec![
@@ -322,10 +316,30 @@ async fn test_mint_burn_on_sov() {
     let sender_balance = rly
         .dst_chain_ctx()
         .service()
-        .get_balance_of(&cfg.cos_denom, cfg.cos_address)
+        .get_balance_of(&cfg.cos_denom, cfg.cos_address.clone())
         .unwrap();
 
     expected_sender_balance += cfg.amount;
 
     assert_eq!(sender_balance, expected_sender_balance);
+
+    // -----------------------------------------------------------------------
+    // Check if sending back a token with the same ID as IBC-minted token fails
+    // -----------------------------------------------------------------------
+    cfg.sov_denom = minted_token_id.to_bech32().to_string();
+
+    let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
+
+    rly.src_chain_ctx()
+        .submit_msgs(vec![
+            CallMessage::Transfer(msg_transfer_on_sov.clone()).into()
+        ])
+        .await;
+
+    let receiver_balance = rly
+        .src_chain_ctx()
+        .service()
+        .get_balance_of(cfg.sov_address, minted_token_id);
+
+    assert_eq!(receiver_balance, expected_receiver_balance);
 }

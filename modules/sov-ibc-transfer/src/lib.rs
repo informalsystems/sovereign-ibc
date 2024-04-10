@@ -28,10 +28,19 @@ pub struct IbcTransfer<S: Spec> {
     #[module]
     bank: sov_bank::Bank<S>,
 
-    /// Keeps track of the token IDs minted by the `IbcTransfer` using the
-    /// specified token denomination in the `MsgRecvPacket` message.
+    /// Maps the token name to its corresponding token ID for tokens minted
+    /// through IBC. This mapping is used during mint/burn processes to validate
+    /// if the token exists and gives out needed ID for the minting/burning
+    /// process.
     #[state]
-    minted_tokens: StateMap<String, TokenId>,
+    minted_token_name_to_id: StateMap<String, TokenId>,
+
+    /// Maps the token ID to its corresponding token name for tokens minted
+    /// through IBC. This mapping is used during escrows/un-escrows to verify if
+    /// the `TokenId` extracted from the `denom` is not an IBC-minted token,
+    /// indicating it is a native token for escrow/un-escrows purposes.
+    #[state]
+    minted_token_id_to_name: StateMap<TokenId, String>,
 
     /// Keeps track of escrow addresses associated with a specific port and
     /// channel pair, offering an efficient means to access these addresses

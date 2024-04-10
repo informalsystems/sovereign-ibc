@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use ibc_app_transfer::types::Memo;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 use serde::de::DeserializeOwned;
@@ -119,9 +118,6 @@ pub struct TransferTestConfig {
     /// The amount to transfer.
     #[builder(default = 100)]
     pub amount: u64,
-    /// The memo to attach to the transfer.
-    #[builder(default = "".into())]
-    pub memo: Memo,
 }
 
 /// Reads toml file as a specific type.

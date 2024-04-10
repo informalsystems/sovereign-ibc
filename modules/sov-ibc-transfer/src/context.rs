@@ -25,7 +25,7 @@ use sov_modules_api::{Context, Spec, WorkingSet};
 use uint::FromDecStrErr;
 
 use super::IbcTransfer;
-use crate::utils::{compute_escrow_address, SovereignMemo};
+use crate::utils::compute_escrow_address;
 
 /// We need to create a wrapper around the `Transfer` module and `WorkingSet`,
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
@@ -146,30 +146,27 @@ where
         coin: &PrefixedCoin,
         memo: &Memo,
     ) -> Result<(), TokenTransferError> {
-        let sov_memo: SovereignMemo = serde_json::from_str(memo.as_ref())
-            .map_err(|e| TokenTransferError::Other(format!("Failed to decode memo: {e}")))?;
+        if !memo.as_ref().is_empty() {
+            return Err(TokenTransferError::Other(
+                "Memo must be empty when burning tokens".to_string(),
+            ));
+        }
 
-        let expected_token_id = {
+        let minted_token_id = {
             self.ibc_transfer
-                .minted_tokens
+                .minted_token_name_to_id
                 .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
                 .ok_or(TokenTransferError::InvalidCoin {
                     coin: coin.to_string(),
                 })?
         };
 
-        if sov_memo.token_id() != expected_token_id {
-            return Err(TokenTransferError::InvalidCoin {
-                coin: coin.to_string(),
-            });
-        }
-
         let sender_balance: u64 = self
             .ibc_transfer
             .bank
             .get_balance_of(
                 account.address.clone(),
-                sov_memo.token_id(),
+                minted_token_id,
                 *self.working_set.borrow_mut(),
             )
             .ok_or(TokenTransferError::InvalidCoin {
@@ -197,15 +194,25 @@ where
         coin: &PrefixedCoin,
         memo: &Memo,
     ) -> Result<(), TokenTransferError> {
+        if !memo.as_ref().is_empty() {
+            return Err(TokenTransferError::Other(
+                "Memo must be empty when escrowing tokens".to_string(),
+            ));
+        }
+
         let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
             TokenTransferError::InvalidCoin {
                 coin: coin.to_string(),
             }
         })?;
 
-        if !memo.as_ref().is_empty() {
+        if let Some(token_name) = self
+            .ibc_transfer
+            .minted_token_id_to_name
+            .get(&token_id, *self.working_set.borrow_mut())
+        {
             return Err(TokenTransferError::Other(
-                "Memo must be empty when escrowing tokens".to_string(),
+                format!("Token with ID '{token_id}' is an IBC-created token and cannot be escrowed. Use '{token_name}' as denom for sending back an IBC token to the source chain"),
             ));
         }
 
@@ -254,14 +261,24 @@ where
         channel_id: &ChannelId,
         coin: &PrefixedCoin,
     ) -> Result<(), TokenTransferError> {
+        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
+            TokenTransferError::InvalidCoin {
+                coin: coin.to_string(),
+            }
+        })?;
+
+        if let Some(token_name) = self
+            .ibc_transfer
+            .minted_token_id_to_name
+            .get(&token_id, *self.working_set.borrow_mut())
+        {
+            return Err(TokenTransferError::Other(
+                    format!("Token with ID '{token_id}' is an IBC-created token and cannot be unescrowed. Use '{token_name}' as denom for receiving an IBC token from the source chain")
+                ));
+        }
+
         // ensure that escrow account has enough balance
         let escrow_balance: Amount = {
-            let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
-                TokenTransferError::InvalidCoin {
-                    coin: coin.to_string(),
-                }
-            })?;
-
             let escrow_address = self.obtain_escrow_address(port_id, channel_id);
 
             let escrow_balance = self
@@ -301,7 +318,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         let token_id = {
             let maybe_token_id = self
                 .ibc_transfer
-                .minted_tokens
+                .minted_token_name_to_id
                 .get(&denom, *self.working_set.borrow_mut());
 
             match maybe_token_id {
@@ -333,10 +350,17 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
                         )
                         .map_err(|err| TokenTransferError::Other(err.to_string()))?;
 
-                    // Store the new address in `minted_tokens`
-                    self.ibc_transfer.minted_tokens.set(
+                    // Stores mapping from "denom to token ID" of the IBC-minted token
+                    self.ibc_transfer.minted_token_name_to_id.set(
                         &denom,
                         &new_token_id,
+                        *self.working_set.borrow_mut(),
+                    );
+
+                    // Stores mapping from "token ID to denom" of the IBC-minted token
+                    self.ibc_transfer.minted_token_id_to_name.set(
+                        &new_token_id,
+                        &denom,
                         *self.working_set.borrow_mut(),
                     );
 
@@ -380,7 +404,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
 
         let token_id = {
             self.ibc_transfer
-                .minted_tokens
+                .minted_token_name_to_id
                 .get(&denom, *self.working_set.borrow_mut())
                 .ok_or(TokenTransferError::InvalidCoin {
                     coin: coin.to_string(),

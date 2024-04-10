@@ -105,7 +105,7 @@ where
             },
             sender: Signer::from(config.cos_address.clone()),
             receiver: Signer::from(config.sov_address.to_string()),
-            memo: config.memo.clone(),
+            memo: "".into(),
         };
 
         MsgTransfer {

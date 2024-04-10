@@ -5,8 +5,8 @@ use sov_consensus_state_tracker::HasConsensusState;
 use sov_kernels::basic::BasicKernelGenesisConfig;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, ModuleInfo, SlotData, Spec,
-    StateCheckpoint,
+    CallResponse, DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, ModuleInfo, SlotData,
+    Spec, StateCheckpoint,
 };
 use sov_rollup_interface::da::BlockHeaderTrait;
 use sov_rollup_interface::services::da::DaService;
@@ -113,9 +113,14 @@ where
                 self.resolve_ctx(self.runtime().ibc.address().clone(), visible_slot);
             }
 
+            // NOTE: on failures, we silently ignore the error and continue as
+            // it is in the real-case scenarios
             self.runtime()
                 .dispatch_call(m.clone(), &mut working_set, &self.rollup_ctx())
-                .unwrap();
+                .unwrap_or_else(|e| {
+                    info!("rollup: error executing message: {:?}", e);
+                    CallResponse::default()
+                });
 
             // Resets the sender address to the address of the relayer
             self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);

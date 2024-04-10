@@ -23,14 +23,14 @@ where
         token_denom: String,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<MintedTokenResponse> {
-        let token_id =
-            self.minted_tokens
-                .get(&token_denom, working_set)
-                .ok_or(ErrorObjectOwned::owned(
-                    jsonrpsee::types::error::UNKNOWN_ERROR_CODE,
-                    format!("No minted token found for denom {token_denom}"),
-                    None::<String>,
-                ))?;
+        let token_id = self
+            .minted_token_name_to_id
+            .get(&token_denom, working_set)
+            .ok_or(ErrorObjectOwned::owned(
+                jsonrpsee::types::error::UNKNOWN_ERROR_CODE,
+                format!("No minted token found for denom {token_denom}"),
+                None::<String>,
+            ))?;
 
         Ok(MintedTokenResponse { token_id })
     }
