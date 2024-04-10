@@ -28,9 +28,12 @@ impl<'a, S> IbcContext<'a, S>
 where
     S: Spec,
 {
-    pub fn query_client_state<SV>(&self, client_id: &ClientId) -> RpcResult<SV::Output>
+    pub fn query_client_state<SV>(
+        &self,
+        client_id: &ClientId,
+    ) -> RpcResult<SV::Output<ClientStateRef<Self>>>
     where
-        SV: StorageValue<ClientStateRef<Self>>,
+        SV: StorageValue,
     {
         SV::value_at_key(
             client_id,
@@ -44,9 +47,9 @@ where
         client_id: &ClientId,
         revision_number: u64,
         revision_height: u64,
-    ) -> RpcResult<SV::Output>
+    ) -> RpcResult<SV::Output<ConsensusStateRef<Self>>>
     where
-        SV: StorageValue<ConsensusStateRef<Self>>,
+        SV: StorageValue,
     {
         let client_consensus_state_path =
             &ClientConsensusStatePath::new(client_id.clone(), revision_number, revision_height);
@@ -58,9 +61,12 @@ where
         )
     }
 
-    pub fn query_upgraded_client_state<SV>(&self, height: u64) -> RpcResult<SV::Output>
+    pub fn query_upgraded_client_state<SV>(
+        &self,
+        height: u64,
+    ) -> RpcResult<SV::Output<HostClientState>>
     where
-        SV: StorageValue<HostClientState>,
+        SV: StorageValue,
     {
         let upgrade_client_path = &UpgradeClientPath::UpgradedClientState(height);
 
@@ -71,9 +77,12 @@ where
         )
     }
 
-    pub fn query_upgraded_consensus_state<SV>(&self, height: u64) -> RpcResult<SV::Output>
+    pub fn query_upgraded_consensus_state<SV>(
+        &self,
+        height: u64,
+    ) -> RpcResult<SV::Output<HostConsensusState>>
     where
-        SV: StorageValue<HostConsensusState>,
+        SV: StorageValue,
     {
         let upgrade_client_consensus_path =
             &UpgradeClientPath::UpgradedClientConsensusState(height);
@@ -85,9 +94,12 @@ where
         )
     }
 
-    pub fn query_connection_end<SV>(&self, connection_id: &ConnectionId) -> RpcResult<SV::Output>
+    pub fn query_connection_end<SV>(
+        &self,
+        connection_id: &ConnectionId,
+    ) -> RpcResult<SV::Output<ConnectionEnd>>
     where
-        SV: StorageValue<ConnectionEnd>,
+        SV: StorageValue,
     {
         let connection_path = &ConnectionPath::new(connection_id);
 
@@ -98,9 +110,12 @@ where
         )
     }
 
-    pub fn query_client_connections<SV>(&self, client_id: &ClientId) -> RpcResult<SV::Output>
+    pub fn query_client_connections<SV>(
+        &self,
+        client_id: &ClientId,
+    ) -> RpcResult<SV::Output<Vec<ConnectionId>>>
     where
-        SV: StorageValue<Vec<ConnectionId>>,
+        SV: StorageValue,
     {
         let client_connection_path = &ClientConnectionPath::new(client_id.clone());
 
@@ -115,9 +130,9 @@ where
         &self,
         port_id: &PortId,
         channel_id: &ChannelId,
-    ) -> RpcResult<SV::Output>
+    ) -> RpcResult<SV::Output<ChannelEnd>>
     where
-        SV: StorageValue<ChannelEnd>,
+        SV: StorageValue,
     {
         let channel_end_path = &ChannelEndPath::new(port_id, channel_id);
 
@@ -132,9 +147,9 @@ where
         &self,
         port_id: &PortId,
         channel_id: &ChannelId,
-    ) -> RpcResult<SV::Output>
+    ) -> RpcResult<SV::Output<Sequence>>
     where
-        SV: StorageValue<Sequence>,
+        SV: StorageValue,
     {
         let seq_send_path = &SeqSendPath::new(port_id, channel_id);
 
@@ -149,9 +164,9 @@ where
         &self,
         port_id: &PortId,
         channel_id: &ChannelId,
-    ) -> RpcResult<SV::Output>
+    ) -> RpcResult<SV::Output<Sequence>>
     where
-        SV: StorageValue<Sequence>,
+        SV: StorageValue,
     {
         let seq_recv_path = &SeqRecvPath::new(port_id, channel_id);
 
@@ -166,9 +181,9 @@ where
         &self,
         port_id: &PortId,
         channel_id: &ChannelId,
-    ) -> RpcResult<SV::Output>
+    ) -> RpcResult<SV::Output<Sequence>>
     where
-        SV: StorageValue<Sequence>,
+        SV: StorageValue,
     {
         let seq_ack_path = &SeqAckPath::new(port_id, channel_id);
 
@@ -184,9 +199,9 @@ where
         port_id: &PortId,
         channel_id: &ChannelId,
         sequence: Sequence,
-    ) -> RpcResult<SV::Output>
+    ) -> RpcResult<SV::Output<PacketCommitment>>
     where
-        SV: StorageValue<PacketCommitment>,
+        SV: StorageValue,
     {
         let commitment_path = &CommitmentPath::new(port_id, channel_id, sequence);
 
@@ -202,9 +217,9 @@ where
         port_id: &PortId,
         channel_id: &ChannelId,
         sequence: Sequence,
-    ) -> RpcResult<SV::Output>
+    ) -> RpcResult<SV::Output<Receipt>>
     where
-        SV: StorageValue<Receipt>,
+        SV: StorageValue,
     {
         let receipt_path = &ReceiptPath::new(port_id, channel_id, sequence);
 
@@ -220,9 +235,9 @@ where
         port_id: &PortId,
         channel_id: &ChannelId,
         sequence: Sequence,
-    ) -> RpcResult<SV::Output>
+    ) -> RpcResult<SV::Output<AcknowledgementCommitment>>
     where
-        SV: StorageValue<AcknowledgementCommitment>,
+        SV: StorageValue,
     {
         let ack_path = &AckPath::new(port_id, channel_id, sequence);
 
