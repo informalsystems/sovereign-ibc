@@ -323,6 +323,9 @@ where
             }
         })?;
 
+        //  NOTE: There is no way to make this fail from an honest counterparty
+        //  chain, as this method only fails when the counterparty chain
+        //  produces a malicious IBC transfer `send_packet()`
         if let Some(token_name) = self
             .ibc_transfer
             .minted_token_id_to_name
