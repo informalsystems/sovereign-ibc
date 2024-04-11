@@ -11,8 +11,10 @@ let
 
         installPhase = ''
             mkdir -p $out $out/vendor
-            cp -r . $out
+            cp -r clients modules mocks proto Cargo.toml Cargo.lock $out
             cp -r ${sovereign-sdk-src} $out/vendor/sovereign-sdk
+
+            cat .cargo/config.toml >> $out/Cargo.toml
         '';
     };
 

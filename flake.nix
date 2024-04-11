@@ -29,11 +29,6 @@
                 overlays = [
                     inputs.rust-overlay.overlays.default
                 ];
-                config = {
-                    permittedInsecurePackages = [
-                        "openssl-1.1.1w"
-                    ];
-                };
             };
 
             rust-bin = nixpkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -44,7 +39,7 @@
             };
         in {
             packages = {
-                inherit (sov-celestia-cw) sov-celestia-src sov-celestia-cw;
+                inherit (sov-celestia-cw) sov-celestia-cw;
             };
         });
 }
