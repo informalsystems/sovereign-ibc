@@ -9,3 +9,5 @@ target-path
 demo_data/
 
 /ci/**/*.lock
+
+result

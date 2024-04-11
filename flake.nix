@@ -36,11 +36,11 @@
                 };
             };
 
-            rust-bin = nixpkgs.rust-bin.stable.latest.complete;
+            rust-bin = nixpkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
             sov-celestia-cw = import ./nix/sov-celestia-cw.nix {
-            inherit nixpkgs rust-bin;
-            inherit (inputs) sovereign-sdk-src;
+                inherit nixpkgs rust-bin;
+                inherit (inputs) sovereign-sdk-src;
             };
         in {
             packages = {
