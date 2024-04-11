@@ -51,7 +51,7 @@ let
         CONSTANTS_MANIFEST = sov-celestia-src;
 
         buildPhase = ''
-            cargo build -p sov-celestia-client-cw --target wasm32-unknown-unknown --release --lib --locked
+            RUSTFLAGS='-C link-arg=-s' cargo build -p sov-celestia-client-cw --target wasm32-unknown-unknown --release --lib --locked
         '';
 
         installPhase = ''
