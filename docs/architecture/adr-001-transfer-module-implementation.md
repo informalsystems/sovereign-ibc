@@ -71,8 +71,8 @@ scenario is handled in the following section will provide clarity.
 ## Transfer Scenarios
 
 Given the context provided, the `IbcTransfer` module handles four scenarios,
-each comprising validation (*_validate method) and execution (*_execute method)
-stages.
+each comprising validation *(x_validate method)* and execution *(x_execute
+method)* stages.
 
 Before diving into the specifics of each scenario, it is essential to understand
 that the token name on the Sovereign SDK rollups is not guaranteed to be unique,
@@ -122,10 +122,12 @@ is guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
    IDs.
 2. Retrieve the token ID by checking if a token for the given denom has been
    previously created by the IBC module using the `minted_token_name_to_id` map.
-   * If yes, use that `TokenID`.
-   * If no, create a new token with the name set to the `denom`, obtain the
-     token ID, and store the pair of *token name*, *token ID*, and its flip in
-     the the `minted_token_id_to_name` and `minted_token_name_to_id` state maps.
+   * If yes, use that `TokenId`.
+   * If no, [create a new
+     token](https://github.com/informalsystems/sovereign-ibc/blob/4e37dc4bb88624765384d1662549c00e991acc4a/modules/sov-ibc-transfer/src/context.rs#L105)
+     with the name set to the `denom`, obtain the token ID, and store the pair
+     of *token name*, *token ID*, and its flip in the the
+     `minted_token_id_to_name` and `minted_token_name_to_id` state maps.
    * NOTE: when IBC initiates the creation of a new token, the `IbcTransfer`
      address is designated as the authorized minter.
    * NOTE: In this steps we ensure that the `context` object needed for token
@@ -139,7 +141,7 @@ is guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
 1. Verify that the `memo` field does not exceed maximum allowed length to
    prevent large memos overwhelming the system. We set the maximum memo length
    to 32768 bytes like the `ibc-go`.
-2. Obtain the `TokenID` using the denom from the `minted_token_name_to_id` map.
+2. Obtain the `TokenId` using the denom from the `minted_token_name_to_id` map.
    * If the token ID is not found, the transfer is rejected.
 3. Confirm that the sender has a sufficient balance.
 4. Burn tokens from the sender's address by calling `burn` on the `bank` module.
