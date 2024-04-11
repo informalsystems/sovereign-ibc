@@ -172,7 +172,7 @@ where
 
         self.runtime()
             .ibc_transfer
-            .minted_token(token_denom, &mut working_set)
+            .minted_token_id(token_denom, &mut working_set)
             .map(|token| token.token_id)
             .ok()
     }

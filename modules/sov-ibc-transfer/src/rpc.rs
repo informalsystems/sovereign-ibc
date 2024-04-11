@@ -19,7 +19,7 @@ where
     S: Spec,
 {
     #[rpc_method(name = "mintedTokenName")]
-    pub fn escrowed_token(
+    pub fn minted_token_name(
         &self,
         token_id: TokenId,
         working_set: &mut WorkingSet<S>,
@@ -28,7 +28,7 @@ where
             .minted_token_id_to_name
             .get(&token_id, working_set)
             .ok_or(to_jsonrpsee_error(format!(
-                "No IBC-minted token found for ID: '{token_id}'"
+                "No IBC-created token found for ID: '{token_id}'"
             )))?;
 
         Ok(MintedTokenResponse {
@@ -38,7 +38,7 @@ where
     }
 
     #[rpc_method(name = "mintedTokenId")]
-    pub fn minted_token(
+    pub fn minted_token_id(
         &self,
         token_name: String,
         working_set: &mut WorkingSet<S>,
@@ -47,7 +47,7 @@ where
             .minted_token_name_to_id
             .get(&token_name, working_set)
             .ok_or(to_jsonrpsee_error(format!(
-                "No IBC-minted token found for denom: '{token_name}'"
+                "No IBC-created token found for denom: '{token_name}'"
             )))?;
 
         Ok(MintedTokenResponse {

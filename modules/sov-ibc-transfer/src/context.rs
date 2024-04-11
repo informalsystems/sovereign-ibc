@@ -27,6 +27,15 @@ use uint::FromDecStrErr;
 use super::IbcTransfer;
 use crate::utils::compute_escrow_address;
 
+/// Using a different salt will result in a different token address. Since
+/// ICS-20 tokens coming from other chains are guaranteed to have unique names,
+/// we don't need to use different salt values, thus we just use 0.
+const SALT: u64 = 0u64;
+
+/// Maximum memo size allowed for ICS-20 transfers. This bound corresponds to
+/// the `MaximumMemoLength` in the `ibc-go`
+const MAXIMUM_MEMO_SIZE: usize = 32768;
+
 /// We need to create a wrapper around the `Transfer` module and `WorkingSet`,
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
 /// which must be passed to `TokenTransferValidationContext` methods through
@@ -50,8 +59,8 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
         }
     }
 
-    /// Stores mapping from "denom to token ID" and vice versa for an IBC-minted
-    /// token.s
+    /// Stores mapping from "denom to token ID" and vice versa for an
+    /// IBC-created token.
     fn record_minted_token(&self, token_id: TokenId, token_name: String) {
         self.ibc_transfer.minted_token_id_to_name.set(
             &token_id,
@@ -89,23 +98,15 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     /// Creates a new token with the specified `token_name` and mints an initial
     /// balance to the `minter_address`.
     ///
-    /// Note: The mint authority must be held by the `IbcTransfer` module, so the
-    /// `authorized_minters` is set to the `IbcTransfer` address. Also, remember
-    /// that the `token_name` is a denom prefixed with IBC and originates from the
-    /// counterparty chain.
+    /// Note: The mint authority must be held by the `IbcTransfer` module, so
+    /// the `authorized_minters` is set to the `IbcTransfer` address. Also,
+    /// remember that the `token_name` is a denom prefixed with IBC and
+    /// originates from the counterparty chain.
     fn create_token(
         &self,
         token_name: String,
         minter_address: S::Address,
     ) -> Result<TokenId, TokenTransferError> {
-        // Using a different salt will result in a different token
-        // address. Since ICS-20 tokens coming from other chains are
-        // guaranteed to have unique names, we don't need to use
-        // different salt values.
-        let salt = 0u64;
-
-        let initial_balance = 0;
-
         // Make sure to use `ibc_transfer` address as the sender
         let context = Context::new(
             self.ibc_transfer.address.clone(),
@@ -118,8 +119,8 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
             .bank
             .create_token(
                 token_name.clone(),
-                salt,
-                initial_balance,
+                SALT,
+                0,
                 minter_address,
                 vec![self.ibc_transfer.address.clone()],
                 &context,
@@ -208,10 +209,11 @@ where
         coin: &PrefixedCoin,
         memo: &Memo,
     ) -> Result<(), TokenTransferError> {
-        if !memo.as_ref().is_empty() {
-            return Err(TokenTransferError::Other(
-                "Memo must be empty when burning tokens".to_string(),
-            ));
+        // Disallowing larges memos to prevent potential overloads on the system.
+        if memo.as_ref().len() > MAXIMUM_MEMO_SIZE {
+            return Err(TokenTransferError::Other(format!(
+                "Memo size exceeds maximum allowed size: {MAXIMUM_MEMO_SIZE}"
+            )));
         }
 
         let token_name = coin.denom.to_string();
@@ -255,10 +257,11 @@ where
         coin: &PrefixedCoin,
         memo: &Memo,
     ) -> Result<(), TokenTransferError> {
-        if !memo.as_ref().is_empty() {
-            return Err(TokenTransferError::Other(
-                "Memo must be empty when escrowing tokens".to_string(),
-            ));
+        // Disallowing larges memos to prevent potential overloads on the system.
+        if memo.as_ref().len() > MAXIMUM_MEMO_SIZE {
+            return Err(TokenTransferError::Other(format!(
+                "Memo size exceeds maximum allowed size: {MAXIMUM_MEMO_SIZE}"
+            )));
         }
 
         let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
@@ -339,7 +342,7 @@ where
         {
             return Err(TokenTransferError::Other(format!(
                 "Token with ID '{token_id}' is an IBC-created token and cannot be unescrowed.\
-                    Use '{token_name}' as denom for receiving an IBC token from the source chain"
+                Use '{token_name}' as denom for receiving an IBC token from the source chain"
             )));
         }
 
