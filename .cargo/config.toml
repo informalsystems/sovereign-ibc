@@ -6,6 +6,7 @@ sov-ibc-transfer                = { path = "modules/sov-ibc-transfer" }
 sov-consensus-state-tracker     = { path = "modules/sov-consensus-state-tracker" }
 sov-celestia-client             = { path = "clients/sov-celestia" }
 
+ibc                             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 ibc-core                        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 ibc-core-client                 = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 ibc-core-host-cosmos            = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
