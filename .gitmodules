@@ -1,3 +1,3 @@
 [submodule "vendor/sovereign-sdk"]
 	path = vendor/sovereign-sdk
-	url = https://github.com/informalsystems/sovereign-sdk-wip.git
+	url = git@github.com:informalsystems/sovereign-sdk-wip.git

@@ -16,6 +16,7 @@ ibc-query                   = { git = "https://github.com/cosmos/ibc-rs.git", re
 ibc-testkit                 = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
 
 basecoin                    = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "75fbb86" }
+jmt                         = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11" }
 
 sov-bank                    = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
 sov-celestia-adapter        = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
@@ -30,4 +31,3 @@ sov-mock-zkvm               = { git = "ssh://git@github.com/informalsystems/sove
 sov-prover-storage-manager  = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
 const-rollup-config         = { git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git", rev = "20bfd68" }
 
-jmt                         = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
