@@ -54,12 +54,10 @@ jobs:
   check-msrv:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Git credentials
-        run:
-          git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
       - uses: actions/checkout@v4
         with:
           submodules: true
+          token: ${{ secrets.AUTH_TOKEN }}
       - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -76,12 +74,10 @@ jobs:
   doc-all-features:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Git credentials
-        run:
-          git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
       - uses: actions/checkout@v4
         with:
           submodules: true
+          token: ${{ secrets.AUTH_TOKEN }}
       - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -96,12 +92,10 @@ jobs:
   clippy-all-features:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Git credentials
-        run:
-          git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
       - uses: actions/checkout@v4
         with:
           submodules: true
+          token: ${{ secrets.AUTH_TOKEN }}
       - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -111,18 +105,16 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/clippy-check@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.AUTH_TOKEN }}
           args: --all-features --all-targets
 
   clippy-no-default-features:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Git credentials
-        run:
-          git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
       - uses: actions/checkout@v4
         with:
           submodules: true
+          token: ${{ secrets.AUTH_TOKEN }}
       - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -139,12 +131,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Set up Git credentials
-        run:
-          git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
       - uses: actions/checkout@v4
         with:
           submodules: true
+          token: ${{ secrets.AUTH_TOKEN }}
       - uses: arduino/setup-protoc@v2
       - uses: actions-rs/toolchain@v1
         with:
