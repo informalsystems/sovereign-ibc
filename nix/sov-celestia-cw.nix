@@ -6,15 +6,21 @@
 let
     sov-celestia-src = nixpkgs.stdenv.mkDerivation {
         name = "sov-celestia-src";
-        src = ../.;
+        dontUnpack = true;
         dontBuild = true;
 
         installPhase = ''
             mkdir -p $out $out/vendor
-            cp -r clients modules mocks proto Cargo.toml Cargo.lock $out
-            cp -r ${sovereign-sdk-src} $out/vendor/sovereign-sdk
 
-            cat .cargo/config.toml >> $out/Cargo.toml
+            cp -r ${../clients} $out/clients
+            cp -r ${../modules} $out/modules
+            cp -r ${../mocks} $out/mocks
+            cp -r ${../proto} $out/proto
+            cp -r ${sovereign-sdk-src} $out/vendor/sovereign-sdk
+            cp ${../Cargo.lock} $out/Cargo.lock
+
+            cat ${../Cargo.toml} > $out/Cargo.toml
+            cat ${../.cargo/config.toml} >> $out/Cargo.toml
         '';
     };
 
