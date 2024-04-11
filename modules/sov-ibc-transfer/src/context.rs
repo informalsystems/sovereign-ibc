@@ -32,9 +32,9 @@ use crate::utils::compute_escrow_address;
 /// we don't need to use different salt values, thus we just use 0.
 const SALT: u64 = 0u64;
 
-/// Maximum memo size allowed for ICS-20 transfers. This bound corresponds to
+/// Maximum memo length allowed for ICS-20 transfers. This bound corresponds to
 /// the `MaximumMemoLength` in the `ibc-go`
-const MAXIMUM_MEMO_SIZE: usize = 32768;
+const MAXIMUM_MEMO_LENGTH: usize = 32768;
 
 /// We need to create a wrapper around the `Transfer` module and `WorkingSet`,
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
@@ -209,10 +209,10 @@ where
         coin: &PrefixedCoin,
         memo: &Memo,
     ) -> Result<(), TokenTransferError> {
-        // Disallowing larges memos to prevent potential overloads on the system.
-        if memo.as_ref().len() > MAXIMUM_MEMO_SIZE {
+        // Disallowing large memos to prevent potential overloads on the system.
+        if memo.as_ref().len() > MAXIMUM_MEMO_LENGTH {
             return Err(TokenTransferError::Other(format!(
-                "Memo size exceeds maximum allowed size: {MAXIMUM_MEMO_SIZE}"
+                "Memo size exceeds maximum allowed length: {MAXIMUM_MEMO_LENGTH}"
             )));
         }
 
@@ -257,10 +257,10 @@ where
         coin: &PrefixedCoin,
         memo: &Memo,
     ) -> Result<(), TokenTransferError> {
-        // Disallowing larges memos to prevent potential overloads on the system.
-        if memo.as_ref().len() > MAXIMUM_MEMO_SIZE {
+        // Disallowing large memos to prevent potential overloads on the system.
+        if memo.as_ref().len() > MAXIMUM_MEMO_LENGTH {
             return Err(TokenTransferError::Other(format!(
-                "Memo size exceeds maximum allowed size: {MAXIMUM_MEMO_SIZE}"
+                "Memo size exceeds maximum allowed length: {MAXIMUM_MEMO_LENGTH}"
             )));
         }
 
