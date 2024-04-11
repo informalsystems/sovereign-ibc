@@ -13,7 +13,11 @@ let
             mkdir -p $out $out/vendor
             cp -r . $out
             cp -r ${sovereign-sdk-src} $out/vendor/sovereign-sdk
+
             cat .cargo/config.toml >> $out/Cargo.toml
+
+            # We somehow have to touch the modified Cargo.toml, or cargo won't pick up the changes
+            touch $out/Cargo.toml
         '';
     };
 
