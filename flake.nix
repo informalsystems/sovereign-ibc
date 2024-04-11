@@ -1,9 +1,9 @@
 {
-  description = "A simple flake";
+  description = "Nix flake for building Wasm file";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = github:nixos/nixpkgs/nixpkgs-unstable;
+    flake-utils.url = github:numtide/flake-utils;
     rust-overlay.url = github:oxalica/rust-overlay;
 
     sovereign-sdk-src = {
