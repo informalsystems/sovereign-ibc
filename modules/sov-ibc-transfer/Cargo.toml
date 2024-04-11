@@ -14,16 +14,16 @@ workspace = true
 
 [dependencies]
 # external dependencies
-anyhow     = { workspace = true }
-base64     = { workspace = true }
-borsh      = { workspace = true }
-jsonrpsee  = { workspace = true, optional = true }
-prost      = { workspace = true }
-schemars   = { workspace = true, optional = true }
-serde      = { workspace = true }
-serde_json = { workspace = true, optional = true }
-thiserror  = { workspace = true }
-uint       = "0.9"
+anyhow      = { workspace = true }
+borsh       = { workspace = true }
+derive_more = { workspace = true }
+jsonrpsee   = { workspace = true, optional = true }
+prost       = { workspace = true }
+schemars    = { workspace = true, optional = true }
+serde       = { workspace = true }
+serde_json  = { workspace = true }
+thiserror   = { workspace = true }
+uint        = "0.9"
 
 # ibc dependencies
 ibc-app-transfer = { workspace = true, features = ["borsh", "schema"] }
@@ -36,9 +36,7 @@ sov-rollup-interface = { workspace = true }
 
 [features]
 default = []
-serde = ["serde_json"]
 native = [
-    "serde",
     "sov-bank/native",
     "sov-modules-api/native",
     "sov-rollup-interface/native",

@@ -1,30 +1,334 @@
+use borsh::BorshSerialize;
 use ibc_client_tendermint::types::client_type as tm_client_type;
-use ibc_core::channel::types::channel::IdentifiedChannelEnd;
+use ibc_core::channel::types::channel::{ChannelEnd, IdentifiedChannelEnd};
+use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketCommitment};
 use ibc_core::channel::types::error::ChannelError;
-use ibc_core::channel::types::packet::PacketState;
+use ibc_core::channel::types::packet::{PacketState, Receipt};
 use ibc_core::client::context::ClientValidationContext;
 use ibc_core::client::types::Height;
 use ibc_core::connection::types::error::ConnectionError;
-use ibc_core::connection::types::IdentifiedConnectionEnd;
+use ibc_core::connection::types::{ConnectionEnd, IdentifiedConnectionEnd};
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::identifiers::{ChannelId, ClientId, ConnectionId, PortId, Sequence};
 use ibc_core::host::types::path::{
-    AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath, Path,
-    ReceiptPath,
+    AckPath, ChannelEndPath, ClientConnectionPath, ClientConsensusStatePath, CommitmentPath,
+    ConnectionPath, Path, ReceiptPath, SeqAckPath, SeqRecvPath, SeqSendPath, UpgradeClientPath,
 };
 use ibc_core::host::{ClientStateRef, ConsensusStateRef, ValidationContext};
 use ibc_query::core::context::{ProvableContext, QueryContext};
+use jsonrpsee::core::RpcResult;
+use sov_celestia_client::client_state::ClientState as HostClientState;
+use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_modules_api::Spec;
 
 use crate::context::IbcContext;
+use crate::helpers::StorageValue;
+
+impl<'a, S> IbcContext<'a, S>
+where
+    S: Spec,
+{
+    pub fn query_client_state<SV>(
+        &self,
+        client_id: &ClientId,
+    ) -> RpcResult<SV::Output<ClientStateRef<Self>>>
+    where
+        SV: StorageValue,
+    {
+        SV::value_at_key(
+            client_id,
+            &self.ibc.client_state_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_client_consensus_state<SV>(
+        &self,
+        client_id: &ClientId,
+        revision_number: u64,
+        revision_height: u64,
+    ) -> RpcResult<SV::Output<ConsensusStateRef<Self>>>
+    where
+        SV: StorageValue,
+    {
+        let client_consensus_state_path =
+            &ClientConsensusStatePath::new(client_id.clone(), revision_number, revision_height);
+
+        SV::value_at_key(
+            client_consensus_state_path,
+            &self.ibc.consensus_state_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_upgraded_client_state<SV>(
+        &self,
+        height: u64,
+    ) -> RpcResult<SV::Output<HostClientState>>
+    where
+        SV: StorageValue,
+    {
+        let upgrade_client_path = &UpgradeClientPath::UpgradedClientState(height);
+
+        SV::value_at_key(
+            upgrade_client_path,
+            &self.ibc.upgraded_client_state_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_upgraded_consensus_state<SV>(
+        &self,
+        height: u64,
+    ) -> RpcResult<SV::Output<HostConsensusState>>
+    where
+        SV: StorageValue,
+    {
+        let upgrade_client_consensus_path =
+            &UpgradeClientPath::UpgradedClientConsensusState(height);
+
+        SV::value_at_key(
+            upgrade_client_consensus_path,
+            &self.ibc.upgraded_consensus_state_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_connection_end<SV>(
+        &self,
+        connection_id: &ConnectionId,
+    ) -> RpcResult<SV::Output<ConnectionEnd>>
+    where
+        SV: StorageValue,
+    {
+        let connection_path = &ConnectionPath::new(connection_id);
+
+        SV::value_at_key(
+            connection_path,
+            &self.ibc.connection_end_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_client_connections<SV>(
+        &self,
+        client_id: &ClientId,
+    ) -> RpcResult<SV::Output<Vec<ConnectionId>>>
+    where
+        SV: StorageValue,
+    {
+        let client_connection_path = &ClientConnectionPath::new(client_id.clone());
+
+        SV::value_at_key(
+            client_connection_path,
+            &self.ibc.client_connections_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_channel_end<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+    ) -> RpcResult<SV::Output<ChannelEnd>>
+    where
+        SV: StorageValue,
+    {
+        let channel_end_path = &ChannelEndPath::new(port_id, channel_id);
+
+        SV::value_at_key(
+            channel_end_path,
+            &self.ibc.channel_end_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_send_sequence<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+    ) -> RpcResult<SV::Output<Sequence>>
+    where
+        SV: StorageValue,
+    {
+        let seq_send_path = &SeqSendPath::new(port_id, channel_id);
+
+        SV::value_at_key(
+            seq_send_path,
+            &self.ibc.send_sequence_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_recv_sequence<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+    ) -> RpcResult<SV::Output<Sequence>>
+    where
+        SV: StorageValue,
+    {
+        let seq_recv_path = &SeqRecvPath::new(port_id, channel_id);
+
+        SV::value_at_key(
+            seq_recv_path,
+            &self.ibc.recv_sequence_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_ack_sequence<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+    ) -> RpcResult<SV::Output<Sequence>>
+    where
+        SV: StorageValue,
+    {
+        let seq_ack_path = &SeqAckPath::new(port_id, channel_id);
+
+        SV::value_at_key(
+            seq_ack_path,
+            &self.ibc.ack_sequence_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_packet_commitment<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+        sequence: Sequence,
+    ) -> RpcResult<SV::Output<PacketCommitment>>
+    where
+        SV: StorageValue,
+    {
+        let commitment_path = &CommitmentPath::new(port_id, channel_id, sequence);
+
+        SV::value_at_key(
+            commitment_path,
+            &self.ibc.packet_commitment_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_packet_receipt<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+        sequence: Sequence,
+    ) -> RpcResult<SV::Output<Receipt>>
+    where
+        SV: StorageValue,
+    {
+        let receipt_path = &ReceiptPath::new(port_id, channel_id, sequence);
+
+        SV::value_at_key(
+            receipt_path,
+            &self.ibc.packet_receipt_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+
+    pub fn query_packet_acknowledgement<SV>(
+        &self,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+        sequence: Sequence,
+    ) -> RpcResult<SV::Output<AcknowledgementCommitment>>
+    where
+        SV: StorageValue,
+    {
+        let ack_path = &AckPath::new(port_id, channel_id, sequence);
+
+        SV::value_at_key(
+            ack_path,
+            &self.ibc.packet_ack_map,
+            *self.working_set.borrow_mut(),
+        )
+    }
+}
 
 impl<'a, S> ProvableContext for IbcContext<'a, S>
 where
     S: Spec,
 {
-    /// TODO: Should figure out how can access the proof from the context
-    fn get_proof(&self, _height: Height, _path: &Path) -> Option<Vec<u8>> {
-        Some(vec![])
+    // NOTE: This is not efficient if used with a separate `get` call which returns only values.
+    // Because `get_with_proof` will retrieve proof along with the value anyway.
+    // Currently there is no way of retrieving only the proof.
+    fn get_proof(&self, height: Height, path: &Path) -> Option<Vec<u8>> {
+        let mut archival_working_set = self
+            .working_set
+            .borrow()
+            .get_archival_at(height.revision_height());
+
+        match path {
+            Path::ClientState(client_state_path) => self
+                .ibc
+                .client_state_map
+                .get_with_proof(&client_state_path.0, &mut archival_working_set),
+            Path::ClientConsensusState(client_consensus_state_path) => self
+                .ibc
+                .consensus_state_map
+                .get_with_proof(client_consensus_state_path, &mut archival_working_set),
+            Path::Connection(connection_path) => self
+                .ibc
+                .connection_end_map
+                .get_with_proof(connection_path, &mut archival_working_set),
+            Path::ClientConnection(client_connection_path) => self
+                .ibc
+                .client_connections_map
+                .get_with_proof(client_connection_path, &mut archival_working_set),
+            Path::ChannelEnd(channel_end_path) => self
+                .ibc
+                .channel_end_map
+                .get_with_proof(channel_end_path, &mut archival_working_set),
+            Path::SeqSend(seq_send_path) => self
+                .ibc
+                .send_sequence_map
+                .get_with_proof(seq_send_path, &mut archival_working_set),
+            Path::SeqRecv(seq_recv_path) => self
+                .ibc
+                .recv_sequence_map
+                .get_with_proof(seq_recv_path, &mut archival_working_set),
+            Path::Commitment(commitment_path) => self
+                .ibc
+                .packet_commitment_map
+                .get_with_proof(commitment_path, &mut archival_working_set),
+            Path::Ack(ack_path) => self
+                .ibc
+                .packet_ack_map
+                .get_with_proof(ack_path, &mut archival_working_set),
+            Path::Receipt(receipt_path) => self
+                .ibc
+                .packet_receipt_map
+                .get_with_proof(receipt_path, &mut archival_working_set),
+            // not required in ibc-core; but still implemented
+            Path::NextClientSequence(_) => self
+                .ibc
+                .client_counter
+                .get_with_proof(&mut archival_working_set),
+            Path::NextConnectionSequence(_) => self
+                .ibc
+                .connection_counter
+                .get_with_proof(&mut archival_working_set),
+            Path::NextChannelSequence(_) => self
+                .ibc
+                .channel_counter
+                .get_with_proof(&mut archival_working_set),
+            Path::UpgradeClient(upgrade_client_path) => self
+                .ibc
+                .upgraded_client_state_map
+                .get_with_proof(upgrade_client_path, &mut archival_working_set),
+            Path::SeqAck(seq_ack_path) => self
+                .ibc
+                .ack_sequence_map
+                .get_with_proof(seq_ack_path, &mut archival_working_set),
+            // not required, also not implemented; so `None` is returned
+            Path::ClientUpdateTime(_) | Path::ClientUpdateHeight(_) | Path::Ports(_) => None?,
+        }
+        .try_to_vec()
+        .ok()
     }
 }
 

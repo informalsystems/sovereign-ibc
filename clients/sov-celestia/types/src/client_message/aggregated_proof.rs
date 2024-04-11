@@ -15,11 +15,6 @@ use core::fmt::{Display, Error as FmtError, Formatter};
 use ibc_core::client::types::Height;
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Protobuf;
-use sov_rollup_interface::zk::aggregated_proof::{
-    AggregatedProof as SovAggregatedProof,
-    AggregatedProofPublicData as SovAggregatedProofPublicData, CodeCommitment as SovCodeCommitment,
-    SerializedAggregatedProof as SovSerializedAggregatedProof,
-};
 
 use crate::client_message::pretty::PrettySlice;
 use crate::error::Error;
@@ -126,12 +121,6 @@ impl From<AggregatedProof> for RawAggregatedProof {
     }
 }
 
-impl From<AggregatedProof> for SovAggregatedProof {
-    fn from(value: AggregatedProof) -> Self {
-        Self::new(value.serialized_proof.into(), value.public_data.into())
-    }
-}
-
 /// Defines the public properties of the AggregatedProof for the Sovereign SDK
 /// rollups, utilized for verifying the proof.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -198,26 +187,6 @@ impl Display for AggregatedProofPublicData {
                 hex::encode(&self.final_slot_hash),
                 self.code_commitment,
             )
-    }
-}
-
-impl From<AggregatedProofPublicData> for SovAggregatedProofPublicData {
-    fn from(value: AggregatedProofPublicData) -> Self {
-        Self {
-            validity_conditions: value
-                .validity_conditions
-                .into_iter()
-                .map(|vc| vc.0)
-                .collect(),
-            initial_slot_number: value.initial_slot_number.revision_height(),
-            final_slot_number: value.final_slot_number.revision_height(),
-            genesis_state_root: value.genesis_state_root.into(),
-            initial_state_root: value.initial_state_root.into(),
-            final_state_root: value.final_state_root.into(),
-            initial_slot_hash: value.initial_slot_hash,
-            final_slot_hash: value.final_slot_hash,
-            code_commitment: value.code_commitment.into(),
-        }
     }
 }
 
@@ -372,12 +341,6 @@ impl From<CodeCommitment> for RawCodeCommitment {
     }
 }
 
-impl From<CodeCommitment> for SovCodeCommitment {
-    fn from(value: CodeCommitment) -> Self {
-        Self(value.0)
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SerializedAggregatedProof(Vec<u8>);
@@ -420,14 +383,6 @@ impl From<RawSerializedAggregatedProof> for SerializedAggregatedProof {
 }
 
 impl From<SerializedAggregatedProof> for RawSerializedAggregatedProof {
-    fn from(value: SerializedAggregatedProof) -> Self {
-        Self {
-            raw_aggregated_proof: value.0,
-        }
-    }
-}
-
-impl From<SerializedAggregatedProof> for SovSerializedAggregatedProof {
     fn from(value: SerializedAggregatedProof) -> Self {
         Self {
             raw_aggregated_proof: value.0,

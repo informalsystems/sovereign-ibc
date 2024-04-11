@@ -5,7 +5,7 @@ use sov_consensus_state_tracker::HasConsensusState;
 use sov_kernels::basic::BasicKernelGenesisConfig;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, ModuleInfo, SlotData, Spec,
+    CallResponse, DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, SlotData, Spec,
     StateCheckpoint,
 };
 use sov_rollup_interface::da::BlockHeaderTrait;
@@ -15,7 +15,7 @@ use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tokio::task::JoinHandle;
 use tracing::{debug, info};
 
-use super::{GenesisConfig, MockRollup, RuntimeCall};
+use super::{GenesisConfig, MockRollup};
 use crate::utils::{wait_for_block, MutexUtil};
 
 impl<S, Da, P> MockRollup<S, Da, P>
@@ -105,20 +105,18 @@ where
 
         let rollup_ctx = self.rollup_ctx();
 
-        for m in self.mempool() {
-            // Sets the sender address to the address of the 'sov-ibc'
-            // module, ensuring that the module's address is used for the
-            // token creation.
-            if let RuntimeCall::ibc(_) = m {
-                self.resolve_ctx(self.runtime().ibc.address().clone(), visible_slot);
-            }
+        // Resets the sender address to the address of the relayer
+        self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
 
+        for m in self.mempool() {
+            // NOTE: on failures, we silently ignore the message and continue as
+            // it is in the real-case scenarios
             self.runtime()
                 .dispatch_call(m.clone(), &mut working_set, &self.rollup_ctx())
-                .unwrap();
-
-            // Resets the sender address to the address of the relayer
-            self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
+                .unwrap_or_else(|e| {
+                    info!("rollup: error executing message: {e:?}");
+                    CallResponse::default()
+                });
         }
 
         *self.mempool.acquire_mutex() = vec![];
