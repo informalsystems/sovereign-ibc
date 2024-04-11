@@ -1128,7 +1128,6 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 [[package]]
 name = "const-rollup-config"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 
 [[package]]
 name = "const_format"
@@ -3229,27 +3228,6 @@ name = "itoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
-
-[[package]]
-name = "jmt"
-version = "0.9.0"
-source = "git+https://github.com/penumbra-zone/jmt.git?rev=1d007e11#1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6"
-dependencies = [
- "anyhow",
- "borsh",
- "digest 0.10.7",
- "hashbrown 0.13.2",
- "hex",
- "ics23",
- "itertools 0.10.5",
- "mirai-annotations",
- "num-derive 0.3.3",
- "num-traits",
- "serde",
- "sha2 0.10.8",
- "thiserror",
- "tracing",
-]
 
 [[package]]
 name = "jmt"
@@ -5470,7 +5448,6 @@ dependencies = [
 [[package]]
 name = "sov-bank"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -5489,7 +5466,6 @@ dependencies = [
 [[package]]
 name = "sov-blob-storage"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "bincode",
@@ -5510,7 +5486,6 @@ dependencies = [
 [[package]]
 name = "sov-celestia-adapter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5544,7 +5519,7 @@ dependencies = [
  "ibc-client-tendermint",
  "ibc-core",
  "ics23",
- "jmt 0.9.0 (git+https://github.com/penumbra-zone/jmt.git?rev=1d007e11)",
+ "jmt",
  "prost",
  "schemars",
  "serde",
@@ -5587,7 +5562,7 @@ dependencies = [
  "ibc-client-wasm-types",
  "ibc-core",
  "ics23",
- "jmt 0.9.0 (git+https://github.com/penumbra-zone/jmt.git?rev=1d007e11)",
+ "jmt",
  "prost",
  "schemars",
  "serde",
@@ -5601,7 +5576,6 @@ dependencies = [
 [[package]]
 name = "sov-chain-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "borsh",
@@ -5642,14 +5616,13 @@ dependencies = [
 [[package]]
 name = "sov-db"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "bincode",
  "borsh",
  "byteorder",
  "hex",
- "jmt 0.9.0 (git+https://github.com/penumbra-zone/jmt.git?rev=1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6)",
+ "jmt",
  "rockbound",
  "rocksdb",
  "serde",
@@ -5702,7 +5675,7 @@ dependencies = [
  "ibc-core-host-cosmos",
  "ibc-query",
  "ibc-testkit",
- "jmt 0.9.0 (git+https://github.com/penumbra-zone/jmt.git?rev=1d007e11)",
+ "jmt",
  "prost",
  "serde",
  "serde_json",
@@ -5779,7 +5752,6 @@ dependencies = [
 [[package]]
 name = "sov-kernels"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "sov-blob-storage",
@@ -5792,7 +5764,6 @@ dependencies = [
 [[package]]
 name = "sov-mock-da"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5810,7 +5781,6 @@ dependencies = [
 [[package]]
 name = "sov-mock-zkvm"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "bincode",
@@ -5826,7 +5796,6 @@ dependencies = [
 [[package]]
 name = "sov-modules-api"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -5851,7 +5820,6 @@ dependencies = [
 [[package]]
 name = "sov-modules-core"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -5860,7 +5828,7 @@ dependencies = [
  "derive_more",
  "digest 0.10.7",
  "hex",
- "jmt 0.9.0 (git+https://github.com/penumbra-zone/jmt.git?rev=1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6)",
+ "jmt",
  "proptest",
  "schemars",
  "serde",
@@ -5872,7 +5840,6 @@ dependencies = [
 [[package]]
 name = "sov-modules-macros"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -5888,7 +5855,6 @@ dependencies = [
 [[package]]
 name = "sov-prover-storage-manager"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "rockbound",
@@ -5901,7 +5867,6 @@ dependencies = [
 [[package]]
 name = "sov-rollup-interface"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5923,7 +5888,6 @@ dependencies = [
 [[package]]
 name = "sov-sequencer-registry"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "borsh",
@@ -5941,14 +5905,13 @@ dependencies = [
 [[package]]
 name = "sov-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=20bfd68#20bfd68c8c740b447d51eb50381b5590102258bb"
 dependencies = [
  "anyhow",
  "bcs",
  "borsh",
  "derivative",
  "hex",
- "jmt 0.9.0 (git+https://github.com/penumbra-zone/jmt.git?rev=1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6)",
+ "jmt",
  "serde",
  "serde-big-array",
  "serde_json",
