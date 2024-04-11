@@ -152,9 +152,9 @@ utilized as the denom. This may pose a challenge for front-ends to correctly
 identify the token type when crafting the related appropriate transfer message.
 Here existing RPC methods can assist.
 
-## A concrete scenario among three Sovereign roll-ups
+## Concrete Scenario among three Sovereign Rollups
 
-Let's assume that the ICS20 application is deployed on three Sovereign roll-ups
+Let's assume that the ICS20 application is deployed on three Sovereign rollups
 `sovA`, `sovB`, and `sovC`; and the IBC channel topology among these three ICS20
 applications looks like this:
 
