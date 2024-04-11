@@ -152,6 +152,29 @@ utilized as the denom. This may pose a challenge for front-ends to correctly
 identify the token type when crafting the related appropriate transfer message.
 Here existing RPC methods can assist.
 
+## A concrete scenario among three Sovereign roll-ups
+
+Let's assume that the ICS20 application is deployed on three Sovereign roll-ups
+`sovA`, `sovB`, and `sovC`; and the IBC channel topology among these three ICS20
+applications looks like this:
+
+```
+┌────┐chAB   chBA┌────┐chBC   chCB┌────┐
+│sovA├───────────┤sovB├───────────┤sovC│
+└────┘           └────┘           └────┘
+```
+
+The following table describes the minimal arguments to the ICS20 transfer
+transaction to send `tokA` (a token native to `sovA`) over the following route:
+`sovA` -> `sovB` -> `sovC` -> `sovB` -> `sovA`.
+
+| source rollup | source channel |               denom               |
+| :-----------: | :------------: | :-------------------------------: |
+|    `sovA`     |     `chAB`     |              `tokA`               |
+|    `sovB`     |     `chBC`     |       `transfer/chBA/tokA`        |
+|    `sovC`     |     `chCB`     | `transfer/chCB/transer/chBA/tokA` |
+|    `sovB`     |     `chBA`     |       `transfer/chBA/tokA`        |
+
 ## Available RPC Methods
 
 To facilitate the interaction with the `IbcTransfer` module, two RPC methods are
