@@ -38,11 +38,12 @@ use ibc_query::core::connection::{
     QueryConnectionsRequest, QueryConnectionsResponse,
 };
 use jsonrpsee::core::RpcResult;
+use sov_ibc_transfer::to_jsonrpsee_error;
 use sov_modules_api::macros::rpc_gen;
 use sov_modules_api::{Spec, WorkingSet};
 
 use crate::context::IbcContext;
-use crate::helpers::{to_jsonrpsee_error, WithProof, WithoutProof};
+use crate::helpers::{WithProof, WithoutProof};
 use crate::Ibc;
 
 /// Structure returned by the `client_state` rpc method.

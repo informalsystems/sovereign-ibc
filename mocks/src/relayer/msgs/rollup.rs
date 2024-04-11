@@ -1,8 +1,6 @@
 //! Contains rollup specific message builders for the relayer.
 use std::str::FromStr;
 
-use base64::engine::general_purpose;
-use base64::Engine;
 use ibc_app_transfer::types::msgs::transfer::MsgTransfer;
 use ibc_app_transfer::types::packet::PacketData;
 use ibc_app_transfer::types::{Coin, PrefixedDenom};
@@ -101,14 +99,11 @@ where
         CallMessage::Core(msg_update_client.to_any())
     }
 
-    /// Builds a sdk token transfer message wrapped in a `CallMessage` with the given amount
-    /// Note: keep the amount value lower than the initial balance of the sender address
+    /// Builds a `MsgTransfer` with the given configuration
+    ///
+    /// Note: keep the amount value lower than the initial balance of the sender
+    /// address
     pub fn build_msg_transfer_for_sov(&self, config: &TransferTestConfig) -> MsgTransfer {
-        let mut token_id_buf = String::new();
-
-        general_purpose::STANDARD_NO_PAD
-            .encode_string(config.sov_token_id.unwrap(), &mut token_id_buf);
-
         let packet_data = PacketData {
             token: Coin {
                 denom: PrefixedDenom::from_str(&config.sov_denom).unwrap(),
@@ -116,7 +111,7 @@ where
             },
             sender: Signer::from(config.sov_address.to_string()),
             receiver: Signer::from(config.cos_address.clone()),
-            memo: token_id_buf.into(),
+            memo: "".into(),
         };
 
         MsgTransfer {

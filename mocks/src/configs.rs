@@ -5,7 +5,7 @@ use std::path::Path;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 use serde::de::DeserializeOwned;
-use sov_bank::{get_token_id, GasTokenConfig, TokenId};
+use sov_bank::{get_token_id, TokenConfig, TokenId, GAS_TOKEN_ID};
 #[cfg(feature = "celestia-da")]
 use sov_consensus_state_tracker::CelestiaService;
 #[cfg(feature = "mock-da")]
@@ -45,11 +45,12 @@ pub struct TestSetupConfig<S: Spec, Da: DaService> {
 
 impl<S: Spec, Da: DaService> TestSetupConfig<S, Da> {
     /// Returns list of tokens in the bank configuration
-    pub fn gas_token_config(&self) -> GasTokenConfig<S> {
+    pub fn gas_token_config(&self) -> TokenConfig<S> {
         self.rollup_genesis_config
             .bank_config
             .gas_token_config
             .clone()
+            .into()
     }
 
     /// Returns the address of the relayer. We use the last address in the list
@@ -104,10 +105,8 @@ pub async fn default_config_with_celestia_da() -> TestSetupConfig<DefaultSpec, C
 #[derive(TypedBuilder, Clone, Debug)]
 pub struct TransferTestConfig {
     /// The token name on the rollup.
+    #[builder(default = GAS_TOKEN_ID.to_bech32().to_string())]
     pub sov_denom: String,
-    /// The token ID on the rollup.
-    #[builder(default = None)]
-    pub sov_token_id: Option<TokenId>,
     /// An arbitrary user address on the rollup.
     pub sov_address: Address,
     /// The token name on the Cosmos chain.
