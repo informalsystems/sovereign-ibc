@@ -155,7 +155,7 @@ utilized as the denom. This may pose a challenge for front-ends to correctly
 identify the token type when crafting the related appropriate transfer message.
 Here existing RPC methods can assist.
 
-## Concrete Scenario among three Sovereign Rollups
+## Concrete Scenario among Three Sovereign Rollups
 
 Let's assume that the ICS20 application is deployed on three Sovereign rollups
 `sovA`, `sovB`, and `sovC`; and the IBC channel topology among these three ICS20
@@ -167,16 +167,20 @@ applications looks like this:
 └────┘           └────┘           └────┘
 ```
 
-The following table describes the minimal arguments to the ICS20 transfer
-transaction to send `tokA` (a token native to `sovA`) over the following route:
-`sovA` -> `sovB` -> `sovC` -> `sovB` -> `sovA`.
+The following table shows the allowed denom types (i.e. _native_ or _ibc_) in
+the `MsgTransfer`message for an ICS20 transaction to send `tokA` (a token native
+to `sovA`) over the following route: `sovA` -> `sovB` -> `sovC` -> `sovB` ->
+`sovA`.
 
-| source rollup | source channel |               denom               |
-| :-----------: | :------------: | :-------------------------------: |
-|    `sovA`     |     `chAB`     |              `tokA`               |
-|    `sovB`     |     `chBC`     |       `transfer/chBA/tokA`        |
-|    `sovC`     |     `chCB`     | `transfer/chCB/transer/chBA/tokA` |
-|    `sovB`     |     `chBA`     |       `transfer/chBA/tokA`        |
+| source rollup | source channel |          ibc denom trace          | allowed denom type in `MsgTransfer` |
+| :-----------: | :------------: | :-------------------------------: | :---------------------------------: |
+|    `sovA`     |     `chAB`     |              `tokA`               |               native                |
+|    `sovB`     |     `chBC`     |       `transfer/chBA/tokA`        |               native                |
+|    `sovC`     |     `chCB`     | `transfer/chCB/transer/chBA/tokA` |                 ibc                 |
+|    `sovB`     |     `chBA`     |       `transfer/chBA/tokA`        |                 ibc                 |
+
+To summarize, `MsgTransfer` takes an IBC denom when sending it back to the
+source channel, otherwise, it takes a native denom.
 
 ## Available RPC Methods
 
