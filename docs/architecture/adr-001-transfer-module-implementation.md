@@ -88,8 +88,9 @@ is guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
    `MsgTransfer`.
 3. Validate that the token is native and **not** an IBC-created token by
    cross-referencing with the `minted_token_id_to_name` state.
-   * If the token ID is found in the `minted_token_id_to_name` state, it is an
-     IBC-created token, and the transfer is rejected.
+   * If the token ID is found in the `minted_token_id_to_name` state, check if
+     the corresponding token name begins with the trace path
+     `<given_port_id>/<given_channel_id>/`. If it does, reject the transfer.
 4. Confirm the sender has a sufficient balance.
 5. Retrieve the escrow address for the specified port and channel pair from the
    cache. If absent, compute and cache the address. Utilize caching to avoid
@@ -107,9 +108,11 @@ is guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
    denom, so `coin.denom` would be `my_token` for unescrowing.
 2. Validate that the token is native and **not** an IBC-created token by
    referencing the `minted_token_id_to_name` state.
-    * If the token ID is found in the `minted_token_id_to_name` state, it is an
-      IBC-created token, and the transfer is rejected. This step only fails when
-      the counterparty chain produces a malicious IBC transfer `send_packet()`.
+   * If the token ID is found in the `minted_token_id_to_name` state, check if
+     the corresponding token name begins with the trace path
+     `<given_port_id>/<given_channel_id>/`. If it does, reject the transfer.
+     This step only fails when the counterparty chain produces a malicious IBC
+     transfer `send_packet()`.
 3. Obtain the escrow address for a specified port and channel pair, similar to
    the escrowing step.
 4. Verify that the escrow account has a sufficient balance.
