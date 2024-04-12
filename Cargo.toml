@@ -13,7 +13,8 @@ members = [
 ]
 
 exclude = [
-    "ci/risc0-check"
+    "ci/risc0-check",
+    "vendor/sovereign-sdk"
 ]
 
 [workspace.package]

@@ -26,9 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Git credentials
-        run:
-          git config --global --replace-all "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" ssh://git@github.com
+        with:
+          submodules: true
+          token: ${{ secrets.AUTH_TOKEN }}
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
       - name: Install cargo-risczero
