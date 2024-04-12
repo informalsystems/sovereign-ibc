@@ -158,29 +158,49 @@ Here existing RPC methods can assist.
 ## Concrete Scenario among Three Sovereign Rollups
 
 Let's assume that the ICS20 application is deployed on three Sovereign rollups
-`sovA`, `sovB`, and `sovC`; and the IBC channel topology among these three ICS20
-applications looks like this:
+`sovA`, `sovB`, and `sovC`; and they are interconnected as shown below:
 
 ```
-┌────┐chAB   chBA┌────┐chBC   chCB┌────┐
-│sovA├───────────┤sovB├───────────┤sovC│
-└────┘           └────┘           └────┘
+          chAB┌────┐chAC
+      ┌───────┤sovA├───────┐
+      │       └────┘       │
+      │                    │
+chBA┌─┴──┐chBC      chCB┌──┴─┐chCA
+    │sovB├──────────────┤sovC│
+    └────┘              └────┘
 ```
 
-The following table shows the allowed denom types (i.e. _native_ or _ibc_) in
-the `MsgTransfer`message for an ICS20 transaction to send `tokA` (a token native
-to `sovA`) over the following route: `sovA` -> `sovB` -> `sovC` -> `sovB` ->
-`sovA`.
+We will consider the scenarios when sending `tokA` (a token native to `sovA`) in
+this route:
 
-| source rollup | source channel |          ibc denom trace          | allowed denom type in `MsgTransfer` |
-| :-----------: | :------------: | :-------------------------------: | :---------------------------------: |
-|    `sovA`     |     `chAB`     |              `tokA`               |               native                |
-|    `sovB`     |     `chBC`     |       `transfer/chBA/tokA`        |               native                |
-|    `sovC`     |     `chCB`     | `transfer/chCB/transer/chBA/tokA` |                 ibc                 |
-|    `sovB`     |     `chBA`     |       `transfer/chBA/tokA`        |                 ibc                 |
+`sovA` -> `sovB` -> `sovC` -> `sovA` -> `sovC` -> `sovB` -> `sovA`
 
-To summarize, `MsgTransfer` takes an IBC denom when sending it back to the
-source channel, otherwise, it takes a native denom.
+That is, we do a round trip of `tokA` starting and ending at `sovA` via `sovB`
+and `sovC`; and then we unwind the round trip.
+
+The following table shows the mappings between Sovereign native token and IBC
+denom trace for each scenario:
+
+| source rollup | source channel | denom in `MsgTransfer` and denom in ICS20 packet | is target source? | native token on target |  ibc denom trace on target   |
+| :-----------: | :------------: | :----------------------------------------------: | :---------------: | :--------------------: | :--------------------------: |
+|    `sovA`     |     `chAB`     |                      `tokA`                      |        no         |       `tokA_onB`       |     `transfer/chBA/tokA`     |
+|    `sovB`     |     `chBC`     |                    `tokA_onB`                    |        no         |     `tokA_onB_onC`     |   `transfer/chCB/tokA_onB`   |
+|    `sovC`     |     `chCA`     |                  `tokA_onB_onC`                  |        no         |   `tokA_onB_onC_onA`   | `transfer/chAC/tokA_onB_onC` |
+|    `sovA`     |     `chAC`     |           `transfer/chAC/tokA_onB_onC`           |        yes        |     `tokA_onB_onC`     |   `transfer/chCB/tokA_onB`   |
+|    `sovC`     |     `chCB`     |             `transfer/chCB/tokA_onB`             |        yes        |       `tokA_onB`       |     `transfer/chBA/tokA`     |
+|    `sovB`     |     `chBA`     |               `transfer/chBA/tokA`               |        yes        |         `tokA`         |              -               |
+
+Note that, `MsgTransfer` on Sovereign IBC takes an IBC denom trace when sending
+it back via its source channel, otherwise, it takes a native token. That means,
+_mint_ and _burn_ method take an IBC denom trace, while _escrow_ and _unescrow_
+methods take a native token.
+
+|  method  | denom type |    trigger    |              condition               |
+| :------: | :--------: | :-----------: | :----------------------------------: |
+|   mint   |    ibc     | `recv_packet` |                  -                   |
+|   burn   |    ibc     | `MsgTransfer` |                  -                   |
+|  escrow  |   native   | `MsgTransfer` | token can't be a returning IBC token |
+| unescrow |   native   | `recv_packet` |                  -                   |
 
 ## Available RPC Methods
 
