@@ -191,9 +191,9 @@ denom trace for each scenario:
 |    `sovB`     |     `chBA`     |               `transfer/chBA/tokA`               |        yes        |         `tokA`         |              -               |
 
 Note that, `MsgTransfer` on Sovereign IBC takes an IBC denom trace when sending
-it back via its source channel, otherwise, it takes a native token. That means,
-_mint_ and _burn_ method take an IBC denom trace, while _escrow_ and _unescrow_
-methods take a native token.
+it back via its source channel, otherwise, it takes a native token. This means
+that _mint_ and _burn_ methods take an IBC denom trace, while _escrow_ and
+_unescrow_ methods take a native token.
 
 |  method  | denom type |    trigger    |              condition               |
 | :------: | :--------: | :-----------: | :----------------------------------: |
