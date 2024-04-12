@@ -191,16 +191,18 @@ denom trace for each scenario:
 |    `sovB`     |     `chBA`     |               `transfer/chBA/tokA`               |        yes        |         `tokA`         |              -               |
 
 Note that, `MsgTransfer` on Sovereign IBC takes an IBC denom trace when sending
-it back via its source channel, otherwise, it takes a native token. This means
-that _mint_ and _burn_ methods take an IBC denom trace, while _escrow_ and
+it back via its originating channel, otherwise, it takes a native token. This
+means that _mint_ and _burn_ methods take an IBC denom trace, while _escrow_ and
 _unescrow_ methods take a native token.
 
-|  method  | denom type |    trigger    |              condition               |
-| :------: | :--------: | :-----------: | :----------------------------------: |
-|   mint   |    ibc     | `recv_packet` |                  -                   |
-|   burn   |    ibc     | `MsgTransfer` |                  -                   |
-|  escrow  |   native   | `MsgTransfer` | token can't be a returning IBC token |
-| unescrow |   native   | `recv_packet` |                  -                   |
+|  method  | denom type |    trigger    |                             condition                             |
+| :------: | :--------: | :-----------: | :---------------------------------------------------------------: |
+|   mint   |    ibc     | `recv_packet` |                                 -                                 |
+|   burn   |    ibc     | `MsgTransfer` |        IBC denom must originate from the current channel*         |
+|  escrow  |   native   | `MsgTransfer` | corresponding IBC denom can't originate from the current channel* |
+| unescrow |   native   | `recv_packet` |                                 -                                 |
+
+(*_the current channel_: the channel where the ICS20 packet will be sent to.)
 
 ## Available RPC Methods
 
