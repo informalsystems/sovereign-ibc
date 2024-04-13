@@ -36,7 +36,7 @@ const SALT: u64 = 0u64;
 
 /// Maximum memo length allowed for ICS-20 transfers. This bound corresponds to
 /// the `MaximumMemoLength` in the `ibc-go`
-const MAXIMUM_MEMO_LENGTH: usize = 32768;
+const MAXIMUM_MEMO_LENGTH: usize = 32768; // 1 << 15
 
 /// We need to create a wrapper around the `Transfer` module and `WorkingSet`,
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
