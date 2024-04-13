@@ -157,6 +157,19 @@ utilized as the denom. This may pose a challenge for front-ends to correctly
 identify the token type when crafting the related appropriate transfer message.
 Here existing RPC methods can assist.
 
+## Available RPC Methods
+
+To facilitate the interaction with the `IbcTransfer` module, two RPC methods are
+available:
+
+- `transfer_mintedTokenName`: Queries the `minted_token_id_to_name` state to
+  retrieve the token name for a given token ID.
+- `transfer_mintedTokenId`: Queries the `minted_token_name_to_id` state to
+  obtain the token ID for a given token name.
+
+Additionally, worth noting there is an RPC method as `transfer_moduleId` that
+returns the address of the `IbcTransfer` module.
+
 ## Concrete Scenario among Three Sovereign Rollups
 
 Let's assume that the ICS20 application is deployed on three Sovereign rollups
@@ -205,19 +218,6 @@ _escrow_ and _unescrow_ methods take a native token.
 | unescrow |   native   | `recv_packet` |                                 -                                 |
 
 (*_the current channel_: the channel where the ICS20 packet will be sent to.)
-
-## Available RPC Methods
-
-To facilitate the interaction with the `IbcTransfer` module, two RPC methods are
-available:
-
-- `transfer_mintedTokenName`: Queries the `minted_token_id_to_name` state to
-  retrieve the token name for a given token ID.
-- `transfer_mintedTokenId`: Queries the `minted_token_name_to_id` state to
-  obtain the token ID for a given token name.
-
-Additionally, worth noting there is an RPC method as `transfer_moduleId` that
-returns the address of the `IbcTransfer` module.
 
 ## References
 
