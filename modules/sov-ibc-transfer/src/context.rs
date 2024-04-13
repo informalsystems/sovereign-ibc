@@ -10,7 +10,9 @@ use ibc_app_transfer::module::{
     on_timeout_packet_validate,
 };
 use ibc_app_transfer::types::error::TokenTransferError;
-use ibc_app_transfer::types::{Amount, Memo, PrefixedCoin, PORT_ID_STR, VERSION};
+use ibc_app_transfer::types::{
+    Amount, Memo, PrefixedCoin, PrefixedDenom, TracePrefix, PORT_ID_STR, VERSION,
+};
 use ibc_core::channel::types::acknowledgement::Acknowledgement;
 use ibc_core::channel::types::channel::{Counterparty, Order};
 use ibc_core::channel::types::error::{ChannelError, PacketError};
@@ -34,7 +36,7 @@ const SALT: u64 = 0u64;
 
 /// Maximum memo length allowed for ICS-20 transfers. This bound corresponds to
 /// the `MaximumMemoLength` in the `ibc-go`
-const MAXIMUM_MEMO_LENGTH: usize = 32768;
+const MAXIMUM_MEMO_LENGTH: usize = 32768; // 1 << 15
 
 /// We need to create a wrapper around the `Transfer` module and `WorkingSet`,
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
@@ -75,6 +77,61 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
         );
     }
 
+    /// Validate that the token is native and **not** an IBC-created token by
+    /// cross-referencing with the `minted_token_id_to_name` state. If a token
+    /// found and the token name starts with the trace path
+    /// `<given_port_id>/<given_channel_id>/`, returns an error, otherwise
+    /// returns the token ID.
+    ///
+    /// NOTE: In un-escrowing scenarios there is no way to make this fail from
+    /// an honest counterparty chain, as this method only fails when the
+    /// counterparty chain produces a malicious IBC transfer `send_packet()`.
+    fn get_native_token_id(
+        &self,
+        coin: &PrefixedCoin,
+        port_id: &PortId,
+        channel_id: &ChannelId,
+    ) -> Result<TokenId, TokenTransferError> {
+        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
+            TokenTransferError::InvalidCoin {
+                coin: coin.to_string(),
+            }
+        })?;
+
+        if let Some(token_name) = self
+            .ibc_transfer
+            .minted_token_id_to_name
+            .get(&token_id, *self.working_set.borrow_mut())
+        {
+            let prefixed_denom = PrefixedDenom::from_str(&token_name).map_err(|e| {
+                TokenTransferError::Other(format!("Failed to parse token name: {token_name}"))
+            })?;
+
+            let trace_prefix = TracePrefix::new(port_id.clone(), channel_id.clone());
+
+            if prefixed_denom.trace_path.starts_with(&trace_prefix) {
+                return Err(TokenTransferError::Other(format!(
+                    "Token with ID '{token_id}' is an IBC-created token and cannot be transferred.\
+                    Use '{token_name}' as denom for transferring an IBC token to the source chain"
+                )));
+            }
+        }
+
+        Ok(token_id)
+    }
+
+    /// Validate that the token is an IBC-created token by cross-referencing
+    /// with the `minted_token_name_to_id` state. If a token is found, returns
+    /// the token ID, otherwise returns an error.
+    fn get_ibc_token_id(&self, coin: &PrefixedCoin) -> Result<TokenId, TokenTransferError> {
+        self.ibc_transfer
+            .minted_token_name_to_id
+            .get(&coin.denom.to_string(), *self.working_set.borrow_mut())
+            .ok_or(TokenTransferError::InvalidCoin {
+                coin: coin.to_string(),
+            })
+    }
+
     /// Obtains the escrow address for a given port and channel pair by looking
     /// up the cache. If the cache does not contain the address, it is computed
     /// and stored in the cache.
@@ -93,6 +150,35 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
                 );
                 escrow_account
             })
+    }
+
+    /// Validates that the sender has sufficient balance to perform the
+    /// transfer. If the user has sufficient balance, returns the balance,
+    /// otherwise returns an error.
+    fn validate_balance(
+        &self,
+        token_id: TokenId,
+        address: S::Address,
+        amount: Amount,
+    ) -> Result<Amount, TokenTransferError> {
+        let sender_balance: u64 = self
+            .ibc_transfer
+            .bank
+            .get_balance_of(address, token_id, *self.working_set.borrow_mut())
+            .ok_or(TokenTransferError::Other(format!(
+                "No balance for token with ID: '{token_id}'"
+            )))?;
+
+        let sender_balance = sender_balance.into();
+
+        if amount > sender_balance {
+            return Err(TokenTransferError::InsufficientFunds {
+                send_attempt: sender_balance.to_string(),
+                available_funds: amount.to_string(),
+            });
+        }
+
+        Ok(sender_balance)
     }
 
     /// Creates a new token with the specified `token_name` and mints an initial
@@ -199,7 +285,7 @@ where
     }
 
     /// Any token that is to be burned will have been previously minted, so we
-    /// can expect to find the token ID in our `minted_tokens` map.
+    /// can expect to find the token ID in our `minted_token_name_to_id` map.
     ///
     /// This is called in a `send_transfer()` in the case where we are NOT the
     /// token source
@@ -216,34 +302,9 @@ where
             )));
         }
 
-        let token_name = coin.denom.to_string();
+        let minted_token_id = self.get_ibc_token_id(coin)?;
 
-        let minted_token_id = self
-            .ibc_transfer
-            .minted_token_name_to_id
-            .get(&token_name, *self.working_set.borrow_mut())
-            .ok_or(TokenTransferError::InvalidCoin {
-                coin: coin.to_string(),
-            })?;
-
-        let sender_balance: u64 = self
-            .ibc_transfer
-            .bank
-            .get_balance_of(
-                account.address.clone(),
-                minted_token_id,
-                *self.working_set.borrow_mut(),
-            )
-            .ok_or(TokenTransferError::InvalidCoin { coin: token_name })?;
-
-        let sender_balance: Amount = sender_balance.into();
-
-        if coin.amount > sender_balance {
-            return Err(TokenTransferError::InsufficientFunds {
-                send_attempt: sender_balance.to_string(),
-                available_funds: coin.amount.to_string(),
-            });
-        }
+        self.validate_balance(minted_token_id, account.address.clone(), coin.amount)?;
 
         Ok(())
     }
@@ -252,8 +313,8 @@ where
     fn escrow_coins_validate(
         &self,
         from_account: &Self::AccountId,
-        _port_id: &PortId,
-        _channel_id: &ChannelId,
+        port_id: &PortId,
+        channel_id: &ChannelId,
         coin: &PrefixedCoin,
         memo: &Memo,
     ) -> Result<(), TokenTransferError> {
@@ -264,43 +325,9 @@ where
             )));
         }
 
-        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
-            TokenTransferError::InvalidCoin {
-                coin: coin.to_string(),
-            }
-        })?;
+        let token_id = self.get_native_token_id(coin, port_id, channel_id)?;
 
-        if let Some(token_name) = self
-            .ibc_transfer
-            .minted_token_id_to_name
-            .get(&token_id, *self.working_set.borrow_mut())
-        {
-            return Err(TokenTransferError::Other(format!(
-                "Token with ID '{token_id}' is an IBC-created token and cannot be escrowed. \
-                Use '{token_name}' as denom for sending back an IBC token to the source chain"
-            )));
-        }
-
-        let sender_balance: u64 = self
-            .ibc_transfer
-            .bank
-            .get_balance_of(
-                from_account.address.clone(),
-                token_id,
-                *self.working_set.borrow_mut(),
-            )
-            .ok_or(TokenTransferError::InvalidCoin {
-                coin: coin.denom.to_string(),
-            })?;
-
-        let sender_balance: Amount = sender_balance.into();
-
-        if coin.amount > sender_balance {
-            return Err(TokenTransferError::InsufficientFunds {
-                send_attempt: sender_balance.to_string(),
-                available_funds: coin.amount.to_string(),
-            });
-        }
+        self.validate_balance(token_id, from_account.address.clone(), coin.amount)?;
 
         Ok(())
     }
@@ -326,47 +353,11 @@ where
         channel_id: &ChannelId,
         coin: &PrefixedCoin,
     ) -> Result<(), TokenTransferError> {
-        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
-            TokenTransferError::InvalidCoin {
-                coin: coin.to_string(),
-            }
-        })?;
+        let token_id = self.get_native_token_id(coin, port_id, channel_id)?;
 
-        //  NOTE: There is no way to make this fail from an honest counterparty
-        //  chain, as this method only fails when the counterparty chain
-        //  produces a malicious IBC transfer `send_packet()`
-        if let Some(token_name) = self
-            .ibc_transfer
-            .minted_token_id_to_name
-            .get(&token_id, *self.working_set.borrow_mut())
-        {
-            return Err(TokenTransferError::Other(format!(
-                "Token with ID '{token_id}' is an IBC-created token and cannot be unescrowed.\
-                Use '{token_name}' as denom for receiving an IBC token from the source chain"
-            )));
-        }
+        let escrow_address = self.obtain_escrow_address(port_id, channel_id);
 
-        // ensure that escrow account has enough balance
-        let escrow_balance: Amount = {
-            let escrow_address = self.obtain_escrow_address(port_id, channel_id);
-
-            let escrow_balance = self
-                .ibc_transfer
-                .bank
-                .get_balance_of(escrow_address, token_id, *self.working_set.borrow_mut())
-                .ok_or(TokenTransferError::Other(format!(
-                    "No escrow account for token {coin}"
-                )))?;
-
-            escrow_balance.into()
-        };
-
-        if coin.amount > escrow_balance {
-            return Err(TokenTransferError::InsufficientFunds {
-                send_attempt: coin.amount.to_string(),
-                available_funds: escrow_balance.to_string(),
-            });
-        }
+        let escrow_balance = self.validate_balance(token_id, escrow_address, coin.amount)?;
 
         Ok(())
     }
@@ -380,24 +371,14 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         account: &Self::AccountId,
         coin: &PrefixedCoin,
     ) -> Result<(), TokenTransferError> {
-        let token_name = coin.denom.to_string();
-
-        // 1. if token ID doesn't exist in `minted_tokens`, then create a new
-        //    token and store in `minted_tokens`
-        let token_id = {
-            let maybe_token_id = self
-                .ibc_transfer
-                .minted_token_name_to_id
-                .get(&token_name, *self.working_set.borrow_mut());
-
-            match maybe_token_id {
-                Some(token_id) => token_id,
-                None => self.create_token(token_name, account.address.clone())?,
-            }
+        // 1. if token ID doesn't exist in `minted_token_name_to_id`, then
+        //    create a new token and store in the maps
+        let token_id = match self.get_ibc_token_id(coin) {
+            Ok(token_id) => token_id,
+            Err(_) => self.create_token(coin.denom.to_string(), account.address.clone())?,
         };
 
         // 2. mint tokens
-
         let amount: sov_bank::Amount = (*coin.amount.as_ref())
             .try_into()
             .map_err(|_| TokenTransferError::InvalidAmount(FromDecStrErr::InvalidLength))?;
@@ -424,19 +405,10 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         coin: &PrefixedCoin,
         _memo: &Memo,
     ) -> Result<(), TokenTransferError> {
-        // The token was created by the IBC module, and the ICS-20
-        // denom was stored in the token name. Hence, we need to use
-        // the token name as denom.
-        let denom = coin.denom.to_string();
-
-        let token_id = {
-            self.ibc_transfer
-                .minted_token_name_to_id
-                .get(&denom, *self.working_set.borrow_mut())
-                .ok_or(TokenTransferError::InvalidCoin {
-                    coin: coin.to_string(),
-                })?
-        };
+        // The token was created by the IBC module, and the ICS-20 denom was
+        // stored in the token name. Hence, we need to use the token name as
+        // denom.
+        let token_id = self.get_ibc_token_id(coin)?;
 
         let amount: sov_bank::Amount = (*coin.amount.as_ref())
             .try_into()
