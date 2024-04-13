@@ -13,13 +13,13 @@ Implemented
 This ADR outlines the implementation of the ICS-20 transfer module within the
 Sovereign SDK system using the `ibc-rs` library.
 
-To integrate the ICS-20 implementation from `ibc-rs` into the Sovereign SDK,
-particularly to implement the consumer traits of `ibc-rs`, we established a
-module struct. This struct's primary role is to provide keys for accessing
-storage to get/set IBC relevant states. We named this struct `IbcTransfer`,
-residing within its own standalone crate called `sov-ibc-transfer`. It is
-annotated with the `ModuleInfo` derive, which registers `IbcTransfer` as a
-module within the Sovereign SDK system.
+we established a module struct to integrate the ICS-20 implementation from
+`ibc-rs` into the Sovereign SDK, particularly to implement the consumer traits
+of `ibc-rs`. This struct's primary role is to provide keys for accessing storage
+to get/set IBC relevant states. We named this struct `IbcTransfer`, residing
+within its own standalone crate called `sov-ibc-transfer`. It is annotated with
+the `ModuleInfo` derive, which registers `IbcTransfer` as a module within the
+Sovereign SDK system.
 
 It's important to note that the `IbcTransfer` module was developed independently
 from `Ibc`. In the context of Sovereign SDK, each struct implementing
@@ -47,16 +47,16 @@ and processing.
 ## Module Structure
 
 In addition to its core functionalities, `IbcTransfer` maintains a record of
-tokens minted on a rollup created by the transfer module. You can see detailed
-of this structure
+tokens minted on a rollup created by the transfer module. You can see details of
+this structure
 [here](https://github.com/informalsystems/sovereign-ibc/blob/4e37dc4bb88624765384d1662549c00e991acc4a/modules/sov-ibc-transfer/src/lib.rs#L20-L50)
 in the `sov-ibc-transfer` crate.
 
 Specifically, `IbcTransfer` manages two essential maps:
 
 - `minted_token_name_to_id`: This map links the token name to its corresponding
-  token ID for tokens created by IBC. It is used during minting and burning
-  processes to check if that the token exists and to obtain the necessary ID for
+  token ID for tokens created by IBC. It is used during the minting and burning
+  processes to check if the token exists and to obtain the necessary ID for
   these operations.
 
 - `minted_token_id_to_name`: This map connects the token ID to its corresponding
@@ -81,9 +81,9 @@ guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
 
 ### Escrowing Tokens - Sender on Rollup with Rollup as Source
 
-1. Verify that the `memo` field does not exceed maximum allowed length to
-   prevent large memos overwhelming the system. We set the maximum memo length
-   to 32768 bytes like the `ibc-go`.
+1. Verify that the `memo` field does not exceed the maximum allowed length to
+   prevent large memos from overwhelming the system. We set the maximum memo
+   length to 32768 bytes like the `ibc-go`.
 2. Identify the token ID by parsing the `denom` field of the receiving
    `MsgTransfer`.
 3. Validate that the token is native and **not** an IBC-created token by
@@ -129,11 +129,11 @@ guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
    - If no,
      [create a new token](https://github.com/informalsystems/sovereign-ibc/blob/4e37dc4bb88624765384d1662549c00e991acc4a/modules/sov-ibc-transfer/src/context.rs#L105)
      with the name set to the `denom`, obtain the token ID, and store the pair
-     of _token name_, _token ID_, and its flip in the the
-     `minted_token_id_to_name` and `minted_token_name_to_id` state maps.
-   - NOTE: when IBC initiates the creation of a new token, the `IbcTransfer`
+     of _token name_, _token ID_, and its flip in the `minted_token_id_to_name`
+     and `minted_token_name_to_id` state maps.
+   - NOTE: When IBC initiates the creation of a new token, the `IbcTransfer`
      address is designated as the authorized minter.
-   - NOTE: In this steps we ensure that the `context` object needed for token
+   - NOTE: In these steps, we ensure that the `context` object needed for token
      creation uses the `ibc_transfer` address as the `sender` by constructing a
      new context object.
 3. Mint tokens to the receiver's address with the specified amount in the
@@ -141,9 +141,9 @@ guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
 
 ### Burning Tokens - Sender on Rollup with Receiver as Source
 
-1. Verify that the `memo` field does not exceed maximum allowed length to
-   prevent large memos overwhelming the system. We set the maximum memo length
-   to 32768 bytes like the `ibc-go`.
+1. Verify that the `memo` field does not exceed the maximum allowed length to
+   prevent large memos from overwhelming the system. We set the maximum memo
+   length to 32768 bytes like the `ibc-go`.
 2. Obtain the `TokenId` using the denom from the `minted_token_name_to_id` map.
    - If the token ID is not found, the transfer is rejected.
 3. Confirm that the sender has a sufficient balance.
@@ -178,8 +178,8 @@ this route:
 That is, we do a round trip of `tokA` starting and ending at `sovA` via `sovB`
 and `sovC`; and then we unwind the round trip.
 
-The following table shows the mappings between Sovereign native token and IBC
-denom trace for each scenario:
+The following table shows the mappings between Sovereign native tokens and IBC
+denom traces for each scenario:
 
 | source rollup | source channel | denom in `MsgTransfer` and denom in ICS20 packet | is target source? | native token on target |  ibc denom trace on target   |
 | :-----------: | :------------: | :----------------------------------------------: | :---------------: | :--------------------: | :--------------------------: |
@@ -190,10 +190,10 @@ denom trace for each scenario:
 |    `sovC`     |     `chCB`     |             `transfer/chCB/tokA_onB`             |        yes        |       `tokA_onB`       |     `transfer/chBA/tokA`     |
 |    `sovB`     |     `chBA`     |               `transfer/chBA/tokA`               |        yes        |         `tokA`         |              -               |
 
-Note that, `MsgTransfer` on Sovereign IBC takes an IBC denom trace when sending
-it back via its originating channel, otherwise, it takes a native token. This
-means that _mint_ and _burn_ methods take an IBC denom trace, while _escrow_ and
-_unescrow_ methods take a native token.
+Note that, `MsgTransfer` on the Sovereign `IBC` module takes an IBC denom trace
+when sending it back via its originating channel, otherwise, it takes a native
+token. This means that _mint_ and _burn_ methods take an IBC denom trace, while
+_escrow_ and _unescrow_ methods take a native token.
 
 |  method  | denom type |    trigger    |                             condition                             |
 | :------: | :--------: | :-----------: | :---------------------------------------------------------------: |
@@ -214,12 +214,12 @@ available:
 - `transfer_mintedTokenId`: Queries the `minted_token_name_to_id` state to
   obtain the token ID for a given token name.
 
-Additionally, worth noting there is a RPC method as `transfer_moduleId` that
+Additionally, worth noting there is an RPC method as `transfer_moduleId` that
 returns the address of the `IbcTransfer` module.
 
 ## References
 
-Here are list of relevant issues and PRs:
+Here are a list of relevant issues and PRs:
 
 - Review `sov-ibc-transfer` implementation and apply fixes
   [#133](https://github.com/informalsystems/sovereign-ibc/pull/133)
