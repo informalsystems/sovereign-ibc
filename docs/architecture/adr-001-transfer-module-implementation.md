@@ -2,7 +2,7 @@
 
 ## Changelog
 
-* 2024-04-10: ADR Drafted
+- 2024-04-10: ADR Drafted
 
 ## Status
 
@@ -54,12 +54,12 @@ in the `sov-ibc-transfer` crate.
 
 Specifically, `IbcTransfer` manages two essential maps:
 
-* `minted_token_name_to_id`: This map links the token name to its corresponding
+- `minted_token_name_to_id`: This map links the token name to its corresponding
   token ID for tokens created by IBC. It is used during minting and burning
   processes to check if that the token exists and to obtain the necessary ID for
   these operations.
 
-* `minted_token_id_to_name`: This map connects the token ID to its corresponding
+- `minted_token_id_to_name`: This map connects the token ID to its corresponding
   token name for tokens created by IBC. It is utilized during escrow and
   un-escrow processes to confirm that the `TokenId` obtained from the `denom` is
   **not** an IBC-created token, indicating it is a native token for escrow and
@@ -71,13 +71,13 @@ scenario is handled in the following section will provide clarity.
 ## Transfer Scenarios
 
 Given the context provided, the `IbcTransfer` module handles four scenarios,
-each comprising validation *(x_validate method)* and execution *(x_execute
-method)* stages.
+each comprising validation _(x_validate method)_ and execution _(x_execute
+method)_ stages.
 
 Before diving into the specifics of each scenario, it is essential to understand
 that the token name on the Sovereign SDK rollups is not guaranteed to be unique,
-and hence when transferring **native tokens**  we must use the token ID (which
-is guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
+and hence when transferring **native tokens** we must use the token ID (which is
+guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
 
 ### Escrowing Tokens - Sender on Rollup with Rollup as Source
 
@@ -88,7 +88,7 @@ is guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
    `MsgTransfer`.
 3. Validate that the token is native and **not** an IBC-created token by
    cross-referencing with the `minted_token_id_to_name` state.
-   * If the token ID is found in the `minted_token_id_to_name` state, check if
+   - If the token ID is found in the `minted_token_id_to_name` state, check if
      the corresponding token name begins with the trace path
      `<given_port_id>/<given_channel_id>/`. If it does, reject the transfer.
 4. Confirm the sender has a sufficient balance.
@@ -108,7 +108,7 @@ is guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
    denom, so `coin.denom` would be `my_token` for unescrowing.
 2. Validate that the token is native and **not** an IBC-created token by
    referencing the `minted_token_id_to_name` state.
-   * If the token ID is found in the `minted_token_id_to_name` state, check if
+   - If the token ID is found in the `minted_token_id_to_name` state, check if
      the corresponding token name begins with the trace path
      `<given_port_id>/<given_channel_id>/`. If it does, reject the transfer.
      This step only fails when the counterparty chain produces a malicious IBC
@@ -125,15 +125,15 @@ is guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
    IDs.
 2. Retrieve the token ID by checking if a token for the given denom has been
    previously created by the IBC module using the `minted_token_name_to_id` map.
-   * If yes, use that `TokenId`.
-   * If no, [create a new
-     token](https://github.com/informalsystems/sovereign-ibc/blob/4e37dc4bb88624765384d1662549c00e991acc4a/modules/sov-ibc-transfer/src/context.rs#L105)
+   - If yes, use that `TokenId`.
+   - If no,
+     [create a new token](https://github.com/informalsystems/sovereign-ibc/blob/4e37dc4bb88624765384d1662549c00e991acc4a/modules/sov-ibc-transfer/src/context.rs#L105)
      with the name set to the `denom`, obtain the token ID, and store the pair
-     of *token name*, *token ID*, and its flip in the the
+     of _token name_, _token ID_, and its flip in the the
      `minted_token_id_to_name` and `minted_token_name_to_id` state maps.
-   * NOTE: when IBC initiates the creation of a new token, the `IbcTransfer`
+   - NOTE: when IBC initiates the creation of a new token, the `IbcTransfer`
      address is designated as the authorized minter.
-   * NOTE: In this steps we ensure that the `context` object needed for token
+   - NOTE: In this steps we ensure that the `context` object needed for token
      creation uses the `ibc_transfer` address as the `sender` by constructing a
      new context object.
 3. Mint tokens to the receiver's address with the specified amount in the
@@ -145,7 +145,7 @@ is guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
    prevent large memos overwhelming the system. We set the maximum memo length
    to 32768 bytes like the `ibc-go`.
 2. Obtain the `TokenId` using the denom from the `minted_token_name_to_id` map.
-   * If the token ID is not found, the transfer is rejected.
+   - If the token ID is not found, the transfer is rejected.
 3. Confirm that the sender has a sufficient balance.
 4. Burn tokens from the sender's address by calling `burn` on the `bank` module.
 
@@ -209,9 +209,9 @@ _unescrow_ methods take a native token.
 To facilitate the interaction with the `IbcTransfer` module, two RPC methods are
 available:
 
-* `transfer_mintedTokenName`: Queries the `minted_token_id_to_name` state to
+- `transfer_mintedTokenName`: Queries the `minted_token_id_to_name` state to
   retrieve the token name for a given token ID.
-* `transfer_mintedTokenId`: Queries the `minted_token_name_to_id` state to
+- `transfer_mintedTokenId`: Queries the `minted_token_name_to_id` state to
   obtain the token ID for a given token name.
 
 Additionally, worth noting there is a RPC method as `transfer_moduleId` that
@@ -221,9 +221,9 @@ returns the address of the `IbcTransfer` module.
 
 Here are list of relevant issues and PRs:
 
-* Review `sov-ibc-transfer` implementation and apply fixes
+- Review `sov-ibc-transfer` implementation and apply fixes
   [#133](https://github.com/informalsystems/sovereign-ibc/pull/133)
-* Token transfer escrow/unescrow + mint/burn tests
+- Token transfer escrow/unescrow + mint/burn tests
   [#47](https://github.com/informalsystems/sovereign-ibc/pull/47)
-* Split `sov-ibc` from `sov-ibc-transfer`
+- Split `sov-ibc` from `sov-ibc-transfer`
   [#14](https://github.com/informalsystems/sovereign-ibc/pull/14)
