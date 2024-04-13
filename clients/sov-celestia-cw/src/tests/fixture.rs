@@ -15,7 +15,7 @@ use sov_celestia_client::types::client_state::test_util::{
 };
 use sov_celestia_client::types::client_state::SovTmClientState;
 use sov_celestia_client::types::consensus_state::SovTmConsensusState;
-use sov_celestia_client::types::sovereign::{AnyCodec, Root, SovereignParamsConfig};
+use sov_celestia_client::types::sovereign::{Root, SovereignParamsConfig};
 use tendermint_testgen::{Generator, Validator};
 
 use crate::entrypoints::SovTmContext;
@@ -23,6 +23,7 @@ use crate::types::{
     CheckForMisbehaviourMsgRaw, ExportMetadataMsg, GenesisMetadata, InstantiateMsg, QueryMsg,
     QueryResponse, StatusMsg, VerifyClientMessageRaw,
 };
+use crate::utils::AnyCodec;
 
 /// Test fixture
 #[derive(Clone, Debug)]
