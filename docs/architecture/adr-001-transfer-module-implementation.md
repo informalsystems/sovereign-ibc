@@ -83,7 +83,7 @@ guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
 
 1. Verify that the `memo` field does not exceed the maximum allowed length to
    prevent large memos from overwhelming the system. We set the maximum memo
-   length to 32768 bytes like the `ibc-go`.
+   length to 32768 (2^15) bytes like the `ibc-go`.
 2. Identify the token ID by parsing the `denom` field of the receiving
    `MsgTransfer`.
 3. Validate that the token is native and **not** an IBC-created token by
@@ -128,9 +128,11 @@ guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
    - If yes, use that `TokenId`.
    - If no,
      [create a new token](https://github.com/informalsystems/sovereign-ibc/blob/4e37dc4bb88624765384d1662549c00e991acc4a/modules/sov-ibc-transfer/src/context.rs#L105)
-     with the name set to the `denom`, obtain the token ID, and store the pair
-     of _token name_, _token ID_, and its flip in the `minted_token_id_to_name`
-     and `minted_token_name_to_id` state maps.
+     with the name set to the `denom`, obtain the token ID, and store the
+     ordered pair of _token name_, _token ID_, and its reverse pair in the
+     `minted_token_name_to_id` and `minted_token_id_to_name` state maps
+     respectively. These two state maps maintain a bijection between _token
+     name_ and _token ID_.
    - NOTE: When IBC initiates the creation of a new token, the `IbcTransfer`
      address is designated as the authorized minter.
    - NOTE: In these steps, we ensure that the `context` object needed for token
@@ -143,13 +145,13 @@ guaranteed to be unique) as the ICS-20 denom to ensure uniqueness.
 
 1. Verify that the `memo` field does not exceed the maximum allowed length to
    prevent large memos from overwhelming the system. We set the maximum memo
-   length to 32768 bytes like the `ibc-go`.
+   length to 32768 (2^15) bytes like the `ibc-go`.
 2. Obtain the `TokenId` using the denom from the `minted_token_name_to_id` map.
    - If the token ID is not found, the transfer is rejected.
 3. Confirm that the sender has a sufficient balance.
 4. Burn tokens from the sender's address by calling `burn` on the `bank` module.
 
-Therefore, As a primary rule, when transferring a native token, the token ID is
+Therefore, as a primary rule, when transferring a native token, the token ID is
 used as the denom. For IBC-created tokens, the regular prefixed denomination is
 utilized as the denom. This may pose a challenge for front-ends to correctly
 identify the token type when crafting the related appropriate transfer message.
