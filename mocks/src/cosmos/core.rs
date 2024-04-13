@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
+use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
 use tendermint::{AppHash, Time};
 use tendermint_testgen::light_block::TmLightBlock;
@@ -91,5 +92,11 @@ impl MockTendermint {
         );
 
         self.blocks.acquire_mutex().push(light_block);
+    }
+
+    pub fn advance_da_block_up_to(&mut self, height: Height) {
+        for _ in 0..height.revision_height() - 1 {
+            self.grow_blocks(vec![0; 32]);
+        }
     }
 }

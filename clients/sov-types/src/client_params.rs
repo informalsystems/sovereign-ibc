@@ -24,10 +24,10 @@ pub struct SovereignClientParams {
     pub code_commitment: CodeCommitment,
     /// The trusting period is the period in which headers can be verified.
     ///
-    /// Note: During each update, the client verifies both the Data Availability
-    /// (DA) header and the aggregated proof simultaneously. When setting this
-    /// period, consider both the DA layer and the rollup, ensuring it's the
-    /// maximum acceptable duration. If the rollup has a shorter trusting
+    /// Note: During each update, the client verifies both the core header of DA
+    /// and the aggregated proof simultaneously. When setting this period,
+    /// consider both the DA layer and the rollup, ensuring it is the maximum
+    /// acceptable duration. If the rollup should have a shorter trusting
     /// window, it dictates when the client expires.
     pub trusting_period: Duration,
     /// The frozen height indicates whether the client is frozen.

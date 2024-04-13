@@ -1,7 +1,6 @@
 //! Contains the implementation of the Sovereign SDK rollup runner.
 use std::time::Duration;
 
-use ibc_core::client::types::Height;
 use sov_consensus_state_tracker::HasConsensusState;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
@@ -29,7 +28,8 @@ where
 {
     /// Initializes the chain with the genesis configuration
     pub fn init(&mut self, setup_cfg: &TestSetupConfig<S, Da>) {
-        self.advance_da_block_up_to(setup_cfg.genesis_da_height);
+        self.da_core
+            .advance_da_block_up_to(setup_cfg.genesis_da_height);
 
         let mut checkpoint = StateCheckpoint::new(self.prover_storage());
 
@@ -46,12 +46,6 @@ where
             .unwrap();
 
         self.commit(working_set.checkpoint().0);
-    }
-
-    pub fn advance_da_block_up_to(&mut self, height: Height) {
-        for _ in 0..height.revision_height() - 1 {
-            self.da_core.grow_blocks(vec![0; 32]);
-        }
     }
 
     /// Begins processing a DA block by triggering the `begin_slot_hook`
