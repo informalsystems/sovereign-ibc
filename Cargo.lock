@@ -569,7 +569,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=5af9823#5af9823070163d20f20a43f0bed68e1aa2c50d56"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c996c41#c996c41b990b544dcdcea6d3cc4f67637105f283"
 dependencies = [
  "basecoin-app",
  "basecoin-modules",
@@ -591,7 +591,7 @@ dependencies = [
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=5af9823#5af9823070163d20f20a43f0bed68e1aa2c50d56"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c996c41#c996c41b990b544dcdcea6d3cc4f67637105f283"
 dependencies = [
  "basecoin-modules",
  "basecoin-store",
@@ -610,7 +610,7 @@ dependencies = [
 [[package]]
 name = "basecoin-modules"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=5af9823#5af9823070163d20f20a43f0bed68e1aa2c50d56"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c996c41#c996c41b990b544dcdcea6d3cc4f67637105f283"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
@@ -637,7 +637,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=5af9823#5af9823070163d20f20a43f0bed68e1aa2c50d56"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c996c41#c996c41b990b544dcdcea6d3cc4f67637105f283"
 dependencies = [
  "displaydoc",
  "ics23",
@@ -2627,6 +2627,7 @@ name = "ibc-client-tendermint-types"
 version = "0.51.0"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67#c579628c672bdb384ae4ef3cb02a7455c9d03386"
 dependencies = [
+ "borsh",
  "displaydoc",
  "ibc-core-client-types",
  "ibc-core-commitment-types",
@@ -2879,6 +2880,7 @@ name = "ibc-core-host-cosmos"
 version = "0.51.0"
 source = "git+https://github.com/cosmos/ibc-rs.git?rev=c579628c67#c579628c672bdb384ae4ef3cb02a7455c9d03386"
 dependencies = [
+ "borsh",
  "derive_more",
  "displaydoc",
  "ibc-app-transfer-types",
