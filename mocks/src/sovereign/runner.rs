@@ -3,7 +3,6 @@ use std::time::Duration;
 
 use ibc_core::client::types::Height;
 use sov_consensus_state_tracker::HasConsensusState;
-use sov_kernels::basic::BasicKernelGenesisConfig;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
     CallResponse, DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, SlotData, Spec,
@@ -16,7 +15,8 @@ use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 use tokio::task::JoinHandle;
 use tracing::{debug, info};
 
-use super::{GenesisConfig, MockRollup};
+use super::MockRollup;
+use crate::configs::TestSetupConfig;
 use crate::utils::{wait_for_block, MutexUtil};
 
 impl<S, Da, P> MockRollup<S, Da, P>
@@ -28,26 +28,21 @@ where
     <P as MerkleProofSpec>::Hasher: Send,
 {
     /// Initializes the chain with the genesis configuration
-    pub fn init(
-        &mut self,
-        genesis_da_height: Height,
-        kernel_genesis_config: &BasicKernelGenesisConfig<S, Da::Spec>,
-        runtime_genesis_config: &GenesisConfig<S>,
-    ) {
-        self.advance_da_block_up_to(genesis_da_height);
+    pub fn init(&mut self, setup_cfg: &TestSetupConfig<S, Da>) {
+        self.advance_da_block_up_to(setup_cfg.genesis_da_height);
 
         let mut checkpoint = StateCheckpoint::new(self.prover_storage());
 
         let mut kernel_working_set = KernelWorkingSet::uninitialized(&mut checkpoint);
 
         self.kernel()
-            .genesis(kernel_genesis_config, &mut kernel_working_set)
+            .genesis(&setup_cfg.kernel_genesis_config(), &mut kernel_working_set)
             .unwrap();
 
         let mut working_set = checkpoint.to_revertable(Default::default());
 
         self.runtime()
-            .genesis(runtime_genesis_config, &mut working_set)
+            .genesis(&setup_cfg.runtime_genesis_config(), &mut working_set)
             .unwrap();
 
         self.commit(working_set.checkpoint().0);
