@@ -6,7 +6,7 @@ license      = { workspace = true }
 rust-version = { workspace = true }
 version      = { workspace = true }
 repository   = { workspace = true }
-keywords     = ["rollup", "sovereign", "ibc", "light-client"]
+keywords     = ["sovereign-sdk", "rollup", "ibc", "light-client"]
 readme       = "./../../README.md"
 description  = """
     Encapsulates essential `sov-celestia` light client data structures and domain types,
@@ -19,9 +19,7 @@ workspace = true
 
 [dependencies]
 # external dependencies
-bytes         = { workspace = true }
-hex           = { version = "0.4.3" }
-jmt           = { workspace = true }
+hex           = { version = "0.4.3", optional = true }
 derive_more   = { workspace = true }
 prost         = { workspace = true }
 schemars      = { workspace = true, optional = true }
@@ -32,8 +30,8 @@ typed-builder = { version = "0.18.0", optional = true }
 ibc-core              = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-client-wasm-types = { workspace = true, features = ["cosmwasm"], optional = true }
+sov-client-types      = { path = "./../../sov-types" }
 sov-ibc-proto         = { path = "./../../../proto" }
-ics23 	              = { version = "0.11", default-features = false }
 
 # DA layer dependencies
 tendermint                       = { workspace = true }
@@ -46,8 +44,6 @@ std = [
 	"ibc-core/std",
 	"ibc-client-tendermint/std",
 	"sov-ibc-proto/std",
-	"ics23/std",
-	"bytes/std",
 	"prost/std",
 	"serde/std",
 	"tendermint/std"
@@ -56,7 +52,6 @@ serde = [
 	"ibc-core/serde",
 	"ibc-client-tendermint/serde",
 	"sov-ibc-proto/serde",
-	"ics23/serde",
 	"dep:serde",
 ]
 json-schema = [
@@ -65,6 +60,8 @@ json-schema = [
 	"dep:schemars",
 ]
 test-util = [
+	"hex",
 	"typed-builder",
+	"sov-client-types/test-util",
 	"ibc-client-wasm-types"
 ]

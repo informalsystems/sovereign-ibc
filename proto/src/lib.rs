@@ -21,6 +21,11 @@ macro_rules! include_proto {
 pub mod ibc {
     pub mod lightclients {
         pub mod sovereign {
+            pub mod v1 {
+                include_proto!("ibc.lightclients.sovereign.v1.rs");
+                #[cfg(feature = "serde")]
+                include_proto!("ibc.lightclients.sovereign.v1.serde.rs");
+            }
             pub mod tendermint {
                 pub mod v1 {
                     include_proto!("ibc.lightclients.sovereign.tendermint.v1.rs");

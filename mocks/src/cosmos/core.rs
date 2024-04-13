@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
+use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
 use tendermint::{AppHash, Time};
 use tendermint_testgen::light_block::TmLightBlock;
@@ -57,6 +58,11 @@ impl MockTendermint {
         self.blocks.acquire_mutex().clone()
     }
 
+    /// Returns the chain's height.
+    pub fn height(&self) -> u64 {
+        self.blocks().len() as u64
+    }
+
     /// Returns the list of the chain's validators.
     pub fn validators(&self) -> Vec<Validator> {
         self.validators.acquire_mutex().clone()
@@ -86,5 +92,11 @@ impl MockTendermint {
         );
 
         self.blocks.acquire_mutex().push(light_block);
+    }
+
+    pub fn advance_da_block_up_to(&mut self, height: Height) {
+        for _ in 0..height.revision_height() - 1 {
+            self.grow_blocks(vec![0; 32]);
+        }
     }
 }

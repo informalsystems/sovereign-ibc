@@ -8,10 +8,10 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{iteration_key, ClientConsensusStatePath, ClientStatePath};
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
-use sov_celestia_client::types::codec::AnyCodec;
 
 use super::Context;
 use crate::types::ClientType;
+use crate::utils::AnyCodec;
 
 impl<'a, C: ClientType<'a>> ClientValidationContext for Context<'a, C> {
     type ClientStateRef = C::ClientState;

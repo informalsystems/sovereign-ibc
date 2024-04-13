@@ -12,18 +12,21 @@ use crate::HasConsensusState;
 
 impl HasConsensusState for CelestiaSpec {
     fn consensus_state(header: &CelestiaHeader) -> HostConsensusState {
-        let timestamp = tendermint::Time::from_unix_timestamp(
-            header.time().secs(),
-            header.time().subsec_nanos(),
-        )
-        .expect("Could not obtain timestamp from header");
+        let sovereign_params = CommitmentRoot::from_bytes(header.hash().as_ref()).into();
 
-        let next_validator_hash = tendermint::Hash::decode_vec(&header.header.next_validators_hash)
-            .expect("Could not decode next validator hash from header");
+        let da_params = TmConsensusParams::new(
+            tendermint::Time::from_unix_timestamp(
+                header.time().secs(),
+                header.time().subsec_nanos(),
+            )
+            .expect("Could not obtain timestamp from header"),
+            tendermint::Hash::decode_vec(&header.header.next_validators_hash)
+                .expect("Could not decode next validator hash from header"),
+        );
 
         SovConsensusState {
-            root: CommitmentRoot::from_bytes(header.hash().as_ref()),
-            da_params: TmConsensusParams::new(timestamp, next_validator_hash),
+            sovereign_params,
+            da_params,
         }
         .into()
     }

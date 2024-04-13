@@ -1,11 +1,8 @@
-mod aggregated_proof;
 mod header;
 mod misbehaviour;
-mod pretty;
 
 use core::fmt::Debug;
 
-pub use aggregated_proof::*;
 pub use header::*;
 use ibc_client_tendermint::types::Header as TmHeader;
 use ibc_core::primitives::prelude::*;
@@ -13,7 +10,7 @@ use ibc_core::primitives::proto::{Any, Protobuf};
 pub use misbehaviour::*;
 use prost::Message;
 
-use crate::error::Error;
+use crate::sovereign::Error;
 
 /// Defines the union ClientMessage type allowing to submit all possible
 /// messages for updating clients or reporting misbehaviour.
@@ -74,79 +71,22 @@ impl From<SovTmClientMessage> for Any {
 #[cfg(feature = "test-util")]
 pub mod test_util {
     use ibc_client_tendermint::types::Header as TmHeader;
-    use ibc_core::client::types::Height;
 
     use super::*;
     use crate::client_state::test_util::HeaderConfig;
-
-    // -------------------------------------------------------------------------
-    // NOTE: Vectors default to 32-byte arrays as empty vectors aren't valid.
-    // -------------------------------------------------------------------------
-
-    #[derive(typed_builder::TypedBuilder, Debug)]
-    #[builder(build_method(into = AggregatedProof))]
-    pub struct AggregatedProofConfig {
-        pub public_data: PublicDataConfig,
-        #[builder(default = vec![0; 32].into())]
-        pub serialized_proof: SerializedAggregatedProof,
-    }
-
-    impl From<AggregatedProofConfig> for AggregatedProof {
-        fn from(config: AggregatedProofConfig) -> Self {
-            Self {
-                public_data: config.public_data.into(),
-                serialized_proof: config.serialized_proof,
-            }
-        }
-    }
-
-    #[derive(typed_builder::TypedBuilder, Debug)]
-    pub struct PublicDataConfig {
-        #[builder(default = vec![vec![0; 32].into()])]
-        pub validity_conditions: Vec<ValidityCondition>,
-        pub initial_slot_number: Height,
-        pub final_slot_number: Height,
-        #[builder(default = Root::from([0; 32]))]
-        pub genesis_state_root: Root,
-        #[builder(default = Root::from([0; 32]))]
-        pub initial_state_root: Root,
-        #[builder(default = Root::from([0; 32]))]
-        pub final_state_root: Root,
-        #[builder(default = vec![0; 32])]
-        pub initial_slot_hash: Vec<u8>,
-        #[builder(default = vec![0; 32])]
-        pub final_slot_hash: Vec<u8>,
-        #[builder(default = CodeCommitment::from(vec![1; 32]))]
-        pub code_commitment: CodeCommitment,
-    }
-
-    impl From<PublicDataConfig> for AggregatedProofPublicData {
-        fn from(config: PublicDataConfig) -> Self {
-            Self {
-                validity_conditions: config.validity_conditions,
-                initial_slot_number: config.initial_slot_number,
-                final_slot_number: config.final_slot_number,
-                genesis_state_root: config.genesis_state_root,
-                initial_state_root: config.initial_state_root,
-                final_state_root: config.final_state_root,
-                initial_slot_hash: config.initial_slot_hash,
-                final_slot_hash: config.final_slot_hash,
-                code_commitment: config.code_commitment,
-            }
-        }
-    }
+    use crate::sovereign::{AggregatedProofConfig, PublicDataConfig, Root};
 
     pub fn dummy_sov_header(
         da_header: TmHeader,
-        initial_slot_number: Height,
-        final_slot_number: Height,
+        initial_slot_number: u64,
+        final_slot_number: u64,
         final_state_root: Root,
     ) -> SovTmHeader {
         let aggregated_proof = AggregatedProofConfig::builder()
             .public_data(
                 PublicDataConfig::builder()
-                    .initial_slot_number(initial_slot_number)
-                    .final_slot_number(final_slot_number)
+                    .initial_slot_number(initial_slot_number.into())
+                    .final_slot_number(final_slot_number.into())
                     .final_state_root(final_state_root)
                     .build(),
             )

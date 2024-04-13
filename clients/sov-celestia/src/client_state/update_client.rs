@@ -1,16 +1,14 @@
 use ibc_client_tendermint::context::TmVerifier;
+use ibc_client_tendermint::types::error::IntoResult;
 use ibc_client_tendermint::types::Header as TmHeader;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
-use ibc_core::host::types::identifiers::{ChainId, ClientId};
+use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
-use sov_celestia_client_types::client_message::{
-    AggregatedProof, CodeCommitment, Root, SovTmHeader,
-};
+use sov_celestia_client_types::client_message::SovTmHeader;
 use sov_celestia_client_types::client_state::SovTmClientState;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
-use sov_celestia_client_types::error::IntoResult;
-use tendermint_light_client_verifier::options::Options;
+use sov_celestia_client_types::sovereign::{AggregatedProof, CodeCommitment, Root};
 use tendermint_light_client_verifier::types::{TrustedBlockState, UntrustedBlockState};
 use tendermint_light_client_verifier::Verifier;
 
@@ -32,14 +30,12 @@ where
     // Checks the sanity of the fields in the header.
     header.validate_basic()?;
 
-    verify_da_header(
-        ctx,
-        &header.da_header,
-        client_id,
-        client_state.chain_id(),
-        &client_state.as_light_client_options()?,
-        verifier,
+    header.validate_da_height_offset(
+        client_state.genesis_da_height(),
+        client_state.latest_height_in_sov(),
     )?;
+
+    verify_da_header(ctx, client_state, &header.da_header, client_id, verifier)?;
 
     verify_aggregated_proof(
         ctx,
@@ -55,16 +51,17 @@ where
 /// trusted state.
 pub fn verify_da_header<V>(
     ctx: &V,
+    client_state: &SovTmClientState,
     da_header: &TmHeader,
     client_id: &ClientId,
-    chain_id: &ChainId,
-    options: &Options,
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
     V: SovValidationContext,
     V::ConsensusStateRef: ConsensusStateConverter,
 {
+    let chain_id = client_state.chain_id();
+
     // The revision number of the `ChainId` tracked by the client state must
     // match the `ChainId` in the DA header.
     da_header
@@ -73,7 +70,7 @@ where
             description: format!("failed to verify chain id: {e}"),
         })?;
 
-    let trusted_height = da_header.trusted_height;
+    let trusted_height = client_state.latest_height_in_sov();
 
     let trusted_state = {
         let trusted_client_cons_state_path = ClientConsensusStatePath::new(
@@ -126,7 +123,12 @@ where
     // main header verification, delegated to the tendermint-light-client crate.
     verifier
         .verifier()
-        .verify_update_header(untrusted_state, trusted_state, options, now)
+        .verify_update_header(
+            untrusted_state,
+            trusted_state,
+            &client_state.as_light_client_options()?,
+            now,
+        )
         .into_result()?;
 
     Ok(())

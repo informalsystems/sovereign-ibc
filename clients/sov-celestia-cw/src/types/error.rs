@@ -1,4 +1,3 @@
-use alloc::string::String;
 use std::error::Error;
 
 use cosmwasm_std::StdError;
@@ -8,7 +7,7 @@ use ibc_core::commitment_types::error::CommitmentError;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::error::IdentifierError;
 use ibc_core::host::types::path::PathError;
-use sov_celestia_client::types::error::Error as SovCelestiaClientError;
+use sov_celestia_client::types::sovereign::Error as SovCelestiaClientError;
 
 #[derive(From, Display, Debug)]
 pub enum ContractError {

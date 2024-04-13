@@ -24,10 +24,16 @@ message AggregatedProofPublicData {
   ];
   // the initial slot number of the rollup from which the proof captures the
   // rollup's transition from the initial state root.
-  uint64 initial_slot_number = 2;
+  SlotNumber initial_slot_number = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"initial_slot_number\""
+  ];
   // the final slot number of the rollup, up to which the proof captures the
   // rollup's transition to the final state root.
-  uint64 final_slot_number = 3;
+  SlotNumber final_slot_number = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"final_slot_number\""
+  ];
   // the genesis state root
   bytes genesis_state_root = 4;
   // the initial state root
@@ -57,6 +63,13 @@ message SerializedAggregatedProof {
 message SerializedValidityCondition {
   // the validity condition
   bytes validity_condition = 1;
+}
+
+// SlotNumber defines the slot number of rollups which is the height in the
+// Sovereign SDK system
+message SlotNumber {
+  // the slot number (rollup height)
+  uint64 slot_number = 1;
 }
 
 // CodeCommitment defines the code commitment of the aggregated proof circuit

@@ -1,7 +1,7 @@
 use ibc_client_tendermint::types::client_type as tm_client_type;
 use ibc_core::host::types::identifiers::Sequence;
 use ibc_core::host::ValidationContext;
-use sov_celestia_client::types::client_state::sov_client_type;
+use sov_celestia_client::types::client_state::sov_celestia_client_type;
 #[cfg(all(feature = "celestia-da", not(feature = "mock-da")))]
 use sov_consensus_state_tracker::CelestiaService;
 use sov_consensus_state_tracker::HasConsensusState;
@@ -101,17 +101,14 @@ where
             self.setup_cfg.da_service.clone(),
         );
 
-        rollup.init(
-            &self.setup_cfg.kernel_genesis_config(),
-            &self.setup_cfg.runtime_genesis_config(),
-        );
+        rollup.init(&self.setup_cfg);
 
         let sov_client_counter = match rollup.query(QueryReq::ClientCounter).await {
             QueryResp::ClientCounter(counter) => counter,
             _ => panic!("Unexpected response"),
         };
 
-        let sov_client_id = sov_client_type().build_client_id(sov_client_counter);
+        let sov_client_id = sov_celestia_client_type().build_client_id(sov_client_counter);
 
         let mut cos_chain = CosmosBuilder::default().build();
 

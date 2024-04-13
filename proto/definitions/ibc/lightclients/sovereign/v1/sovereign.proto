@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package ibc.lightclients.sovereign.v1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+import "ibc/core/client/v1/client.proto";
+import "ibc/core/commitment/v1/commitment.proto";
+import "sovereign/types/v1/types.proto";
+
+//  SovereignClientParams structure encompasses the essential parameters shared
+//  among all Sovereign light clients, regardless of the underlying Data
+//  Availability (DA) layer, to track the client state of the rollup.
+message SovereignClientParams {
+  option (gogoproto.goproto_getters) = false;
+
+  // the genesis state root of the rollup
+  bytes genesis_state_root = 1 [(gogoproto.moretags) = "yaml:\"genesis_state_root\""];
+  // the genesis DA height from which the rollup started
+  ibc.core.client.v1.Height genesis_da_height = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"genesis_da_height\""
+  ];
+  // the code commitment of the aggregated proof circuit
+  .sovereign.types.v1.CodeCommitment code_commitment = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"code_commitment\""
+  ];
+  // the duration of the period since the latest DA Timestamp during which the
+  // submitted headers are valid for upgrade
+  google.protobuf.Duration trusting_period = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true,
+    (gogoproto.moretags) = "yaml:\"trusting_period\""
+  ];
+  // the frozen height when the client was frozen due to the misbehaviour
+  ibc.core.client.v1.Height frozen_height = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"frozen_height\""
+  ];
+  // the latest height (slot number) the client was updated to
+  ibc.core.client.v1.Height latest_height = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"latest_height\""
+  ];
+  // the path at which next upgraded client will be committed. Each element
+  // corresponds to the key for a single CommitmentProof in the chained proof.
+  // NOTE: ClientState must stored under
+  // `{upgradePath}/{upgradeHeight}/clientState` ConsensusState must be stored
+  // under `{upgradepath}/{upgradeHeight}/consensusState`
+  string upgrade_path = 7 [(gogoproto.moretags) = "yaml:\"upgrade_path\""];
+}
+
+// SovereignConsensusParams structure encompasses the essential parameters
+// shared among all Sovereign light clients, regardless of the underlying Data
+// Availability (DA) layer, to track the consensus state of the rollup.
+message SovereignConsensusParams {
+  option (gogoproto.goproto_getters) = false;
+  // the state root of rollup at the ConsensusState height
+  ibc.core.commitment.v1.MerkleRoot root = 1 [(gogoproto.nullable) = false];
+}

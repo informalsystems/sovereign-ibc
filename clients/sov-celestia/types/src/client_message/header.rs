@@ -8,18 +8,17 @@ use ibc_core::primitives::Timestamp;
 use tendermint::chain::Id as TmChainId;
 use tendermint_light_client_verifier::types::TrustedBlockState;
 
-use super::aggregated_proof::AggregatedProof;
 use crate::consensus_state::SovTmConsensusState;
-use crate::error::Error;
-use crate::proto::tendermint::v1::Header as RawSovTmHeader;
+use crate::proto::v1::Header as RawSovTmHeader;
+use crate::sovereign::{AggregatedProof, Error};
 
 pub const SOV_TENDERMINT_HEADER_TYPE_URL: &str = "/ibc.lightclients.sovereign.tendermint.v1.Header";
 
 #[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Header<H: Clone> {
-    pub da_header: H,
     pub aggregated_proof: AggregatedProof,
+    pub da_header: H,
 }
 
 impl<H: Clone> Debug for Header<H> {
@@ -32,8 +31,8 @@ impl<H: Clone + Display> Display for Header<H> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "Header {{ da_header: {}, aggregated_proof: {} }}",
-            &self.da_header, &self.aggregated_proof
+            "Header {{ aggregated_proof: {}, da_header: {} }}",
+            &self.aggregated_proof, &self.da_header
         )
     }
 }
@@ -49,7 +48,8 @@ impl SovTmHeader {
 
     /// Returns the height of the Sovereign-Tendermint header.
     pub fn height(&self) -> Height {
-        self.aggregated_proof.final_slot_number()
+        Height::new(0, self.aggregated_proof.final_slot_number())
+            .expect("zero slot number rejected beforehand")
     }
 
     /// Returns the trusted height of the Sovereign-Tendermint header, which
@@ -58,26 +58,51 @@ impl SovTmHeader {
         self.da_header.trusted_height
     }
 
-    /// Performs sanity checks and validate if the fields of the given header
-    /// are consistent with the trusted fields of this header.
+    /// Performs sanity checks on header to ensure the consistency of fields.
     pub fn validate_basic(&self) -> Result<(), Error> {
         self.da_header.validate_basic().map_err(Error::source)?;
 
         self.aggregated_proof.validate_basic()?;
 
-        if self.height() != self.da_header.height() {
-            return Err(Error::mismatch(format!(
-                "DA header height {} does not match aggregated proof height(slot number) {}",
-                self.da_header.height(),
-                self.height()
-            )))?;
-        };
-
         Ok(())
     }
 
-    /// Transforms the header into a `TrustedBlockState` which can be used for
-    /// the DA header misbehaviour verification.
+    /// Validates the height offset between the rollup and DA layer.
+    pub fn validate_da_height_offset(
+        &self,
+        genesis_da_height: Height,
+        client_latest_height: Height,
+    ) -> Result<(), ClientError> {
+        let expected_da_height = self.height().add(genesis_da_height.revision_height());
+
+        let given_da_height = self.da_header.height();
+
+        if expected_da_height != given_da_height {
+            return Err(ClientError::Other {
+                description: format!(
+                    "The height of the DA header does not match expected height:\
+                    got '{given_da_height}', expected '{expected_da_height}'",
+                ),
+            });
+        }
+
+        let client_height_in_da = client_latest_height.add(genesis_da_height.revision_height());
+
+        let header_trusted_height = self.da_header.trusted_height;
+
+        if client_height_in_da != header_trusted_height {
+            return Err(ClientError::Other {
+                description: format!(
+                    "trusted DA height does not match expected height:\
+                    got {header_trusted_height}, expected {client_height_in_da}",
+                ),
+            });
+        };
+        Ok(())
+    }
+
+    /// Transforms the header into a `TrustedBlockState`, used for the DA header
+    /// misbehaviour verification.
     pub fn as_trusted_da_block_state<'a>(
         &'a self,
         consensus_state: &SovTmConsensusState,

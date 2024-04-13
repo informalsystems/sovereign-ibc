@@ -9,8 +9,8 @@ use ibc_core::host::types::identifiers::ClientType;
 
 pub const SOV_CELESTIA_CLIENT_TYPE: &str = "100-sov-celestia";
 
-/// Returns the `ClientType` for the Sovereign SDK Rollups.
-pub fn sov_client_type() -> ClientType {
+/// Returns the `ClientType` for the `sov-celestia` light client.
+pub fn sov_celestia_client_type() -> ClientType {
     ClientType::from_str(SOV_CELESTIA_CLIENT_TYPE).expect("Never fails because it's valid")
 }
 
@@ -28,8 +28,10 @@ pub mod test_util {
     use tendermint::Hash;
 
     use super::*;
-    use crate::client_message::{CodeCommitment, Root};
     use crate::consensus_state::{SovTmConsensusState, TmConsensusParams};
+    use crate::sovereign::{
+        AggregatedProof, SovereignClientParams, SovereignConsensusParams, SovereignParamsConfig,
+    };
 
     pub fn mock_celestia_chain_id() -> ChainId {
         ChainId::new("mock-celestia-0").expect("Never fails")
@@ -38,52 +40,34 @@ pub mod test_util {
     #[derive(typed_builder::TypedBuilder, Debug)]
     #[builder(build_method(into = SovTmClientState))]
     pub struct ClientStateConfig {
-        #[builder(default = Root::from([0; 32]))]
-        pub genesis_state_root: Root,
-        #[builder(default = CodeCommitment::from(vec![1; 32]))]
-        pub code_commitment: CodeCommitment,
-        pub latest_height: Height,
-        #[builder(default)]
-        pub frozen_height: Option<Height>,
-        #[builder(default)]
-        pub upgrade_path: UpgradePath,
-        pub tendermint_params: TmClientParams,
+        pub sovereign_params: SovereignClientParams,
+        pub tendermint_params: TendermintClientParams,
     }
 
     impl From<ClientStateConfig> for SovTmClientState {
         fn from(config: ClientStateConfig) -> Self {
-            ClientState::new(
-                config.genesis_state_root,
-                config.code_commitment,
-                config.latest_height,
-                config.frozen_height,
-                config.upgrade_path,
-                config.tendermint_params,
-            )
+            ClientState::new(config.sovereign_params, config.tendermint_params)
         }
     }
 
     #[derive(typed_builder::TypedBuilder, Debug)]
-    #[builder(build_method(into = TmClientParams))]
+    #[builder(build_method(into = TendermintClientParams))]
     pub struct TendermintParamsConfig {
         #[builder(default = mock_celestia_chain_id())]
         pub chain_id: ChainId,
         #[builder(default = TrustThreshold::ONE_THIRD)]
         pub trust_level: TrustThreshold,
-        #[builder(default = Duration::from_secs(64000))]
-        pub trusting_period: Duration,
         #[builder(default = Duration::from_secs(128000))]
         pub unbonding_period: Duration,
         #[builder(default = Duration::from_millis(3000))]
         pub max_clock_drift: Duration,
     }
 
-    impl From<TendermintParamsConfig> for TmClientParams {
+    impl From<TendermintParamsConfig> for TendermintClientParams {
         fn from(config: TendermintParamsConfig) -> Self {
             Self::new(
                 config.chain_id,
                 config.trust_level,
-                config.trusting_period,
                 config.unbonding_period,
                 config.max_clock_drift,
             )
@@ -92,7 +76,7 @@ pub mod test_util {
 
     use ibc_client_tendermint::types::Header as TmHeader;
 
-    use crate::client_message::{AggregatedProof, SovTmHeader};
+    use crate::client_message::SovTmHeader;
     #[derive(typed_builder::TypedBuilder, Debug)]
     #[builder(build_method(into = SovTmHeader))]
     pub struct HeaderConfig {
@@ -110,40 +94,49 @@ pub mod test_util {
     }
 
     pub fn dummy_sov_client_state(chain_id: ChainId, latest_height: Height) -> SovTmClientState {
+        let sovereign_params = SovereignParamsConfig::builder()
+            .latest_height(latest_height)
+            .build();
+
         let tendermint_params = TendermintParamsConfig::builder().chain_id(chain_id).build();
 
         ClientStateConfig::builder()
-            .latest_height(latest_height)
+            .sovereign_params(sovereign_params)
             .tendermint_params(tendermint_params)
             .build()
     }
 
     pub fn dummy_sov_consensus_state(timestamp: Timestamp) -> SovTmConsensusState {
-        SovTmConsensusState::new(
-            vec![0].into(),
-            TmConsensusParams::new(
-                timestamp.into_tm_time().expect("Time exists"),
-                // Hash of default validator set
-                Hash::from_str("D6B93922C33AAEBEC9043566CB4B1B48365B1358B67C7DEF986D9EE1861BC143")
-                    .expect("Never fails"),
-            ),
-        )
+        let sovereign_params = SovereignConsensusParams::new(vec![0].into());
+
+        let tendermint_params = TmConsensusParams::new(
+            timestamp.into_tm_time().expect("Time exists"),
+            // Hash of default validator set
+            Hash::from_str("D6B93922C33AAEBEC9043566CB4B1B48365B1358B67C7DEF986D9EE1861BC143")
+                .expect("Never fails"),
+        );
+
+        SovTmConsensusState::new(sovereign_params, tendermint_params)
     }
 
     pub fn dummy_wasm_client_state() -> WasmClientState {
+        let sovereign_params = SovereignParamsConfig::builder()
+            .latest_height(Height::new(0, 1).expect("Never fails"))
+            .build();
+
         let tendermint_params = TendermintParamsConfig::builder()
             .chain_id("test-1".parse().expect("Never fails"))
             .build();
 
         let client_state = ClientStateConfig::builder()
-            .latest_height(Height::new(0, 1).expect("Never fails"))
+            .sovereign_params(sovereign_params)
             .tendermint_params(tendermint_params)
             .build();
 
         WasmClientState {
             data: Any::from(client_state.clone()).value,
             checksum: dummy_checksum(),
-            latest_height: client_state.latest_height,
+            latest_height: client_state.latest_height_in_sov(),
         }
     }
 

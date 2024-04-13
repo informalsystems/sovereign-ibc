@@ -1,5 +1,3 @@
-use alloc::vec::Vec;
-
 use borsh::de::BorshDeserialize;
 use borsh::BorshSerialize;
 use ibc_core::client::context::client_state::ClientStateCommon;
@@ -16,7 +14,7 @@ use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Any;
 use ibc_core::primitives::ToVec;
 use jmt::proof::SparseMerkleProof;
-use sov_celestia_client_types::client_state::{sov_client_type, SovTmClientState};
+use sov_celestia_client_types::client_state::{sov_celestia_client_type, SovTmClientState};
 
 use super::ClientState;
 use crate::consensus_state::ConsensusState;
@@ -34,11 +32,11 @@ impl ClientStateCommon for ClientState {
     }
 
     fn client_type(&self) -> ClientType {
-        sov_client_type()
+        sov_celestia_client_type()
     }
 
     fn latest_height(&self) -> Height {
-        self.0.latest_height()
+        self.0.latest_height_in_sov()
     }
 
     fn validate_proof_height(&self, proof_height: Height) -> Result<(), ClientError> {
@@ -113,13 +111,13 @@ pub fn verify_upgrade_client(
     // Make sure that the consensus type is of Tendermint type `ConsensusState`
     ConsensusState::try_from(upgraded_consensus_state.clone())?;
 
-    let latest_height = client_state.latest_height;
+    let latest_height = client_state.latest_height_in_sov();
 
     let upgraded_tm_client_state_height = upgraded_tm_client_state.latest_height();
 
     // Make sure the latest height of the current client is not greater than the
-    // upgrade height This condition checks both the revision number and the
-    // height
+    // upgrade height. This condition checks both the revision number and the
+    // height.
     if latest_height >= upgraded_tm_client_state_height {
         Err(UpgradeClientError::LowUpgradeHeight {
             upgraded_height: latest_height,
@@ -127,16 +125,16 @@ pub fn verify_upgrade_client(
         })?;
     }
 
-    let upgrade_path_prefix = client_state.upgrade_path.clone().try_into()?;
-
-    let last_height = latest_height.revision_height();
+    let upgrade_path_prefix = client_state.upgrade_path().clone().try_into()?;
 
     // Verify the proof of the upgraded client state
     verify_membership(
         &upgrade_path_prefix,
         &proof_upgrade_client,
         root,
-        Path::UpgradeClient(UpgradeClientPath::UpgradedClientState(last_height)),
+        Path::UpgradeClient(UpgradeClientPath::UpgradedClientState(
+            latest_height.revision_height(),
+        )),
         upgraded_client_state.to_vec(),
     )?;
 
@@ -145,7 +143,9 @@ pub fn verify_upgrade_client(
         &upgrade_path_prefix,
         &proof_upgrade_consensus_state,
         root,
-        Path::UpgradeClient(UpgradeClientPath::UpgradedClientConsensusState(last_height)),
+        Path::UpgradeClient(UpgradeClientPath::UpgradedClientConsensusState(
+            latest_height.revision_height(),
+        )),
         upgraded_consensus_state.to_vec(),
     )?;
 
