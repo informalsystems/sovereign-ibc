@@ -170,10 +170,12 @@ available:
 Additionally, worth noting there is an RPC method as `transfer_moduleId` that
 returns the address of the `IbcTransfer` module.
 
-## Concrete Scenario among Three Sovereign Rollups
+## Example Scenarios among Three Sovereign Rollups
 
-Let's assume that the ICS20 application is deployed on three Sovereign rollups
-`sovA`, `sovB`, and `sovC`; and they are interconnected as shown below:
+Since the translations between _token name_ and _token ID_ became nuanced, we
+will go through a few example scenarios - where the ICS20 application is
+deployed on three Sovereign rollups `sovA`, `sovB`, and `sovC`; and they are
+interconnected as shown below:
 
 ```
           chAB┌────┐chAC
