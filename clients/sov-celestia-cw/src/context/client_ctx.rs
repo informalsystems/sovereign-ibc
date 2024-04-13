@@ -8,7 +8,7 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{iteration_key, ClientConsensusStatePath, ClientStatePath};
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
-use sov_celestia_client::types::codec::AnyCodec;
+use sov_celestia_client::types::sovereign::AnyCodec;
 
 use super::Context;
 use crate::types::ClientType;

@@ -96,16 +96,18 @@ where
     match client_message.type_url.as_str() {
         SOV_TENDERMINT_HEADER_TYPE_URL => {
             let header = SovTmHeader::try_from(client_message)?;
-            check_da_misbehaviour_on_update(ctx, header, client_id, &client_state.latest_height)
-
-            // TODO: Determine if we need any sort of misbehaviour check for the
-            // rollup (aggregated proof) part.
+            check_da_misbehaviour_on_update(
+                ctx,
+                header,
+                client_id,
+                &client_state.latest_height_in_sov(),
+            )
         }
         SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
             let misbehaviour = SovTmMisbehaviour::try_from(client_message)?;
             check_for_misbehaviour_on_misbehavior(
-                &misbehaviour.header1().da_header,
-                &misbehaviour.header2().da_header,
+                &misbehaviour.header_1().da_header,
+                &misbehaviour.header_2().da_header,
             )
 
             // TODO: Determine if we need any sort of misbehaviour check for the
@@ -133,8 +135,8 @@ where
     let latest_consensus_state = {
         match ctx.consensus_state(&ClientConsensusStatePath::new(
             client_id.clone(),
-            client_state.latest_height.revision_number(),
-            client_state.latest_height.revision_height(),
+            client_state.latest_height_in_sov().revision_number(),
+            client_state.latest_height_in_sov().revision_height(),
         )) {
             Ok(cs) => cs.try_into()?,
             // if the client state does not have an associated consensus state for its latest height
@@ -150,7 +152,7 @@ where
     if let Some(elapsed_since_latest_consensus_state) =
         now.duration_since(&latest_consensus_state.timestamp().into())
     {
-        if elapsed_since_latest_consensus_state > client_state.da_params.trusting_period {
+        if elapsed_since_latest_consensus_state > client_state.trusting_period() {
             return Ok(Status::Expired);
         }
     }
@@ -162,7 +164,7 @@ where
 ///
 /// The subject and substitute client states match if all their respective
 /// client state parameters match except for frozen height, latest height,
-/// trusting period, and chain ID.
+/// trusting periods, and chain ID.
 pub fn check_substitute<V>(
     subject_client_state: &SovTmClientState,
     substitute_client_state: Any,
@@ -171,32 +173,17 @@ where
     V: SovValidationContext,
     V::ConsensusStateRef: ConsensusStateConverter,
 {
-    let SovTmClientState {
-        genesis_state_root: subject_genesis_state_root,
-        code_commitment: subject_code_commitment,
-        latest_height: _,
-        frozen_height: _,
-        upgrade_path: subject_upgrade_path,
-        da_params: subject_da_params,
-    } = subject_client_state;
-
     let substitute_client_state = SovTmClientState::try_from(substitute_client_state)?;
 
-    let SovTmClientState {
-        genesis_state_root: substitute_genesis_state_root,
-        code_commitment: substitute_code_commitment,
-        latest_height: _,
-        frozen_height: _,
-        upgrade_path: substitute_upgrade_path,
-        da_params: substitute_da_params,
-    } = substitute_client_state;
+    let sov_params_matches = subject_client_state
+        .sovereign_params
+        .check_on_recovery(&substitute_client_state.sovereign_params);
 
-    (subject_genesis_state_root == &substitute_genesis_state_root
-        && subject_code_commitment == &substitute_code_commitment
-        && subject_upgrade_path == &substitute_upgrade_path
-        && subject_da_params.trust_level == substitute_da_params.trust_level
-        && subject_da_params.max_clock_drift == substitute_da_params.max_clock_drift
-        && subject_da_params.unbonding_period == substitute_da_params.unbonding_period)
+    let da_params_matches = subject_client_state
+        .da_params
+        .check_on_recovery(&substitute_client_state.da_params);
+
+    (sov_params_matches && da_params_matches)
         .then_some(())
         .ok_or(ClientError::ClientRecoveryStateMismatch)
 }

@@ -1,11 +1,8 @@
-use alloc::string::{String, ToString};
-
 use ibc_core::client::types::error::ClientError;
 use ibc_core::handler::types::error::ContextError;
 use ibc_core::host::types::error::IdentifierError;
-use tendermint_light_client_verifier::Verdict;
 
-/// Defines the error type for Sovereign light client.
+/// Defines the error type shared among Sovereign SDK light clients.
 #[derive(Clone, Debug)]
 pub struct Error {
     /// Error code.
@@ -180,23 +177,5 @@ impl From<Error> for ClientError {
 impl From<IdentifierError> for Error {
     fn from(err: IdentifierError) -> Self {
         Self::source(err)
-    }
-}
-
-pub trait IntoResult<T, E> {
-    fn into_result(self) -> Result<T, E>;
-}
-
-impl IntoResult<(), ClientError> for Verdict {
-    fn into_result(self) -> Result<(), ClientError> {
-        match self {
-            Verdict::Success => Ok(()),
-            Verdict::NotEnoughTrust(reason) => Err(ClientError::Other {
-                description: reason.to_string(),
-            }),
-            Verdict::Invalid(detail) => Err(ClientError::Other {
-                description: detail.to_string(),
-            }),
-        }
     }
 }

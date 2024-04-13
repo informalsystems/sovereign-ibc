@@ -5,41 +5,65 @@ use ibc_client_tendermint::types::TrustThreshold;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::Protobuf;
 
-use crate::error::Error;
-use crate::proto::tendermint::v1::TendermintClientParams as RawTmClientParams;
+use crate::proto::v1::TendermintClientParams as RawTmClientParams;
+use crate::sovereign::Error;
 
 /// Defines the Tendermint-specific client state parameters
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct TmClientParams {
+pub struct TendermintClientParams {
     pub chain_id: ChainId,
     pub trust_level: TrustThreshold,
-    pub trusting_period: Duration,
     pub unbonding_period: Duration,
     pub max_clock_drift: Duration,
 }
 
-impl TmClientParams {
+impl TendermintClientParams {
     pub fn new(
         chain_id: ChainId,
         trust_level: TrustThreshold,
-        trusting_period: Duration,
         unbonding_period: Duration,
         max_clock_drift: Duration,
     ) -> Self {
         Self {
             chain_id,
             trust_level,
-            trusting_period,
             unbonding_period,
             max_clock_drift,
         }
     }
+
+    /// Returns `true` if the respective fields of two `TendermintClientParams`
+    /// match for the client recovery process.
+    pub fn check_on_recovery(&self, substitute: &Self) -> bool {
+        self.trust_level == substitute.trust_level
+            && self.unbonding_period == substitute.unbonding_period
+            && self.max_clock_drift == substitute.max_clock_drift
+    }
+
+    /// Updates the `TendermintClientParams` on the client recovery process with
+    /// the given substitute.
+    pub fn update_on_recovery(self, substitute: Self) -> Self {
+        Self {
+            chain_id: substitute.chain_id,
+            ..self
+        }
+    }
+
+    /// Updates the respective fields of the `TendermintClientParams` on the
+    /// client upgrade process with the given upgraded client parameters.
+    pub fn update_on_upgrade(self, upgraded: Self) -> Self {
+        Self {
+            chain_id: upgraded.chain_id,
+            unbonding_period: upgraded.unbonding_period,
+            ..self
+        }
+    }
 }
 
-impl Protobuf<RawTmClientParams> for TmClientParams {}
+impl Protobuf<RawTmClientParams> for TendermintClientParams {}
 
-impl TryFrom<RawTmClientParams> for TmClientParams {
+impl TryFrom<RawTmClientParams> for TendermintClientParams {
     type Error = Error;
 
     fn try_from(raw: RawTmClientParams) -> Result<Self, Self::Error> {
@@ -49,12 +73,6 @@ impl TryFrom<RawTmClientParams> for TmClientParams {
             let fraction = raw.trust_level.ok_or(Error::missing("trust_level"))?;
             TrustThreshold::new(fraction.numerator, fraction.denominator)?
         };
-
-        let trusting_period = raw
-            .trusting_period
-            .ok_or(Error::missing("trusting_period"))?
-            .try_into()
-            .map_err(|_| Error::invalid("trusting_period"))?;
 
         let unbonding_period = raw
             .unbonding_period
@@ -71,22 +89,20 @@ impl TryFrom<RawTmClientParams> for TmClientParams {
         Ok(Self::new(
             chain_id,
             trust_level,
-            trusting_period,
             unbonding_period,
             max_clock_drift,
         ))
     }
 }
 
-impl From<TmClientParams> for RawTmClientParams {
-    fn from(value: TmClientParams) -> Self {
+impl From<TendermintClientParams> for RawTmClientParams {
+    fn from(value: TendermintClientParams) -> Self {
         Self {
             chain_id: value.chain_id.to_string(),
             trust_level: Some(Fraction {
                 numerator: value.trust_level.numerator(),
                 denominator: value.trust_level.denominator(),
             }),
-            trusting_period: Some(value.trusting_period.into()),
             unbonding_period: Some(value.unbonding_period.into()),
             max_clock_drift: Some(value.max_clock_drift.into()),
         }

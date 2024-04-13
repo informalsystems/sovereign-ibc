@@ -1,5 +1,3 @@
-use alloc::vec::Vec;
-
 use ibc_core::client::context::client_state::ClientStateExecution;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
@@ -8,10 +6,11 @@ use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc_core::primitives::prelude::*;
 use ibc_core::primitives::proto::Any;
 use sov_celestia_client_types::client_message::Header;
-use sov_celestia_client_types::client_state::{SovTmClientState, TmClientParams};
+use sov_celestia_client_types::client_state::SovTmClientState;
 use sov_celestia_client_types::consensus_state::{
     ConsensusState as ConsensusStateType, SovTmConsensusState, TmConsensusParams,
 };
+use sov_celestia_client_types::sovereign::SovereignConsensusParams;
 
 use super::ClientState;
 use crate::consensus_state::ConsensusState;
@@ -62,7 +61,7 @@ where
         upgraded_consensus_state: Any,
     ) -> Result<Height, ClientError> {
         update_state_on_upgrade(
-            self.inner(),
+            self.inner().clone(),
             ctx,
             client_id,
             upgraded_client_state,
@@ -101,6 +100,8 @@ where
 
     let sov_consensus_state = SovTmConsensusState::try_from(consensus_state)?;
 
+    let latest_height = client_state.latest_height_in_sov();
+
     ctx.store_client_state(
         ClientStatePath::new(client_id.clone()),
         client_state.clone().into(),
@@ -108,14 +109,14 @@ where
     ctx.store_consensus_state(
         ClientConsensusStatePath::new(
             client_id.clone(),
-            client_state.latest_height().revision_number(),
-            client_state.latest_height().revision_height(),
+            latest_height.revision_number(),
+            latest_height.revision_height(),
         ),
         sov_consensus_state.into(),
     )?;
     ctx.store_update_meta(
         client_id.clone(),
-        client_state.latest_height(),
+        latest_height,
         host_timestamp,
         host_height,
     )?;
@@ -159,13 +160,13 @@ where
         let host_height = SovValidationContext::host_height(ctx)?;
 
         let new_consensus_state = ConsensusStateType::from(header.clone());
-        let new_client_state = client_state.clone().with_header(header.da_header)?;
+        let new_client_state = client_state.clone().with_da_header(header.da_header)?;
 
         ctx.store_consensus_state(
             ClientConsensusStatePath::new(
                 client_id.clone(),
-                new_client_state.latest_height.revision_number(),
-                new_client_state.latest_height.revision_height(),
+                header_height.revision_number(),
+                header_height.revision_height(),
             ),
             new_consensus_state.into(),
         )?;
@@ -206,7 +207,7 @@ where
 }
 
 pub fn update_state_on_upgrade<E>(
-    client_state: &SovTmClientState,
+    client_state: SovTmClientState,
     ctx: &mut E,
     client_id: &ClientId,
     upgraded_client_state: Any,
@@ -218,53 +219,51 @@ where
     E::ConsensusStateRef: ConsensusStateConverter,
 {
     let mut upgraded_client_state = SovTmClientState::try_from(upgraded_client_state)?;
-    let upgraded_tm_cons_state = ConsensusState::try_from(upgraded_consensus_state)?;
+    let upgraded_consensus_state = ConsensusState::try_from(upgraded_consensus_state)?;
 
     upgraded_client_state.zero_custom_fields();
 
-    // Constructs the new client state. All rollup-chosen parameters come from
-    // `upgraded_client_state` except the `genesis_state_root`. All
-    // relayer-chosen parameters come from the current client.
-    let new_da_params = TmClientParams::new(
-        upgraded_client_state.da_params.chain_id,
-        client_state.da_params.trust_level,
-        client_state.da_params.trusting_period,
-        upgraded_client_state.da_params.unbonding_period,
-        client_state.da_params.max_clock_drift,
-    );
+    // Creates new Sovereign client parameters. The `genesis_da_height` and
+    // `genesis_state_root` are considered immutable properties of the client.
+    // Changing them implies creating a client that could potentially be compatible
+    // with other rollups.
+    let new_sovereign_params = client_state
+        .sovereign_params
+        .update_on_upgrade(upgraded_client_state.sovereign_params);
 
-    let new_client_state = SovTmClientState::new(
-        client_state.genesis_state_root.clone(),
-        upgraded_client_state.code_commitment,
-        upgraded_client_state.latest_height,
-        None,
-        upgraded_client_state.upgrade_path,
-        new_da_params,
-    );
+    // Creates new Tendermint client parameters. All chain-chosen parameters
+    // come from committed client, all relayer-chosen parameters come from
+    // current client.
+    let new_tendermint_params = client_state
+        .da_params
+        .update_on_upgrade(upgraded_client_state.da_params);
 
-    // The new consensus state is merely used as a trusted kernel against
-    // which headers on the new chain can be verified. The root is just a
-    // stand-in sentinel value as it cannot be known in advance, thus no
-    // proof verification will pass. The timestamp and the
-    // NextValidatorsHash of the consensus state is the blocktime and
-    // NextValidatorsHash of the last block committed by the old chain. This
-    // will allow the first block of the new chain to be verified against
-    // the last validators of the old chain so long as it is submitted
-    // within the TrustingPeriod of this client.
-    // NOTE: We do not set processed time for this consensus state since
-    // this consensus state should not be used for packet verification as
-    // the root is empty. The next consensus state submitted using update
+    let new_client_state = SovTmClientState::new(new_sovereign_params, new_tendermint_params);
+
+    // The new consensus state is merely used as a trusted kernel against which
+    // headers on the new rollup can be verified. The root is just a stand-in
+    // sentinel value as it cannot be known in advance, thus no proof
+    // verification will pass. The next consensus state submitted using update
     // will be usable for packet-verification.
     let sentinel_root = "sentinel_root".as_bytes().to_vec();
-    let new_consensus_state = SovTmConsensusState::new(
-        sentinel_root.into(),
-        TmConsensusParams {
-            timestamp: upgraded_tm_cons_state.timestamp(),
-            next_validators_hash: upgraded_tm_cons_state.next_validators_hash(),
-        },
-    );
 
-    let latest_height = new_client_state.latest_height;
+    let new_sovereign_consensus_params =
+        SovereignConsensusParams::new(sentinel_root.clone().into());
+
+    // The `timestamp` and the `next_validators_hash` of the consensus state is
+    // the block time and `next_validators_hash` of the last block committed by
+    // the old chain. This will allow the first block of the new chain to be
+    // verified against the last validators of the old chain so long as it is
+    // submitted within the DA `trusting_period` of this client.
+    let new_tm_consensus_params = TmConsensusParams {
+        timestamp: upgraded_consensus_state.timestamp(),
+        next_validators_hash: upgraded_consensus_state.next_validators_hash(),
+    };
+
+    let new_consensus_state =
+        SovTmConsensusState::new(new_sovereign_consensus_params, new_tm_consensus_params);
+
+    let latest_height = new_client_state.latest_height_in_sov();
     let host_timestamp = SovValidationContext::host_timestamp(ctx)?;
     let host_height = SovValidationContext::host_height(ctx)?;
 
@@ -307,22 +306,17 @@ where
 {
     let substitute_client_state = ClientState::try_from(substitute_client_state)?.into_inner();
 
-    let chain_id = substitute_client_state.da_params.chain_id;
-    let trusting_period = substitute_client_state.da_params.trusting_period;
-    let latest_height = substitute_client_state.latest_height;
+    let latest_height = substitute_client_state.latest_height_in_sov();
 
-    let new_client_state = SovTmClientState::new(
-        subject_client_state.genesis_state_root,
-        subject_client_state.code_commitment,
-        latest_height,
-        None,
-        subject_client_state.upgrade_path,
-        TmClientParams {
-            chain_id,
-            trusting_period,
-            ..subject_client_state.da_params
-        },
-    );
+    let new_sovereign_params = subject_client_state
+        .sovereign_params
+        .update_on_recovery(substitute_client_state.sovereign_params);
+
+    let new_da_params = subject_client_state
+        .da_params
+        .update_on_recovery(substitute_client_state.da_params);
+
+    let new_client_state = SovTmClientState::new(new_sovereign_params, new_da_params);
 
     let host_timestamp = E::host_timestamp(ctx)?;
     let host_height = E::host_height(ctx)?;

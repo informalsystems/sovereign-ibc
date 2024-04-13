@@ -147,13 +147,11 @@ impl serde::Serialize for AggregatedProofPublicData {
         if true {
             struct_ser.serialize_field("validityConditions", &self.validity_conditions)?;
         }
-        if true {
-            #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("initialSlotNumber", ::alloc::string::ToString::to_string(&self.initial_slot_number).as_str())?;
+        if let Some(v) = self.initial_slot_number.as_ref() {
+            struct_ser.serialize_field("initialSlotNumber", v)?;
         }
-        if true {
-            #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("finalSlotNumber", ::alloc::string::ToString::to_string(&self.final_slot_number).as_str())?;
+        if let Some(v) = self.final_slot_number.as_ref() {
+            struct_ser.serialize_field("finalSlotNumber", v)?;
         }
         if true {
             #[allow(clippy::needless_borrow)]
@@ -289,17 +287,13 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicData {
                             if initial_slot_number__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("initialSlotNumber"));
                             }
-                            initial_slot_number__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            initial_slot_number__ = map_.next_value()?;
                         }
                         GeneratedField::FinalSlotNumber => {
                             if final_slot_number__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("finalSlotNumber"));
                             }
-                            final_slot_number__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            final_slot_number__ = map_.next_value()?;
                         }
                         GeneratedField::GenesisStateRoot => {
                             if genesis_state_root__.is_some() {
@@ -351,8 +345,8 @@ impl<'de> serde::Deserialize<'de> for AggregatedProofPublicData {
                 }
                 Ok(AggregatedProofPublicData {
                     validity_conditions: validity_conditions__.unwrap_or_default(),
-                    initial_slot_number: initial_slot_number__.unwrap_or_default(),
-                    final_slot_number: final_slot_number__.unwrap_or_default(),
+                    initial_slot_number: initial_slot_number__,
+                    final_slot_number: final_slot_number__,
                     genesis_state_root: genesis_state_root__.unwrap_or_default(),
                     initial_state_root: initial_state_root__.unwrap_or_default(),
                     final_state_root: final_state_root__.unwrap_or_default(),
@@ -648,5 +642,100 @@ impl<'de> serde::Deserialize<'de> for SerializedValidityCondition {
             }
         }
         deserializer.deserialize_struct("sovereign.types.v1.SerializedValidityCondition", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for SlotNumber {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if true {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("sovereign.types.v1.SlotNumber", len)?;
+        if true {
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("slotNumber", ::alloc::string::ToString::to_string(&self.slot_number).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for SlotNumber {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "slot_number",
+            "slotNumber",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            SlotNumber,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> core::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> core::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "slotNumber" | "slot_number" => Ok(GeneratedField::SlotNumber),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = SlotNumber;
+
+            fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                formatter.write_str("struct sovereign.types.v1.SlotNumber")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> core::result::Result<SlotNumber, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut slot_number__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::SlotNumber => {
+                            if slot_number__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("slotNumber"));
+                            }
+                            slot_number__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(SlotNumber {
+                    slot_number: slot_number__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("sovereign.types.v1.SlotNumber", FIELDS, GeneratedVisitor)
     }
 }

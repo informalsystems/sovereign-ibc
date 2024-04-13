@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
+use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 use serde::de::DeserializeOwned;
@@ -32,9 +33,9 @@ pub struct TestSetupConfig<S: Spec, Da: DaService> {
     pub da_chain_id: ChainId,
     /// The da service.
     pub da_service: Da,
-    /// The chain Id of the rollup.
-    #[builder(default = ChainId::new("mock-rollup-0").unwrap())]
-    pub rollup_id: ChainId,
+    #[builder(default = Height::new(0, 3).unwrap())]
+    /// The DA height at which rollup starts.
+    pub genesis_da_height: Height,
     /// The runtime configuration.
     #[builder(default = RollupGenesisConfig::default())]
     pub rollup_genesis_config: RollupGenesisConfig<S>,

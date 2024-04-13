@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::ops::{Add, Sub};
 use std::time::Duration;
 
 use cosmwasm_std::testing::{mock_env, mock_info};
@@ -8,14 +8,14 @@ use ibc_core::client::types::{Height, Status};
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::Timestamp;
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
-use sov_celestia_client::types::client_message::{Root, SovTmHeader};
+use sov_celestia_client::types::client_message::SovTmHeader;
 use sov_celestia_client::types::client_state::test_util::{
     dummy_checksum, dummy_sov_consensus_state, mock_celestia_chain_id, ClientStateConfig,
     TendermintParamsConfig,
 };
 use sov_celestia_client::types::client_state::SovTmClientState;
-use sov_celestia_client::types::codec::AnyCodec;
 use sov_celestia_client::types::consensus_state::SovTmConsensusState;
+use sov_celestia_client::types::sovereign::{AnyCodec, Root, SovereignParamsConfig};
 use tendermint_testgen::{Generator, Validator};
 
 use crate::entrypoints::SovTmContext;
@@ -29,7 +29,8 @@ use crate::types::{
 pub struct Fixture {
     pub chain_id: ChainId,
     pub trusted_timestamp: Timestamp,
-    pub trusted_height: Height,
+    pub genesis_da_height: Height,
+    pub trusted_da_height: Height,
     pub target_height: Height,
     pub validators: Vec<Validator>,
     pub migration_mode: bool,
@@ -43,7 +44,8 @@ impl Default for Fixture {
             // timestamp of the `mock_env()`.
             trusted_timestamp: Timestamp::from_nanoseconds(1_571_797_419_879_305_533)
                 .expect("never fails"),
-            trusted_height: Height::new(0, 5).unwrap(),
+            genesis_da_height: Height::new(0, 3).unwrap(),
+            trusted_da_height: Height::new(0, 5).unwrap(),
             target_height: Height::new(0, 10).unwrap(),
             validators: vec![
                 Validator::new("1").voting_power(40),
@@ -82,14 +84,22 @@ impl Fixture {
     }
 
     pub fn dummy_instantiate_msg(&self) -> InstantiateMsg {
-        // Setting the `trusting_period`` to 1 second allows for a quick client
-        // freeze in the `happy_cw_client_recovery` test
-        let tendermint_params = TendermintParamsConfig::builder()
+        // Setting the `trusting_period` to 1 second allows the quick client
+        // freeze for the `happy_cw_client_recovery` test.
+        let sovereign_params = SovereignParamsConfig::builder()
+            .genesis_da_height(self.genesis_da_height)
             .trusting_period(Duration::from_secs(1))
+            .latest_height(
+                self.trusted_da_height
+                    .sub(self.genesis_da_height.revision_height())
+                    .unwrap(),
+            )
             .build();
 
+        let tendermint_params = TendermintParamsConfig::builder().build();
+
         let sov_client_state = ClientStateConfig::builder()
-            .latest_height(self.trusted_height)
+            .sovereign_params(sovereign_params)
             .tendermint_params(tendermint_params)
             .build();
 
@@ -126,14 +136,18 @@ impl Fixture {
         let tm_header = Header {
             signed_header: light_block.signed_header,
             validator_set: light_block.validators,
-            trusted_height: self.trusted_height,
+            trusted_height: self.trusted_da_height,
             trusted_next_validator_set: light_block.next_validators,
         };
 
         let sov_header = dummy_sov_header(
             tm_header,
-            self.trusted_height,
-            header_height,
+            self.trusted_da_height
+                .revision_height()
+                .sub(self.genesis_da_height.revision_height()),
+            header_height
+                .revision_height()
+                .sub(self.genesis_da_height.revision_height()),
             Root::from([0; 32]),
         );
 
@@ -141,13 +155,16 @@ impl Fixture {
     }
 
     pub fn dummy_client_message(&self) -> Vec<u8> {
-        self.dummy_header(self.target_height)
+        self.dummy_header(
+            self.target_height
+                .add(self.genesis_da_height.revision_height()),
+        )
     }
 
     /// Constructs a dummy misbehaviour message that is one block behind the
     /// trusted height, but with a future timestamp.
     pub fn dummy_misbehaviour_message(&self) -> Vec<u8> {
-        let prev_height = self.trusted_height.decrement().expect("never fails");
+        let prev_height = self.trusted_da_height.decrement().expect("never fails");
 
         self.dummy_header(prev_height)
     }

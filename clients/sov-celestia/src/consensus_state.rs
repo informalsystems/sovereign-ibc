@@ -4,13 +4,13 @@ use ibc_core::commitment_types::commitment::CommitmentRoot;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
-use sov_celestia_client_types::proto::tendermint::v1::ConsensusState as RawConsensusState;
+use sov_celestia_client_types::proto::v1::ConsensusState as RawConsensusState;
 use tendermint::{Hash, Time};
 
 /// Newtype wrapper around the `ConsensusState` type imported from the
-/// `ibc-client-tendermint-types` crate. This wrapper exists so that we can
-/// bypass Rust's orphan rules and implement traits from
-/// `ibc::core::client::context` on the `ConsensusState` type.
+/// `sov-client-celestia-types` crate. This wrapper exists so that we can bypass
+/// Rust's orphan rules and implement traits from `ibc::core::client::context`
+/// on the `ConsensusState` type.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, derive_more::From)]
 pub struct ConsensusState(SovTmConsensusState);
@@ -67,7 +67,7 @@ impl From<ConsensusState> for Any {
 
 impl ConsensusStateTrait for ConsensusState {
     fn root(&self) -> &CommitmentRoot {
-        &self.0.root
+        &self.0.sovereign_params.root
     }
 
     fn timestamp(&self) -> Timestamp {

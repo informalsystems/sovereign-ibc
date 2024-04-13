@@ -1,6 +1,3 @@
-use alloc::string::String;
-use alloc::vec::Vec;
-
 use cosmwasm_schema::cw_serde;
 use ibc_core::client::types::Height;
 

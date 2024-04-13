@@ -1,0 +1,53 @@
+[package]
+name         = "sov-client-types"
+authors      = { workspace = true }
+edition      = { workspace = true }
+license      = { workspace = true }
+rust-version = { workspace = true }
+version      = { workspace = true }
+repository   = { workspace = true }
+keywords     = ["sovereign-sdk", "rollup", "ibc", "light-client"]
+readme       = "./../README.md"
+description  = """
+    Encapsulates essential data structures of Sovereign SDK light clients, shared among all Sovereign SDK rollups,
+	regardless of the underlying Data Availability (DA) layer, designed for universal applicability to facilitate
+	developement and integration across diverse IBC-enabled projects.
+"""
+
+[lints]
+workspace = true
+
+[dependencies]
+# external dependencies
+derive_more   = { workspace = true }
+hex           = { version = "0.4.3" }
+jmt           = { workspace = true }
+prost         = { workspace = true }
+schemars      = { workspace = true, optional = true }
+serde         = { workspace = true, features = ["derive"], optional = true }
+typed-builder = { version = "0.18.0", optional = true }
+
+# ibc dependencies
+ibc-core              = { workspace = true }
+sov-ibc-proto         = { path = "./../../proto" }
+
+[features]
+default = ["std"]
+std = [
+	"ibc-core/std",
+	"sov-ibc-proto/std",
+	"prost/std",
+	"serde/std",
+]
+serde = [
+	"ibc-core/serde",
+	"sov-ibc-proto/serde",
+	"dep:serde",
+]
+json-schema = [
+	"ibc-core/schema",
+	"dep:schemars",
+]
+test-util = [
+	"typed-builder",
+]

@@ -116,32 +116,31 @@ where
     pub fn obtain_ibc_header(&self, target_height: Height, trusted_height: Height) -> SovTmHeader {
         let blocks = self.da_core.blocks();
 
-        let revision_height = target_height.revision_height();
+        let target_revision_height = target_height.revision_height();
 
-        if revision_height as usize > blocks.len() {
+        let height_offset = self.da_core.height() - target_revision_height;
+
+        let da_height = target_revision_height + height_offset;
+
+        if da_height as usize > blocks.len() {
             panic!("block index out of bounds");
         }
 
-        let target_block = blocks[revision_height as usize - 1].clone();
+        let target_block = blocks[da_height as usize - 1].clone();
 
         let header = Header {
             signed_header: target_block.signed_header,
             validator_set: target_block.validators,
-            trusted_height,
+            trusted_height: trusted_height.add(height_offset),
             trusted_next_validator_set: target_block.next_validators,
         };
 
-        let target_state_root = match self.state_root(revision_height - 1) {
+        let target_state_root = match self.state_root(target_revision_height - 1) {
             Some(root) => root.user_hash(),
             None => panic!("state root not found"),
         };
 
-        dummy_sov_header(
-            header,
-            Height::new(0, 1).unwrap(),
-            Height::new(0, revision_height).unwrap(),
-            target_state_root.into(),
-        )
+        dummy_sov_header(header, 1, target_revision_height, target_state_root.into())
     }
 
     /// Returns the balance of a user for a given token

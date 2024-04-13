@@ -15,7 +15,7 @@ use ibc_core::host::types::path::{
 };
 use ibc_core::primitives::proto::{Any, Protobuf};
 use prost::Message;
-use sov_celestia_client::types::codec::AnyCodec;
+use sov_celestia_client::types::sovereign::AnyCodec;
 
 use crate::types::{
     parse_height, ClientType, ContractError, GenesisMetadata, HeightTravel, MigrationPrefix,

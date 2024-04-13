@@ -3,8 +3,8 @@ use tendermint::hash::Algorithm;
 use tendermint::{Hash, Time};
 use tendermint_proto::google::protobuf as tpb;
 
-use crate::error::Error;
-use crate::proto::tendermint::v1::TendermintConsensusParams as RawTmConsensusParams;
+use crate::proto::v1::TendermintConsensusParams as RawTmConsensusParams;
+use crate::sovereign::Error;
 
 /// Defines the Tendermint-specific consensus state parameters
 #[derive(Clone, Debug, PartialEq, Eq)]

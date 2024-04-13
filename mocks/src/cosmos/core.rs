@@ -57,6 +57,11 @@ impl MockTendermint {
         self.blocks.acquire_mutex().clone()
     }
 
+    /// Returns the chain's height.
+    pub fn height(&self) -> u64 {
+        self.blocks().len() as u64
+    }
+
     /// Returns the list of the chain's validators.
     pub fn validators(&self) -> Vec<Validator> {
         self.validators.acquire_mutex().clone()

@@ -23,7 +23,7 @@ where
 {
     misbehaviour.validate_basic()?;
 
-    let header_1 = misbehaviour.header1();
+    let header_1 = misbehaviour.header_1();
     let trusted_consensus_state_1 = {
         let consensus_state_path = ClientConsensusStatePath::new(
             client_id.clone(),
@@ -35,7 +35,7 @@ where
         consensus_state.try_into()?
     };
 
-    let header_2 = misbehaviour.header2();
+    let header_2 = misbehaviour.header_2();
     let trusted_consensus_state_2 = {
         let consensus_state_path = ClientConsensusStatePath::new(
             client_id.clone(),

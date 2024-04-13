@@ -7,24 +7,29 @@ use tendermint::Time;
 
 use super::TmConsensusParams;
 use crate::client_message::SovTmHeader;
-use crate::proto::tendermint::v1::ConsensusState as RawConsensusState;
+use crate::proto::v1::ConsensusState as RawConsensusState;
+use crate::sovereign::{Error, SovereignConsensusParams};
 
 pub const SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL: &str =
     "/ibc.lightclients.sovereign.tendermint.v1.ConsensusState";
 
-/// Defines the Sovereign light client's consensus state
+/// Defines the generic `ConsensusState` type for the Sovereign SDK rollups
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConsensusState<Da> {
-    pub root: CommitmentRoot,
+    pub sovereign_params: SovereignConsensusParams,
     pub da_params: Da,
 }
 
 impl<Da> ConsensusState<Da> {
-    pub fn new(root: CommitmentRoot, da_params: Da) -> Self {
-        Self { root, da_params }
+    pub fn new(sovereign_params: SovereignConsensusParams, da_params: Da) -> Self {
+        Self {
+            sovereign_params,
+            da_params,
+        }
     }
 }
+
 pub type SovTmConsensusState = ConsensusState<TmConsensusParams>;
 
 impl SovTmConsensusState {
@@ -40,33 +45,21 @@ impl TryFrom<RawConsensusState> for SovTmConsensusState {
     type Error = ClientError;
 
     fn try_from(raw: RawConsensusState) -> Result<Self, Self::Error> {
-        let proto_root = raw
-            .root
-            .ok_or(ClientError::Other {
-                description: "missing root".to_string(),
-            })?
-            .hash;
-
-        let da_params = raw
-            .tendermint_params
-            .ok_or(ClientError::Other {
-                description: "missing tendermint params".to_string(),
-            })?
-            .try_into()?;
-
-        Ok(Self {
-            root: proto_root.into(),
-            da_params,
-        })
+        Ok(Self::new(
+            raw.sovereign_params
+                .ok_or(Error::missing("sovereign_params"))?
+                .try_into()?,
+            raw.tendermint_params
+                .ok_or(Error::missing("tendermint_params"))?
+                .try_into()?,
+        ))
     }
 }
 
 impl From<SovTmConsensusState> for RawConsensusState {
     fn from(value: SovTmConsensusState) -> Self {
         RawConsensusState {
-            root: Some(ibc_core::commitment_types::proto::v1::MerkleRoot {
-                hash: value.root.into_vec(),
-            }),
+            sovereign_params: Some(value.sovereign_params.into()),
             tendermint_params: Some(value.da_params.into()),
         }
     }
@@ -107,7 +100,7 @@ impl From<SovTmConsensusState> for Any {
 impl From<tendermint::block::Header> for SovTmConsensusState {
     fn from(header: tendermint::block::Header) -> Self {
         Self {
-            root: CommitmentRoot::from_bytes(header.app_hash.as_ref()),
+            sovereign_params: CommitmentRoot::from_bytes(header.app_hash.as_ref()).into(),
             da_params: TmConsensusParams::new(header.time, header.next_validators_hash),
         }
     }
@@ -117,15 +110,9 @@ impl From<SovTmHeader> for SovTmConsensusState {
     fn from(header: SovTmHeader) -> Self {
         let tm_header = header.da_header.signed_header.header;
 
-        Self {
-            root: CommitmentRoot::from_bytes(
-                header
-                    .aggregated_proof
-                    .public_data
-                    .final_state_root
-                    .as_ref(),
-            ),
-            da_params: TmConsensusParams::new(tm_header.time, tm_header.next_validators_hash),
-        }
+        Self::new(
+            CommitmentRoot::from_bytes(header.aggregated_proof.final_state_root().as_ref()).into(),
+            TmConsensusParams::new(tm_header.time, tm_header.next_validators_hash),
+        )
     }
 }

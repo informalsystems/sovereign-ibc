@@ -1,88 +1,106 @@
 use core::cmp::max;
-use std::str::FromStr;
+use core::time::Duration;
 
 use ibc_client_tendermint::types::{Header as TmHeader, TrustThreshold};
-use ibc_core::client::types::error::{ClientError, UpgradeClientError};
+use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
-use ibc_core::commitment_types::commitment::CommitmentPrefix;
 use ibc_core::host::types::identifiers::ChainId;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::ZERO_DURATION;
 use tendermint_light_client_verifier::options::Options;
 
-use super::TmClientParams;
-use crate::client_message::{CodeCommitment, Root};
-use crate::error::Error;
-use crate::proto::tendermint::v1::ClientState as RawClientState;
+use super::TendermintClientParams;
+use crate::proto::v1::ClientState as RawClientState;
+use crate::sovereign::{CodeCommitment, Error, Root, SovereignClientParams, UpgradePath};
 
 pub const SOV_TENDERMINT_CLIENT_STATE_TYPE_URL: &str =
     "/ibc.lightclients.sovereign.tendermint.v1.ClientState";
 
-/// Contains the core implementation of the Sovereign light client
+/// Defines the `ClientState` type for the Sovereign SDK rollups.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct ClientState<Da> {
-    pub genesis_state_root: Root,
-    pub code_commitment: CodeCommitment,
-    pub latest_height: Height,
-    pub frozen_height: Option<Height>,
-    pub upgrade_path: UpgradePath,
+    pub sovereign_params: SovereignClientParams,
     pub da_params: Da,
 }
 
 impl<Da> ClientState<Da> {
-    pub fn new(
-        genesis_state_root: Root,
-        code_commitment: CodeCommitment,
-        latest_height: Height,
-        frozen_height: Option<Height>,
-        upgrade_path: UpgradePath,
-        da_params: Da,
-    ) -> Self {
+    pub fn new(sovereign_params: SovereignClientParams, da_params: Da) -> Self {
         Self {
-            genesis_state_root,
-            code_commitment,
-            latest_height,
-            frozen_height,
-            upgrade_path,
+            sovereign_params,
             da_params,
         }
     }
 
     pub fn genesis_state_root(&self) -> &Root {
-        &self.genesis_state_root
+        &self.sovereign_params.genesis_state_root
+    }
+
+    pub fn genesis_da_height(&self) -> Height {
+        self.sovereign_params.genesis_da_height
     }
 
     pub fn code_commitment(&self) -> &CodeCommitment {
-        &self.code_commitment
+        &self.sovereign_params.code_commitment
     }
 
-    pub fn latest_height(&self) -> Height {
-        self.latest_height
+    pub fn trusting_period(&self) -> Duration {
+        self.sovereign_params.trusting_period
     }
 
     pub fn is_frozen(&self) -> bool {
-        self.frozen_height.is_some()
+        self.sovereign_params.frozen_height.is_some()
     }
 
     pub fn with_frozen_height(self, h: Height) -> Self {
         Self {
-            frozen_height: Some(h),
+            sovereign_params: SovereignClientParams {
+                frozen_height: Some(h),
+                ..self.sovereign_params
+            },
             ..self
         }
     }
+
+    /// Returns latest height of the client state aligned with the rollup's
+    /// height (slot number).
+    pub fn latest_height_in_sov(&self) -> Height {
+        self.sovereign_params.latest_height
+    }
+
+    /// Returns the latest height of the client state aligned with the DA
+    /// height. This function considers the DA height at which the rollup
+    /// started (`genesis_da_height`).
+    pub fn latest_height_in_da(&self) -> Height {
+        self.latest_height_in_sov()
+            .add(self.genesis_da_height().revision_height())
+    }
+
+    pub fn upgrade_path(&self) -> &UpgradePath {
+        &self.sovereign_params.upgrade_path
+    }
 }
 
-pub type SovTmClientState = ClientState<TmClientParams>;
+pub type SovTmClientState = ClientState<TendermintClientParams>;
 
 impl SovTmClientState {
     pub fn chain_id(&self) -> &ChainId {
         &self.da_params.chain_id
     }
 
-    pub fn with_header(self, header: TmHeader) -> Result<Self, Error> {
+    pub fn with_da_header(self, da_header: TmHeader) -> Result<Self, Error> {
+        let updating_height = da_header
+            .height()
+            .sub(self.genesis_da_height().revision_height())
+            .map_err(Error::source)?;
+
+        let latest_height = max(updating_height, self.latest_height_in_sov());
+
         Ok(Self {
-            latest_height: max(header.height(), self.latest_height),
+            sovereign_params: SovereignClientParams {
+                latest_height,
+                ..self.sovereign_params
+            },
             ..self
         })
     }
@@ -96,15 +114,15 @@ impl SovTmClientState {
                 .trust_level
                 .try_into()
                 .map_err(Error::source)?,
-            trusting_period: self.da_params.trusting_period,
+            trusting_period: self.sovereign_params.trusting_period,
             clock_drift: self.da_params.max_clock_drift,
         })
     }
 
     // Resets custom fields to zero values (used in `update_client`)
     pub fn zero_custom_fields(&mut self) {
-        self.frozen_height = None;
-        self.da_params.trusting_period = ZERO_DURATION;
+        self.sovereign_params.frozen_height = None;
+        self.sovereign_params.trusting_period = ZERO_DURATION;
         self.da_params.trust_level = TrustThreshold::ZERO;
         self.da_params.max_clock_drift = ZERO_DURATION;
     }
@@ -116,44 +134,24 @@ impl TryFrom<RawClientState> for SovTmClientState {
     type Error = ClientError;
 
     fn try_from(raw: RawClientState) -> Result<Self, Self::Error> {
-        let genesis_state_root = raw.genesis_state_root.try_into()?;
-
-        let code_commitment = raw
-            .code_commitment
-            .ok_or(Error::missing("code_commitment"))?
-            .into();
-
-        let latest_height = raw
-            .latest_height
-            .ok_or(Error::missing("latest_height"))?
+        let sovereign_params = raw
+            .sovereign_params
+            .ok_or(Error::missing("sovereign_params"))?
             .try_into()?;
-
-        let upgrade_path = raw.upgrade_path;
 
         let tendermint_params = raw
             .tendermint_params
             .ok_or(Error::missing("tendermint_params"))?
             .try_into()?;
 
-        Ok(Self::new(
-            genesis_state_root,
-            code_commitment,
-            latest_height,
-            raw.frozen_height.map(TryInto::try_into).transpose()?,
-            upgrade_path.try_into()?,
-            tendermint_params,
-        ))
+        Ok(Self::new(sovereign_params, tendermint_params))
     }
 }
 
 impl From<SovTmClientState> for RawClientState {
     fn from(value: SovTmClientState) -> Self {
         Self {
-            genesis_state_root: value.genesis_state_root.into(),
-            code_commitment: Some(value.code_commitment.into()),
-            latest_height: Some(value.latest_height.into()),
-            frozen_height: value.frozen_height.map(|h| h.into()),
-            upgrade_path: value.upgrade_path.0,
+            sovereign_params: Some(value.sovereign_params.into()),
             tendermint_params: Some(value.da_params.into()),
         }
     }
@@ -189,56 +187,5 @@ impl From<SovTmClientState> for Any {
             type_url: SOV_TENDERMINT_CLIENT_STATE_TYPE_URL.to_string(),
             value: Protobuf::<RawClientState>::encode_vec(client_state),
         }
-    }
-}
-
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq)]
-pub struct UpgradePath(String);
-
-impl Default for UpgradePath {
-    fn default() -> Self {
-        Self("sov_ibc/Ibc/".to_string())
-    }
-}
-
-impl UpgradePath {
-    pub fn new(path: String) -> Self {
-        Self(path)
-    }
-
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl TryFrom<String> for UpgradePath {
-    type Error = ClientError;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Self::from_str(&value)
-    }
-}
-
-impl FromStr for UpgradePath {
-    type Err = ClientError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.is_empty() {
-            return Err(UpgradeClientError::Other {
-                reason: "empty upgrade path".into(),
-            })?;
-        }
-
-        Ok(Self(s.to_string()))
-    }
-}
-
-impl TryFrom<UpgradePath> for CommitmentPrefix {
-    type Error = ClientError;
-
-    fn try_from(value: UpgradePath) -> Result<Self, Self::Error> {
-        CommitmentPrefix::try_from(value.0.into_bytes())
-            .map_err(ClientError::InvalidCommitmentProof)
     }
 }

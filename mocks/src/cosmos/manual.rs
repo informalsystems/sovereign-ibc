@@ -23,7 +23,7 @@ use ibc_core::host::types::path::{
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::Timestamp;
 use sov_celestia_client::client_state::ClientState;
-use sov_celestia_client::types::client_state::sov_client_type;
+use sov_celestia_client::types::client_state::sov_celestia_client_type;
 use sov_celestia_client::types::client_state::test_util::{
     dummy_sov_client_state, dummy_sov_consensus_state,
 };
@@ -35,7 +35,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
     pub fn setup_client(&mut self, client_chain_id: &ChainId) -> ClientId {
         let client_counter = self.ibc_ctx().client_counter().unwrap();
 
-        let client_id = sov_client_type().build_client_id(client_counter);
+        let client_id = sov_celestia_client_type().build_client_id(client_counter);
 
         let current_height = self.ibc_ctx().host_height().unwrap();
 

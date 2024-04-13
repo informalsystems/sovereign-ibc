@@ -12,34 +12,9 @@ impl serde::Serialize for ClientState {
         if true {
             len += 1;
         }
-        if true {
-            len += 1;
-        }
-        if true {
-            len += 1;
-        }
-        if true {
-            len += 1;
-        }
-        if true {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("ibc.lightclients.sovereign.tendermint.v1.ClientState", len)?;
-        if true {
-            #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("genesisStateRoot", pbjson::private::base64::encode(&self.genesis_state_root).as_str())?;
-        }
-        if let Some(v) = self.code_commitment.as_ref() {
-            struct_ser.serialize_field("codeCommitment", v)?;
-        }
-        if let Some(v) = self.latest_height.as_ref() {
-            struct_ser.serialize_field("latestHeight", v)?;
-        }
-        if let Some(v) = self.frozen_height.as_ref() {
-            struct_ser.serialize_field("frozenHeight", v)?;
-        }
-        if true {
-            struct_ser.serialize_field("upgradePath", &self.upgrade_path)?;
+        if let Some(v) = self.sovereign_params.as_ref() {
+            struct_ser.serialize_field("sovereignParams", v)?;
         }
         if let Some(v) = self.tendermint_params.as_ref() {
             struct_ser.serialize_field("tendermintParams", v)?;
@@ -54,27 +29,15 @@ impl<'de> serde::Deserialize<'de> for ClientState {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "genesis_state_root",
-            "genesisStateRoot",
-            "code_commitment",
-            "codeCommitment",
-            "latest_height",
-            "latestHeight",
-            "frozen_height",
-            "frozenHeight",
-            "upgrade_path",
-            "upgradePath",
+            "sovereign_params",
+            "sovereignParams",
             "tendermint_params",
             "tendermintParams",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            GenesisStateRoot,
-            CodeCommitment,
-            LatestHeight,
-            FrozenHeight,
-            UpgradePath,
+            SovereignParams,
             TendermintParams,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -97,11 +60,7 @@ impl<'de> serde::Deserialize<'de> for ClientState {
                         E: serde::de::Error,
                     {
                         match value {
-                            "genesisStateRoot" | "genesis_state_root" => Ok(GeneratedField::GenesisStateRoot),
-                            "codeCommitment" | "code_commitment" => Ok(GeneratedField::CodeCommitment),
-                            "latestHeight" | "latest_height" => Ok(GeneratedField::LatestHeight),
-                            "frozenHeight" | "frozen_height" => Ok(GeneratedField::FrozenHeight),
-                            "upgradePath" | "upgrade_path" => Ok(GeneratedField::UpgradePath),
+                            "sovereignParams" | "sovereign_params" => Ok(GeneratedField::SovereignParams),
                             "tendermintParams" | "tendermint_params" => Ok(GeneratedField::TendermintParams),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -122,45 +81,15 @@ impl<'de> serde::Deserialize<'de> for ClientState {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut genesis_state_root__ = None;
-                let mut code_commitment__ = None;
-                let mut latest_height__ = None;
-                let mut frozen_height__ = None;
-                let mut upgrade_path__ = None;
+                let mut sovereign_params__ = None;
                 let mut tendermint_params__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
-                        GeneratedField::GenesisStateRoot => {
-                            if genesis_state_root__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("genesisStateRoot"));
+                        GeneratedField::SovereignParams => {
+                            if sovereign_params__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("sovereignParams"));
                             }
-                            genesis_state_root__ = 
-                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
-                            ;
-                        }
-                        GeneratedField::CodeCommitment => {
-                            if code_commitment__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("codeCommitment"));
-                            }
-                            code_commitment__ = map_.next_value()?;
-                        }
-                        GeneratedField::LatestHeight => {
-                            if latest_height__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("latestHeight"));
-                            }
-                            latest_height__ = map_.next_value()?;
-                        }
-                        GeneratedField::FrozenHeight => {
-                            if frozen_height__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("frozenHeight"));
-                            }
-                            frozen_height__ = map_.next_value()?;
-                        }
-                        GeneratedField::UpgradePath => {
-                            if upgrade_path__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("upgradePath"));
-                            }
-                            upgrade_path__ = Some(map_.next_value()?);
+                            sovereign_params__ = map_.next_value()?;
                         }
                         GeneratedField::TendermintParams => {
                             if tendermint_params__.is_some() {
@@ -171,11 +100,7 @@ impl<'de> serde::Deserialize<'de> for ClientState {
                     }
                 }
                 Ok(ClientState {
-                    genesis_state_root: genesis_state_root__.unwrap_or_default(),
-                    code_commitment: code_commitment__,
-                    latest_height: latest_height__,
-                    frozen_height: frozen_height__,
-                    upgrade_path: upgrade_path__.unwrap_or_default(),
+                    sovereign_params: sovereign_params__,
                     tendermint_params: tendermint_params__,
                 })
             }
@@ -198,8 +123,8 @@ impl serde::Serialize for ConsensusState {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("ibc.lightclients.sovereign.tendermint.v1.ConsensusState", len)?;
-        if let Some(v) = self.root.as_ref() {
-            struct_ser.serialize_field("root", v)?;
+        if let Some(v) = self.sovereign_params.as_ref() {
+            struct_ser.serialize_field("sovereignParams", v)?;
         }
         if let Some(v) = self.tendermint_params.as_ref() {
             struct_ser.serialize_field("tendermintParams", v)?;
@@ -214,14 +139,15 @@ impl<'de> serde::Deserialize<'de> for ConsensusState {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "root",
+            "sovereign_params",
+            "sovereignParams",
             "tendermint_params",
             "tendermintParams",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            Root,
+            SovereignParams,
             TendermintParams,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -244,7 +170,7 @@ impl<'de> serde::Deserialize<'de> for ConsensusState {
                         E: serde::de::Error,
                     {
                         match value {
-                            "root" => Ok(GeneratedField::Root),
+                            "sovereignParams" | "sovereign_params" => Ok(GeneratedField::SovereignParams),
                             "tendermintParams" | "tendermint_params" => Ok(GeneratedField::TendermintParams),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -265,15 +191,15 @@ impl<'de> serde::Deserialize<'de> for ConsensusState {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut root__ = None;
+                let mut sovereign_params__ = None;
                 let mut tendermint_params__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
-                        GeneratedField::Root => {
-                            if root__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("root"));
+                        GeneratedField::SovereignParams => {
+                            if sovereign_params__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("sovereignParams"));
                             }
-                            root__ = map_.next_value()?;
+                            sovereign_params__ = map_.next_value()?;
                         }
                         GeneratedField::TendermintParams => {
                             if tendermint_params__.is_some() {
@@ -284,7 +210,7 @@ impl<'de> serde::Deserialize<'de> for ConsensusState {
                     }
                 }
                 Ok(ConsensusState {
-                    root: root__,
+                    sovereign_params: sovereign_params__,
                     tendermint_params: tendermint_params__,
                 })
             }
@@ -550,18 +476,12 @@ impl serde::Serialize for TendermintClientParams {
         if true {
             len += 1;
         }
-        if true {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("ibc.lightclients.sovereign.tendermint.v1.TendermintClientParams", len)?;
         if true {
             struct_ser.serialize_field("chainId", &self.chain_id)?;
         }
         if let Some(v) = self.trust_level.as_ref() {
             struct_ser.serialize_field("trustLevel", v)?;
-        }
-        if let Some(v) = self.trusting_period.as_ref() {
-            struct_ser.serialize_field("trustingPeriod", v)?;
         }
         if let Some(v) = self.unbonding_period.as_ref() {
             struct_ser.serialize_field("unbondingPeriod", v)?;
@@ -583,8 +503,6 @@ impl<'de> serde::Deserialize<'de> for TendermintClientParams {
             "chainId",
             "trust_level",
             "trustLevel",
-            "trusting_period",
-            "trustingPeriod",
             "unbonding_period",
             "unbondingPeriod",
             "max_clock_drift",
@@ -595,7 +513,6 @@ impl<'de> serde::Deserialize<'de> for TendermintClientParams {
         enum GeneratedField {
             ChainId,
             TrustLevel,
-            TrustingPeriod,
             UnbondingPeriod,
             MaxClockDrift,
         }
@@ -621,7 +538,6 @@ impl<'de> serde::Deserialize<'de> for TendermintClientParams {
                         match value {
                             "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
                             "trustLevel" | "trust_level" => Ok(GeneratedField::TrustLevel),
-                            "trustingPeriod" | "trusting_period" => Ok(GeneratedField::TrustingPeriod),
                             "unbondingPeriod" | "unbonding_period" => Ok(GeneratedField::UnbondingPeriod),
                             "maxClockDrift" | "max_clock_drift" => Ok(GeneratedField::MaxClockDrift),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -645,7 +561,6 @@ impl<'de> serde::Deserialize<'de> for TendermintClientParams {
             {
                 let mut chain_id__ = None;
                 let mut trust_level__ = None;
-                let mut trusting_period__ = None;
                 let mut unbonding_period__ = None;
                 let mut max_clock_drift__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -661,12 +576,6 @@ impl<'de> serde::Deserialize<'de> for TendermintClientParams {
                                 return Err(serde::de::Error::duplicate_field("trustLevel"));
                             }
                             trust_level__ = map_.next_value()?;
-                        }
-                        GeneratedField::TrustingPeriod => {
-                            if trusting_period__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("trustingPeriod"));
-                            }
-                            trusting_period__ = map_.next_value()?;
                         }
                         GeneratedField::UnbondingPeriod => {
                             if unbonding_period__.is_some() {
@@ -685,7 +594,6 @@ impl<'de> serde::Deserialize<'de> for TendermintClientParams {
                 Ok(TendermintClientParams {
                     chain_id: chain_id__.unwrap_or_default(),
                     trust_level: trust_level__,
-                    trusting_period: trusting_period__,
                     unbonding_period: unbonding_period__,
                     max_clock_drift: max_clock_drift__,
                 })

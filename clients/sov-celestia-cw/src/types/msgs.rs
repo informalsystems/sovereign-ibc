@@ -1,6 +1,5 @@
 //! Contains the definition of the messages that can be sent to the CosmWasm contract.
 
-use alloc::vec::Vec;
 use std::str::FromStr;
 
 use cosmwasm_schema::cw_serde;

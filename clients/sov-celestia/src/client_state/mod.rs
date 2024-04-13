@@ -16,7 +16,7 @@ pub use misbehaviour::*;
 use sov_celestia_client_types::client_state::{
     SovTmClientState, SOV_TENDERMINT_CLIENT_STATE_TYPE_URL,
 };
-use sov_celestia_client_types::proto::tendermint::v1::ClientState as RawSovTmClientState;
+use sov_celestia_client_types::proto::v1::ClientState as RawSovTmClientState;
 pub use update_client::*;
 
 /// Newtype wrapper exists so that we can bypass Rust's orphan rules and
