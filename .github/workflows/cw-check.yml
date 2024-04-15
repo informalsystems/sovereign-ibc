@@ -35,5 +35,7 @@ jobs:
       - name: Cache Cargo registry
         uses: Swatinem/rust-cache@v2
       - name: Build sov-celestia CosmWasm contract
-        run: make build-sov-celestia-cw
+        run: |
+          make build-sov-celestia-cw
+          nix build .#sov-celestia-cw
 
