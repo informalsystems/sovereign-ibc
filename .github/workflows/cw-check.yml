@@ -33,7 +33,6 @@ jobs:
         with:
           name: hermes-sdk
           extraPullNames: informal-sovereign
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
