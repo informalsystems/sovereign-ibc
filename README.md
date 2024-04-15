@@ -12,6 +12,10 @@
 
 This repository contains the IBC implementation for the Sovereign SDK chains using `ibc-rs`.
 
+## Requirements
+
+In order to build using `cargo build` please clone this repository with `git clone --recurse-submodules <repo-addr>` or use `git submodule update --init`.
+
 [//]: # (badges)
 [build-image]: https://github.com/informalsystems/sovereign-ibc/workflows/Rust/badge.svg
 [build-link]: https://github.com/informalsystems/sovereign-ibc/actions?query=workflow%3ARust
