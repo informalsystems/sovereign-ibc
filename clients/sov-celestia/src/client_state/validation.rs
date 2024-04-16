@@ -14,6 +14,9 @@ use sov_celestia_client_types::client_message::{
 };
 use sov_celestia_client_types::client_state::SovTmClientState;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
+use tendermint::crypto::default::Sha256 as DefaultSha256;
+use tendermint::crypto::Sha256;
+use tendermint::merkle::MerkleHash;
 
 use super::ClientState;
 use crate::client_state::{check_da_misbehaviour_on_update, verify_header, verify_misbehaviour};
@@ -29,7 +32,7 @@ where
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<(), ClientError> {
-        verify_client_message(
+        verify_client_message::<V, DefaultSha256>(
             self.inner(),
             ctx,
             client_id,
@@ -58,7 +61,7 @@ where
 
 /// Verify the client message as part of the validation process during the
 /// update client flow.
-pub fn verify_client_message<V>(
+pub fn verify_client_message<V, H>(
     client_state: &SovTmClientState,
     ctx: &V,
     client_id: &ClientId,
@@ -68,15 +71,16 @@ pub fn verify_client_message<V>(
 where
     V: ExtClientValidationContext,
     V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    H: MerkleHash + Sha256 + Default,
 {
     match client_message.type_url.as_str() {
         SOV_TENDERMINT_HEADER_TYPE_URL => {
             let header = SovTmHeader::try_from(client_message)?;
-            verify_header(ctx, client_state, &header, client_id, verifier)
+            verify_header::<V, H>(ctx, client_state, &header, client_id, verifier)
         }
         SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
             let misbehaviour = SovTmMisbehaviour::try_from(client_message)?;
-            verify_misbehaviour(ctx, client_state, &misbehaviour, client_id, verifier)
+            verify_misbehaviour::<V, H>(ctx, client_state, &misbehaviour, client_id, verifier)
         }
         _ => Err(ClientError::InvalidUpdateClientMessage),
     }

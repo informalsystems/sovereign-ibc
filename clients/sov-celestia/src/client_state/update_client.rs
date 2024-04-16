@@ -6,17 +6,18 @@ use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
-use sha2::Sha256;
 use sov_celestia_client_types::client_message::SovTmHeader;
 use sov_celestia_client_types::client_state::SovTmClientState;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 use sov_celestia_client_types::sovereign::{AggregatedProof, CodeCommitment, Root};
+use tendermint::crypto::Sha256;
+use tendermint::merkle::MerkleHash;
 use tendermint_light_client_verifier::types::{TrustedBlockState, UntrustedBlockState};
 use tendermint_light_client_verifier::Verifier;
 
 /// Verifies the IBC header type for the Sovereign SDK rollups, which consists
 /// of the DA header and the aggregated proof date validation.
-pub fn verify_header<V>(
+pub fn verify_header<V, H>(
     ctx: &V,
     client_state: &SovTmClientState,
     header: &SovTmHeader,
@@ -26,16 +27,17 @@ pub fn verify_header<V>(
 where
     V: ExtClientValidationContext,
     V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    H: MerkleHash + Sha256 + Default,
 {
     // Checks the sanity of the fields in the header.
-    header.validate_basic()?;
+    header.validate_basic::<H>()?;
 
     header.validate_da_height_offset(
         client_state.genesis_da_height(),
         client_state.latest_height_in_sov(),
     )?;
 
-    verify_da_header(ctx, client_state, &header.da_header, client_id, verifier)?;
+    verify_da_header::<V, H>(ctx, client_state, &header.da_header, client_id, verifier)?;
 
     verify_aggregated_proof(
         ctx,
@@ -49,7 +51,7 @@ where
 
 /// Verifies the DA header type for the Sovereign SDK rollups against the
 /// trusted state.
-pub fn verify_da_header<V>(
+pub fn verify_da_header<V, H>(
     ctx: &V,
     client_state: &SovTmClientState,
     da_header: &TmHeader,
@@ -59,6 +61,7 @@ pub fn verify_da_header<V>(
 where
     V: ExtClientValidationContext,
     V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    H: MerkleHash + Sha256 + Default,
 {
     let chain_id = client_state.chain_id();
 
@@ -82,7 +85,7 @@ where
             .consensus_state(&trusted_client_cons_state_path)?
             .try_into()?;
 
-        da_header.check_trusted_next_validator_set::<Sha256>(
+        da_header.check_trusted_next_validator_set::<H>(
             &trusted_consensus_state.da_params.next_validators_hash,
         )?;
 
