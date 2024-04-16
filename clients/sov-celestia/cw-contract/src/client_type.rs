@@ -1,5 +1,4 @@
-use ibc_core::client::context::client_state::ClientStateExecution;
-use ibc_core::client::context::consensus_state::ConsensusState as ConsensusStateTrait;
+use ibc_client_cw::api::ClientType;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::derive::ConsensusState as ConsensusStateDerive;
 use ibc_core::primitives::proto::Any;
@@ -9,20 +8,11 @@ use sov_celestia_client::types::consensus_state::{
     SovTmConsensusState, SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL,
 };
 
-use crate::context::Context;
-
 pub struct SovTmClient;
 
 impl<'a> ClientType<'a> for SovTmClient {
     type ClientState = ClientState;
     type ConsensusState = AnyConsensusState;
-}
-
-/// Enables the introduction of custom client and consensus state types tailored
-/// for Sovereign light clients.
-pub trait ClientType<'a>: Sized {
-    type ClientState: ClientStateExecution<Context<'a, Self>> + Clone;
-    type ConsensusState: ConsensusStateTrait + Into<Any> + TryFrom<Any, Error = ClientError>;
 }
 
 #[derive(Clone, Debug, ConsensusStateDerive)]

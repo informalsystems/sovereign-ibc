@@ -6,11 +6,11 @@ members = [
     "clients/sov-types",
     "clients/sov-celestia/types",
     "clients/sov-celestia",
-    "clients/sov-celestia-cw",
+    "clients/sov-celestia/cw-contract",
     "modules/sov-ibc-transfer",
     "modules/sov-ibc",
     "modules/sov-consensus-state-tracker",
-    "mocks",
+    # "mocks",
 ]
 
 exclude = [
@@ -72,6 +72,7 @@ ibc-core-client       = { version = "0.51.0", default-features = false }
 ibc-core-host-cosmos  = { version = "0.51.0", default-features = false }
 ibc-client-tendermint = { version = "0.51.0", default-features = false }
 ibc-client-wasm-types = { version = "0.51.0", default-features = false }
+ibc-client-cw         = { version = "0.51.0", default-features = false }
 ibc-app-transfer      = { version = "0.51.0", default-features = false }
 ibc-primitives        = { version = "0.51.0", default-features = false }
 ibc-query             = { version = "0.51.0", default-features = false, features = ["schema"] }

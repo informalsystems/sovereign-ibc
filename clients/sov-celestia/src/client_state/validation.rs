@@ -1,6 +1,7 @@
 use ibc_client_tendermint::client_state::check_for_misbehaviour_on_misbehavior;
-use ibc_client_tendermint::context::{DefaultVerifier, TmVerifier};
+use ibc_client_tendermint::verifier::{DefaultVerifier, TmVerifier};
 use ibc_core::client::context::client_state::ClientStateValidation;
+use ibc_core::client::context::{Convertible, ExtClientValidationContext};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Status;
 use ibc_core::host::types::identifiers::ClientId;
@@ -12,15 +13,15 @@ use sov_celestia_client_types::client_message::{
     SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL,
 };
 use sov_celestia_client_types::client_state::SovTmClientState;
+use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 
 use super::ClientState;
 use crate::client_state::{check_da_misbehaviour_on_update, verify_header, verify_misbehaviour};
-use crate::context::{ConsensusStateConverter, ValidationContext as SovValidationContext};
 
 impl<V> ClientStateValidation<V> for ClientState
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     fn verify_client_message(
         &self,
@@ -65,8 +66,8 @@ pub fn verify_client_message<V>(
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     match client_message.type_url.as_str() {
         SOV_TENDERMINT_HEADER_TYPE_URL => {
@@ -90,8 +91,8 @@ pub fn check_for_misbehaviour<V>(
     client_message: Any,
 ) -> Result<bool, ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     match client_message.type_url.as_str() {
         SOV_TENDERMINT_HEADER_TYPE_URL => {
@@ -125,8 +126,8 @@ pub fn status<V>(
     client_id: &ClientId,
 ) -> Result<Status, ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     if client_state.is_frozen() {
         return Ok(Status::Frozen);
@@ -170,8 +171,8 @@ pub fn check_substitute<V>(
     substitute_client_state: Any,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let substitute_client_state = SovTmClientState::try_from(substitute_client_state)?;
 

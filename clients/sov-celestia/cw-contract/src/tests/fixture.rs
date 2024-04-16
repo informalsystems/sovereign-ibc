@@ -3,6 +3,11 @@ use std::time::Duration;
 
 use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{coins, from_json, Deps, DepsMut, Empty, MessageInfo, StdError};
+use ibc_client_cw::types::{
+    CheckForMisbehaviourMsgRaw, ExportMetadataMsg, GenesisMetadata, InstantiateMsg, QueryMsg,
+    QueryResponse, StatusMsg, VerifyClientMessageRaw,
+};
+use ibc_client_cw::utils::AnyCodec;
 use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::{Height, Status};
 use ibc_core::host::types::identifiers::ChainId;
@@ -19,11 +24,6 @@ use sov_celestia_client::types::sovereign::{Root, SovereignParamsConfig};
 use tendermint_testgen::{Generator, Validator};
 
 use crate::entrypoints::SovTmContext;
-use crate::types::{
-    CheckForMisbehaviourMsgRaw, ExportMetadataMsg, GenesisMetadata, InstantiateMsg, QueryMsg,
-    QueryResponse, StatusMsg, VerifyClientMessageRaw,
-};
-use crate::utils::AnyCodec;
 
 /// Test fixture
 #[derive(Clone, Debug)]

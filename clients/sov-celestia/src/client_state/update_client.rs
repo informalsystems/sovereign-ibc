@@ -1,18 +1,18 @@
-use ibc_client_tendermint::context::TmVerifier;
 use ibc_client_tendermint::types::error::IntoResult;
 use ibc_client_tendermint::types::Header as TmHeader;
+use ibc_client_tendermint::verifier::TmVerifier;
+use ibc_core::client::context::{Convertible, ExtClientValidationContext};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
+use sha2::Sha256;
 use sov_celestia_client_types::client_message::SovTmHeader;
 use sov_celestia_client_types::client_state::SovTmClientState;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 use sov_celestia_client_types::sovereign::{AggregatedProof, CodeCommitment, Root};
 use tendermint_light_client_verifier::types::{TrustedBlockState, UntrustedBlockState};
 use tendermint_light_client_verifier::Verifier;
-
-use crate::context::{ConsensusStateConverter, ValidationContext as SovValidationContext};
 
 /// Verifies the IBC header type for the Sovereign SDK rollups, which consists
 /// of the DA header and the aggregated proof date validation.
@@ -24,8 +24,8 @@ pub fn verify_header<V>(
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     // Checks the sanity of the fields in the header.
     header.validate_basic()?;
@@ -57,8 +57,8 @@ pub fn verify_da_header<V>(
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let chain_id = client_state.chain_id();
 
@@ -82,7 +82,7 @@ where
             .consensus_state(&trusted_client_cons_state_path)?
             .try_into()?;
 
-        da_header.check_trusted_next_validator_set(
+        da_header.check_trusted_next_validator_set::<Sha256>(
             &trusted_consensus_state.da_params.next_validators_hash,
         )?;
 
@@ -141,8 +141,8 @@ pub fn verify_aggregated_proof<V>(
     aggregated_proof: &AggregatedProof,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     if !genesis_state_root.matches(aggregated_proof.genesis_state_root()) {
         return Err(ClientError::Other {
@@ -171,8 +171,8 @@ pub fn check_da_misbehaviour_on_update<V>(
     client_latest_height: &Height,
 ) -> Result<bool, ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let maybe_existing_consensus_state = {
         let path_at_header_height = ClientConsensusStatePath::new(

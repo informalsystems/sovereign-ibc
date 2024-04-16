@@ -1,12 +1,13 @@
 use ibc_client_tendermint::client_state::verify_misbehaviour_header;
-use ibc_client_tendermint::context::TmVerifier;
+use ibc_client_tendermint::verifier::TmVerifier;
+use ibc_core::client::context::{Convertible, ExtClientValidationContext};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
+use sha2::Sha256;
 use sov_celestia_client_types::client_message::SovTmMisbehaviour;
 use sov_celestia_client_types::client_state::SovTmClientState;
-
-use crate::context::{ConsensusStateConverter, ValidationContext as SovValidationContext};
+use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 
 /// Determines whether or not two conflicting headers at the same height would
 /// have convinced the light client.
@@ -18,8 +19,8 @@ pub fn verify_misbehaviour<V>(
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     misbehaviour.validate_basic()?;
 
@@ -49,7 +50,7 @@ where
 
     let current_timestamp = ctx.host_timestamp()?;
 
-    verify_misbehaviour_header(
+    verify_misbehaviour_header::<Sha256>(
         &header_1.da_header,
         client_state.chain_id(),
         &client_state.as_light_client_options()?,
@@ -59,7 +60,7 @@ where
         verifier,
     )?;
 
-    verify_misbehaviour_header(
+    verify_misbehaviour_header::<Sha256>(
         &header_2.da_header,
         client_state.chain_id(),
         &client_state.as_light_client_options()?,

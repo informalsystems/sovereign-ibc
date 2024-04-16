@@ -2,13 +2,13 @@ pub mod fixture;
 
 use cosmwasm_std::from_json;
 use cosmwasm_std::testing::{mock_dependencies, mock_env};
+use ibc_client_cw::types::{
+    ContractResult, MigrateClientStoreMsg, UpdateStateMsgRaw, UpdateStateOnMisbehaviourMsgRaw,
+};
 use ibc_core::client::types::Status;
 
 use crate::entrypoints::{instantiate, sudo};
 use crate::tests::fixture::{dummy_msg_info, Fixture};
-use crate::types::{
-    ContractResult, MigrateClientStoreMsg, UpdateStateMsgRaw, UpdateStateOnMisbehaviourMsgRaw,
-};
 
 #[test]
 fn happy_cw_create_client() {

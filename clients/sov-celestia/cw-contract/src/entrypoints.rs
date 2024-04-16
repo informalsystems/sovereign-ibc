@@ -1,9 +1,10 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult};
+use ibc_client_cw::context::Context;
+use ibc_client_cw::types::{ContractError, InstantiateMsg, QueryMsg, SudoMsg};
 
-use crate::context::Context;
-use crate::types::{ContractError, InstantiateMsg, QueryMsg, SovTmClient, SudoMsg};
+use crate::client_type::SovTmClient;
 
 pub type SovTmContext<'a> = Context<'a, SovTmClient>;
 
