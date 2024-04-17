@@ -1,6 +1,6 @@
 {
     "rust-analyzer.linkedProjects": [
-        "./clients/sov-celestia-cw/Cargo.toml",
+        "./clients/sov-celestia/cw-contract/Cargo.toml",
         "./ci/risc0-check/methods/guest/Cargo.toml",
         "./ci/risc0-check/host/Cargo.toml",
     ],

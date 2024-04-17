@@ -1,4 +1,7 @@
 use ibc_core::client::context::client_state::ClientStateExecution;
+use ibc_core::client::context::{
+    Convertible, ExtClientExecutionContext, ExtClientValidationContext,
+};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ClientId;
@@ -14,16 +17,12 @@ use sov_celestia_client_types::sovereign::SovereignConsensusParams;
 
 use super::ClientState;
 use crate::consensus_state::ConsensusState;
-use crate::context::{
-    ConsensusStateConverter, ExecutionContext as SovExecutionContext,
-    ValidationContext as SovValidationContext,
-};
 
 impl<E> ClientStateExecution<E> for ClientState
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     fn initialise(
         &self,
@@ -91,12 +90,12 @@ pub fn initialise<E>(
     consensus_state: Any,
 ) -> Result<(), ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
-    let host_timestamp = SovValidationContext::host_timestamp(ctx)?;
-    let host_height = SovValidationContext::host_height(ctx)?;
+    let host_timestamp = ExtClientValidationContext::host_timestamp(ctx)?;
+    let host_height = ExtClientValidationContext::host_height(ctx)?;
 
     let sov_consensus_state = SovTmConsensusState::try_from(consensus_state)?;
 
@@ -131,9 +130,9 @@ pub fn update_state<E>(
     header: Any,
 ) -> Result<Vec<Height>, ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let header = Header::try_from(header)?;
     let header_height = header.height();
@@ -156,8 +155,8 @@ where
         //
         // Do nothing.
     } else {
-        let host_timestamp = SovValidationContext::host_timestamp(ctx)?;
-        let host_height = SovValidationContext::host_height(ctx)?;
+        let host_timestamp = ExtClientValidationContext::host_timestamp(ctx)?;
+        let host_height = ExtClientValidationContext::host_height(ctx)?;
 
         let new_consensus_state = ConsensusStateType::from(header.clone());
         let new_client_state = client_state.clone().with_da_header(header.da_header)?;
@@ -192,9 +191,9 @@ pub fn update_state_on_misbehaviour<E>(
     _client_message: Any,
 ) -> Result<(), ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let frozen_client_state = client_state.clone().with_frozen_height(Height::min(0));
 
@@ -214,9 +213,9 @@ pub fn update_state_on_upgrade<E>(
     upgraded_consensus_state: Any,
 ) -> Result<Height, ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let mut upgraded_client_state = SovTmClientState::try_from(upgraded_client_state)?;
     let upgraded_consensus_state = ConsensusState::try_from(upgraded_consensus_state)?;
@@ -264,8 +263,8 @@ where
         SovTmConsensusState::new(new_sovereign_consensus_params, new_tm_consensus_params);
 
     let latest_height = new_client_state.latest_height_in_sov();
-    let host_timestamp = SovValidationContext::host_timestamp(ctx)?;
-    let host_height = SovValidationContext::host_height(ctx)?;
+    let host_timestamp = ExtClientValidationContext::host_timestamp(ctx)?;
+    let host_height = ExtClientValidationContext::host_height(ctx)?;
 
     ctx.store_client_state(
         ClientStatePath::new(client_id.clone()),
@@ -300,9 +299,9 @@ pub fn update_on_recovery<E>(
     substitute_client_state: Any,
 ) -> Result<(), ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let substitute_client_state = ClientState::try_from(substitute_client_state)?.into_inner();
 

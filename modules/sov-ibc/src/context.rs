@@ -179,7 +179,7 @@ where
 
     fn validate_self_client(
         &self,
-        client_state_of_host_on_counterparty: Self::HostClientState,
+        _client_state_of_host_on_counterparty: Self::HostClientState,
     ) -> Result<(), ContextError> {
         // Note: We can optionally implement this.
         // It would require having a Protobuf definition of the chain's `ClientState` that other chains would use.
@@ -327,7 +327,7 @@ where
         Duration::ZERO
     }
 
-    fn validate_message_signer(&self, signer: &Signer) -> Result<(), ContextError> {
+    fn validate_message_signer(&self, _signer: &Signer) -> Result<(), ContextError> {
         Ok(())
     }
 }
@@ -581,7 +581,7 @@ where
 
     /// FIXME: To implement this method there should be a way for IBC module to
     /// insert logs into the transaction receipts upon execution
-    fn log_message(&mut self, message: String) -> Result<(), ContextError> {
+    fn log_message(&mut self, _message: String) -> Result<(), ContextError> {
         Ok(())
     }
 }

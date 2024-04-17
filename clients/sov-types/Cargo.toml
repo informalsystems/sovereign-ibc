@@ -34,20 +34,20 @@ sov-ibc-proto         = { path = "./../../proto" }
 [features]
 default = ["std"]
 std = [
-	"ibc-core/std",
-	"sov-ibc-proto/std",
-	"prost/std",
-	"serde/std",
+    "ibc-core/std",
+    "sov-ibc-proto/std",
+    "prost/std",
+    "serde/std",
 ]
 serde = [
-	"ibc-core/serde",
-	"sov-ibc-proto/serde",
-	"dep:serde",
+    "ibc-core/serde",
+    "sov-ibc-proto/serde",
+    "dep:serde",
 ]
 json-schema = [
-	"ibc-core/schema",
-	"dep:schemars",
+    "ibc-core/schema",
+    "dep:schemars",
 ]
 test-util = [
-	"typed-builder",
+    "typed-builder",
 ]

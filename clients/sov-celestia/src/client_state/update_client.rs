@@ -1,6 +1,6 @@
-use ibc_client_tendermint::context::TmVerifier;
 use ibc_client_tendermint::types::error::IntoResult;
 use ibc_client_tendermint::types::Header as TmHeader;
+use ibc_core::client::context::{Convertible, ExtClientValidationContext};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ClientId;
@@ -9,14 +9,14 @@ use sov_celestia_client_types::client_message::SovTmHeader;
 use sov_celestia_client_types::client_state::SovTmClientState;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 use sov_celestia_client_types::sovereign::{AggregatedProof, CodeCommitment, Root};
+use tendermint::crypto::Sha256;
+use tendermint::merkle::MerkleHash;
 use tendermint_light_client_verifier::types::{TrustedBlockState, UntrustedBlockState};
-use tendermint_light_client_verifier::Verifier;
-
-use crate::context::{ConsensusStateConverter, ValidationContext as SovValidationContext};
+use tendermint_light_client_verifier::Verifier as TmVerifier;
 
 /// Verifies the IBC header type for the Sovereign SDK rollups, which consists
 /// of the DA header and the aggregated proof date validation.
-pub fn verify_header<V>(
+pub fn verify_header<V, H>(
     ctx: &V,
     client_state: &SovTmClientState,
     header: &SovTmHeader,
@@ -24,18 +24,19 @@ pub fn verify_header<V>(
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    H: MerkleHash + Sha256 + Default,
 {
     // Checks the sanity of the fields in the header.
-    header.validate_basic()?;
+    header.validate_basic::<H>()?;
 
     header.validate_da_height_offset(
         client_state.genesis_da_height(),
         client_state.latest_height_in_sov(),
     )?;
 
-    verify_da_header(ctx, client_state, &header.da_header, client_id, verifier)?;
+    verify_da_header::<V, H>(ctx, client_state, &header.da_header, client_id, verifier)?;
 
     verify_aggregated_proof(
         ctx,
@@ -49,7 +50,7 @@ where
 
 /// Verifies the DA header type for the Sovereign SDK rollups against the
 /// trusted state.
-pub fn verify_da_header<V>(
+pub fn verify_da_header<V, H>(
     ctx: &V,
     client_state: &SovTmClientState,
     da_header: &TmHeader,
@@ -57,8 +58,9 @@ pub fn verify_da_header<V>(
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    H: MerkleHash + Sha256 + Default,
 {
     let chain_id = client_state.chain_id();
 
@@ -82,7 +84,7 @@ where
             .consensus_state(&trusted_client_cons_state_path)?
             .try_into()?;
 
-        da_header.check_trusted_next_validator_set(
+        da_header.check_trusted_next_validator_set::<H>(
             &trusted_consensus_state.da_params.next_validators_hash,
         )?;
 
@@ -122,7 +124,6 @@ where
 
     // main header verification, delegated to the tendermint-light-client crate.
     verifier
-        .verifier()
         .verify_update_header(
             untrusted_state,
             trusted_state,
@@ -141,8 +142,8 @@ pub fn verify_aggregated_proof<V>(
     aggregated_proof: &AggregatedProof,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     if !genesis_state_root.matches(aggregated_proof.genesis_state_root()) {
         return Err(ClientError::Other {
@@ -171,8 +172,8 @@ pub fn check_da_misbehaviour_on_update<V>(
     client_latest_height: &Height,
 ) -> Result<bool, ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let maybe_existing_consensus_state = {
         let path_at_header_height = ClientConsensusStatePath::new(

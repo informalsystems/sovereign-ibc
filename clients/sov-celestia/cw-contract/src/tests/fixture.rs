@@ -3,6 +3,11 @@ use std::time::Duration;
 
 use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{coins, from_json, Deps, DepsMut, Empty, MessageInfo, StdError};
+use ibc_client_cw::types::{
+    CheckForMisbehaviourMsgRaw, ExportMetadataMsg, GenesisMetadata, InstantiateMsg, QueryMsg,
+    QueryResponse, StatusMsg, VerifyClientMessageRaw,
+};
+use ibc_client_cw::utils::AnyCodec;
 use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::{Height, Status};
 use ibc_core::host::types::identifiers::ChainId;
@@ -18,12 +23,7 @@ use sov_celestia_client::types::consensus_state::SovTmConsensusState;
 use sov_celestia_client::types::sovereign::{Root, SovereignParamsConfig};
 use tendermint_testgen::{Generator, Validator};
 
-use crate::entrypoints::SovTmContext;
-use crate::types::{
-    CheckForMisbehaviourMsgRaw, ExportMetadataMsg, GenesisMetadata, InstantiateMsg, QueryMsg,
-    QueryResponse, StatusMsg, VerifyClientMessageRaw,
-};
-use crate::utils::AnyCodec;
+use crate::entrypoint::SovTmContext;
 
 /// Test fixture
 #[derive(Clone, Debug)]
@@ -107,8 +107,8 @@ impl Fixture {
         let sov_consensus_state = dummy_sov_consensus_state(self.trusted_timestamp);
 
         InstantiateMsg {
-            client_state: SovTmClientState::encode_thru_any(sov_client_state),
-            consensus_state: SovTmConsensusState::encode_thru_any(sov_consensus_state),
+            client_state: SovTmClientState::encode_to_any_vec(sov_client_state),
+            consensus_state: SovTmConsensusState::encode_to_any_vec(sov_consensus_state),
             checksum: dummy_checksum(),
         }
     }
@@ -152,7 +152,7 @@ impl Fixture {
             Root::from([0; 32]),
         );
 
-        SovTmHeader::encode_thru_any(sov_header)
+        SovTmHeader::encode_to_any_vec(sov_header)
     }
 
     pub fn dummy_client_message(&self) -> Vec<u8> {
