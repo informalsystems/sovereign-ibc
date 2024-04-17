@@ -157,7 +157,7 @@ where
     if let Some(elapsed_since_latest_consensus_state) =
         now.duration_since(&latest_consensus_state.timestamp().into())
     {
-        if elapsed_since_latest_consensus_state > client_state.trusting_period() {
+        if elapsed_since_latest_consensus_state >= client_state.trusting_period() {
             return Ok(Status::Expired);
         }
     }
