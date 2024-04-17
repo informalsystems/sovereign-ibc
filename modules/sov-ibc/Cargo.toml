@@ -47,7 +47,7 @@ sov-state            = { workspace = true }
 sov-rollup-interface = { workspace = true }
 
 [features]
-default = []
+default = ["native"]
 serde = ["serde_json"]
 native = [
     "serde",

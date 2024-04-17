@@ -5,9 +5,9 @@ use std::rc::Rc;
 use ibc_core::client::context::client_state::ClientStateCommon;
 use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::{
-    query_channel_consensus_state, query_channels, query_connection_channels,
-    query_packet_acknowledgements, query_packet_commitments, query_unreceived_acks,
-    query_unreceived_packets, QueryChannelClientStateRequest, QueryChannelClientStateResponse,
+    query_channels, query_connection_channels, query_packet_acknowledgements,
+    query_packet_commitments, query_unreceived_acks, query_unreceived_packets,
+    QueryChannelClientStateRequest, QueryChannelClientStateResponse,
     QueryChannelConsensusStateRequest, QueryChannelConsensusStateResponse, QueryChannelRequest,
     QueryChannelResponse, QueryChannelsRequest, QueryChannelsResponse,
     QueryConnectionChannelsRequest, QueryConnectionChannelsResponse,
@@ -536,7 +536,17 @@ impl<S: Spec> Ibc<S> {
             client_latest_height.revision_height(),
         )?;
 
-        query_channel_consensus_state(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        Ok(QueryChannelConsensusStateResponse::new(
+            consensus_state
+                .ok_or(to_jsonrpsee_error(format!(
+                    "Consensus state not found for channel {:?}",
+                    request.channel_id
+                )))?
+                .into(),
+            connection_end.client_id().clone(),
+            proof,
+            proof_height,
+        ))
     }
 
     #[rpc_method(name = "packetCommitment")]

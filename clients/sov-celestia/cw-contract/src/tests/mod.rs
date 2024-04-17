@@ -77,7 +77,7 @@ fn happy_cw_recovery_client() {
 
     let instantiate_msg = fxt.dummy_instantiate_msg();
 
-    let data = ctx.instantiate(instantiate_msg.clone()).unwrap();
+    ctx.instantiate(instantiate_msg.clone()).unwrap();
 
     // ------------------- Freeze subject client -------------------
 
@@ -87,15 +87,14 @@ fn happy_cw_recovery_client() {
 
     let mut ctx = fxt.ctx_mut(deps.as_mut());
 
-    let data = ctx
-        .sudo(UpdateStateOnMisbehaviourMsgRaw { client_message }.into())
+    ctx.sudo(UpdateStateOnMisbehaviourMsgRaw { client_message }.into())
         .unwrap();
 
     // ------------------- Create substitute client -------------------
 
     ctx.set_substitute_prefix();
 
-    let data = ctx.instantiate(instantiate_msg).unwrap();
+    ctx.instantiate(instantiate_msg).unwrap();
 
     // ------------------- Recover subject client -------------------
 

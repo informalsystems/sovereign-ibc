@@ -54,7 +54,7 @@ where
         status(self.inner(), ctx, client_id)
     }
 
-    fn check_substitute(&self, ctx: &V, substitute_client_state: Any) -> Result<(), ClientError> {
+    fn check_substitute(&self, _ctx: &V, substitute_client_state: Any) -> Result<(), ClientError> {
         check_substitute::<V>(self.inner(), substitute_client_state)
     }
 }

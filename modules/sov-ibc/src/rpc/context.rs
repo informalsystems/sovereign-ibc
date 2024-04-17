@@ -383,7 +383,7 @@ where
         Ok(consensus_states)
     }
 
-    fn consensus_state_heights(&self, client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
+    fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
         let heights: Vec<Height> = self
             .ibc
             .client_update_heights_vec

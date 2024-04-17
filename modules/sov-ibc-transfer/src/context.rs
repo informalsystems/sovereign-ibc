@@ -92,7 +92,7 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
         port_id: &PortId,
         channel_id: &ChannelId,
     ) -> Result<TokenId, TokenTransferError> {
-        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
+        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|_| {
             TokenTransferError::InvalidCoin {
                 coin: coin.to_string(),
             }
@@ -104,7 +104,9 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
             .get(&token_id, *self.working_set.borrow_mut())
         {
             let prefixed_denom = PrefixedDenom::from_str(&token_name).map_err(|e| {
-                TokenTransferError::Other(format!("Failed to parse token name: {token_name}"))
+                TokenTransferError::Other(format!(
+                    "Failed to parse token name: {token_name} with error: {e}"
+                ))
             })?;
 
             let trace_prefix = TracePrefix::new(port_id.clone(), channel_id.clone());
@@ -357,7 +359,7 @@ where
 
         let escrow_address = self.obtain_escrow_address(port_id, channel_id);
 
-        let escrow_balance = self.validate_balance(token_id, escrow_address, coin.amount)?;
+        self.validate_balance(token_id, escrow_address, coin.amount)?;
 
         Ok(())
     }
@@ -439,7 +441,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         // The token name on the Sovereign SDK chains is not guaranteed to be
         // unique, and hence we must use the token ID (which is guaranteed to be
         // unique) as the ICS-20 denom to ensure uniqueness.
-        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
+        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|_| {
             TokenTransferError::InvalidCoin {
                 coin: coin.to_string(),
             }
@@ -468,7 +470,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         channel_id: &ChannelId,
         coin: &PrefixedCoin,
     ) -> Result<(), TokenTransferError> {
-        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|e| {
+        let token_id = TokenId::from_str(&coin.denom.to_string()).map_err(|_| {
             TokenTransferError::InvalidCoin {
                 coin: coin.to_string(),
             }

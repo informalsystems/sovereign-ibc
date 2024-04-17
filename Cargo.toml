@@ -33,7 +33,7 @@ dead_code                     = "deny"
 rust_2018_idioms              = "deny"
 trivial_casts                 = "deny"
 unused_import_braces          = "deny"
-unused_variables              = "allow"
+unused_variables              = "deny"
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call    = "deny"
