@@ -1,3 +1,5 @@
+use core::time::Duration;
+
 use ibc_core::client::context::client_state::ClientStateExecution;
 use ibc_core::client::context::{
     Convertible, ExtClientExecutionContext, ExtClientValidationContext,
@@ -137,7 +139,7 @@ where
     let header = Header::try_from(header)?;
     let header_height = header.height();
 
-    // self.prune_oldest_consensus_state(ctx, client_id)?;
+    prune_oldest_consensus_state(ctx, client_id, client_state.trusting_period())?;
 
     let maybe_existing_consensus_state = {
         let path_at_header_height = ClientConsensusStatePath::new(
@@ -331,6 +333,57 @@ where
         host_timestamp,
         host_height,
     )?;
+
+    Ok(())
+}
+
+/// Removes consensus states from the client store whose timestamps
+/// are less than or equal to the host timestamp. This ensures that
+/// the client store does not amass a buildup of stale consensus states.
+pub fn prune_oldest_consensus_state<E>(
+    ctx: &mut E,
+    client_id: &ClientId,
+    trusting_period: Duration,
+) -> Result<(), ClientError>
+where
+    E: ExtClientExecutionContext,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+{
+    let mut heights = ctx.consensus_state_heights(client_id)?;
+
+    heights.sort();
+
+    for height in heights {
+        let client_consensus_state_path = ClientConsensusStatePath::new(
+            client_id.clone(),
+            height.revision_number(),
+            height.revision_height(),
+        );
+        let consensus_state = ctx.consensus_state(&client_consensus_state_path)?;
+        let sov_consensus_state = consensus_state.try_into()?;
+
+        let host_timestamp =
+            ctx.host_timestamp()?
+                .into_tm_time()
+                .ok_or_else(|| ClientError::Other {
+                    description: String::from("host timestamp is not a valid TM timestamp"),
+                })?;
+
+        let sov_consensus_state_timestamp = sov_consensus_state.timestamp();
+        let sov_consensus_state_expiry = (sov_consensus_state_timestamp + trusting_period)
+            .map_err(|_| ClientError::Other {
+                description: String::from(
+                    "Timestamp overflow error occurred while attempting to parse TmConsensusState",
+                ),
+            })?;
+
+        if sov_consensus_state_expiry > host_timestamp {
+            break;
+        }
+
+        ctx.delete_consensus_state(client_consensus_state_path)?;
+        ctx.delete_update_meta(client_id.clone(), height)?;
+    }
 
     Ok(())
 }
