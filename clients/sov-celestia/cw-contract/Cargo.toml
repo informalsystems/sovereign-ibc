@@ -9,7 +9,7 @@ version 	 = { workspace = true }
 keywords     = ["sovereign-sdk", "rollup", "ibc", "light-client", "CosmWasm"]
 readme       = "./../../README.md"
 description  = """
-    Contains the CosmWasm contract implementation for the `sov-celesita` light client.
+    Contains the CosmWasm contract implementation for the `sov-celestia` light client.
 """
 
 [lints]
@@ -33,8 +33,6 @@ cosmwasm-vm           = "1.5.2"
 ibc-client-tendermint = { workspace = true }
 sov-celestia-client   = { path = "./../", default-features = false, features = ["test-util"] }
 tendermint-testgen    = { workspace = true }
-test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }
-tracing-subscriber    = { version = "0.3", default-features = false, features = ["env-filter", "fmt"] }
 
 [features]
 default = ["std"]
@@ -43,5 +41,4 @@ std = [
 	"ibc-client-tendermint/std",
 	"sov-celestia-client/std",
 ]
-# use library feature to disable entry points
-library = []
+

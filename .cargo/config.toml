@@ -18,7 +18,7 @@ ibc-primitives                  = { git = "https://github.com/cosmos/ibc-rs.git"
 ibc-query                       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "293de1546f" }
 ibc-testkit                     = { git = "https://github.com/cosmos/ibc-rs.git", rev = "293de1546f" }
 
-basecoin                        = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "c70dc2e" }
+basecoin                        = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "ea1abe3" }
 jmt                             = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 sov-modules-api                 = { path = "vendor/sovereign-sdk/module-system/sov-modules-api" }

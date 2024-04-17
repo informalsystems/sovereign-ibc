@@ -7,7 +7,7 @@ use ibc_client_cw::types::{
 };
 use ibc_core::client::types::Status;
 
-use crate::entrypoints::{instantiate, sudo};
+use crate::entrypoint::{instantiate, sudo};
 use crate::tests::fixture::{dummy_msg_info, Fixture};
 
 #[test]

@@ -569,7 +569,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c70dc2e#c70dc2eb48cb82762185f6e1cf4615f53d5e3748"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=ea1abe3#ea1abe34e31d9f6dd4c54a7f60912c31332a3e48"
 dependencies = [
  "basecoin-app",
  "basecoin-modules",
@@ -591,7 +591,7 @@ dependencies = [
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c70dc2e#c70dc2eb48cb82762185f6e1cf4615f53d5e3748"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=ea1abe3#ea1abe34e31d9f6dd4c54a7f60912c31332a3e48"
 dependencies = [
  "basecoin-modules",
  "basecoin-store",
@@ -610,7 +610,7 @@ dependencies = [
 [[package]]
 name = "basecoin-modules"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c70dc2e#c70dc2eb48cb82762185f6e1cf4615f53d5e3748"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=ea1abe3#ea1abe34e31d9f6dd4c54a7f60912c31332a3e48"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
@@ -637,7 +637,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=c70dc2e#c70dc2eb48cb82762185f6e1cf4615f53d5e3748"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=ea1abe3#ea1abe34e31d9f6dd4c54a7f60912c31332a3e48"
 dependencies = [
  "displaydoc",
  "ics23",
@@ -5514,8 +5514,6 @@ dependencies = [
  "ibc-core",
  "sov-celestia-client",
  "tendermint-testgen",
- "test-log",
- "tracing-subscriber 0.3.18",
 ]
 
 [[package]]
