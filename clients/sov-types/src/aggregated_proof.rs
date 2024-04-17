@@ -23,6 +23,13 @@ use crate::proto::types::v1::{
     SerializedValidityCondition as RawSerializedValidityCondition, SlotNumber as RawSlotNumber,
 };
 
+/// The code commitment can have variable size but for the security purpose it
+/// is upper bounded by 10kb.
+const MAX_CODE_COMMITMENT_LENGTH: usize = 10 * 1024;
+
+/// The maximum size of a public data field in the aggregated proof.
+const MAX_PUBLIC_DATA_LENGTH: usize = 256;
+
 /// Defines the aggregated proof data structure for the Sovereign SDK rollups.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -73,7 +80,7 @@ impl AggregatedProof {
     }
 
     pub fn validate_basic(&self) -> Result<(), Error> {
-        self.public_data.basic_validate()?;
+        self.public_data.validate_basic()?;
 
         if self.serialized_proof.is_empty() {
             return Err(Error::empty("serialized proof"));
@@ -121,7 +128,7 @@ impl From<AggregatedProof> for RawAggregatedProof {
     }
 }
 
-/// Defines the public properties of the AggregatedProof for the Sovereign SDK
+/// Defines the public properties of the `AggregatedProof` for the Sovereign SDK
 /// rollups, utilized for the proof verification.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -138,7 +145,7 @@ pub struct AggregatedProofPublicData {
 }
 
 impl AggregatedProofPublicData {
-    pub fn basic_validate(&self) -> Result<(), Error> {
+    pub fn validate_basic(&self) -> Result<(), Error> {
         if self.validity_conditions.is_empty() {
             return Err(Error::empty("validity_conditions"));
         }
@@ -147,6 +154,11 @@ impl AggregatedProofPublicData {
             if vc.is_empty() {
                 return Err(Error::empty("validity_condition"));
             }
+
+            if vc.as_slice().len() > MAX_PUBLIC_DATA_LENGTH {
+                return Err(Error::invalid("validity condition size exceeds maximum"));
+            }
+
             Ok(())
         })?;
 
@@ -168,8 +180,20 @@ impl AggregatedProofPublicData {
             return Err(Error::empty("final_slot_hash"));
         }
 
+        if self.initial_slot_hash.len() > MAX_PUBLIC_DATA_LENGTH {
+            return Err(Error::invalid("initial slot hash size exceeds maximum"));
+        }
+
+        if self.final_slot_hash.len() > MAX_PUBLIC_DATA_LENGTH {
+            return Err(Error::invalid("final slot hash size exceeds maximum"));
+        }
+
         if self.code_commitment.is_empty() {
             return Err(Error::empty("code_commitment"));
+        }
+
+        if self.code_commitment.as_slice().len() > MAX_CODE_COMMITMENT_LENGTH {
+            return Err(Error::invalid("code commitment size exceeds maximum"));
         }
 
         Ok(())
