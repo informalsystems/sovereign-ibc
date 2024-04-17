@@ -1,6 +1,5 @@
 use ibc_client_tendermint::types::error::IntoResult;
 use ibc_client_tendermint::types::Header as TmHeader;
-use ibc_client_tendermint::verifier::TmVerifier;
 use ibc_core::client::context::{Convertible, ExtClientValidationContext};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
@@ -13,7 +12,7 @@ use sov_celestia_client_types::sovereign::{AggregatedProof, CodeCommitment, Root
 use tendermint::crypto::Sha256;
 use tendermint::merkle::MerkleHash;
 use tendermint_light_client_verifier::types::{TrustedBlockState, UntrustedBlockState};
-use tendermint_light_client_verifier::Verifier;
+use tendermint_light_client_verifier::Verifier as TmVerifier;
 
 /// Verifies the IBC header type for the Sovereign SDK rollups, which consists
 /// of the DA header and the aggregated proof date validation.
@@ -125,7 +124,6 @@ where
 
     // main header verification, delegated to the tendermint-light-client crate.
     verifier
-        .verifier()
         .verify_update_header(
             untrusted_state,
             trusted_state,

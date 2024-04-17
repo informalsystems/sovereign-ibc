@@ -1,5 +1,4 @@
 use ibc_client_tendermint::client_state::verify_misbehaviour_header;
-use ibc_client_tendermint::verifier::TmVerifier;
 use ibc_core::client::context::{Convertible, ExtClientValidationContext};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ClientId;
@@ -9,6 +8,7 @@ use sov_celestia_client_types::client_state::SovTmClientState;
 use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 use tendermint::crypto::Sha256;
 use tendermint::merkle::MerkleHash;
+use tendermint_light_client_verifier::Verifier as TmVerifier;
 
 /// Determines whether or not two conflicting headers at the same height would
 /// have convinced the light client.

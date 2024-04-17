@@ -1,5 +1,4 @@
 use ibc_client_tendermint::client_state::check_for_misbehaviour_on_misbehavior;
-use ibc_client_tendermint::verifier::{DefaultVerifier, TmVerifier};
 use ibc_core::client::context::client_state::ClientStateValidation;
 use ibc_core::client::context::{Convertible, ExtClientValidationContext};
 use ibc_core::client::types::error::ClientError;
@@ -17,6 +16,7 @@ use sov_celestia_client_types::consensus_state::SovTmConsensusState;
 use tendermint::crypto::default::Sha256 as DefaultSha256;
 use tendermint::crypto::Sha256;
 use tendermint::merkle::MerkleHash;
+use tendermint_light_client_verifier::{ProdVerifier, Verifier as TmVerifier};
 
 use super::ClientState;
 use crate::client_state::{check_da_misbehaviour_on_update, verify_header, verify_misbehaviour};
@@ -37,7 +37,7 @@ where
             ctx,
             client_id,
             client_message,
-            &DefaultVerifier,
+            &ProdVerifier::default(),
         )
     }
 

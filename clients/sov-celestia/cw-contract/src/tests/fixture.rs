@@ -107,8 +107,8 @@ impl Fixture {
         let sov_consensus_state = dummy_sov_consensus_state(self.trusted_timestamp);
 
         InstantiateMsg {
-            client_state: SovTmClientState::encode_thru_any(sov_client_state),
-            consensus_state: SovTmConsensusState::encode_thru_any(sov_consensus_state),
+            client_state: SovTmClientState::encode_to_any_vec(sov_client_state),
+            consensus_state: SovTmConsensusState::encode_to_any_vec(sov_consensus_state),
             checksum: dummy_checksum(),
         }
     }
@@ -152,7 +152,7 @@ impl Fixture {
             Root::from([0; 32]),
         );
 
-        SovTmHeader::encode_thru_any(sov_header)
+        SovTmHeader::encode_to_any_vec(sov_header)
     }
 
     pub fn dummy_client_message(&self) -> Vec<u8> {
