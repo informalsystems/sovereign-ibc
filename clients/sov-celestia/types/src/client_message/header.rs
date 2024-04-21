@@ -18,12 +18,12 @@ pub const SOV_TENDERMINT_HEADER_TYPE_URL: &str = "/ibc.lightclients.sovereign.te
 
 #[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Header<H: Clone> {
+pub struct Header<H> {
     pub aggregated_proof: AggregatedProof,
     pub da_header: H,
 }
 
-impl<H: Clone> Debug for Header<H> {
+impl<H> Debug for Header<H> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(f, "Header {{...}}")
     }
