@@ -20,13 +20,13 @@ pub const SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL: &str =
 /// Sovereign light client's misbehaviour type
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq, Eq)]
-pub struct Misbehaviour<H: Clone> {
+pub struct Misbehaviour<H> {
     client_id: ClientId,
     header_1: Box<Header<H>>,
     header_2: Box<Header<H>>,
 }
 
-impl<H: Clone> Misbehaviour<H> {
+impl<H> Misbehaviour<H> {
     /// Creates a new misbehaviour
     pub fn new(client_id: ClientId, header_1: Header<H>, header_2: Header<H>) -> Self {
         Self {
@@ -52,7 +52,7 @@ impl<H: Clone> Misbehaviour<H> {
     }
 }
 
-impl<H: Clone> Debug for Misbehaviour<H> {
+impl<H> Debug for Misbehaviour<H> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,

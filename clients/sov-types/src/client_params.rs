@@ -93,9 +93,10 @@ impl SovereignClientParams {
     /// client upgrade process with the given upgraded client parameters.
     pub fn update_on_upgrade(self, upgraded: Self) -> Self {
         Self {
-            frozen_height: None,
+            genesis_da_height: upgraded.genesis_da_height,
             code_commitment: upgraded.code_commitment,
             latest_height: upgraded.latest_height,
+            frozen_height: None,
             upgrade_path: upgraded.upgrade_path,
             ..self
         }
