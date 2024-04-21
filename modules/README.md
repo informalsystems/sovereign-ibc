@@ -44,7 +44,7 @@ Here is an overview of the RPC methods available for each module:
 
 ### `sov-ibc` RPC Methods
 
-### Client
+#### Client
 
 - `ibc_clientState`
 - `ibc_clientStates`
@@ -55,7 +55,7 @@ Here is an overview of the RPC methods available for each module:
 - `ibc_upgradedClientState`
 - `ibc_upgradedConsensusState`
 
-### Connection
+#### Connection
 
 - `ibc_connection`
 - `ibc_connections`
@@ -64,7 +64,7 @@ Here is an overview of the RPC methods available for each module:
 - `ibc_connectionConsensusState`
 - `ibc_connectionParams`
 
-### Channel
+#### Channel
 
 - `ibc_channel`
 - `ibc_channels`
@@ -80,10 +80,15 @@ Here is an overview of the RPC methods available for each module:
 - `ibc_unreceivedAcks`
 - `ibc_nextSequenceReceive`
 
+#### Example
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ibc_clientState","params":{"request":{"client_id": "100-sov-celestia-0"}},"id":1}' http://127.0.0.1:12345
+```
+
 ### `sov-ibc-transfer` RPC Methods
 
-- `transfer_escrowedToken`: Searches the list of escrowed tokens based on the
-  provided token denomination and returns the corresponding token ID, if
-  available.
-- `transfer_mintedToken` : Searches the list of minted tokens based on the provided
-  token denomination and returns the corresponding token ID, if available.
+- `transfer_mintedTokenName`: Queries the minted tokens by provided token ID
+  and returns the corresponding token name.
+- `transfer_mintedTokenId`: Queries the minted tokens by provided token name and
+  returns the corresponding token ID.
