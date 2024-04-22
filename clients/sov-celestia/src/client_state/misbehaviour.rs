@@ -1,16 +1,18 @@
 use ibc_client_tendermint::client_state::verify_misbehaviour_header;
-use ibc_client_tendermint::context::TmVerifier;
+use ibc_core::client::context::{Convertible, ExtClientValidationContext};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::ClientConsensusStatePath;
 use sov_celestia_client_types::client_message::SovTmMisbehaviour;
 use sov_celestia_client_types::client_state::SovTmClientState;
-
-use crate::context::{ConsensusStateConverter, ValidationContext as SovValidationContext};
+use sov_celestia_client_types::consensus_state::SovTmConsensusState;
+use tendermint::crypto::Sha256;
+use tendermint::merkle::MerkleHash;
+use tendermint_light_client_verifier::Verifier as TmVerifier;
 
 /// Determines whether or not two conflicting headers at the same height would
 /// have convinced the light client.
-pub fn verify_misbehaviour<V>(
+pub fn verify_misbehaviour<V, H>(
     ctx: &V,
     client_state: &SovTmClientState,
     misbehaviour: &SovTmMisbehaviour,
@@ -18,10 +20,11 @@ pub fn verify_misbehaviour<V>(
     verifier: &impl TmVerifier,
 ) -> Result<(), ClientError>
 where
-    V: SovValidationContext,
-    V::ConsensusStateRef: ConsensusStateConverter,
+    V: ExtClientValidationContext,
+    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    H: MerkleHash + Sha256 + Default,
 {
-    misbehaviour.validate_basic()?;
+    misbehaviour.validate_basic::<H>()?;
 
     let header_1 = misbehaviour.header_1();
     let trusted_consensus_state_1 = {
@@ -49,7 +52,7 @@ where
 
     let current_timestamp = ctx.host_timestamp()?;
 
-    verify_misbehaviour_header(
+    verify_misbehaviour_header::<H>(
         &header_1.da_header,
         client_state.chain_id(),
         &client_state.as_light_client_options()?,
@@ -59,7 +62,7 @@ where
         verifier,
     )?;
 
-    verify_misbehaviour_header(
+    verify_misbehaviour_header::<H>(
         &header_2.da_header,
         client_state.chain_id(),
         &client_state.as_light_client_options()?,

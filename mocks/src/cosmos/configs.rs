@@ -9,7 +9,10 @@ use ibc_testkit::fixtures::clients::tendermint::ClientStateConfig;
 use ibc_testkit::fixtures::core::signer::dummy_bech32_account;
 use tendermint::{Hash, Time};
 pub fn basecoin_proof_specs() -> ProofSpecs {
-    [get_proof_spec(), get_proof_spec()].to_vec().into()
+    [get_proof_spec(), get_proof_spec()]
+        .to_vec()
+        .try_into()
+        .expect("should convert successfully")
 }
 
 pub fn dummy_tm_client_state(chain_id: ChainId, latest_height: Height) -> ClientState {

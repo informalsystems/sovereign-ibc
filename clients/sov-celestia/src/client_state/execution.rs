@@ -1,4 +1,9 @@
+use core::time::Duration;
+
 use ibc_core::client::context::client_state::ClientStateExecution;
+use ibc_core::client::context::{
+    Convertible, ExtClientExecutionContext, ExtClientValidationContext,
+};
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ClientId;
@@ -14,16 +19,12 @@ use sov_celestia_client_types::sovereign::SovereignConsensusParams;
 
 use super::ClientState;
 use crate::consensus_state::ConsensusState;
-use crate::context::{
-    ConsensusStateConverter, ExecutionContext as SovExecutionContext,
-    ValidationContext as SovValidationContext,
-};
 
 impl<E> ClientStateExecution<E> for ClientState
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     fn initialise(
         &self,
@@ -91,12 +92,12 @@ pub fn initialise<E>(
     consensus_state: Any,
 ) -> Result<(), ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
-    let host_timestamp = SovValidationContext::host_timestamp(ctx)?;
-    let host_height = SovValidationContext::host_height(ctx)?;
+    let host_timestamp = ExtClientValidationContext::host_timestamp(ctx)?;
+    let host_height = ExtClientValidationContext::host_height(ctx)?;
 
     let sov_consensus_state = SovTmConsensusState::try_from(consensus_state)?;
 
@@ -131,14 +132,14 @@ pub fn update_state<E>(
     header: Any,
 ) -> Result<Vec<Height>, ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let header = Header::try_from(header)?;
     let header_height = header.height();
 
-    // self.prune_oldest_consensus_state(ctx, client_id)?;
+    prune_oldest_consensus_state(ctx, client_id, client_state.trusting_period())?;
 
     let maybe_existing_consensus_state = {
         let path_at_header_height = ClientConsensusStatePath::new(
@@ -156,8 +157,8 @@ where
         //
         // Do nothing.
     } else {
-        let host_timestamp = SovValidationContext::host_timestamp(ctx)?;
-        let host_height = SovValidationContext::host_height(ctx)?;
+        let host_timestamp = ExtClientValidationContext::host_timestamp(ctx)?;
+        let host_height = ExtClientValidationContext::host_height(ctx)?;
 
         let new_consensus_state = ConsensusStateType::from(header.clone());
         let new_client_state = client_state.clone().with_da_header(header.da_header)?;
@@ -192,9 +193,9 @@ pub fn update_state_on_misbehaviour<E>(
     _client_message: Any,
 ) -> Result<(), ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let frozen_client_state = client_state.clone().with_frozen_height(Height::min(0));
 
@@ -214,9 +215,9 @@ pub fn update_state_on_upgrade<E>(
     upgraded_consensus_state: Any,
 ) -> Result<Height, ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let mut upgraded_client_state = SovTmClientState::try_from(upgraded_client_state)?;
     let upgraded_consensus_state = ConsensusState::try_from(upgraded_consensus_state)?;
@@ -264,8 +265,8 @@ where
         SovTmConsensusState::new(new_sovereign_consensus_params, new_tm_consensus_params);
 
     let latest_height = new_client_state.latest_height_in_sov();
-    let host_timestamp = SovValidationContext::host_timestamp(ctx)?;
-    let host_height = SovValidationContext::host_height(ctx)?;
+    let host_timestamp = ExtClientValidationContext::host_timestamp(ctx)?;
+    let host_height = ExtClientValidationContext::host_height(ctx)?;
 
     ctx.store_client_state(
         ClientStatePath::new(client_id.clone()),
@@ -300,9 +301,9 @@ pub fn update_on_recovery<E>(
     substitute_client_state: Any,
 ) -> Result<(), ClientError>
 where
-    E: SovExecutionContext,
+    E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: ConsensusStateConverter,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
 {
     let substitute_client_state = ClientState::try_from(substitute_client_state)?.into_inner();
 
@@ -332,6 +333,57 @@ where
         host_timestamp,
         host_height,
     )?;
+
+    Ok(())
+}
+
+/// Removes consensus states from the client store whose timestamps
+/// are less than or equal to the host timestamp. This ensures that
+/// the client store does not amass a buildup of stale consensus states.
+pub fn prune_oldest_consensus_state<E>(
+    ctx: &mut E,
+    client_id: &ClientId,
+    trusting_period: Duration,
+) -> Result<(), ClientError>
+where
+    E: ExtClientExecutionContext,
+    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+{
+    let mut heights = ctx.consensus_state_heights(client_id)?;
+
+    heights.sort();
+
+    for height in heights {
+        let client_consensus_state_path = ClientConsensusStatePath::new(
+            client_id.clone(),
+            height.revision_number(),
+            height.revision_height(),
+        );
+        let consensus_state = ctx.consensus_state(&client_consensus_state_path)?;
+        let sov_consensus_state = consensus_state.try_into()?;
+
+        let host_timestamp =
+            ctx.host_timestamp()?
+                .into_tm_time()
+                .ok_or_else(|| ClientError::Other {
+                    description: String::from("host timestamp is not a valid TM timestamp"),
+                })?;
+
+        let sov_consensus_state_timestamp = sov_consensus_state.timestamp();
+        let sov_consensus_state_expiry = (sov_consensus_state_timestamp + trusting_period)
+            .map_err(|_| ClientError::Other {
+                description: String::from(
+                    "Timestamp overflow error occurred while attempting to parse TmConsensusState",
+                ),
+            })?;
+
+        if sov_consensus_state_expiry > host_timestamp {
+            break;
+        }
+
+        ctx.delete_consensus_state(client_consensus_state_path)?;
+        ctx.delete_update_meta(client_id.clone(), height)?;
+    }
 
     Ok(())
 }

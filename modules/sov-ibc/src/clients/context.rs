@@ -1,4 +1,3 @@
-use ibc_client_tendermint::context::ValidationContext as TmValidationContext;
 use ibc_core::client::context::prelude::*;
 use ibc_core::client::types::error::ClientError;
 use ibc_core::client::types::Height;
@@ -7,7 +6,6 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::Timestamp;
-use sov_celestia_client::context::ValidationContext as SovValidationContext;
 use sov_modules_api::Spec;
 
 use super::{AnyClientState, AnyConsensusState};
@@ -146,42 +144,7 @@ impl<'a, S: Spec> ClientExecutionContext for IbcContext<'a, S> {
     }
 }
 
-impl<'a, S: Spec> TmValidationContext for IbcContext<'a, S> {
-    fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
-        <Self as ValidationContext>::host_timestamp(self)
-    }
-
-    fn host_height(&self) -> Result<Height, ContextError> {
-        <Self as ValidationContext>::host_height(self)
-    }
-
-    fn consensus_state_heights(&self, _client_id: &ClientId) -> Result<Vec<Height>, ContextError> {
-        let heights = self
-            .ibc
-            .client_update_heights_vec
-            .iter(*self.working_set.borrow_mut())
-            .collect::<Vec<_>>();
-        Ok(heights)
-    }
-
-    fn next_consensus_state(
-        &self,
-        client_id: &ClientId,
-        height: &Height,
-    ) -> Result<Option<Self::ConsensusStateRef>, ContextError> {
-        next_consensus_state(self, client_id, height)
-    }
-
-    fn prev_consensus_state(
-        &self,
-        client_id: &ClientId,
-        height: &Height,
-    ) -> Result<Option<Self::ConsensusStateRef>, ContextError> {
-        prev_consensus_state(self, client_id, height)
-    }
-}
-
-impl<'a, S: Spec> SovValidationContext for IbcContext<'a, S> {
+impl<'a, S: Spec> ExtClientValidationContext for IbcContext<'a, S> {
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         <Self as ValidationContext>::host_timestamp(self)
     }

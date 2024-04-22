@@ -7,6 +7,8 @@ use ibc_client_tendermint::types::{Header as TmHeader, Misbehaviour as TmMisbeha
 use ibc_core::client::types::error::ClientError;
 use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::primitives::proto::{Any, Protobuf};
+use tendermint::crypto::Sha256;
+use tendermint::merkle::MerkleHash;
 
 use super::header::{Header, SovTmHeader};
 use crate::proto::v1::Misbehaviour as RawSovTmMisbehaviour;
@@ -18,13 +20,13 @@ pub const SOV_TENDERMINT_MISBEHAVIOUR_TYPE_URL: &str =
 /// Sovereign light client's misbehaviour type
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq, Eq)]
-pub struct Misbehaviour<H: Clone> {
+pub struct Misbehaviour<H> {
     client_id: ClientId,
     header_1: Box<Header<H>>,
     header_2: Box<Header<H>>,
 }
 
-impl<H: Clone> Misbehaviour<H> {
+impl<H> Misbehaviour<H> {
     /// Creates a new misbehaviour
     pub fn new(client_id: ClientId, header_1: Header<H>, header_2: Header<H>) -> Self {
         Self {
@@ -50,7 +52,7 @@ impl<H: Clone> Misbehaviour<H> {
     }
 }
 
-impl<H: Clone> Debug for Misbehaviour<H> {
+impl<H> Debug for Misbehaviour<H> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -70,9 +72,9 @@ impl SovTmMisbehaviour {
         Protobuf::<RawSovTmMisbehaviour>::decode(&mut value.as_slice()).map_err(Error::source)
     }
 
-    pub fn validate_basic(&self) -> Result<(), Error> {
-        self.header_1.validate_basic()?;
-        self.header_2.validate_basic()?;
+    pub fn validate_basic<H: MerkleHash + Sha256 + Default>(&self) -> Result<(), Error> {
+        self.header_1.validate_basic::<H>()?;
+        self.header_2.validate_basic::<H>()?;
 
         if self.header_1.da_header.signed_header.header.chain_id
             != self.header_2.da_header.signed_header.header.chain_id

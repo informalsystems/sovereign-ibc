@@ -6,6 +6,8 @@ use ibc_core::client::types::Height;
 use ibc_core::primitives::proto::{Any, Protobuf};
 use ibc_core::primitives::Timestamp;
 use tendermint::chain::Id as TmChainId;
+use tendermint::crypto::Sha256;
+use tendermint::merkle::MerkleHash;
 use tendermint_light_client_verifier::types::TrustedBlockState;
 
 use crate::consensus_state::SovTmConsensusState;
@@ -16,12 +18,12 @@ pub const SOV_TENDERMINT_HEADER_TYPE_URL: &str = "/ibc.lightclients.sovereign.te
 
 #[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Header<H: Clone> {
+pub struct Header<H> {
     pub aggregated_proof: AggregatedProof,
     pub da_header: H,
 }
 
-impl<H: Clone> Debug for Header<H> {
+impl<H> Debug for Header<H> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(f, "Header {{...}}")
     }
@@ -59,8 +61,10 @@ impl SovTmHeader {
     }
 
     /// Performs sanity checks on header to ensure the consistency of fields.
-    pub fn validate_basic(&self) -> Result<(), Error> {
-        self.da_header.validate_basic().map_err(Error::source)?;
+    pub fn validate_basic<H: MerkleHash + Sha256 + Default>(&self) -> Result<(), Error> {
+        self.da_header
+            .validate_basic::<H>()
+            .map_err(Error::source)?;
 
         self.aggregated_proof.validate_basic()?;
 

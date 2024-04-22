@@ -1,0 +1,47 @@
+[package]
+name         = "sov-celestia-client-cw"
+authors      = { workspace = true }
+edition      = { workspace = true }
+license      = { workspace = true }
+repository   = { workspace = true }
+rust-version = { workspace = true }
+version      = { workspace = true }
+keywords     = ["sovereign-sdk", "rollup", "ibc", "light-client", "CosmWasm"]
+readme       = "./../../README.md"
+description  = """
+    Contains the CosmWasm contract implementation for the `sov-celestia` light client.
+"""
+
+[lints]
+workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# ibc dependencies
+ibc-core              = { workspace = true }
+ibc-client-cw         = { workspace = true }
+sov-celestia-client   = { path = "./../", default-features = false, features = ["serde"] }
+
+# cosmwasm dependencies
+### Note: Kept at the following version to match the CosmWasm module version
+### used by chains supporting the wasm-enabled version of ibc-go v7.3
+### (This is the min version of `ibc-go` that supports `08-wasm` light clients)
+cosmwasm-schema       = "1.5.2"
+cosmwasm-std          = "1.5.2"
+
+[dev-dependencies]
+cosmwasm-vm           = "1.5.2"
+ibc-client-tendermint = { workspace = true }
+sov-celestia-client   = { path = "./../", default-features = false, features = ["test-util"] }
+tendermint-testgen    = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+    "ibc-core/std",
+    "ibc-client-tendermint/std",
+    "sov-celestia-client/std",
+]
+

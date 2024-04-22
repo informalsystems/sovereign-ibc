@@ -6,18 +6,19 @@ sov-ibc-transfer                = { path = "modules/sov-ibc-transfer" }
 sov-consensus-state-tracker     = { path = "modules/sov-consensus-state-tracker" }
 sov-celestia-client             = { path = "clients/sov-celestia" }
 
-ibc                             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-core                        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-core-client                 = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-core-host-cosmos            = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-client-tendermint           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-client-wasm-types           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-app-transfer                = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-primitives                  = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-query                       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
-ibc-testkit                     = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67" }
+ibc                             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-core                        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-core-client                 = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-core-host-cosmos            = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-client-tendermint           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-client-wasm-types           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-client-cw                   = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-app-transfer                = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-primitives                  = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-query                       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
+ibc-testkit                     = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d5e3887770" }
 
-basecoin                        = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "c996c41" }
+basecoin                        = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "61256f9" }
 jmt                             = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 sov-modules-api                 = { path = "vendor/sovereign-sdk/module-system/sov-modules-api" }
