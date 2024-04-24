@@ -42,30 +42,28 @@ where
                 QueryResp::HostConsensusState(ibc_ctx.host_consensus_state(&height).unwrap().into())
             }
             QueryReq::ClientState(client_id) => {
+                let req = QueryClientStateRequest {
+                    client_id,
+                    query_height: None,
+                };
+
                 let resp = ibc_ctx
                     .ibc
-                    .client_state(
-                        QueryClientStateRequest {
-                            client_id,
-                            query_height: None,
-                        },
-                        &mut ibc_ctx.working_set.borrow_mut(),
-                    )
+                    .client_state(req, &mut ibc_ctx.working_set.borrow_mut())
                     .unwrap();
 
                 QueryResp::ClientState(resp.client_state)
             }
             QueryReq::ConsensusState(client_id, height) => {
+                let req = QueryConsensusStateRequest {
+                    client_id,
+                    consensus_height: Some(height),
+                    query_height: None,
+                };
+
                 let resp = ibc_ctx
                     .ibc
-                    .consensus_state(
-                        QueryConsensusStateRequest {
-                            client_id,
-                            consensus_height: Some(height),
-                            query_height: None,
-                        },
-                        &mut ibc_ctx.working_set.borrow_mut(),
-                    )
+                    .consensus_state(req, &mut ibc_ctx.working_set.borrow_mut())
                     .unwrap();
 
                 QueryResp::ConsensusState(resp.consensus_state)
