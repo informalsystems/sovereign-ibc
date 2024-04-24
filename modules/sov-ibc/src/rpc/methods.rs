@@ -1,9 +1,4 @@
 //! Defines JSON RPC methods exposed by the ibc module
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use ibc_core::client::context::client_state::ClientStateCommon;
-use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::{
     query_channels, query_connection_channels, query_packet_acknowledgements,
     query_packet_commitments, query_unreceived_acks, query_unreceived_packets,
@@ -21,9 +16,9 @@ use ibc_query::core::channel::{
 };
 use ibc_query::core::client::{
     query_client_states, query_client_status, query_consensus_state_heights,
-    query_consensus_states, IdentifiedClientState, QueryClientStateRequest,
-    QueryClientStateResponse, QueryClientStatesRequest, QueryClientStatesResponse,
-    QueryClientStatusRequest, QueryClientStatusResponse, QueryConsensusStateHeightsRequest,
+    query_consensus_states, QueryClientStateRequest, QueryClientStateResponse,
+    QueryClientStatesRequest, QueryClientStatesResponse, QueryClientStatusRequest,
+    QueryClientStatusResponse, QueryConsensusStateHeightsRequest,
     QueryConsensusStateHeightsResponse, QueryConsensusStateRequest, QueryConsensusStateResponse,
     QueryConsensusStatesRequest, QueryConsensusStatesResponse, QueryUpgradedClientStateRequest,
     QueryUpgradedClientStateResponse, QueryUpgradedConsensusStateRequest,
@@ -42,8 +37,6 @@ use sov_ibc_transfer::to_jsonrpsee_error;
 use sov_modules_api::macros::rpc_gen;
 use sov_modules_api::{Spec, WorkingSet};
 
-use crate::context::IbcContext;
-use crate::helpers::{WithProof, WithoutProof};
 use crate::Ibc;
 
 /// Structure returned by the `client_state` rpc method.
@@ -55,24 +48,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryClientStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (client_state, proof) = ibc_ctx.query_client_state::<WithProof>(&request.client_id)?;
-
-        Ok(QueryClientStateResponse::new(
-            client_state
-                .ok_or_else(|| {
-                    to_jsonrpsee_error(format!(
-                        "Client state not found for client {:?}",
-                        request.client_id
-                    ))
-                })?
-                .into(),
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.client_state_response(request)
+        })
     }
 
     #[rpc_method(name = "clientStates")]
@@ -81,12 +59,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryClientStatesRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientStatesResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_client_states(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_client_states(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "consensusState")]
@@ -95,34 +70,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryConsensusStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConsensusStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let consensus_height = request.consensus_height.ok_or_else(|| {
-            to_jsonrpsee_error("Consensus height is required for querying consensus state")
-        })?;
-
-        let (consensus_state, proof) = ibc_ctx.query_client_consensus_state::<WithProof>(
-            &request.client_id,
-            consensus_height.revision_number(),
-            consensus_height.revision_height(),
-        )?;
-
-        let proof_height = ibc_ctx.host_height().map_err(to_jsonrpsee_error)?;
-
-        Ok(QueryConsensusStateResponse::new(
-            consensus_state
-                .ok_or_else(|| {
-                    to_jsonrpsee_error(format!(
-                        "Consensus state not found for client {:?} at height {:?}",
-                        request.client_id, consensus_height
-                    ))
-                })?
-                .into(),
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.consensus_state_response(request)
+        })
     }
 
     #[rpc_method(name = "consensusStates")]
@@ -131,12 +81,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryConsensusStatesRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConsensusStatesResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_consensus_states(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_consensus_states(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "consensusStateHeights")]
@@ -145,12 +92,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryConsensusStateHeightsRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConsensusStateHeightsResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_consensus_state_heights(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_consensus_state_heights(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "clientStatus")]
@@ -159,12 +103,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryClientStatusRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientStatusResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_client_status(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_client_status(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "upgradedClientState")]
@@ -173,24 +114,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryUpgradedClientStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryUpgradedClientStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (upgraded_client_state, proof) =
-            ibc_ctx.query_upgraded_client_state::<WithProof>(proof_height.revision_height())?;
-
-        Ok(QueryUpgradedClientStateResponse::new(
-            upgraded_client_state
-                .ok_or_else(|| {
-                    to_jsonrpsee_error(format!(
-                        "Upgraded client state not found at height {proof_height:?}"
-                    ))
-                })?
-                .into(),
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.upgraded_client_state_response(request)
+        })
     }
 
     #[rpc_method(name = "upgradedConsensusState")]
@@ -199,24 +125,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryUpgradedConsensusStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryUpgradedConsensusStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (upgraded_consensus_state, proof) =
-            ibc_ctx.query_upgraded_consensus_state::<WithProof>(proof_height.revision_height())?;
-
-        Ok(QueryUpgradedConsensusStateResponse::new(
-            upgraded_consensus_state
-                .ok_or_else(|| {
-                    to_jsonrpsee_error(format!(
-                        "Upgraded consensus state not found at height {proof_height:?}"
-                    ))
-                })?
-                .into(),
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.upgraded_consensus_state_response(request)
+        })
     }
 
     #[rpc_method(name = "connection")]
@@ -225,23 +136,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryConnectionRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (connection_end, proof) =
-            ibc_ctx.query_connection_end::<WithProof>(&request.connection_id)?;
-
-        Ok(QueryConnectionResponse::new(
-            connection_end.ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Connection not found for connection id {:?}",
-                    request.connection_id
-                ))
-            })?,
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.connection_response(request)
+        })
     }
 
     #[rpc_method(name = "connections")]
@@ -250,12 +147,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryConnectionsRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionsResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_connections(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_connections(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "clientConnections")]
@@ -264,23 +158,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryClientConnectionsRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryClientConnectionsResponse> {
-        let proof_height = self.determine_query_height(None, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (client_connections, proof) =
-            ibc_ctx.query_client_connections::<WithProof>(&request.client_id)?;
-
-        Ok(QueryClientConnectionsResponse::new(
-            client_connections.ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Client connections not found for client id {:?}",
-                    request.client_id
-                ))
-            })?,
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.client_connections_response(request)
+        })
     }
 
     #[rpc_method(name = "connectionClientState")]
@@ -289,37 +169,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryConnectionClientStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionClientStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let connection_end = ibc_ctx
-            .query_connection_end::<WithoutProof>(&request.connection_id)?
-            .ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Connection not found for connection id {:?}",
-                    request.connection_id
-                ))
-            })?;
-
-        let (client_state, proof) =
-            ibc_ctx.query_client_state::<WithProof>(connection_end.client_id())?;
-
-        Ok(QueryConnectionClientStateResponse::new(
-            IdentifiedClientState::new(
-                connection_end.client_id().clone(),
-                client_state
-                    .ok_or_else(|| {
-                        to_jsonrpsee_error(format!(
-                            "Client state not found for connection {:?}",
-                            request.connection_id
-                        ))
-                    })?
-                    .into(),
-            ),
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.connection_client_state_response(request)
+        })
     }
 
     #[rpc_method(name = "connectionConsensusState")]
@@ -328,38 +180,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryConnectionConsensusStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionConsensusStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let connection_end = ibc_ctx
-            .query_connection_end::<WithoutProof>(&request.connection_id)?
-            .ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Connection not found for connection id {:?}",
-                    request.connection_id
-                ))
-            })?;
-
-        let (consensus_state, proof) = ibc_ctx.query_client_consensus_state::<WithProof>(
-            connection_end.client_id(),
-            request.height.revision_number(),
-            request.height.revision_height(),
-        )?;
-
-        Ok(QueryConnectionConsensusStateResponse::new(
-            consensus_state
-                .ok_or_else(|| {
-                    to_jsonrpsee_error(format!(
-                        "Consensus state not found for connection {:?}",
-                        request.connection_id
-                    ))
-                })?
-                .into(),
-            connection_end.client_id().clone(),
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.connection_consensus_state_response(request)
+        })
     }
 
     #[rpc_method(name = "connectionParams")]
@@ -368,12 +191,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryConnectionParamsRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionParamsResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_connection_params(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_connection_params(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "channel")]
@@ -382,23 +202,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryChannelRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryChannelResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (channel_end, proof) =
-            ibc_ctx.query_channel_end::<WithProof>(&request.port_id, &request.channel_id)?;
-
-        Ok(QueryChannelResponse::new(
-            channel_end.ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Channel not found for port id {:?} and channel id {:?}",
-                    request.port_id, request.channel_id
-                ))
-            })?,
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.channel_response(request)
+        })
     }
 
     #[rpc_method(name = "channels")]
@@ -407,12 +213,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryChannelsRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryChannelsResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_channels(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_channels(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "connectionChannels")]
@@ -421,12 +224,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryConnectionChannelsRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryConnectionChannelsResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_connection_channels(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_connection_channels(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "channelClientState")]
@@ -435,53 +235,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryChannelClientStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryChannelClientStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let channel_end = ibc_ctx
-            .query_channel_end::<WithoutProof>(&request.port_id, &request.channel_id)?
-            .ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Channel not found for port id {:?} and channel id {:?}",
-                    request.port_id, request.channel_id
-                ))
-            })?;
-
-        let connection_id = channel_end.connection_hops().first().ok_or_else(|| {
-            to_jsonrpsee_error(format!(
-                "ConnectionId not found for channel {:?}",
-                request.channel_id
-            ))
-        })?;
-
-        let connection_end = ibc_ctx
-            .query_connection_end::<WithoutProof>(connection_id)?
-            .ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "ConnectionEnd not found for channel {:?}",
-                    request.channel_id
-                ))
-            })?;
-
-        let (client_state, proof) =
-            ibc_ctx.query_client_state::<WithProof>(connection_end.client_id())?;
-
-        Ok(QueryChannelClientStateResponse::new(
-            IdentifiedClientState::new(
-                connection_end.client_id().clone(),
-                client_state
-                    .ok_or_else(|| {
-                        to_jsonrpsee_error(format!(
-                            "Client state not found for channel {:?}",
-                            request.channel_id
-                        ))
-                    })?
-                    .into(),
-            ),
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.channel_client_state_response(request)
+        })
     }
 
     #[rpc_method(name = "channelConsensusState")]
@@ -490,63 +246,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryChannelConsensusStateRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryChannelConsensusStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let channel_end = ibc_ctx
-            .query_channel_end::<WithoutProof>(&request.port_id, &request.channel_id)?
-            .ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Channel not found for port id {:?} and channel id {:?}",
-                    request.port_id, request.channel_id
-                ))
-            })?;
-
-        let connection_id = channel_end.connection_hops().first().ok_or_else(|| {
-            to_jsonrpsee_error(format!(
-                "ConnectionId not found for channel {:?}",
-                request.channel_id
-            ))
-        })?;
-
-        let connection_end = ibc_ctx
-            .query_connection_end::<WithoutProof>(connection_id)?
-            .ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "ConnectionEnd not found for channel {:?}",
-                    request.channel_id
-                ))
-            })?;
-
-        let client_state = ibc_ctx
-            .query_client_state::<WithoutProof>(connection_end.client_id())?
-            .ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Client state not found for channel {:?}",
-                    request.channel_id
-                ))
-            })?;
-
-        let client_latest_height = client_state.latest_height();
-
-        let (consensus_state, proof) = ibc_ctx.query_client_consensus_state::<WithProof>(
-            connection_end.client_id(),
-            client_latest_height.revision_number(),
-            client_latest_height.revision_height(),
-        )?;
-
-        Ok(QueryChannelConsensusStateResponse::new(
-            consensus_state
-                .ok_or(to_jsonrpsee_error(format!(
-                    "Consensus state not found for channel {:?}",
-                    request.channel_id
-                )))?
-                .into(),
-            connection_end.client_id().clone(),
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.channel_consensus_state_response(request)
+        })
     }
 
     #[rpc_method(name = "packetCommitment")]
@@ -555,26 +257,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryPacketCommitmentRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketCommitmentResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (commitment, proof) = ibc_ctx.query_packet_commitment::<WithProof>(
-            &request.port_id,
-            &request.channel_id,
-            request.sequence,
-        )?;
-
-        Ok(QueryPacketCommitmentResponse::new(
-            commitment.ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Packet commitment not found for port id {:?}, channel id {:?} and sequence {:?}",
-                    request.port_id, request.channel_id, request.sequence
-                ))
-            })?,
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.packet_commitment_response(request)
+        })
     }
 
     #[rpc_method(name = "packetCommitments")]
@@ -583,12 +268,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryPacketCommitmentsRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketCommitmentsResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_packet_commitments(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_packet_commitments(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "packetReceipt")]
@@ -597,24 +279,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryPacketReceiptRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketReceiptResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (receipt, proof) = ibc_ctx.query_packet_receipt::<WithProof>(
-            &request.port_id,
-            &request.channel_id,
-            request.sequence,
-        )?;
-
-        // packet_receipt_map models a set using constant unit value.
-        // when the key (doesn't) exists in the map,
-        // the receipt is (not) present and returns a (non) membership proof
-        Ok(QueryPacketReceiptResponse::new(
-            receipt.is_some(),
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.packet_receipt_response(request)
+        })
     }
 
     #[rpc_method(name = "packetAcknowledgement")]
@@ -623,26 +290,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryPacketAcknowledgementRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketAcknowledgementResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (acknowledgement, proof) = ibc_ctx.query_packet_acknowledgement::<WithProof>(
-            &request.port_id,
-            &request.channel_id,
-            request.sequence,
-        )?;
-
-        Ok(QueryPacketAcknowledgementResponse::new(
-            acknowledgement.ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Packet acknowledgement not found for port id {:?}, channel id {:?} and sequence {:?}",
-                    request.port_id, request.channel_id, request.sequence
-                ))
-            })?,
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.packet_acknowledgement_response(request)
+        })
     }
 
     #[rpc_method(name = "packetAcknowledgements")]
@@ -651,12 +301,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryPacketAcknowledgementsRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryPacketAcknowledgementsResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_packet_acknowledgements(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_packet_acknowledgements(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "unreceivedPackets")]
@@ -665,12 +312,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryUnreceivedPacketsRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryUnreceivedPacketsResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_unreceived_packets(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_unreceived_packets(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "unreceivedAcks")]
@@ -679,12 +323,9 @@ impl<S: Spec> Ibc<S> {
         request: QueryUnreceivedAcksRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryUnreceivedAcksResponse> {
-        let ibc_ctx = IbcContext {
-            ibc: self,
-            working_set: Rc::new(RefCell::new(working_set)),
-        };
-
-        query_unreceived_acks(&ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        self.handle_request(None, working_set, |ibc_ctx| {
+            query_unreceived_acks(ibc_ctx, &request).map_err(to_jsonrpsee_error)
+        })
     }
 
     #[rpc_method(name = "nextSequenceReceive")]
@@ -693,22 +334,8 @@ impl<S: Spec> Ibc<S> {
         request: QueryNextSequenceReceiveRequest,
         working_set: &mut WorkingSet<S>,
     ) -> RpcResult<QueryNextSequenceReceiveResponse> {
-        let proof_height = self.determine_query_height(request.query_height, working_set)?;
-        let mut archival_working_set = working_set.get_archival_at(proof_height.revision_height());
-        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(&mut archival_working_set)));
-
-        let (sequence, proof) =
-            ibc_ctx.query_recv_sequence::<WithProof>(&request.port_id, &request.channel_id)?;
-
-        Ok(QueryNextSequenceReceiveResponse::new(
-            sequence.ok_or_else(|| {
-                to_jsonrpsee_error(format!(
-                    "Next sequence receive not found for port id {:?} and channel id {:?}",
-                    request.port_id, request.channel_id
-                ))
-            })?,
-            proof,
-            proof_height,
-        ))
+        self.handle_request(request.query_height, working_set, |ibc_ctx| {
+            ibc_ctx.next_sequence_receive_response(request)
+        })
     }
 }

@@ -1,7 +1,5 @@
 //! Defines a mock rollup structure with default configurations and specs
 
-use std::cell::RefCell;
-use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
 use ibc_client_tendermint::types::Header;
@@ -108,9 +106,7 @@ where
     }
 
     pub fn ibc_ctx<'a>(&'a self, working_set: &'a mut WorkingSet<S>) -> IbcContext<'a, S> {
-        let shared_working_set = Rc::new(RefCell::new(working_set));
-
-        IbcContext::new(&self.runtime.ibc, shared_working_set.clone())
+        IbcContext::new(&self.runtime.ibc, working_set)
     }
 
     pub fn obtain_ibc_header(&self, target_height: Height, trusted_height: Height) -> SovTmHeader {

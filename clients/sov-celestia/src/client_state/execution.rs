@@ -224,10 +224,10 @@ where
 
     upgraded_client_state.zero_custom_fields();
 
-    // Creates new Sovereign client parameters. The `genesis_da_height` and
-    // `genesis_state_root` are considered immutable properties of the client.
-    // Changing them implies creating a client that could potentially be compatible
-    // with other rollups.
+    // Creates new Sovereign client parameters. The `genesis_state_root` are
+    // considered immutable properties of the client. Changing them implies
+    // creating a client that could potentially be compatible with other
+    // rollups.
     let new_sovereign_params = client_state
         .sovereign_params
         .update_on_upgrade(upgraded_client_state.sovereign_params);

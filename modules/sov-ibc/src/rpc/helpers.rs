@@ -1,9 +1,5 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use borsh::BorshSerialize;
 use ibc_core::client::types::Height;
-use ibc_core::host::ValidationContext;
 use jsonrpsee::core::RpcResult;
 use sov_ibc_transfer::to_jsonrpsee_error;
 use sov_modules_api::{Spec, StateMap, WorkingSet};
@@ -13,22 +9,24 @@ use crate::context::IbcContext;
 use crate::Ibc;
 
 impl<S: Spec> Ibc<S> {
-    /// Determines the query height to use for the given request. If the query
-    /// height is not provided, it queries the host for the current height.
-    pub(super) fn determine_query_height(
+    pub(super) fn handle_request<F, Response>(
         &self,
-        query_height: Option<Height>,
+        request_height: Option<Height>,
         working_set: &mut WorkingSet<S>,
-    ) -> RpcResult<Height> {
-        match query_height {
-            Some(height) => Ok(height),
+        method: F,
+    ) -> Response
+    where
+        F: FnOnce(&IbcContext<'_, S>) -> Response,
+    {
+        match request_height {
+            Some(h) => {
+                let mut archival_working_set = working_set.get_archival_at(h.revision_height());
+                let ibc_ctx = IbcContext::new(self, &mut archival_working_set);
+                method(&ibc_ctx)
+            }
             None => {
-                let ibc_ctx = IbcContext {
-                    ibc: self,
-                    working_set: Rc::new(RefCell::new(working_set)),
-                };
-
-                ibc_ctx.host_height().map_err(to_jsonrpsee_error)
+                let ibc_ctx = IbcContext::new(self, working_set);
+                method(&ibc_ctx)
             }
         }
     }

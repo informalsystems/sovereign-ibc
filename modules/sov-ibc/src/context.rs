@@ -44,11 +44,11 @@ impl<'a, S> IbcContext<'a, S>
 where
     S: Spec,
 {
-    pub fn new(
-        ibc: &'a Ibc<S>,
-        working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
-    ) -> IbcContext<'a, S> {
-        IbcContext { ibc, working_set }
+    pub fn new(ibc: &'a Ibc<S>, working_set: &'a mut WorkingSet<S>) -> IbcContext<'a, S> {
+        IbcContext {
+            ibc,
+            working_set: Rc::new(RefCell::new(working_set)),
+        }
     }
 
     /// Check that the context slot number matches the host height that IBC modules view.

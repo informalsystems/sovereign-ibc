@@ -1,8 +1,7 @@
 use async_trait::async_trait;
-use ibc_core::client::context::ClientValidationContext;
 use ibc_core::client::types::Height;
 use ibc_core::handler::types::events::IbcEvent;
-use ibc_core::host::types::path::{ClientConsensusStatePath, Path};
+use ibc_core::host::types::path::Path;
 use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::QueryPacketCommitmentRequest;
 use ibc_query::core::client::{QueryClientStateRequest, QueryConsensusStateRequest};
@@ -42,24 +41,35 @@ where
             QueryReq::HostConsensusState(height) => {
                 QueryResp::HostConsensusState(ibc_ctx.host_consensus_state(&height).unwrap().into())
             }
-            QueryReq::ClientState(client_id) => QueryResp::ClientState(
-                ibc_ctx
-                    .get_client_validation_context()
-                    .client_state(&client_id)
-                    .unwrap()
-                    .into(),
-            ),
-            QueryReq::ConsensusState(client_id, height) => QueryResp::ConsensusState(
-                ibc_ctx
-                    .get_client_validation_context()
-                    .consensus_state(&ClientConsensusStatePath::new(
-                        client_id,
-                        height.revision_number(),
-                        height.revision_height(),
-                    ))
-                    .unwrap()
-                    .into(),
-            ),
+            QueryReq::ClientState(client_id) => {
+                let resp = ibc_ctx
+                    .ibc
+                    .client_state(
+                        QueryClientStateRequest {
+                            client_id,
+                            query_height: None,
+                        },
+                        &mut ibc_ctx.working_set.borrow_mut(),
+                    )
+                    .unwrap();
+
+                QueryResp::ClientState(resp.client_state)
+            }
+            QueryReq::ConsensusState(client_id, height) => {
+                let resp = ibc_ctx
+                    .ibc
+                    .consensus_state(
+                        QueryConsensusStateRequest {
+                            client_id,
+                            consensus_height: Some(height),
+                            query_height: None,
+                        },
+                        &mut ibc_ctx.working_set.borrow_mut(),
+                    )
+                    .unwrap();
+
+                QueryResp::ConsensusState(resp.consensus_state)
+            }
             QueryReq::Header(target_height, trusted_height) => {
                 let sov_header = self.obtain_ibc_header(target_height, trusted_height);
 
