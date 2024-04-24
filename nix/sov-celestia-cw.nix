@@ -31,7 +31,7 @@ let
         cargoLock = {
             lockFile = ../Cargo.lock;
             outputHashes = {
-                "basecoin-0.1.0" = "sha256-Kyb+HUKscz54w7C/SDHBLYF1VsNUrsAiY3PiyZrOu/g=";
+                "basecoin-0.1.0" = "sha256-7huJeHyrS8GVQqE3nu/VEHxuPWsFqEDo1kabLbenBYA=";
                 "celestia-proto-0.1.0" = "sha256-iUgrctxdJUyhfrEQ0zoVj5AKIqgj/jQVNli5/K2nxK0=";
                 "ibc-0.51.0" = "sha256-vKcqk6VqL0D842Z1rMfVTSTmQ9MO2USi9t7ZrwJcxSE=";
                 "jmt-0.9.0" = "sha256-pq1v6FXS//6Dh+fdysQIVp+RVLHdXrW5aDx3263O1rs=";
