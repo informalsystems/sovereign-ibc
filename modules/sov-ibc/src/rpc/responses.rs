@@ -371,10 +371,12 @@ impl<'a, S: Spec> IbcContext<'a, S> {
 
         Ok(QueryChannelConsensusStateResponse::new(
             consensus_state
-                .ok_or(to_jsonrpsee_error(format!(
-                    "Consensus state not found for channel {:?}",
-                    request.channel_id
-                )))?
+                .ok_or_else(|| {
+                    to_jsonrpsee_error(format!(
+                        "Consensus state not found for channel {:?}",
+                        request.channel_id
+                    ))
+                })?
                 .into(),
             connection_end.client_id().clone(),
             proof,
