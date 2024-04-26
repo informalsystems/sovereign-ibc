@@ -7,7 +7,7 @@ use ibc_core::host::ValidationContext;
 use jsonrpsee::core::RpcResult;
 use sov_ibc_transfer::to_jsonrpsee_error;
 use sov_modules_api::{Spec, StateMap, WorkingSet};
-use sov_state::storage::{StateCodec, StateItemCodec};
+use sov_state::storage::{StateCodec, StateItemCodec, StateItemDecoder};
 
 use crate::context::IbcContext;
 use crate::Ibc;
