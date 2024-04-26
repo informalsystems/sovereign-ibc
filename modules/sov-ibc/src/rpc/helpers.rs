@@ -20,6 +20,9 @@ impl<S: Spec> Ibc<S> {
     {
         match request_height {
             Some(h) => {
+                // note: IbcContext doesn't take ownership of the archival_working_set.
+                // So it can't be returned from the this method. Instead, a closure is
+                // passed to the method and the result is returned from the closure.
                 let mut archival_working_set = working_set.get_archival_at(h.revision_height());
                 let ibc_ctx = IbcContext::new(self, &mut archival_working_set);
                 method(&ibc_ctx)
