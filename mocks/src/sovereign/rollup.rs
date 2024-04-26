@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use ibc_client_tendermint::types::Header;
 use ibc_core::client::types::Height;
 use ibc_core::host::types::identifiers::ChainId;
-use sov_bank::{CallMessage as BankCallMessage, TokenConfig, TokenId};
+use sov_bank::{CallMessage as BankCallMessage, Payable, TokenConfig, TokenId};
 use sov_celestia_client::types::client_message::test_util::dummy_sov_header;
 use sov_celestia_client::types::client_message::SovTmHeader;
 use sov_consensus_state_tracker::{ConsensusStateTracker, HasConsensusState};
@@ -144,12 +144,12 @@ where
     }
 
     /// Returns the balance of a user for a given token
-    pub fn get_balance_of(&self, user_address: S::Address, token_id: TokenId) -> u64 {
+    pub fn get_balance_of(&self, user_address: &S::Address, token_id: TokenId) -> u64 {
         let mut working_set: WorkingSet<S> = WorkingSet::new(self.prover_storage());
 
         self.runtime()
             .bank
-            .get_balance_of(user_address, token_id, &mut working_set)
+            .get_balance_of(user_address.as_token_holder(), token_id, &mut working_set)
             .unwrap()
     }
 
