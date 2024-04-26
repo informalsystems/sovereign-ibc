@@ -1,5 +1,4 @@
 use ibc_core::client::context::client_state::ClientStateCommon;
-use ibc_core::client::types::Height;
 use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::{
     QueryChannelClientStateRequest, QueryChannelClientStateResponse,
@@ -29,22 +28,11 @@ use crate::context::IbcContext;
 use crate::helpers::{WithProof, WithoutProof};
 
 impl<'a, S: Spec> IbcContext<'a, S> {
-    /// Determines the query height to use for the given request. If the query
-    /// height is not provided, it queries the host for the current height.
-    pub(super) fn determine_query_height(&self, query_height: Option<Height>) -> RpcResult<Height> {
-        let height = match query_height {
-            Some(height) => height,
-            None => self.host_height().map_err(to_jsonrpsee_error)?,
-        };
-
-        Ok(height)
-    }
-
     pub(super) fn client_state_response(
         &self,
         request: QueryClientStateRequest,
     ) -> RpcResult<QueryClientStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (client_state, proof) = self.query_client_state::<WithProof>(&request.client_id)?;
 
@@ -66,7 +54,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryConsensusStateRequest,
     ) -> RpcResult<QueryConsensusStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let consensus_height = request.consensus_height.ok_or_else(|| {
             to_jsonrpsee_error("Consensus height is required for querying consensus state")
@@ -94,9 +82,9 @@ impl<'a, S: Spec> IbcContext<'a, S> {
 
     pub(super) fn upgraded_client_state_response(
         &self,
-        request: QueryUpgradedClientStateRequest,
+        _request: QueryUpgradedClientStateRequest,
     ) -> RpcResult<QueryUpgradedClientStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (upgraded_client_state, proof) =
             self.query_upgraded_client_state::<WithProof>(proof_height.revision_height())?;
@@ -116,9 +104,9 @@ impl<'a, S: Spec> IbcContext<'a, S> {
 
     pub(super) fn upgraded_consensus_state_response(
         &self,
-        request: QueryUpgradedConsensusStateRequest,
+        _request: QueryUpgradedConsensusStateRequest,
     ) -> RpcResult<QueryUpgradedConsensusStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (upgraded_consensus_state, proof) =
             self.query_upgraded_consensus_state::<WithProof>(proof_height.revision_height())?;
@@ -140,7 +128,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryConnectionRequest,
     ) -> RpcResult<QueryConnectionResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (connection_end, proof) =
             self.query_connection_end::<WithProof>(&request.connection_id)?;
@@ -161,7 +149,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryClientConnectionsRequest,
     ) -> RpcResult<QueryClientConnectionsResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (client_connections, proof) =
             self.query_client_connections::<WithProof>(&request.client_id)?;
@@ -182,7 +170,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryConnectionClientStateRequest,
     ) -> RpcResult<QueryConnectionClientStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let connection_end = self
             .query_connection_end::<WithoutProof>(&request.connection_id)?
@@ -217,7 +205,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryConnectionConsensusStateRequest,
     ) -> RpcResult<QueryConnectionConsensusStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let connection_end = self
             .query_connection_end::<WithoutProof>(&request.connection_id)?
@@ -253,7 +241,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryChannelRequest,
     ) -> RpcResult<QueryChannelResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (channel_end, proof) =
             self.query_channel_end::<WithProof>(&request.port_id, &request.channel_id)?;
@@ -274,7 +262,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryChannelClientStateRequest,
     ) -> RpcResult<QueryChannelClientStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let channel_end = self
             .query_channel_end::<WithoutProof>(&request.port_id, &request.channel_id)?
@@ -325,7 +313,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryChannelConsensusStateRequest,
     ) -> RpcResult<QueryChannelConsensusStateResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let channel_end = self
             .query_channel_end::<WithoutProof>(&request.port_id, &request.channel_id)?
@@ -388,7 +376,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryPacketCommitmentRequest,
     ) -> RpcResult<QueryPacketCommitmentResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (commitment, proof) = self.query_packet_commitment::<WithProof>(
             &request.port_id,
@@ -412,7 +400,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryPacketReceiptRequest,
     ) -> RpcResult<QueryPacketReceiptResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (receipt, proof) = self.query_packet_receipt::<WithProof>(
             &request.port_id,
@@ -434,7 +422,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryPacketAcknowledgementRequest,
     ) -> RpcResult<QueryPacketAcknowledgementResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (acknowledgement, proof) = self.query_packet_acknowledgement::<WithProof>(
             &request.port_id,
@@ -458,7 +446,7 @@ impl<'a, S: Spec> IbcContext<'a, S> {
         &self,
         request: QueryNextSequenceReceiveRequest,
     ) -> RpcResult<QueryNextSequenceReceiveResponse> {
-        let proof_height = self.determine_query_height(request.query_height)?;
+        let proof_height = self.host_height().map_err(to_jsonrpsee_error)?;
 
         let (sequence, proof) =
             self.query_recv_sequence::<WithProof>(&request.port_id, &request.channel_id)?;
