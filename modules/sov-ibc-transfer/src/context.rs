@@ -22,7 +22,7 @@ use ibc_core::host::types::identifiers::{ChannelId, ConnectionId, PortId};
 use ibc_core::primitives::Signer;
 use ibc_core::router::module::Module;
 use ibc_core::router::types::module::ModuleExtras;
-use sov_bank::{Coins, TokenId};
+use sov_bank::{Coins, IntoPayable, Payable, TokenId};
 use sov_modules_api::{Context, Spec, WorkingSet};
 use uint::FromDecStrErr;
 
@@ -160,13 +160,17 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     fn validate_balance(
         &self,
         token_id: TokenId,
-        address: S::Address,
+        address: &S::Address,
         amount: Amount,
     ) -> Result<Amount, TokenTransferError> {
         let sender_balance: u64 = self
             .ibc_transfer
             .bank
-            .get_balance_of(address, token_id, *self.working_set.borrow_mut())
+            .get_balance_of(
+                address.as_token_holder(),
+                token_id,
+                *self.working_set.borrow_mut(),
+            )
             .ok_or(TokenTransferError::Other(format!(
                 "No balance for token with ID: '{token_id}'"
             )))?;
@@ -193,11 +197,12 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     fn create_token(
         &self,
         token_name: String,
-        minter_address: S::Address,
+        minter_address: &S::Address,
     ) -> Result<TokenId, TokenTransferError> {
         // Make sure to use `ibc_transfer` address as the sender
         let context = Context::new(
-            self.ibc_transfer.address.clone(),
+            // TODO(rano): This should be the `ibc_transfer` address
+            minter_address.clone(),
             self.sdk_context.sequencer().clone(),
             self.sdk_context.visible_slot_number(),
         );
@@ -209,8 +214,8 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
                 token_name.clone(),
                 SALT,
                 0,
-                minter_address,
-                vec![self.ibc_transfer.address.clone()],
+                minter_address.as_token_holder(),
+                vec![self.ibc_transfer.id.to_payable()],
                 &context,
                 &mut self.working_set.borrow_mut(),
             )
@@ -306,7 +311,7 @@ where
 
         let minted_token_id = self.get_ibc_token_id(coin)?;
 
-        self.validate_balance(minted_token_id, account.address.clone(), coin.amount)?;
+        self.validate_balance(minted_token_id, &account.address, coin.amount)?;
 
         Ok(())
     }
@@ -329,7 +334,7 @@ where
 
         let token_id = self.get_native_token_id(coin, port_id, channel_id)?;
 
-        self.validate_balance(token_id, from_account.address.clone(), coin.amount)?;
+        self.validate_balance(token_id, &from_account.address, coin.amount)?;
 
         Ok(())
     }
@@ -359,7 +364,7 @@ where
 
         let escrow_address = self.obtain_escrow_address(port_id, channel_id);
 
-        self.validate_balance(token_id, escrow_address, coin.amount)?;
+        self.validate_balance(token_id, &escrow_address, coin.amount)?;
 
         Ok(())
     }
@@ -377,7 +382,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         //    create a new token and store in the maps
         let token_id = match self.get_ibc_token_id(coin) {
             Ok(token_id) => token_id,
-            Err(_) => self.create_token(coin.denom.to_string(), account.address.clone())?,
+            Err(_) => self.create_token(coin.denom.to_string(), &account.address)?,
         };
 
         // 2. mint tokens
@@ -391,7 +396,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
             .mint(
                 &sdk_coins,
                 &account.address,
-                &self.ibc_transfer.address,
+                self.ibc_transfer.id.to_payable(),
                 &mut self.working_set.borrow_mut(),
             )
             .map_err(|err| TokenTransferError::Other(err.to_string()))?;
