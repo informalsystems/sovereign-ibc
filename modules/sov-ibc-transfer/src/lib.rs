@@ -7,7 +7,7 @@ use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use serde::{Deserialize, Serialize};
 use sov_bank::TokenId;
-use sov_modules_api::{Context, Error, Module, ModuleInfo, Spec, StateMap, WorkingSet};
+use sov_modules_api::{Context, Error, Module, ModuleId, ModuleInfo, Spec, StateMap, WorkingSet};
 
 #[cfg(feature = "native")]
 mod rpc;
@@ -20,9 +20,9 @@ pub struct TransferConfig {}
 #[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
 #[derive(ModuleInfo, Clone)]
 pub struct IbcTransfer<S: Spec> {
-    /// Address of the module.
-    #[address]
-    address: S::Address,
+    /// Id of the module.
+    #[id]
+    pub id: ModuleId,
 
     /// Reference to the Bank module.
     #[module]
@@ -77,8 +77,6 @@ impl<S: Spec> Module for IbcTransfer<S> {
 impl<S: Spec> core::fmt::Debug for IbcTransfer<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // FIXME: put real values here, or remove `Debug` requirement from router::Module
-        f.debug_struct("Transfer")
-            .field("address", &self.address)
-            .finish()
+        f.debug_struct("Transfer").field("id", &self.id).finish()
     }
 }
