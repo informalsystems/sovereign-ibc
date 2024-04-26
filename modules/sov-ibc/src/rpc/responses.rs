@@ -27,6 +27,13 @@ use sov_modules_api::Spec;
 use crate::context::IbcContext;
 use crate::helpers::{WithProof, WithoutProof};
 
+/// The implementation of the IBC RPC methods.
+///
+/// The context is already created with:
+/// - The working set at the query height, if provided.
+/// - The latest working set.
+///
+/// So we can ignore the `query_height` parameter.
 impl<'a, S: Spec> IbcContext<'a, S> {
     pub(super) fn client_state_response(
         &self,
