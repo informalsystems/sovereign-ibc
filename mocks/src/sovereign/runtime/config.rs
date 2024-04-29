@@ -131,7 +131,8 @@ pub fn create_chain_state_config<S: Spec>() -> ChainStateConfig<S> {
     ChainStateConfig {
         current_time: Time::from_secs(seconds.try_into().unwrap()),
         genesis_da_height: 0,
-        // these are for `MockCodeCommitment`, works with `MockZkVerifier`
+        // These are for `MockCodeCommitment`, works with `MockZkVerifier`, which
+        // is being used in `DefaultSpec`. These may fail for other zk verifiers.
         inner_code_commitment: <S::InnerZkvm as Zkvm>::CodeCommitment::decode([0u8; 32].as_slice())
             .unwrap(),
         outer_code_commitment: <S::OuterZkvm as Zkvm>::CodeCommitment::decode([0u8; 32].as_slice())
