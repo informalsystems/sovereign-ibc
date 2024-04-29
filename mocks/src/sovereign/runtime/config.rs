@@ -77,10 +77,10 @@ pub fn create_chain_state_config<S: Spec>() -> ChainStateConfig<S> {
 
     ChainStateConfig {
         current_time: Time::from_secs(seconds.try_into().unwrap()),
-        gas_price_blocks_depth: 10,
-        gas_price_maximum_elasticity: 1,
-        initial_gas_price: <<S as Spec>::Gas as Gas>::Price::ZEROED,
-        minimum_gas_price: <<S as Spec>::Gas as Gas>::Price::ZEROED,
+        initial_base_fee_per_gas: <S::Gas as Gas>::Price::ZEROED,
+        genesis_da_height: 0,
+        inner_code_commitment: <S::InnerZkvm as Zkvm>::CodeCommitment::decode(&[]).unwrap(),
+        outer_code_commitment: <S::OuterZkvm as Zkvm>::CodeCommitment::decode(&[]).unwrap(),
     }
 }
 
