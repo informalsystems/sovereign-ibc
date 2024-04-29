@@ -137,8 +137,11 @@ pub fn create_chain_state_config<S: Spec>() -> ChainStateConfig<S> {
         current_time: Time::from_secs(seconds.try_into().unwrap()),
         initial_base_fee_per_gas: <S::Gas as Gas>::Price::ZEROED,
         genesis_da_height: 0,
-        inner_code_commitment: <S::InnerZkvm as Zkvm>::CodeCommitment::decode(&[]).unwrap(),
-        outer_code_commitment: <S::OuterZkvm as Zkvm>::CodeCommitment::decode(&[]).unwrap(),
+        // these are for `MockCodeCommitment`, works with `MockZkVerifier`
+        inner_code_commitment: <S::InnerZkvm as Zkvm>::CodeCommitment::decode([0u8; 32].as_slice())
+            .unwrap(),
+        outer_code_commitment: <S::OuterZkvm as Zkvm>::CodeCommitment::decode([0u8; 32].as_slice())
+            .unwrap(),
     }
 }
 
