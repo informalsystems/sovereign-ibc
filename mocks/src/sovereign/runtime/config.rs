@@ -1,3 +1,4 @@
+use std::fmt;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use sov_bank::{BankConfig, GasTokenConfig};
@@ -5,8 +6,9 @@ use sov_chain_state::ChainStateConfig;
 use sov_ibc::ExampleModuleConfig;
 use sov_ibc_transfer::TransferConfig;
 use sov_modules_api::utils::generate_address as gen_address_generic;
-use sov_modules_api::{Gas, GasArray, Spec};
+use sov_modules_api::{Spec, Zkvm};
 use sov_rollup_interface::da::Time;
+use sov_rollup_interface::zk::CodeCommitment;
 
 /// The default initial slot height.
 pub const DEFAULT_INIT_HEIGHT: u64 = 1;
@@ -23,12 +25,63 @@ pub const DEFAULT_GAS_TOKEN_NAME: &str = "sov-gas-token";
 /// The default salt.
 pub const DEFAULT_SALT: u64 = 0;
 
-#[derive(Clone, Debug)]
 pub struct RollupGenesisConfig<S: Spec> {
     pub chain_state_config: ChainStateConfig<S>,
     pub bank_config: BankConfig<S>,
     pub ibc_config: ExampleModuleConfig,
     pub ibc_transfer_config: TransferConfig,
+}
+
+impl<S: Spec> RollupGenesisConfig<S> {
+    pub fn cloned_chain_state_config(&self) -> ChainStateConfig<S> {
+        ChainStateConfig {
+            current_time: self.chain_state_config.current_time.clone(),
+            genesis_da_height: self.chain_state_config.genesis_da_height,
+            inner_code_commitment: self.chain_state_config.inner_code_commitment.clone(),
+            outer_code_commitment: self.chain_state_config.outer_code_commitment.clone(),
+        }
+    }
+}
+
+impl<S: Spec> Clone for RollupGenesisConfig<S> {
+    fn clone(&self) -> Self {
+        Self {
+            chain_state_config: self.cloned_chain_state_config(),
+            bank_config: self.bank_config.clone(),
+            ibc_config: self.ibc_config.clone(),
+            ibc_transfer_config: self.ibc_transfer_config.clone(),
+        }
+    }
+}
+
+impl<S: Spec> fmt::Debug for RollupGenesisConfig<S>
+where
+    <S::InnerZkvm as Zkvm>::CodeCommitment: fmt::Debug,
+    <S::OuterZkvm as Zkvm>::CodeCommitment: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("RollupGenesisConfig")
+            .field(
+                "chain_state_config.current_time",
+                &self.chain_state_config.current_time,
+            )
+            .field(
+                "chain_state_config.inner_code_commitment",
+                &self.chain_state_config.inner_code_commitment,
+            )
+            .field(
+                "chain_state_config.outer_code_commitment",
+                &self.chain_state_config.outer_code_commitment,
+            )
+            .field(
+                "chain_state_config.genesis_da_height",
+                &self.chain_state_config.genesis_da_height,
+            )
+            .field("bank_config", &self.bank_config)
+            .field("ibc_config", &self.ibc_config)
+            .field("ibc_transfer_config", &self.ibc_transfer_config)
+            .finish()
+    }
 }
 
 impl<S: Spec> RollupGenesisConfig<S> {
@@ -77,10 +130,13 @@ pub fn create_chain_state_config<S: Spec>() -> ChainStateConfig<S> {
 
     ChainStateConfig {
         current_time: Time::from_secs(seconds.try_into().unwrap()),
-        gas_price_blocks_depth: 10,
-        gas_price_maximum_elasticity: 1,
-        initial_gas_price: <<S as Spec>::Gas as Gas>::Price::ZEROED,
-        minimum_gas_price: <<S as Spec>::Gas as Gas>::Price::ZEROED,
+        genesis_da_height: 0,
+        // These are for `MockCodeCommitment`, works with `MockZkVerifier`, which
+        // is being used in `DefaultSpec`. These may fail for other zk verifiers.
+        inner_code_commitment: <S::InnerZkvm as Zkvm>::CodeCommitment::decode([0u8; 32].as_slice())
+            .unwrap(),
+        outer_code_commitment: <S::OuterZkvm as Zkvm>::CodeCommitment::decode([0u8; 32].as_slice())
+            .unwrap(),
     }
 }
 

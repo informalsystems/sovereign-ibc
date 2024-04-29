@@ -48,7 +48,7 @@ async fn test_escrow_unescrow_on_sov() {
     let sender_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, gas_token.token_id);
+        .get_balance_of(&cfg.sov_address, gas_token.token_id);
 
     assert_eq!(sender_balance, expected_sender_balance);
 
@@ -100,7 +100,7 @@ async fn test_escrow_unescrow_on_sov() {
     let fake_token_sender_initial_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, fake_token_id);
+        .get_balance_of(&cfg.sov_address, fake_token_id);
 
     let msg_transfer_on_sov = rly.build_msg_transfer_for_sov(&cfg);
 
@@ -116,14 +116,14 @@ async fn test_escrow_unescrow_on_sov() {
     let gas_token_sender_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, gas_token.token_id);
+        .get_balance_of(&cfg.sov_address, gas_token.token_id);
 
     assert_eq!(gas_token_sender_balance, expected_sender_balance);
 
     let fake_token_sender_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, fake_token_id);
+        .get_balance_of(&cfg.sov_address, fake_token_id);
 
     assert_eq!(
         fake_token_sender_balance,
@@ -256,7 +256,7 @@ async fn test_mint_burn_on_sov() {
     let receiver_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, minted_token_id);
+        .get_balance_of(&cfg.sov_address, minted_token_id);
 
     let mut expected_receiver_balance = cfg.amount * 2;
 
@@ -307,7 +307,7 @@ async fn test_mint_burn_on_sov() {
     let receiver_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, minted_token_id);
+        .get_balance_of(&cfg.sov_address, minted_token_id);
 
     expected_receiver_balance -= cfg.amount;
 
@@ -339,7 +339,7 @@ async fn test_mint_burn_on_sov() {
     let receiver_balance = rly
         .src_chain_ctx()
         .service()
-        .get_balance_of(cfg.sov_address, minted_token_id);
+        .get_balance_of(&cfg.sov_address, minted_token_id);
 
     assert_eq!(receiver_balance, expected_receiver_balance);
 }
