@@ -6,7 +6,7 @@ use sov_chain_state::ChainStateConfig;
 use sov_ibc::ExampleModuleConfig;
 use sov_ibc_transfer::TransferConfig;
 use sov_modules_api::utils::generate_address as gen_address_generic;
-use sov_modules_api::{Gas, GasArray, Spec, Zkvm};
+use sov_modules_api::{Spec, Zkvm};
 use sov_rollup_interface::da::Time;
 use sov_rollup_interface::zk::CodeCommitment;
 
@@ -36,7 +36,6 @@ impl<S: Spec> RollupGenesisConfig<S> {
     pub fn cloned_chain_state_config(&self) -> ChainStateConfig<S> {
         ChainStateConfig {
             current_time: self.chain_state_config.current_time.clone(),
-            initial_base_fee_per_gas: self.chain_state_config.initial_base_fee_per_gas.clone(),
             genesis_da_height: self.chain_state_config.genesis_da_height,
             inner_code_commitment: self.chain_state_config.inner_code_commitment.clone(),
             outer_code_commitment: self.chain_state_config.outer_code_commitment.clone(),
@@ -65,10 +64,6 @@ where
             .field(
                 "chain_state_config.current_time",
                 &self.chain_state_config.current_time,
-            )
-            .field(
-                "chain_state_config.initial_base_fee_per_gas",
-                &self.chain_state_config.initial_base_fee_per_gas,
             )
             .field(
                 "chain_state_config.inner_code_commitment",
@@ -135,7 +130,6 @@ pub fn create_chain_state_config<S: Spec>() -> ChainStateConfig<S> {
 
     ChainStateConfig {
         current_time: Time::from_secs(seconds.try_into().unwrap()),
-        initial_base_fee_per_gas: <S::Gas as Gas>::Price::ZEROED,
         genesis_da_height: 0,
         // these are for `MockCodeCommitment`, works with `MockZkVerifier`
         inner_code_commitment: <S::InnerZkvm as Zkvm>::CodeCommitment::decode([0u8; 32].as_slice())
