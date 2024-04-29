@@ -201,7 +201,7 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     ) -> Result<TokenId, TokenTransferError> {
         // Make sure to use `ibc_transfer` address as the sender
         let context = Context::new(
-            compute_module_address::<S>(),
+            compute_module_address::<S>(self.ibc_transfer.id.as_bytes()),
             self.sdk_context.sequencer().clone(),
             self.sdk_context.visible_slot_number(),
         );
