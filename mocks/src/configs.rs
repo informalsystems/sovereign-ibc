@@ -75,7 +75,7 @@ impl<S: Spec, Da: DaService> TestSetupConfig<S, Da> {
 
     pub fn kernel_genesis_config(&self) -> BasicKernelGenesisConfig<S, Da::Spec> {
         BasicKernelGenesisConfig {
-            chain_state: self.rollup_genesis_config.chain_state_config.clone(),
+            chain_state: self.rollup_genesis_config.cloned_chain_state_config(),
         }
     }
 
