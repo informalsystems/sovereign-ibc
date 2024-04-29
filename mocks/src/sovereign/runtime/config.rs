@@ -37,7 +37,7 @@ impl<S: Spec> RollupGenesisConfig<S> {
         ChainStateConfig {
             current_time: self.chain_state_config.current_time.clone(),
             initial_base_fee_per_gas: self.chain_state_config.initial_base_fee_per_gas.clone(),
-            genesis_da_height: self.chain_state_config.genesis_da_height.clone(),
+            genesis_da_height: self.chain_state_config.genesis_da_height,
             inner_code_commitment: self.chain_state_config.inner_code_commitment.clone(),
             outer_code_commitment: self.chain_state_config.outer_code_commitment.clone(),
         }

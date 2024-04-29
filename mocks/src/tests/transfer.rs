@@ -76,7 +76,7 @@ async fn test_escrow_unescrow_on_sov() {
     let receiver_balance = rly
         .dst_chain_ctx()
         .service()
-        .get_balance_of(&expected_denom_on_cos, cfg.cos_address.clone());
+        .get_balance_of(expected_denom_on_cos, cfg.cos_address.clone());
 
     assert_eq!(receiver_balance, Some(cfg.amount));
 
