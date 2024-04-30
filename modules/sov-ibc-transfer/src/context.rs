@@ -140,18 +140,18 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     fn obtain_escrow_address(&self, port_id: &PortId, channel_id: &ChannelId) -> S::Address {
         let mut working_set = self.working_set.borrow_mut();
 
-        let escrow_account = self
-            .ibc_transfer
+        self.ibc_transfer
             .escrow_address_cache
             .get(&(port_id.clone(), channel_id.clone()), *working_set)
-            .unwrap_or_else(|| compute_escrow_address::<S>(port_id, channel_id));
-
-        self.ibc_transfer.escrow_address_cache.set(
-            &(port_id.clone(), channel_id.clone()),
-            &escrow_account,
-            *working_set,
-        );
-        escrow_account
+            .unwrap_or_else(|| {
+                let escrow_account = compute_escrow_address::<S>(port_id, channel_id);
+                self.ibc_transfer.escrow_address_cache.set(
+                    &(port_id.clone(), channel_id.clone()),
+                    &escrow_account,
+                    *working_set,
+                );
+                escrow_account
+            })
     }
 
     /// Validates that the sender has sufficient balance to perform the
