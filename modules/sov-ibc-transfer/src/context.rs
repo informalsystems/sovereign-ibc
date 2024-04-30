@@ -27,7 +27,7 @@ use sov_modules_api::{Context, Spec, WorkingSet};
 use uint::FromDecStrErr;
 
 use super::IbcTransfer;
-use crate::utils::{compute_escrow_address, compute_module_address};
+use crate::utils::compute_escrow_address;
 
 /// Using a different salt will result in a different token address. Since
 /// ICS-20 tokens coming from other chains are guaranteed to have unique names,
@@ -199,13 +199,6 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
         token_name: String,
         minter_address: &S::Address,
     ) -> Result<TokenId, TokenTransferError> {
-        // Make sure to use `ibc_transfer` address as the sender
-        let context = Context::new(
-            compute_module_address::<S>(self.ibc_transfer.id.as_bytes()),
-            self.sdk_context.sequencer().clone(),
-            self.sdk_context.visible_slot_number(),
-        );
-
         let new_token_id = self
             .ibc_transfer
             .bank
@@ -215,7 +208,7 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
                 0,
                 minter_address.as_token_holder(),
                 vec![self.ibc_transfer.id.to_payable()],
-                &context,
+                self.ibc_transfer.id.to_payable(),
                 &mut self.working_set.borrow_mut(),
             )
             .map_err(|err| TokenTransferError::Other(err.to_string()))?;
