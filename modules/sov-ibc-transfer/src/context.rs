@@ -137,31 +137,21 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     /// Obtains the escrow address for a given port and channel pair by looking
     /// up the cache. If the cache does not contain the address, it is computed
     /// and stored in the cache.
-    fn obtain_escrow_address(
-        &self,
-        port_id: &PortId,
-        channel_id: &ChannelId,
-    ) -> Result<S::Address, TokenTransferError> {
+    fn obtain_escrow_address(&self, port_id: &PortId, channel_id: &ChannelId) -> S::Address {
         let mut working_set = self.working_set.borrow_mut();
 
         let escrow_account = self
             .ibc_transfer
             .escrow_address_cache
             .get(&(port_id.clone(), channel_id.clone()), *working_set)
-            .map_or_else(
-                || {
-                    compute_escrow_address::<S>(port_id, channel_id)
-                        .map_err(|e| TokenTransferError::Other(e.to_string()))
-                },
-                Ok,
-            )?;
+            .unwrap_or_else(|| compute_escrow_address::<S>(port_id, channel_id));
 
         self.ibc_transfer.escrow_address_cache.set(
             &(port_id.clone(), channel_id.clone()),
             &escrow_account,
             *working_set,
         );
-        Ok(escrow_account)
+        escrow_account
     }
 
     /// Validates that the sender has sufficient balance to perform the
@@ -364,7 +354,7 @@ where
     ) -> Result<(), TokenTransferError> {
         let token_id = self.get_native_token_id(coin, port_id, channel_id)?;
 
-        let escrow_address = self.obtain_escrow_address(port_id, channel_id)?;
+        let escrow_address = self.obtain_escrow_address(port_id, channel_id);
 
         self.validate_balance(token_id, &escrow_address, coin.amount)?;
 
@@ -454,7 +444,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
             }
         })?;
 
-        let escrow_account = self.obtain_escrow_address(port_id, channel_id)?;
+        let escrow_account = self.obtain_escrow_address(port_id, channel_id);
 
         // transfer coins to escrow account
         self.transfer(
@@ -483,7 +473,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
             }
         })?;
 
-        let escrow_account = self.obtain_escrow_address(port_id, channel_id)?;
+        let escrow_account = self.obtain_escrow_address(port_id, channel_id);
 
         // transfer coins out of escrow account to `to_account`
         self.transfer(token_id, &escrow_account, &to_account.address, &coin.amount)?;
