@@ -5,8 +5,7 @@ use sov_bank::{BankConfig, GasTokenConfig};
 use sov_chain_state::ChainStateConfig;
 use sov_ibc::ExampleModuleConfig;
 use sov_ibc_transfer::TransferConfig;
-use sov_modules_api::utils::generate_address as gen_address_generic;
-use sov_modules_api::{Spec, Zkvm};
+use sov_modules_api::{CryptoSpec, PrivateKey, Spec, Zkvm};
 use sov_rollup_interface::da::Time;
 use sov_rollup_interface::zk::CodeCommitment;
 
@@ -143,9 +142,11 @@ pub fn create_chain_state_config<S: Spec>() -> ChainStateConfig<S> {
 /// Creates a bank configuration with the given number of addresses and initial balance
 pub fn create_bank_config<S: Spec>(addresses_count: u64, initial_balance: u64) -> BankConfig<S> {
     let address_and_balances: Vec<_> = (0..addresses_count)
-        .map(|i| {
-            let key = format!("key_{i}");
-            let addr = gen_address_generic::<S>(&key);
+        .map(|_i| {
+            // FIXME(rano): use a deterministic `generate` method with format!("key_{i}").
+            // let addr = gen_address_generic::<S>(&key);
+            let private_key = <<S::CryptoSpec as CryptoSpec>::PrivateKey as PrivateKey>::generate();
+            let addr = (&private_key.pub_key()).into();
             (addr, initial_balance)
         })
         .collect();
