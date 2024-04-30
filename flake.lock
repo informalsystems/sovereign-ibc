@@ -82,11 +82,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1714356894,
-        "narHash": "sha256-W6Mss7AG6bnFT1BqRApHXvLXBrFOu7V0+EUe9iML30s=",
+        "lastModified": 1714443211,
+        "narHash": "sha256-lKTA3XqRo4aVgkyTSCtpcALpGXdmkilHTtN00eRg0QU=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "d9b44509b4064f0a3fc9c7c92a603861f52fbedc",
+        "rev": "ce35c36f58f82cee6ec959e0d44c587d64281b6f",
         "type": "github"
       },
       "original": {
@@ -98,16 +98,16 @@
     "sovereign-sdk-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1714386414,
-        "narHash": "sha256-Kuqyak82tSkhljNcjcch1rx2PwlfRf9+dhDEansvR58=",
+        "lastModified": 1714475331,
+        "narHash": "sha256-y77PHivHYEAkEIJCn1I+3hWLje7xm9ci5QO9h37ixGg=",
         "ref": "refs/heads/nightly",
-        "rev": "63fa5f110ebb323100ff740e6b152ba42a6ae84c",
-        "revCount": 977,
+        "rev": "356394cce29cbb9f56d4c32e2b5d0de1c1189ee8",
+        "revCount": 987,
         "type": "git",
         "url": "ssh://git@github.com/informalsystems/sovereign-sdk-wip"
       },
       "original": {
-        "rev": "63fa5f110ebb323100ff740e6b152ba42a6ae84c",
+        "rev": "356394cce29cbb9f56d4c32e2b5d0de1c1189ee8",
         "type": "git",
         "url": "ssh://git@github.com/informalsystems/sovereign-sdk-wip"
       }
