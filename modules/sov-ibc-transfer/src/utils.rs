@@ -7,7 +7,10 @@ use sov_modules_api::{CryptoSpec, Spec};
 /// <https://github.com/cosmos/cosmos-sdk/blob/master/docs/architecture/adr-028-public-key-addresses.md/>
 /// except that the `Hasher` function mandated by the `CryptoSpec` trait in the
 /// rollup implementation.
-pub fn compute_escrow_address<S: Spec>(port_id: &PortId, channel_id: &ChannelId) -> S::Address {
+pub fn compute_escrow_address<S: Spec>(
+    port_id: &PortId,
+    channel_id: &ChannelId,
+) -> Result<S::Address, anyhow::Error> {
     let escrow_account_bytes: [u8; 32] = {
         let mut hasher = <S::CryptoSpec as CryptoSpec>::Hasher::new();
         hasher.update(VERSION);
@@ -18,5 +21,6 @@ pub fn compute_escrow_address<S: Spec>(port_id: &PortId, channel_id: &ChannelId)
         *hash.as_ref()
     };
 
-    escrow_account_bytes.into()
+    // FIXME(rano): this should be infallible.
+    escrow_account_bytes.as_ref().try_into()
 }
