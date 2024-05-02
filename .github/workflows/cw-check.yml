@@ -22,9 +22,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: true
-          token: ${{ secrets.AUTH_TOKEN }}
+      - name: Set up Git credentials for private repo
+        run: |
+          git config --global --replace-all \
+          "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
+          ssh://git@github.com
       - uses: cachix/install-nix-action@v26
         with:
           extra_nix_config: |
