@@ -1,4 +1,3 @@
-
 [patch.crates-io]
 
 sov-ibc                         = { path = "modules/sov-ibc" }
@@ -21,17 +20,79 @@ ibc-testkit                     = { git = "https://github.com/cosmos/ibc-rs.git"
 basecoin                        = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "61256f9" }
 jmt                             = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
-sov-modules-api                 = { path = "vendor/sovereign-sdk/module-system/sov-modules-api" }
-sov-state                       = { path = "vendor/sovereign-sdk/module-system/sov-state" }
-sov-bank                        = { path = "vendor/sovereign-sdk/module-system/module-implementations/sov-bank" }
-sov-sequencer-registry          = { path = "vendor/sovereign-sdk/module-system/module-implementations/sov-sequencer-registry" }
-sov-db                          = { path = "vendor/sovereign-sdk/full-node/sov-db" }
-sov-rollup-interface            = { path = "vendor/sovereign-sdk/rollup-interface" }
-sov-mock-zkvm                   = { path = "vendor/sovereign-sdk/adapters/mock-zkvm" }
-sov-prover-storage-manager      = { path = "vendor/sovereign-sdk/full-node/sov-prover-storage-manager" }
-sov-kernels                     = { path = "vendor/sovereign-sdk/module-system/sov-kernels" }
-sov-modules-core                = { path = "vendor/sovereign-sdk/module-system/sov-modules-core" }
-sov-celestia-adapter            = { path = "vendor/sovereign-sdk/adapters/celestia" }
-sov-mock-da                     = { path = "vendor/sovereign-sdk/adapters/mock-da" }
-const-rollup-config             = { path = "vendor/sovereign-sdk/examples/const-rollup-config" }
-sov-chain-state                 = { path = "vendor/sovereign-sdk/module-system/module-implementations/sov-chain-state" }
+
+# The sovereign-sdk patches are specified in two modes.
+# In the normal mode, the uncommented git URLs would allow Cargo to fetch from sovereign-sdk private git repository.
+# In Nix mode, the git lines are commented, and the path lines are uncommented, to fetch sovereign-sdk
+# modules from a local vendor file path.
+# As a result, _both_ git and path entries for each sovereign-sdk module is required, with the path section commented.
+
+[patch.crates-io.sov-modules-api]
+# path = "vendor/sovereign-sdk/module-system/sov-modules-api"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-state]
+# path = "vendor/sovereign-sdk/module-system/sov-state"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-bank]
+# path = "vendor/sovereign-sdk/module-system/module-implementations/sov-bank"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-sequencer-registry]
+# path = "vendor/sovereign-sdk/module-system/module-implementations/sov-sequencer-registry"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-db]
+# path = "vendor/sovereign-sdk/full-node/sov-db"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-rollup-interface]
+# path = "vendor/sovereign-sdk/rollup-interface"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-mock-zkvm]
+# path = "vendor/sovereign-sdk/adapters/mock-zkvm"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-prover-storage-manager]
+# path = "vendor/sovereign-sdk/full-node/sov-prover-storage-manager"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-kernels]
+# path = "vendor/sovereign-sdk/module-system/sov-kernels"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-modules-core]
+# path = "vendor/sovereign-sdk/module-system/sov-modules-core"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-celestia-adapter]
+# path = "vendor/sovereign-sdk/adapters/celestia"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-mock-da]
+# path = "vendor/sovereign-sdk/adapters/mock-da"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.const-rollup-config]
+# path = "vendor/sovereign-sdk/examples/const-rollup-config"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"
+
+[patch.crates-io.sov-chain-state]
+# path = "vendor/sovereign-sdk/module-system/module-implementations/sov-chain-state"
+git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
+rev = "63fa5f11"

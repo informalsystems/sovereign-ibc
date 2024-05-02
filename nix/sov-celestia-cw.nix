@@ -4,6 +4,42 @@
 ,   sovereign-sdk-src
 }:
 let
+    # Use local file path instead of git URL for sovereign-sdk dependencies
+    patch-section = builtins.replaceStrings
+        [
+            "# path = \"vendor/sovereign-sdk"
+            "git = \"ssh://git@github.com/informalsystems/sovereign-sdk-wip.git\"\nrev = "
+        ]
+        [
+            "path = \"vendor/sovereign-sdk"
+            "# git = \"ssh://git@github.com/informalsystems/sovereign-sdk-wip.git\"\n# rev = "
+        ]
+        (builtins.readFile ../.cargo/config.toml)
+    ;
+
+    # Comment out Cargo.lock lines that include sovereign-sdk source, since we switch to local file path
+    cargo-lock = builtins.replaceStrings
+        [ "source = \"git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git" ]
+        [ "# source = \"git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git" ]
+        (builtins.readFile ../Cargo.lock)
+    ;
+
+    cargo-toml-file = builtins.toFile
+        "Cargo.toml"
+        ( builtins.concatStringsSep
+            "\n"
+            [
+                (builtins.readFile ../Cargo.toml)
+                patch-section
+            ]
+        )
+    ;
+
+    cargo-lock-file = builtins.toFile
+        "Cargo.lock"
+        cargo-lock
+    ;
+
     sov-celestia-src = nixpkgs.stdenv.mkDerivation {
         name = "sov-celestia-src";
         dontUnpack = true;
@@ -16,11 +52,11 @@ let
             cp -r ${../modules} $out/modules
             cp -r ${../mocks} $out/mocks
             cp -r ${../proto} $out/proto
-            cp -r ${sovereign-sdk-src} $out/vendor/sovereign-sdk
-            cp ${../Cargo.lock} $out/Cargo.lock
 
-            cat ${../Cargo.toml} > $out/Cargo.toml
-            cat ${../.cargo/config.toml} >> $out/Cargo.toml
+            cp -r ${sovereign-sdk-src} $out/vendor/sovereign-sdk
+
+            cp ${cargo-lock-file} $out/Cargo.lock
+            cp ${cargo-toml-file} $out/Cargo.toml
         '';
     };
 
@@ -29,7 +65,7 @@ let
         src = sov-celestia-src;
 
         cargoLock = {
-            lockFile = ../Cargo.lock;
+            lockFile = cargo-lock-file;
             outputHashes = {
                 "basecoin-0.1.0" = "sha256-7huJeHyrS8GVQqE3nu/VEHxuPWsFqEDo1kabLbenBYA=";
                 "celestia-proto-0.1.0" = "sha256-iUgrctxdJUyhfrEQ0zoVj5AKIqgj/jQVNli5/K2nxK0=";
