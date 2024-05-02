@@ -56,7 +56,7 @@ let
             cp -r ${sovereign-sdk-src} $out/vendor/sovereign-sdk
 
             cp ${cargo-lock-file} $out/Cargo.lock
-            cat ${cargo-toml-file} > $out/Cargo.toml
+            cp ${cargo-toml-file} $out/Cargo.toml
         '';
     };
 
