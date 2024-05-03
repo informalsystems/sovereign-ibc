@@ -44,6 +44,7 @@ ibc-client-tendermint = { workspace = true }
 ibc-core-host-cosmos  = { workspace = true }
 ibc-query             = { workspace = true }
 ibc-testkit           = { workspace = true }
+ibc-client-wasm-types = { git = "https://github.com/cosmos/ibc-rs.git", rev = "c579628c67", default-features = false }
 
 # cosmos dependencies
 basecoin             = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "90886ab" }
@@ -60,6 +61,7 @@ const-rollup-config        = { workspace = true, optional = true }
 sov-kernels                = { workspace = true, features = ["native"], optional = true }
 sov-mock-zkvm              = { workspace = true, features = ["native"], optional = true }
 sov-prover-storage-manager = { workspace = true, features = ["test-utils"] }
+sov-celestia-client-cw     = { path = "../clients/sov-celestia-cw" }
 
 [dev-dependencies]
 test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }
