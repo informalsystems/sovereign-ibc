@@ -18,5 +18,5 @@ pub fn compute_escrow_address<S: Spec>(port_id: &PortId, channel_id: &ChannelId)
         *hash.as_ref()
     };
 
-    ModuleId::from(escrow_account_bytes)
+    escrow_account_bytes.into()
 }
