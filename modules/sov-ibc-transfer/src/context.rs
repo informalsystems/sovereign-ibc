@@ -23,7 +23,7 @@ use ibc_core::primitives::Signer;
 use ibc_core::router::module::Module;
 use ibc_core::router::types::module::ModuleExtras;
 use sov_bank::{Coins, IntoPayable, Payable, TokenId};
-use sov_modules_api::{Context, Spec, WorkingSet};
+use sov_modules_api::{Context, ModuleId, Spec, WorkingSet};
 use uint::FromDecStrErr;
 
 use super::IbcTransfer;
@@ -137,7 +137,7 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     /// Obtains the escrow address for a given port and channel pair by looking
     /// up the cache. If the cache does not contain the address, it is computed
     /// and stored in the cache.
-    fn obtain_escrow_address(&self, port_id: &PortId, channel_id: &ChannelId) -> S::Address {
+    fn obtain_escrow_address(&self, port_id: &PortId, channel_id: &ChannelId) -> ModuleId {
         let mut working_set = self.working_set.borrow_mut();
 
         self.ibc_transfer
@@ -160,7 +160,7 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     fn validate_balance(
         &self,
         token_id: TokenId,
-        address: &S::Address,
+        address: impl Payable<S>,
         amount: Amount,
     ) -> Result<Amount, TokenTransferError> {
         let sender_balance: u64 = self
@@ -197,7 +197,7 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     fn create_token(
         &self,
         token_name: String,
-        minter_address: &S::Address,
+        minter_address: impl Payable<S>,
     ) -> Result<TokenId, TokenTransferError> {
         let new_token_id = self
             .ibc_transfer
@@ -206,7 +206,7 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
                 token_name.clone(),
                 SALT,
                 0,
-                minter_address.as_token_holder(),
+                minter_address,
                 vec![self.ibc_transfer.id.to_payable()],
                 self.ibc_transfer.id.to_payable(),
                 &mut self.working_set.borrow_mut(),
@@ -222,8 +222,8 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     fn transfer(
         &self,
         token_id: TokenId,
-        from_account: &S::Address,
-        to_account: &S::Address,
+        from_account: impl Payable<S>,
+        to_account: impl Payable<S>,
         amount: &Amount,
     ) -> Result<(), TokenTransferError> {
         let amount: sov_bank::Amount = (*amount.as_ref())
@@ -356,7 +356,7 @@ where
 
         let escrow_address = self.obtain_escrow_address(port_id, channel_id);
 
-        self.validate_balance(token_id, &escrow_address, coin.amount)?;
+        self.validate_balance(token_id, escrow_address.to_payable(), coin.amount)?;
 
         Ok(())
     }
@@ -450,7 +450,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         self.transfer(
             token_id,
             &from_account.address,
-            &escrow_account,
+            escrow_account.to_payable(),
             &coin.amount,
         )?;
 
@@ -476,7 +476,12 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
         let escrow_account = self.obtain_escrow_address(port_id, channel_id);
 
         // transfer coins out of escrow account to `to_account`
-        self.transfer(token_id, &escrow_account, &to_account.address, &coin.amount)?;
+        self.transfer(
+            token_id,
+            escrow_account.to_payable(),
+            &to_account.address,
+            &coin.amount,
+        )?;
 
         Ok(())
     }
