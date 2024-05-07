@@ -5679,6 +5679,7 @@ dependencies = [
  "sov-ibc",
  "sov-ibc-transfer",
  "sov-kernels",
+ "sov-mock-da",
  "sov-mock-zkvm",
  "sov-modules-api",
  "sov-prover-storage-manager",
