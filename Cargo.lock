@@ -151,7 +151,7 @@ dependencies = [
  "argh_shared",
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -220,7 +220,7 @@ dependencies = [
  "ark-serialize 0.3.0",
  "ark-std 0.3.0",
  "derivative",
- "num-bigint 0.4.4",
+ "num-bigint 0.4.5",
  "num-traits",
  "paste",
  "rustc_version 0.3.3",
@@ -240,7 +240,7 @@ dependencies = [
  "derivative",
  "digest 0.10.7",
  "itertools 0.10.5",
- "num-bigint 0.4.4",
+ "num-bigint 0.4.5",
  "num-traits",
  "paste",
  "rustc_version 0.4.0",
@@ -273,7 +273,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db2fd794a08ccb318058009eefdf15bcaaaaf6f8161eb3345f907222bac38b20"
 dependencies = [
- "num-bigint 0.4.4",
+ "num-bigint 0.4.5",
  "num-traits",
  "quote",
  "syn 1.0.109",
@@ -285,7 +285,7 @@ version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7abe79b0e4288889c4574159ab790824d0033b9fdcb2a112a3182fac2e514565"
 dependencies = [
- "num-bigint 0.4.4",
+ "num-bigint 0.4.5",
  "num-traits",
  "proc-macro2",
  "quote",
@@ -351,7 +351,7 @@ dependencies = [
  "ark-serialize-derive",
  "ark-std 0.4.0",
  "digest 0.10.7",
- "num-bigint 0.4.4",
+ "num-bigint 0.4.5",
 ]
 
 [[package]]
@@ -437,7 +437,7 @@ checksum = "16e62a023e7c117e27523144c5d2459f4397fcc3cab0085af8e2224f643a0193"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -448,7 +448,7 @@ checksum = "c6fa2087f2753a7da8cc1c0dbfcf89579dd57458e36769de5ac750b4671737ca"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -459,7 +459,7 @@ checksum = "3c87f3f15e7794432337fc718554eaa4dc8f04c9677a950ffe366f20a162ae42"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -708,7 +708,7 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -929,7 +929,7 @@ checksum = "4da9a32f3fed317401fa3c862968128267c3106685286e15d5aaa3d7389c2f60"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -1090,7 +1090,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -1130,7 +1130,7 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 [[package]]
 name = "const-rollup-config"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 
 [[package]]
 name = "const_format"
@@ -1537,7 +1537,7 @@ checksum = "f46882e17999c6cc590af592290432be3bce0428cb0d5f8b6715e4dc7b383eb3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -1573,7 +1573,7 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -1584,7 +1584,7 @@ checksum = "a668eda54683121533a393014d8692171709ff57a7d61f187b6e782719f8933f"
 dependencies = [
  "darling_core",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -1716,7 +1716,7 @@ checksum = "487585f4d0c6655fe74905e2504d8ad6908e4db67f744eb140876906c2f3175d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -1908,7 +1908,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -1929,7 +1929,7 @@ dependencies = [
  "darling",
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -2158,7 +2158,7 @@ checksum = "87750cf4b7a4c0625b1529e4c543c2182106e4dedc60a2a6455e00d212c489ac"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -2971,7 +2971,7 @@ source = "git+https://github.com/cosmos/ibc-rs.git?rev=d5e3887770#d5e3887770d357
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -3453,7 +3453,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -3785,11 +3785,10 @@ dependencies = [
 
 [[package]]
 name = "num-bigint"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "608e7659b5c3d7cba262d894801b9ec9d00de989e8a82bd4bef91d08da45cdc0"
+checksum = "c165a9ab64cf766f73521c0dd2cfdff64f488b8f0b3e621face3462d3db536d7"
 dependencies = [
- "autocfg",
  "num-integer",
  "num-traits",
 ]
@@ -3822,7 +3821,7 @@ checksum = "ed3955f1a9c7c0c15e092f9c887db08b1fc683305fdf6eb6684f22555355e202"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -3946,9 +3945,9 @@ dependencies = [
 
 [[package]]
 name = "paste"
-version = "1.0.14"
+version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de3145af08024dea9fa9914f381a17b8fc6034dfb00f3a84013f7ff43f29ed4c"
+checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "peeking_take_while"
@@ -4027,7 +4026,7 @@ checksum = "2f38a4412a78282e09a2cf38d195ea5420d15ba0602cb375210efbc877243965"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -4072,12 +4071,12 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "prettyplease"
-version = "0.2.19"
+version = "0.2.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ac2cf0f2e4f42b49f5ffd07dae8d746508ef7526c13940e5f524012ae6c6550"
+checksum = "5f12335488a2f3b0a83b14edad48dca9879ce89b2edd10e80237e4e852dd645e"
 dependencies = [
  "proc-macro2",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -4146,9 +4145,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.81"
+version = "1.0.82"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d1597b0c024618f09a9c3b8655b7e430397a36d23fdafec26d6965e9eec3eba"
+checksum = "8ad3d49ab951a01fbaafe34f2ec74122942fe18a3f9814c3268f1bb72042131b"
 dependencies = [
  "unicode-ident",
 ]
@@ -4226,7 +4225,7 @@ dependencies = [
  "prost",
  "prost-types",
  "regex",
- "syn 2.0.60",
+ "syn 2.0.61",
  "tempfile",
 ]
 
@@ -4240,7 +4239,7 @@ dependencies = [
  "itertools 0.12.1",
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -4715,7 +4714,7 @@ dependencies = [
  "hex",
  "human-repr",
  "lazy-regex",
- "num-bigint 0.4.4",
+ "num-bigint 0.4.5",
  "num-derive 0.4.2",
  "num-traits",
  "prost",
@@ -4730,7 +4729,7 @@ dependencies = [
  "risc0-zkvm-platform",
  "rrs-lib",
  "rustc-demangle",
- "semver 1.0.22",
+ "semver 1.0.23",
  "serde",
  "sha2 0.10.8",
  "tempfile",
@@ -4842,7 +4841,7 @@ dependencies = [
  "ark-ff 0.4.2",
  "bytes",
  "fastrlp",
- "num-bigint 0.4.4",
+ "num-bigint 0.4.5",
  "num-traits",
  "parity-scale-codec",
  "primitive-types",
@@ -4894,7 +4893,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366"
 dependencies = [
- "semver 1.0.22",
+ "semver 1.0.23",
 ]
 
 [[package]]
@@ -4955,9 +4954,9 @@ dependencies = [
 
 [[package]]
 name = "rustversion"
-version = "1.0.15"
+version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80af6f9131f277a45a3fba6ce8e2258037bb0477a67e610d3c1fe046ab31de47"
+checksum = "092474d1a01ea8278f69e6a358998405fae5b8b963ddaeb2b0b04a128bf1dfb0"
 
 [[package]]
 name = "rusty-fork"
@@ -4984,9 +4983,9 @@ dependencies = [
 
 [[package]]
 name = "ryu"
-version = "1.0.17"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e86697c916019a8588c99b5fac3cead74ec0b4b819707a682fd4d23fa0ce1ba1"
+checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 
 [[package]]
 name = "same-file"
@@ -5051,7 +5050,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_derive_internals",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -5136,9 +5135,9 @@ dependencies = [
 
 [[package]]
 name = "semver"
-version = "1.0.22"
+version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92d43fe69e652f3df9bdc2b85b2854a0825b86e4fb76bc44d945137d053639ca"
+checksum = "61697e0a1c7e512e84a621326239844a24d8207b4669b41bc18b32ea5cbf988b"
 
 [[package]]
 name = "semver-parser"
@@ -5219,7 +5218,7 @@ checksum = "856f046b9400cee3c8c94ed572ecdb752444c24528c035cd35882aad6f492bcb"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -5230,7 +5229,7 @@ checksum = "330f01ce65a3a5fe59a60c82f3c9a024b573b8a6e875bd233fe5f934e71d54e3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -5252,7 +5251,7 @@ checksum = "6c64451ba24fc7a6a2d60fc75dd9c83c90903b19028d4eff35e88fc1e86564e9"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -5429,7 +5428,7 @@ dependencies = [
 [[package]]
 name = "sov-bank"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -5448,7 +5447,7 @@ dependencies = [
 [[package]]
 name = "sov-blob-storage"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "bincode",
@@ -5469,7 +5468,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-adapter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5551,7 +5550,7 @@ dependencies = [
 [[package]]
 name = "sov-chain-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "borsh",
@@ -5608,7 +5607,7 @@ dependencies = [
 [[package]]
 name = "sov-db"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5745,7 +5744,7 @@ dependencies = [
 [[package]]
 name = "sov-kernels"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "sov-blob-storage",
@@ -5758,7 +5757,7 @@ dependencies = [
 [[package]]
 name = "sov-mock-da"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5766,7 +5765,9 @@ dependencies = [
  "bytes",
  "futures",
  "hex",
+ "schemars",
  "serde",
+ "serde_json",
  "sha2 0.10.8",
  "sov-rollup-interface",
  "tokio",
@@ -5776,7 +5777,7 @@ dependencies = [
 [[package]]
 name = "sov-mock-zkvm"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "bincode",
@@ -5794,7 +5795,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-api"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -5819,7 +5820,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-core"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5833,6 +5834,7 @@ dependencies = [
  "proptest",
  "schemars",
  "serde",
+ "serde_json",
  "sha2 0.10.8",
  "sov-db",
  "sov-rollup-interface",
@@ -5842,7 +5844,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-macros"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -5859,7 +5861,7 @@ dependencies = [
 [[package]]
 name = "sov-prover-storage-manager"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "rockbound",
@@ -5872,7 +5874,7 @@ dependencies = [
 [[package]]
 name = "sov-rollup-interface"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5894,7 +5896,7 @@ dependencies = [
 [[package]]
 name = "sov-sequencer-registry"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "borsh",
@@ -5908,12 +5910,13 @@ dependencies = [
  "sov-modules-api",
  "sov-state",
  "thiserror",
+ "tracing",
 ]
 
 [[package]]
 name = "sov-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=356394c#356394cce29cbb9f56d4c32e2b5d0de1c1189ee8"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=78153d2dd616291bb400e1a2a496bec3e96b3ccd#78153d2dd616291bb400e1a2a496bec3e96b3ccd"
 dependencies = [
  "anyhow",
  "bcs",
@@ -5999,9 +6002,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.60"
+version = "2.0.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "909518bc7b1c9b779f1bbf07f2929d35af9f0f37e47c6e9ef7f9dddc1e1821f3"
+checksum = "c993ed8ccba56ae856363b1845da7266a7cb78e1d146c8a32d54b45a8b831fc9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6208,7 +6211,7 @@ dependencies = [
  "pin-project",
  "rand",
  "reqwest",
- "semver 1.0.22",
+ "semver 1.0.23",
  "serde",
  "serde_bytes",
  "serde_json",
@@ -6270,27 +6273,27 @@ checksum = "5999e24eaa32083191ba4e425deb75cdf25efefabe5aaccb7446dd0d4122a3f5"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
 name = "thiserror"
-version = "1.0.59"
+version = "1.0.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0126ad08bff79f29fc3ae6a55cc72352056dfff61e3ff8bb7129476d44b23aa"
+checksum = "579e9083ca58dd9dcf91a9923bb9054071b9ebbd800b342194c9feb0ee89fc18"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.59"
+version = "1.0.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d1cd413b5d558b4c5bf3680e324a6fa5014e7b7c067a51e69dbdf47eb7148b66"
+checksum = "e2470041c06ec3ac1ab38d0356a6119054dedaea53e12fbefc0de730a1c08524"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -6382,7 +6385,7 @@ checksum = "5b8a1e28f2deaa14e508979454cb3a223b10b938b45af148bc0986de36f1923b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -6525,7 +6528,7 @@ dependencies = [
  "proc-macro2",
  "prost-build",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -6613,7 +6616,7 @@ checksum = "34704c8d6ebcbc939824180af020566b01a7c01f80641264eba0999f6c2b6be7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -6697,7 +6700,7 @@ checksum = "1f718dfaf347dcb5b983bfc87608144b0bad87970aebcbea5ce44d2a30c08e63"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -6727,7 +6730,7 @@ checksum = "ac73887f47b9312552aa90ef477927ff014d63d1920ca8037c6c1951eab64bb1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -6889,7 +6892,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
  "wasm-bindgen-shared",
 ]
 
@@ -6946,7 +6949,7 @@ checksum = "e94f17b526d0a461a191c78ea52bbce64071ed5c04c9ffe424dcb38f74171bb7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
@@ -6979,7 +6982,7 @@ checksum = "b7f89739351a2e03cb94beb799d47fb2cac01759b40ec441f7de39b00cbf7ef0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -7421,22 +7424,22 @@ dependencies = [
 
 [[package]]
 name = "zerocopy"
-version = "0.7.33"
+version = "0.7.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "087eca3c1eaf8c47b94d02790dd086cd594b912d2043d4de4bfdd466b3befb7c"
+checksum = "ae87e3fcd617500e5d106f0380cf7b77f3c6092aae37191433159dda23cfb087"
 dependencies = [
  "zerocopy-derive",
 ]
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.7.33"
+version = "0.7.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f4b6c273f496d8fd4eaf18853e6b448760225dc030ff2c485a786859aea6393"
+checksum = "15e934569e47891f7d9411f1a451d947a60e000ab3bd24fbb970f000387d1b3b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
@@ -7456,7 +7459,7 @@ checksum = "ce36e65b0d2999d2aafac989fb249189a141aee1f53c612c1f37d72631959f69"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.60",
+ "syn 2.0.61",
 ]
 
 [[package]]
