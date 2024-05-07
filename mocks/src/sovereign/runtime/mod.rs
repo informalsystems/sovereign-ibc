@@ -4,10 +4,9 @@ pub use config::*;
 use sov_bank::Bank;
 use sov_ibc::Ibc;
 use sov_ibc_transfer::IbcTransfer;
-use sov_modules_api::macros::DefaultRuntime;
 use sov_modules_api::{DispatchCall, Genesis, MessageCodec, Spec};
 
-#[derive(Genesis, DispatchCall, MessageCodec, DefaultRuntime, Clone)]
+#[derive(Genesis, DispatchCall, MessageCodec, Default, Clone)]
 #[serialization(serde::Serialize, serde::Deserialize)]
 #[serialization(borsh::BorshDeserialize, borsh::BorshSerialize)]
 pub struct Runtime<S>
