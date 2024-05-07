@@ -14,6 +14,7 @@ use sov_consensus_state_tracker::{ConsensusStateTracker, HasConsensusState};
 use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::context::IbcContext;
 use sov_kernels::basic::BasicKernel;
+use sov_mock_da::MockFee;
 use sov_modules_api::{Context, Spec, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
@@ -30,7 +31,7 @@ type Mempool<C> = Vec<RuntimeCall<C>>;
 pub struct MockRollup<S, Da, P>
 where
     S: Spec,
-    Da: DaService<Error = anyhow::Error> + Clone,
+    Da: DaService<Error = anyhow::Error, Fee = MockFee> + Clone,
     Da::Spec: HasConsensusState,
     P: MerkleProofSpec,
 {
@@ -47,7 +48,7 @@ where
 impl<S, Da, P> MockRollup<S, Da, P>
 where
     S: Spec<Storage = ProverStorage<P>> + Send + Sync,
-    Da: DaService<Error = anyhow::Error> + Clone,
+    Da: DaService<Error = anyhow::Error, Fee = MockFee> + Clone,
     Da::Spec: HasConsensusState,
     P: MerkleProofSpec + Clone + 'static,
     <P as MerkleProofSpec>::Hasher: Send,

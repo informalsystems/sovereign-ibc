@@ -7,6 +7,7 @@ use ibc_core::host::ValidationContext;
 use ibc_query::core::channel::QueryPacketCommitmentRequest;
 use ibc_query::core::client::{QueryClientStateRequest, QueryConsensusStateRequest};
 use sov_consensus_state_tracker::HasConsensusState;
+use sov_mock_da::MockFee;
 use sov_modules_api::{Spec, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
@@ -20,7 +21,7 @@ use crate::utils::{wait_for_block, MutexUtil};
 impl<S, Da, P> Handle for MockRollup<S, Da, P>
 where
     S: Spec<Storage = ProverStorage<P>> + Send + Sync,
-    Da: DaService<Error = anyhow::Error> + Clone,
+    Da: DaService<Error = anyhow::Error, Fee = MockFee> + Clone,
     Da::Spec: HasConsensusState,
     <Da as DaService>::Spec: Clone,
     P: MerkleProofSpec + Clone + 'static,
