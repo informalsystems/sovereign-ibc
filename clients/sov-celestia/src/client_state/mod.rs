@@ -151,7 +151,6 @@ impl TryFrom<Any> for ClientState {
     type Error = ClientError;
 
     fn try_from(raw: Any) -> Result<Self, Self::Error> {
-        // TODO(rano): fix the clones
         WasmClientState::try_from(raw.clone())
             .map_err(|_| ClientError::Other {
                 description: "not wasm client state".into(),
