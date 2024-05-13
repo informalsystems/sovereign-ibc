@@ -96,11 +96,11 @@ impl TryFrom<WasmClientState> for ClientState {
             description: format!("Expected Any: {err}"),
         })?;
 
-        Ok(Self::wasm(
-            any_data.try_into()?,
-            value.checksum,
-            value.latest_height,
-        ))
+        let state = any_data.try_into()?;
+
+        // note: state.latest_height_in_sov() and value.latest_height should be equal.
+
+        Ok(Self::wasm(state, value.checksum, value.latest_height))
     }
 }
 
