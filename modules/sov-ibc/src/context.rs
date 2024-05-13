@@ -20,8 +20,8 @@ use ibc_core::host::types::path::{
 };
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::{Signer, Timestamp};
-use sov_celestia_client::client_state::{ClientState as HostClientState, ClientState};
-use sov_celestia_client::consensus_state::{ConsensusState as HostConsensusState, ConsensusState};
+use sov_celestia_client::client_state::ClientState;
+use sov_celestia_client::consensus_state::ConsensusState;
 use sov_modules_api::{EventEmitter, ModuleInfo, Spec, WorkingSet};
 use sov_state::Prefix;
 
@@ -76,7 +76,7 @@ where
     pub fn store_upgraded_client_state(
         &mut self,
         upgrade_path: UpgradeClientPath,
-        client_state: HostClientState,
+        client_state: ClientState,
     ) {
         self.ibc.upgraded_client_state_map.set(
             &upgrade_path,
@@ -89,7 +89,7 @@ where
     pub fn store_upgraded_consensus_state(
         &mut self,
         upgrade_path: UpgradeClientPath,
-        consensus_state: HostConsensusState,
+        consensus_state: ConsensusState,
     ) {
         self.ibc.upgraded_consensus_state_map.set(
             &upgrade_path,
