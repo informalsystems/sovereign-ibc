@@ -34,7 +34,8 @@ use sov_celestia_client::client_state::ClientState as HostClientState;
 use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_ibc_transfer::IbcTransfer;
 use sov_modules_api::{
-    Context, Error, ModuleId, ModuleInfo, Spec, StateMap, StateValue, StateVec, WorkingSet,
+    Context, Error, GenesisState, ModuleId, ModuleInfo, Spec, StateMap, StateValue, StateVec,
+    TxState,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
@@ -141,7 +142,11 @@ impl<S: Spec> sov_modules_api::Module for Ibc<S> {
 
     type Event = IbcEvent;
 
-    fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<S>) -> Result<(), Error> {
+    fn genesis(
+        &self,
+        config: &Self::Config,
+        working_set: &mut impl GenesisState<Self::Spec>,
+    ) -> Result<(), Error> {
         Ok(self.init_module(config, working_set)?)
     }
 
@@ -149,7 +154,7 @@ impl<S: Spec> sov_modules_api::Module for Ibc<S> {
         &self,
         msg: Self::CallMessage,
         context: &Context<S>,
-        working_set: &mut WorkingSet<S>,
+        working_set: &mut impl TxState<Self::Spec>,
     ) -> Result<sov_modules_api::CallResponse, Error> {
         match msg {
             call::CallMessage::Core(msg_envelope) => {
