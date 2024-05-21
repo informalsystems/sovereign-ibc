@@ -108,7 +108,10 @@ where
         self.mempool.acquire_mutex().clone()
     }
 
-    pub fn ibc_ctx<'a>(&'a self, working_set: &'a mut WorkingSet<S>) -> IbcContext<'a, S> {
+    pub fn ibc_ctx<'a>(
+        &'a self,
+        working_set: &'a mut WorkingSet<S>,
+    ) -> IbcContext<'a, S, WorkingSet<S>> {
         let shared_working_set = Rc::new(RefCell::new(working_set));
 
         IbcContext::new(&self.runtime.ibc, shared_working_set.clone())

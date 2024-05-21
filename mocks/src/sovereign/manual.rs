@@ -45,7 +45,7 @@ where
 
         let mut working_set = checkpoint.to_revertable_unmetered();
 
-        let mut ibc_ctx: IbcContext<'_, S> = self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx: IbcContext<'_, S, _> = self.ibc_ctx(&mut working_set);
 
         let client_counter = ibc_ctx.client_counter().unwrap();
 
