@@ -190,7 +190,7 @@ where
     fn commitment_prefix(&self) -> CommitmentPrefix {
         let module_prefix: Prefix = self.ibc.prefix().into();
 
-        let module_prefix_vec = module_prefix.as_aligned_vec().clone().into_inner();
+        let module_prefix_vec = module_prefix.as_ref().to_vec();
 
         CommitmentPrefix::try_from(module_prefix_vec).expect("never fails as prefix is not empty")
     }
