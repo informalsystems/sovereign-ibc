@@ -72,11 +72,6 @@ rev = "913eb31f60ebbce8588de45ca57c9a1cc61d6004"
 git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
 rev = "913eb31f60ebbce8588de45ca57c9a1cc61d6004"
 
-[patch.crates-io.sov-modules-core]
-# path = "vendor/sovereign-sdk/module-system/sov-modules-core"
-git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"
-rev = "913eb31f60ebbce8588de45ca57c9a1cc61d6004"
-
 [patch.crates-io.sov-celestia-adapter]
 # path = "vendor/sovereign-sdk/adapters/celestia"
 git = "ssh://git@github.com/informalsystems/sovereign-sdk-wip.git"

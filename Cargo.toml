@@ -96,7 +96,6 @@ sov-bank                   = { version = "0.3.0" }
 sov-celestia-adapter       = { version = "0.3.0" }
 sov-mock-da                = { version = "0.3.0" }
 sov-modules-api            = { version = "0.3.0" }
-sov-modules-core           = { version = "0.3.0" }
 sov-state                  = { version = "0.3.0" }
 sov-rollup-interface       = { version = "0.3.0" }
 

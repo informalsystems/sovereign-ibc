@@ -33,7 +33,7 @@ tendermint       = { workspace = true } # Temporary dependency used for implemen
 sov-mock-da          = { workspace = true, features = ["native"], optional = true }
 sov-celestia-adapter = { workspace = true, features = ["native"], optional = true }
 sov-modules-api      = { workspace = true }
-sov-modules-core     = { workspace = true }
+sov-state            = { workspace = true }
 sov-rollup-interface = { workspace = true }
 sov-ibc              = { path = "../sov-ibc" }
 sov-celestia-client  = { path = "../../clients/sov-celestia" }
@@ -44,7 +44,7 @@ mock-da = ["native", "sov-mock-da"]
 celestia-da = ["native", "sov-celestia-adapter"]
 native = [
     "sov-modules-api/native",
-    "sov-modules-core/native",
+    "sov-state/native",
     "sov-rollup-interface/native",
     "sov-ibc/native",
 ]
