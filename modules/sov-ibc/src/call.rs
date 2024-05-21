@@ -9,7 +9,7 @@ use ibc_core::entrypoint::dispatch;
 use ibc_core::handler::types::msgs::MsgEnvelope;
 use ibc_core::primitives::proto::Any;
 use sov_ibc_transfer::context::IbcTransferContext;
-use sov_modules_api::{CallResponse, Context, Spec, WorkingSet};
+use sov_modules_api::{CallResponse, Context, Spec, TxState};
 use tracing::info;
 
 use crate::context::IbcContext;
@@ -34,7 +34,7 @@ impl<S: Spec> Ibc<S> {
         &self,
         msg: Any,
         context: Context<S>,
-        working_set: &mut WorkingSet<S>,
+        working_set: &mut impl TxState<S>,
     ) -> Result<CallResponse> {
         let msg_envelope = MsgEnvelope::try_from(msg).map_err(|e| {
             anyhow::anyhow!("Failed to convert Any to MsgEnvelope: {}", e.to_string())
@@ -67,7 +67,7 @@ impl<S: Spec> Ibc<S> {
         &self,
         msg_transfer: MsgTransfer,
         context: Context<S>,
-        working_set: &mut WorkingSet<S>,
+        working_set: &mut impl TxState<S>,
     ) -> Result<CallResponse> {
         info!(
             "Processing IBC transfer message: {:?} at visible_slot_number: {:?}",
