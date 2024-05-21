@@ -19,12 +19,12 @@ use ibc_query::core::context::{ProvableContext, QueryContext};
 use jsonrpsee::core::RpcResult;
 use sov_celestia_client::client_state::ClientState as HostClientState;
 use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
-use sov_modules_api::Spec;
+use sov_modules_api::{Spec, WorkingSet};
 
 use crate::context::IbcContext;
 use crate::helpers::StorageValue;
 
-impl<'a, S> IbcContext<'a, S>
+impl<'a, S> IbcContext<'a, S, WorkingSet<S>>
 where
     S: Spec,
 {
@@ -249,7 +249,7 @@ where
     }
 }
 
-impl<'a, S> ProvableContext for IbcContext<'a, S>
+impl<'a, S> ProvableContext for IbcContext<'a, S, WorkingSet<S>>
 where
     S: Spec,
 {
@@ -332,7 +332,7 @@ where
     }
 }
 
-impl<'a, S> QueryContext for IbcContext<'a, S>
+impl<'a, S> QueryContext for IbcContext<'a, S, WorkingSet<S>>
 where
     S: Spec,
 {
