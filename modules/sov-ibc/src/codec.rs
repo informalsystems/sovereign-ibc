@@ -43,7 +43,10 @@ where
     }
 }
 
-impl<Raw> StateCodec for ProtobufCodec<Raw> {
+impl<Raw> StateCodec for ProtobufCodec<Raw>
+where
+    Raw: Default + Clone + Send + Sync + 'static,
+{
     type KeyCodec = BorshCodec;
 
     type ValueCodec = Self;
