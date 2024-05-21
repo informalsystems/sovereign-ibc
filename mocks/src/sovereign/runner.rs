@@ -40,7 +40,7 @@ where
             .genesis(&setup_cfg.kernel_genesis_config(), &mut kernel_working_set)
             .unwrap();
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         self.runtime()
             .genesis(&setup_cfg.runtime_genesis_config(), &mut working_set)
