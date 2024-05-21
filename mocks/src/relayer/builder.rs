@@ -86,7 +86,12 @@ where
 
         let sender_address = self.setup_cfg.get_relayer_address();
 
-        let rollup_ctx = Context::new(sender_address.clone(), sender_address, DEFAULT_INIT_HEIGHT);
+        let rollup_ctx = Context::new(
+            sender_address.clone(),
+            Default::default(),
+            sender_address,
+            DEFAULT_INIT_HEIGHT,
+        );
 
         let tmpdir = tempfile::tempdir().unwrap();
 

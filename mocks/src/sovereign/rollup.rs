@@ -184,7 +184,8 @@ where
     }
 
     pub(crate) fn resolve_ctx(&mut self, sender: S::Address, height: u64) {
-        *self.rollup_ctx.acquire_mutex() = Context::new(sender.clone(), sender, height);
+        *self.rollup_ctx.acquire_mutex() =
+            Context::new(sender.clone(), Default::default(), sender, height);
     }
 }
 
