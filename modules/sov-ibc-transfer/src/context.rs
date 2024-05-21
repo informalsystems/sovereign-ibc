@@ -23,7 +23,7 @@ use ibc_core::primitives::Signer;
 use ibc_core::router::module::Module;
 use ibc_core::router::types::module::ModuleExtras;
 use sov_bank::{Coins, IntoPayable, Payable, TokenId};
-use sov_modules_api::{Context, ModuleId, Spec, WorkingSet};
+use sov_modules_api::{Context, ModuleId, Spec, TxState};
 use uint::FromDecStrErr;
 
 use super::IbcTransfer;
@@ -42,17 +42,17 @@ const MAXIMUM_MEMO_LENGTH: usize = 32768; // 1 << 15
 /// because we only get the `WorkingSet` at call-time from the Sovereign SDK,
 /// which must be passed to `TokenTransferValidationContext` methods through
 /// the `self` argument.
-pub struct IbcTransferContext<'ws, S: Spec> {
+pub struct IbcTransferContext<'ws, S: Spec, TS: TxState<S>> {
     pub ibc_transfer: IbcTransfer<S>,
     pub sdk_context: Context<S>,
-    pub working_set: Rc<RefCell<&'ws mut WorkingSet<S>>>,
+    pub working_set: Rc<RefCell<&'ws mut TS>>,
 }
 
-impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
+impl<'ws, S: Spec, TS: TxState<S>> IbcTransferContext<'ws, S, TS> {
     pub fn new(
         ibc_transfer: IbcTransfer<S>,
         sdk_context: Context<S>,
-        working_set: Rc<RefCell<&'ws mut WorkingSet<S>>>,
+        working_set: Rc<RefCell<&'ws mut TS>>,
     ) -> Self {
         Self {
             ibc_transfer,
@@ -209,7 +209,7 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
                 minter_address,
                 vec![self.ibc_transfer.id.to_payable()],
                 self.ibc_transfer.id.to_payable(),
-                &mut self.working_set.borrow_mut(),
+                *self.working_set.borrow_mut(),
             )
             .map_err(|err| TokenTransferError::Other(err.to_string()))?;
 
@@ -245,9 +245,10 @@ impl<'ws, S: Spec> IbcTransferContext<'ws, S> {
     }
 }
 
-impl<'ws, S> core::fmt::Debug for IbcTransferContext<'ws, S>
+impl<'ws, S, TS> core::fmt::Debug for IbcTransferContext<'ws, S, TS>
 where
     S: Spec,
+    TS: TxState<S>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TransferContext")
@@ -256,9 +257,10 @@ where
     }
 }
 
-impl<'ws, S> TokenTransferValidationContext for IbcTransferContext<'ws, S>
+impl<'ws, S, TS> TokenTransferValidationContext for IbcTransferContext<'ws, S, TS>
 where
     S: Spec,
+    TS: TxState<S>,
 {
     type AccountId = Address<S>;
 
@@ -362,7 +364,9 @@ where
     }
 }
 
-impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> {
+impl<'ws, S: Spec, TS: TxState<S>> TokenTransferExecutionContext
+    for IbcTransferContext<'ws, S, TS>
+{
     /// This is called in a `recv_packet()` in the case where we are NOT the
     /// token source.
     fn mint_coins_execute(
@@ -389,7 +393,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
                 &sdk_coins,
                 &account.address,
                 self.ibc_transfer.id.to_payable(),
-                &mut self.working_set.borrow_mut(),
+                *self.working_set.borrow_mut(),
             )
             .map_err(|err| TokenTransferError::Other(err.to_string()))?;
 
@@ -416,11 +420,7 @@ impl<'ws, S: Spec> TokenTransferExecutionContext for IbcTransferContext<'ws, S> 
 
         self.ibc_transfer
             .bank
-            .burn(
-                sdk_coins,
-                &account.address,
-                &mut self.working_set.borrow_mut(),
-            )
+            .burn(sdk_coins, &account.address, *self.working_set.borrow_mut())
             .map_err(|err| TokenTransferError::Other(err.to_string()))?;
 
         Ok(())
@@ -505,7 +505,7 @@ impl<S: Spec> TryFrom<Signer> for Address<S> {
     }
 }
 
-impl<'ws, S: Spec> Module for IbcTransferContext<'ws, S> {
+impl<'ws, S: Spec, TS: TxState<S>> Module for IbcTransferContext<'ws, S, TS> {
     fn on_chan_open_init_validate(
         &self,
         order: Order,
