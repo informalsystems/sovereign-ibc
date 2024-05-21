@@ -2,6 +2,7 @@
 use std::time::Duration;
 
 use sov_consensus_state_tracker::HasConsensusState;
+use sov_mock_da::MockFee;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
     CallResponse, DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, SlotData, Spec,
@@ -21,7 +22,7 @@ use crate::utils::{wait_for_block, MutexUtil};
 impl<S, Da, P> MockRollup<S, Da, P>
 where
     S: Spec<Storage = ProverStorage<P>> + Send + Sync,
-    Da: DaService<Error = anyhow::Error> + Clone,
+    Da: DaService<Error = anyhow::Error, Fee = MockFee> + Clone,
     Da::Spec: HasConsensusState,
     P: MerkleProofSpec + Clone + 'static,
     <P as MerkleProofSpec>::Hasher: Send,
@@ -59,7 +60,10 @@ where
         let height = loop {
             self.da_core.grow_blocks(pre_state_root.as_ref().to_vec());
             // Dummy transaction to trigger the block generation
-            self.da_service().send_transaction(&[0; 32]).await.unwrap();
+            self.da_service()
+                .send_transaction(&[0; 32], MockFee::zero())
+                .await
+                .unwrap();
             tokio::time::sleep(Duration::from_millis(100)).await;
             match self.da_service().get_last_finalized_block_header().await {
                 Ok(header) => {

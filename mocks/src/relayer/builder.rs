@@ -7,6 +7,7 @@ use sov_consensus_state_tracker::CelestiaService;
 use sov_consensus_state_tracker::HasConsensusState;
 #[cfg(feature = "mock-da")]
 use sov_consensus_state_tracker::MockDaService;
+use sov_mock_da::MockFee;
 use sov_modules_api::{Context, Spec, WorkingSet};
 use sov_prover_storage_manager::new_orphan_storage;
 use sov_rollup_interface::services::da::DaService;
@@ -75,7 +76,7 @@ where
     pub async fn setup<P>(self) -> DefaultRelayer<S, Da, P>
     where
         S: Spec<Storage = ProverStorage<P>> + Send + Sync,
-        Da: DaService<Error = anyhow::Error> + Clone,
+        Da: DaService<Error = anyhow::Error, Fee = MockFee> + Clone,
         Da::Spec: HasConsensusState,
         P: MerkleProofSpec + Clone + 'static,
         <P as MerkleProofSpec>::Hasher: Send,

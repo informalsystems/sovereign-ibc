@@ -21,6 +21,7 @@ use ibc_core::host::types::path::{
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use sov_consensus_state_tracker::HasConsensusState;
 use sov_ibc::context::IbcContext;
+use sov_mock_da::MockFee;
 use sov_modules_api::{Spec, StateCheckpoint};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
@@ -31,7 +32,7 @@ use crate::cosmos::{dummy_tm_client_state, dummy_tm_consensus_state};
 impl<S, Da, P> MockRollup<S, Da, P>
 where
     S: Spec<Storage = ProverStorage<P>> + Send + Sync,
-    Da: DaService<Error = anyhow::Error> + Clone,
+    Da: DaService<Error = anyhow::Error, Fee = MockFee> + Clone,
     Da::Spec: HasConsensusState,
     P: MerkleProofSpec + Clone + 'static,
     <P as MerkleProofSpec>::Hasher: Send,

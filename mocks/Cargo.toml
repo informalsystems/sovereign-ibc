@@ -59,6 +59,7 @@ const-rollup-config        = { workspace = true, optional = true }
 sov-kernels                = { workspace = true, features = ["native"], optional = true }
 sov-mock-zkvm              = { workspace = true, features = ["native"], optional = true }
 sov-prover-storage-manager = { workspace = true, features = ["test-utils"] }
+sov-mock-da                = { workspace = true, features = ["native"], optional = true }
 
 [dev-dependencies]
 test-log              = { version = "0.2.14", default-features = false, features = ["trace"] }
@@ -76,6 +77,7 @@ native = [
     "sov-rollup-interface/native",
     "sov-mock-zkvm",
     "sov-kernels",
+    "sov-mock-da",
 ]
 mock-da = [
     "native",

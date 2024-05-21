@@ -13,7 +13,7 @@ use sov_consensus_state_tracker::CelestiaService;
 use sov_consensus_state_tracker::MockDaService;
 use sov_kernels::basic::BasicKernelGenesisConfig;
 use sov_mock_zkvm::MockZkVerifier;
-use sov_modules_api::{Address, Spec};
+use sov_modules_api::Spec;
 use sov_rollup_interface::services::da::DaService;
 use typed_builder::TypedBuilder;
 
@@ -109,7 +109,7 @@ pub struct TransferTestConfig {
     #[builder(default = GAS_TOKEN_ID.to_bech32().to_string())]
     pub sov_denom: String,
     /// An arbitrary user address on the rollup.
-    pub sov_address: Address,
+    pub sov_address: <DefaultSpec as Spec>::Address,
     /// The token name on the Cosmos chain.
     #[builder(default = "basecoin".to_string())]
     pub cos_denom: String,

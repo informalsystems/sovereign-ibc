@@ -11,3 +11,5 @@ demo_data/
 /ci/**/*.lock
 
 result
+
+.vscode

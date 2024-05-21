@@ -46,7 +46,7 @@ pub struct IbcTransfer<S: Spec> {
     /// channel pair, offering an efficient means to access these addresses
     /// without the need for recomputation during every packet processing.
     #[state]
-    escrow_address_cache: StateMap<(PortId, ChannelId), S::Address>,
+    escrow_address_cache: StateMap<(PortId, ChannelId), ModuleId>,
 }
 
 impl<S: Spec> Module for IbcTransfer<S> {
