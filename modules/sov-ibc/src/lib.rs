@@ -47,7 +47,6 @@ pub struct ExampleModuleConfig {}
 /// module naming convention used throughout the codebase, ensuring created
 /// prefixes by modules are in harmony.
 #[derive(ModuleInfo, Clone)]
-#[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
 pub struct Ibc<S: Spec> {
     #[id]
     pub id: ModuleId,

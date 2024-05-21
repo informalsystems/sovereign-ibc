@@ -17,7 +17,6 @@ pub use rpc::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct TransferConfig {}
 
-#[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
 #[derive(ModuleInfo, Clone)]
 pub struct IbcTransfer<S: Spec> {
     /// Id of the module.
