@@ -55,7 +55,7 @@ derive_more = { version = "0.99.11", features = ["from", "try_into"] }
 digest      = "0.10.6"
 hex         = "0.4.3"
 jmt         = { version = "0.9.0" }
-jsonrpsee   = { version = "0.20.1", features = ["jsonrpsee-types", "macros", "client", "server"] }
+jsonrpsee   = { version = "0.22.5", features = ["jsonrpsee-types", "macros", "client", "server"] }
 prost       = { version = "0.12", default-features = false }
 prost-build = { version = "0.12", default-features = false }
 sha2        = { version = "0.10.6", default-features = false }
