@@ -1227,7 +1227,7 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 [[package]]
 name = "const-rollup-config"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 
 [[package]]
 name = "const_format"
@@ -5844,7 +5844,7 @@ dependencies = [
 [[package]]
 name = "sov-bank"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -5861,7 +5861,7 @@ dependencies = [
 [[package]]
 name = "sov-blob-storage"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "borsh",
@@ -5877,7 +5877,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-adapter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5959,7 +5959,7 @@ dependencies = [
 [[package]]
 name = "sov-chain-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "borsh",
@@ -6015,7 +6015,7 @@ dependencies = [
 [[package]]
 name = "sov-db"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6151,28 +6151,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "sov-jsonapi-utils"
-version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
-dependencies = [
- "anyhow",
- "axum 0.7.5",
- "derive_more",
- "hex",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "serde_with",
- "tower",
- "tower-http",
- "tower-request-id",
- "tracing",
-]
-
-[[package]]
 name = "sov-kernels"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "sov-blob-storage",
@@ -6184,7 +6165,7 @@ dependencies = [
 [[package]]
 name = "sov-mock-da"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6204,7 +6185,7 @@ dependencies = [
 [[package]]
 name = "sov-mock-zkvm"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "bincode",
@@ -6222,7 +6203,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-api"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6239,8 +6220,8 @@ dependencies = [
  "serde_json",
  "sha2 0.10.8",
  "sov-db",
- "sov-jsonapi-utils",
  "sov-modules-macros",
+ "sov-rest-utils",
  "sov-rollup-interface",
  "sov-state",
  "thiserror",
@@ -6251,7 +6232,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-macros"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -6270,7 +6251,7 @@ dependencies = [
 [[package]]
 name = "sov-prover-storage-manager"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "rockbound",
@@ -6281,9 +6262,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "sov-rest-utils"
+version = "0.3.0"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
+dependencies = [
+ "anyhow",
+ "axum 0.7.5",
+ "derive_more",
+ "hex",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "serde_with",
+ "tower",
+ "tower-http",
+ "tower-request-id",
+ "tracing",
+]
+
+[[package]]
 name = "sov-rollup-interface"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6301,7 +6301,7 @@ dependencies = [
 [[package]]
 name = "sov-sequencer-registry"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "borsh",
@@ -6319,7 +6319,7 @@ dependencies = [
 [[package]]
 name = "sov-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=913eb31f60ebbce8588de45ca57c9a1cc61d6004#913eb31f60ebbce8588de45ca57c9a1cc61d6004"
+source = "git+ssh://git@github.com/informalsystems/sovereign-sdk-wip.git?rev=e53ec9c668d880e24bb9bb93fcac4c1a598570d2#e53ec9c668d880e24bb9bb93fcac4c1a598570d2"
 dependencies = [
  "anyhow",
  "bcs",
