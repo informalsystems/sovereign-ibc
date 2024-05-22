@@ -5,7 +5,8 @@ use sov_consensus_state_tracker::HasConsensusState;
 use sov_mock_da::MockFee;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    CallResponse, DispatchCall, Gas, Genesis, KernelWorkingSet, SlotData, Spec, StateCheckpoint,
+    CallResponse, Context, DispatchCall, Gas, Genesis, KernelWorkingSet, SlotData, Spec,
+    StateCheckpoint,
 };
 use sov_rollup_interface::da::BlockHeaderTrait;
 use sov_rollup_interface::services::da::DaService;
@@ -105,16 +106,21 @@ where
 
         let mut working_set = checkpoint.to_revertable_unmetered();
 
-        let rollup_ctx = self.rollup_ctx();
+        let rollup_ctx = Context::new(
+            self.relayer_address.clone(),
+            Default::default(),
+            self.relayer_address.clone(),
+            visible_slot,
+        );
 
         // Resets the sender address to the address of the relayer
-        self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
+        // self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
 
         for m in self.read_mempool() {
             // NOTE: on failures, we silently ignore the message and continue as
             // it is in the real-case scenarios
             self.runtime()
-                .dispatch_call(m.clone(), &mut working_set, &self.rollup_ctx())
+                .dispatch_call(m.clone(), &mut working_set, &rollup_ctx)
                 .unwrap_or_else(|e| {
                     info!("rollup: error executing message: {e:?}");
                     CallResponse::default()

@@ -15,7 +15,7 @@ use sov_ibc::call::CallMessage as IbcCallMessage;
 use sov_ibc::context::IbcContext;
 use sov_kernels::basic::BasicKernel;
 use sov_mock_da::MockFee;
-use sov_modules_api::{Context, Spec, WorkingSet};
+use sov_modules_api::{Spec, WorkingSet};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 
@@ -40,7 +40,7 @@ where
     da_service: Da,
     prover_storage: ProverStorage<P>,
     pub(crate) da_core: MockTendermint,
-    pub(crate) rollup_ctx: Arc<Mutex<Context<S>>>,
+    pub(crate) relayer_address: S::Address,
     pub(crate) state_root: Arc<Mutex<Vec<<ProverStorage<P> as Storage>::Root>>>,
     pub(crate) mempool: Arc<Mutex<Mempool<S>>>,
 }
@@ -56,7 +56,7 @@ where
     pub fn new(
         runtime: Runtime<S>,
         prover_storage: ProverStorage<P>,
-        rollup_ctx: Context<S>,
+        relayer_address: S::Address,
         da_core: MockTendermint,
         da_service: Da,
     ) -> Self {
@@ -66,7 +66,7 @@ where
             da_service,
             prover_storage,
             da_core,
-            rollup_ctx: Arc::new(Mutex::new(rollup_ctx)),
+            relayer_address,
             state_root: Arc::new(Mutex::new(vec![])),
             mempool: Arc::new(Mutex::new(vec![])),
         }
@@ -86,10 +86,6 @@ where
 
     pub fn da_service(&self) -> &Da {
         &self.da_service
-    }
-
-    pub fn rollup_ctx(&self) -> Context<S> {
-        self.rollup_ctx.acquire_mutex().clone()
     }
 
     pub fn prover_storage(&self) -> ProverStorage<P> {
@@ -184,11 +180,6 @@ where
         let mut state_roots = self.state_root.acquire_mutex();
 
         state_roots.push(state_root);
-    }
-
-    pub(crate) fn resolve_ctx(&mut self, sender: S::Address, height: u64) {
-        *self.rollup_ctx.acquire_mutex() =
-            Context::new(sender.clone(), Default::default(), sender, height);
     }
 }
 
