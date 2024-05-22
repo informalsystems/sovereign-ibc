@@ -38,7 +38,7 @@ jobs:
         with:
           tool: cargo-risczero@0.20
       - name: Install risc0-zkvm toolchain
-        run: cargo risczero install --version v2024-02-08.1
+        run: cargo risczero install --version v2024-04-22.0 # for rust 1.77
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check Risc0 compatibility
