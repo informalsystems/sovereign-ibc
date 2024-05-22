@@ -104,7 +104,7 @@ where
 
         let visible_slot = kernel_working_set.virtual_slot();
 
-        let mut working_set = checkpoint.to_revertable(GasMeter::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let rollup_ctx = self.rollup_ctx();
 
