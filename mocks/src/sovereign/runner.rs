@@ -111,7 +111,7 @@ where
         // Resets the sender address to the address of the relayer
         self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
 
-        for m in self.mempool() {
+        for m in self.read_mempool() {
             // NOTE: on failures, we silently ignore the message and continue as
             // it is in the real-case scenarios
             self.runtime()
@@ -121,8 +121,6 @@ where
                     CallResponse::default()
                 });
         }
-
-        *self.mempool.acquire_mutex() = vec![];
 
         working_set.checkpoint().0
     }
