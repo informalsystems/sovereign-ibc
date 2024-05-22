@@ -9,7 +9,7 @@ use sov_consensus_state_tracker::HasConsensusState;
 use sov_consensus_state_tracker::MockDaService;
 use sov_mock_da::MockFee;
 use sov_modules_api::{Spec, WorkingSet};
-use sov_prover_storage_manager::new_orphan_storage;
+use sov_prover_storage_manager::SimpleStorageManager;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
@@ -95,11 +95,13 @@ where
 
         let tmpdir = tempfile::tempdir().unwrap();
 
-        let prover_storage = new_orphan_storage(tmpdir.path()).unwrap();
+        // let prover_storage = new_orphan_storage(tmpdir.path()).unwrap();
+
+        let storage_manager = SimpleStorageManager::new(tmpdir.path());
 
         let mut rollup = MockRollup::new(
             runtime,
-            prover_storage,
+            storage_manager,
             sender_address,
             MockTendermint::builder()
                 .chain_id(self.setup_cfg.da_chain_id.clone())

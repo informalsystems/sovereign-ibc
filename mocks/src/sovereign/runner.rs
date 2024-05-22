@@ -17,7 +17,7 @@ use tracing::{debug, info};
 
 use super::MockRollup;
 use crate::configs::TestSetupConfig;
-use crate::utils::wait_for_block;
+use crate::utils::{wait_for_block, MutexUtil};
 
 impl<S, Da, P> MockRollup<S, Da, P>
 where
@@ -141,7 +141,9 @@ where
 
         state_update.add_accessory_items(accessory_delta.freeze());
 
-        self.prover_storage().materialize_changes(&state_update);
+        let change_set = self.prover_storage().materialize_changes(&state_update);
+
+        self.storage_manager.acquire_mutex().commit(change_set);
 
         self.push_state_root(root_hash);
     }

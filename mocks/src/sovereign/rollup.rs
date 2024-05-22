@@ -16,6 +16,7 @@ use sov_ibc::context::IbcContext;
 use sov_kernels::basic::BasicKernel;
 use sov_mock_da::MockFee;
 use sov_modules_api::{Spec, WorkingSet};
+use sov_prover_storage_manager::SimpleStorageManager;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage, Storage};
 
@@ -38,7 +39,7 @@ where
     kernel: ConsensusStateTracker<BasicKernel<S, Da::Spec>, S, Da::Spec>,
     runtime: Runtime<S>,
     da_service: Da,
-    prover_storage: ProverStorage<P>,
+    pub(crate) storage_manager: Arc<Mutex<SimpleStorageManager<P>>>,
     pub(crate) da_core: MockTendermint,
     pub(crate) relayer_address: S::Address,
     pub(crate) state_root: Arc<Mutex<Vec<<ProverStorage<P> as Storage>::Root>>>,
@@ -55,7 +56,7 @@ where
 {
     pub fn new(
         runtime: Runtime<S>,
-        prover_storage: ProverStorage<P>,
+        storage_manager: SimpleStorageManager<P>,
         relayer_address: S::Address,
         da_core: MockTendermint,
         da_service: Da,
@@ -64,7 +65,7 @@ where
             kernel: ConsensusStateTracker::default(),
             runtime,
             da_service,
-            prover_storage,
+            storage_manager: Arc::new(Mutex::new(storage_manager)),
             da_core,
             relayer_address,
             state_root: Arc::new(Mutex::new(vec![])),
@@ -89,7 +90,7 @@ where
     }
 
     pub fn prover_storage(&self) -> ProverStorage<P> {
-        self.prover_storage.clone()
+        self.storage_manager.acquire_mutex().create_storage()
     }
 
     /// Returns the state root at a given rollup height (slot number)
