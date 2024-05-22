@@ -135,7 +135,7 @@ where
 
         state_update.add_accessory_items(accessory_delta.freeze());
 
-        self.prover_storage().commit(&state_update);
+        self.prover_storage().materialize_changes(&state_update);
 
         self.push_state_root(root_hash);
     }
