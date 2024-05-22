@@ -5,8 +5,7 @@ use sov_consensus_state_tracker::HasConsensusState;
 use sov_mock_da::MockFee;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    CallResponse, DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, SlotData, Spec,
-    StateCheckpoint,
+    CallResponse, DispatchCall, Gas, Genesis, KernelWorkingSet, SlotData, Spec, StateCheckpoint,
 };
 use sov_rollup_interface::da::BlockHeaderTrait;
 use sov_rollup_interface::services::da::DaService;
@@ -17,7 +16,7 @@ use tracing::{debug, info};
 
 use super::MockRollup;
 use crate::configs::TestSetupConfig;
-use crate::utils::{wait_for_block, MutexUtil};
+use crate::utils::wait_for_block;
 
 impl<S, Da, P> MockRollup<S, Da, P>
 where
