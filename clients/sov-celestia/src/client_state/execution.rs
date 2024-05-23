@@ -76,12 +76,14 @@ where
         ctx: &mut E,
         subject_client_id: &ClientId,
         substitute_client_state: Any,
+        substitute_consensus_state: Any,
     ) -> Result<(), ClientError> {
         update_on_recovery(
             self.inner().clone(),
             ctx,
             subject_client_id,
             substitute_client_state,
+            substitute_consensus_state,
         )
     }
 }
@@ -329,6 +331,8 @@ where
         ClientStatePath::new(subject_client_id.clone()),
         new_client_state.into(),
     )?;
+
+    // TODO(rano): add consensus state update
 
     ctx.store_update_meta(
         subject_client_id.clone(),

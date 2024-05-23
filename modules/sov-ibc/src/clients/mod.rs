@@ -239,14 +239,21 @@ where
         ctx: &mut IbcContext<'a, S, TS>,
         subject_client_id: &ClientId,
         substitute_client_state: Any,
+        substitute_consensus_state: Any,
     ) -> Result<(), ClientError> {
         match self {
-            AnyClientState::Tendermint(cs) => {
-                cs.update_on_recovery(ctx, subject_client_id, substitute_client_state)
-            }
-            AnyClientState::Sovereign(cs) => {
-                cs.update_on_recovery(ctx, subject_client_id, substitute_client_state)
-            }
+            AnyClientState::Tendermint(cs) => cs.update_on_recovery(
+                ctx,
+                subject_client_id,
+                substitute_client_state,
+                substitute_consensus_state,
+            ),
+            AnyClientState::Sovereign(cs) => cs.update_on_recovery(
+                ctx,
+                subject_client_id,
+                substitute_client_state,
+                substitute_consensus_state,
+            ),
         }
     }
 }
