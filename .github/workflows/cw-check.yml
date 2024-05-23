@@ -27,7 +27,7 @@ jobs:
           git config --global --replace-all \
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
-      - uses: cachix/install-nix-action@v26
+      - uses: cachix/install-nix-action@V27
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
