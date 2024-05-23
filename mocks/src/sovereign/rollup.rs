@@ -101,7 +101,7 @@ where
             .cloned()
     }
 
-    pub fn read_mempool(&self) -> Vec<RuntimeCall<S>> {
+    pub fn consume_mempool(&self) -> Vec<RuntimeCall<S>> {
         self.mempool.acquire_mutex().drain(..).collect()
     }
 

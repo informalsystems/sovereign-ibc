@@ -116,7 +116,7 @@ where
         // Resets the sender address to the address of the relayer
         // self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
 
-        for m in self.read_mempool() {
+        for m in self.consume_mempool() {
             // NOTE: on failures, we silently ignore the message and continue as
             // it is in the real-case scenarios
             self.runtime()
