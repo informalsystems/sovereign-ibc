@@ -8,10 +8,7 @@ rust-version = { workspace = true }
 version      = { workspace = true }
 keywords     = [ "sovereign-sdk", "rollup", "ibc", "light-client", "CosmWasm" ]
 readme       = "./../../README.md"
-
-description = """
-    Contains the CosmWasm contract implementation for the `sov-celestia` light client.
-"""
+description  = "Contains the CosmWasm contract implementation for the `sov-celestia` light client."
 
 [lints]
 workspace = true
