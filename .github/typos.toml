@@ -1,0 +1,9 @@
+[default.extend-words]
+# for serde serialization
+ser = "ser"
+
+[files]
+extend-exclude = [ "**/*.bin" ]
+
+[default]
+extend-ignore-re = [ "cosmos1[0-9A-Za-z+/]{10,}", "ch[ABC][ABC]" ]
