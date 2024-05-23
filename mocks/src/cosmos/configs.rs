@@ -17,11 +17,9 @@ pub fn basecoin_proof_specs() -> ProofSpecs {
 
 pub fn dummy_tm_client_state(chain_id: ChainId, latest_height: Height) -> ClientState {
     ClientStateConfig::builder()
-        .chain_id(chain_id)
-        .latest_height(latest_height)
         .proof_specs(basecoin_proof_specs())
         .build()
-        .try_into()
+        .into_client_state(chain_id, latest_height)
         .unwrap()
 }
 
