@@ -54,7 +54,7 @@ jobs:
           git config --global --replace-all \
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
-      - uses: arduino/setup-protoc@v2
+      - uses: arduino/setup-protoc@v3
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ env.MSRV }}
@@ -74,7 +74,7 @@ jobs:
           git config --global --replace-all \
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
-      - uses: arduino/setup-protoc@v2
+      - uses: arduino/setup-protoc@v3
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
@@ -92,7 +92,7 @@ jobs:
           git config --global --replace-all \
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
-      - uses: arduino/setup-protoc@v2
+      - uses: arduino/setup-protoc@v3
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
@@ -111,7 +111,7 @@ jobs:
           git config --global --replace-all \
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
-      - uses: arduino/setup-protoc@v2
+      - uses: arduino/setup-protoc@v3
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
@@ -131,7 +131,7 @@ jobs:
           git config --global --replace-all \
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
-      - uses: arduino/setup-protoc@v2
+      - uses: arduino/setup-protoc@v3
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
