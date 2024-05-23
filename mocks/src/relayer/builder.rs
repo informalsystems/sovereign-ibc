@@ -8,8 +8,8 @@ use sov_consensus_state_tracker::HasConsensusState;
 #[cfg(feature = "mock-da")]
 use sov_consensus_state_tracker::MockDaService;
 use sov_mock_da::MockFee;
-use sov_modules_api::{Context, Spec, WorkingSet};
-use sov_prover_storage_manager::new_orphan_storage;
+use sov_modules_api::{Spec, WorkingSet};
+use sov_prover_storage_manager::SimpleStorageManager;
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
 use tracing::info;
@@ -23,7 +23,7 @@ use crate::configs::{DefaultSpec, TestSetupConfig};
 use crate::cosmos::{dummy_signer, CosmosBuilder, MockTendermint};
 use crate::relayer::handle::{Handle, QueryReq, QueryResp};
 use crate::relayer::relay::MockRelayer;
-use crate::sovereign::{MockRollup, Runtime, DEFAULT_INIT_HEIGHT};
+use crate::sovereign::{MockRollup, Runtime};
 
 #[derive(Clone)]
 pub struct RelayerBuilder<S, Da>
@@ -84,18 +84,14 @@ where
     {
         let runtime = Runtime::default();
 
-        let sender_address = self.setup_cfg.get_relayer_address();
-
-        let rollup_ctx = Context::new(sender_address.clone(), sender_address, DEFAULT_INIT_HEIGHT);
-
         let tmpdir = tempfile::tempdir().unwrap();
 
-        let prover_storage = new_orphan_storage(tmpdir.path()).unwrap();
+        let storage_manager = SimpleStorageManager::new(tmpdir.path());
 
         let mut rollup = MockRollup::new(
             runtime,
-            prover_storage,
-            rollup_ctx,
+            storage_manager,
+            self.setup_cfg.get_relayer_address(),
             MockTendermint::builder()
                 .chain_id(self.setup_cfg.da_chain_id.clone())
                 .build(),

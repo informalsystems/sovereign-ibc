@@ -22,7 +22,7 @@ exclude = [
 version      = "0.1.0"
 license      = "MIT OR Apache-2.0"
 edition      = "2021"
-rust-version = "1.75"
+rust-version = "1.77"
 publish      = false
 authors      = ["Informal Systems <hello@informal.systems>"]
 repository   = "https://github.com/informalsystems/sovereign-ibc"
@@ -55,7 +55,7 @@ derive_more = { version = "0.99.11", features = ["from", "try_into"] }
 digest      = "0.10.6"
 hex         = "0.4.3"
 jmt         = { version = "0.9.0" }
-jsonrpsee   = { version = "0.20.1", features = ["jsonrpsee-types", "macros", "client", "server"] }
+jsonrpsee   = { version = "0.22.5", features = ["jsonrpsee-types", "macros", "client", "server"] }
 prost       = { version = "0.12", default-features = false }
 prost-build = { version = "0.12", default-features = false }
 sha2        = { version = "0.10.6", default-features = false }
@@ -96,7 +96,6 @@ sov-bank                   = { version = "0.3.0" }
 sov-celestia-adapter       = { version = "0.3.0" }
 sov-mock-da                = { version = "0.3.0" }
 sov-modules-api            = { version = "0.3.0" }
-sov-modules-core           = { version = "0.3.0" }
 sov-state                  = { version = "0.3.0" }
 sov-rollup-interface       = { version = "0.3.0" }
 

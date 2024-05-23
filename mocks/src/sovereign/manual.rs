@@ -43,9 +43,9 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
-        let mut ibc_ctx: IbcContext<'_, S> = self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx: IbcContext<'_, S, _> = self.ibc_ctx(&mut working_set);
 
         let client_counter = ibc_ctx.client_counter().unwrap();
 
@@ -78,7 +78,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -110,7 +110,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -149,7 +149,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -173,7 +173,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -197,7 +197,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 

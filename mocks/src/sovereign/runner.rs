@@ -5,7 +5,7 @@ use sov_consensus_state_tracker::HasConsensusState;
 use sov_mock_da::MockFee;
 use sov_modules_api::runtime::capabilities::{Kernel, KernelSlotHooks};
 use sov_modules_api::{
-    CallResponse, DispatchCall, Gas, GasMeter, Genesis, KernelWorkingSet, SlotData, Spec,
+    CallResponse, Context, DispatchCall, Gas, Genesis, KernelWorkingSet, SlotData, Spec,
     StateCheckpoint,
 };
 use sov_rollup_interface::da::BlockHeaderTrait;
@@ -40,7 +40,7 @@ where
             .genesis(&setup_cfg.kernel_genesis_config(), &mut kernel_working_set)
             .unwrap();
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         self.runtime()
             .genesis(&setup_cfg.runtime_genesis_config(), &mut working_set)
@@ -104,25 +104,27 @@ where
 
         let visible_slot = kernel_working_set.virtual_slot();
 
-        let mut working_set = checkpoint.to_revertable(GasMeter::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
-        let rollup_ctx = self.rollup_ctx();
+        // create the Rollup context dynamically
+        // using the relayer address and the visible slot
+        let rollup_ctx = Context::new(
+            self.relayer_address.clone(),
+            Default::default(),
+            self.relayer_address.clone(),
+            visible_slot,
+        );
 
-        // Resets the sender address to the address of the relayer
-        self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
-
-        for m in self.mempool() {
+        for m in self.consume_mempool() {
             // NOTE: on failures, we silently ignore the message and continue as
             // it is in the real-case scenarios
             self.runtime()
-                .dispatch_call(m.clone(), &mut working_set, &self.rollup_ctx())
+                .dispatch_call(m.clone(), &mut working_set, &rollup_ctx)
                 .unwrap_or_else(|e| {
                     info!("rollup: error executing message: {e:?}");
                     CallResponse::default()
                 });
         }
-
-        *self.mempool.acquire_mutex() = vec![];
 
         working_set.checkpoint().0
     }
@@ -138,7 +140,9 @@ where
 
         state_update.add_accessory_items(accessory_delta.freeze());
 
-        self.prover_storage().commit(&state_update);
+        let change_set = self.prover_storage().materialize_changes(&state_update);
+
+        self.storage_manager.acquire_mutex().commit(change_set);
 
         self.push_state_root(root_hash);
     }

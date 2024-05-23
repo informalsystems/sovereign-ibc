@@ -7,7 +7,9 @@ use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use serde::{Deserialize, Serialize};
 use sov_bank::TokenId;
-use sov_modules_api::{Context, Error, Module, ModuleId, ModuleInfo, Spec, StateMap, WorkingSet};
+use sov_modules_api::{
+    Context, Error, GenesisState, Module, ModuleId, ModuleInfo, Spec, StateMap, TxState,
+};
 
 #[cfg(feature = "native")]
 mod rpc;
@@ -17,7 +19,6 @@ pub use rpc::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct TransferConfig {}
 
-#[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
 #[derive(ModuleInfo, Clone)]
 pub struct IbcTransfer<S: Spec> {
     /// Id of the module.
@@ -58,7 +59,11 @@ impl<S: Spec> Module for IbcTransfer<S> {
 
     type Event = IbcEvent;
 
-    fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<S>) -> Result<(), Error> {
+    fn genesis(
+        &self,
+        config: &Self::Config,
+        working_set: &mut impl GenesisState<Self::Spec>,
+    ) -> Result<(), Error> {
         Ok(self.init_module(config, working_set)?)
     }
 
@@ -66,7 +71,7 @@ impl<S: Spec> Module for IbcTransfer<S> {
         &self,
         _msg: Self::CallMessage,
         _context: &Context<Self::Spec>,
-        _working_set: &mut WorkingSet<S>,
+        _working_set: &mut impl TxState<Self::Spec>,
     ) -> Result<sov_modules_api::CallResponse, Error> {
         Err(Error::ModuleError(anyhow!(
             "Cannot call sov-ibc-transfer; use sov-ibc instead"
