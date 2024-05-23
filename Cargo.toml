@@ -1,21 +1,21 @@
 [workspace]
 resolver = "2"
 members = [
-    "proto",
-    "proto/compiler",
-    "clients/sov-types",
-    "clients/sov-celestia/types",
-    "clients/sov-celestia",
-    "clients/sov-celestia/cw-contract",
-    "modules/sov-ibc-transfer",
-    "modules/sov-ibc",
-    "modules/sov-consensus-state-tracker",
-    "mocks",
+  "proto",
+  "proto/compiler",
+  "clients/sov-types",
+  "clients/sov-celestia/types",
+  "clients/sov-celestia",
+  "clients/sov-celestia/cw-contract",
+  "modules/sov-ibc-transfer",
+  "modules/sov-ibc",
+  "modules/sov-consensus-state-tracker",
+  "mocks",
 ]
 
 exclude = [
-    "ci/risc0-check",
-    "vendor/sovereign-sdk"
+  "ci/risc0-check",
+  "vendor/sovereign-sdk",
 ]
 
 [workspace.package]
@@ -24,16 +24,16 @@ license      = "MIT OR Apache-2.0"
 edition      = "2021"
 rust-version = "1.77"
 publish      = false
-authors      = ["Informal Systems <hello@informal.systems>"]
+authors      = [ "Informal Systems <hello@informal.systems>" ]
 repository   = "https://github.com/informalsystems/sovereign-ibc"
 
 [workspace.lints.rust]
-unsafe_code                   = "forbid"
-dead_code                     = "deny"
-rust_2018_idioms              = "deny"
-trivial_casts                 = "deny"
-unused_import_braces          = "deny"
-unused_variables              = "deny"
+unsafe_code          = "forbid"
+dead_code            = "deny"
+rust_2018_idioms     = "deny"
+trivial_casts        = "deny"
+unused_import_braces = "deny"
+unused_variables     = "deny"
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call    = "deny"
@@ -49,25 +49,25 @@ uninlined_format_args         = "deny"
 # external dependencies
 anyhow      = "1.0.68"
 base64      = { version = "0.21", default-features = false }
-borsh       = { version = "0.10.3", features = ["rc", "bytes"] }
+borsh       = { version = "0.10.3", features = [ "rc", "bytes" ] }
 bytes       = { version = "1.2.1", default-features = false }
-derive_more = { version = "0.99.11", features = ["from", "try_into"] }
+derive_more = { version = "0.99.11", features = [ "from", "try_into" ] }
 digest      = "0.10.6"
 hex         = "0.4.3"
 jmt         = { version = "0.9.0" }
-jsonrpsee   = { version = "0.22.5", features = ["jsonrpsee-types", "macros", "client", "server"] }
+jsonrpsee   = { version = "0.22.5", features = [ "jsonrpsee-types", "macros", "client", "server" ] }
 prost       = { version = "0.12", default-features = false }
 prost-build = { version = "0.12", default-features = false }
 sha2        = { version = "0.10.6", default-features = false }
-serde       = { version = "1.0", default-features = false, features = ["derive", "rc"] }
+serde       = { version = "1.0", default-features = false, features = [ "derive", "rc" ] }
 serde_json  = "1.0"
-schemars    = { version = "0.8.12", features = ["derive"] }
+schemars    = { version = "0.8.12", features = [ "derive" ] }
 tempfile    = "3.5"
 thiserror   = "1.0.38"
 tracing     = { version = "0.1.40", default-features = false }
 
 # ibc depedenencies
-ibc-core              = { version = "0.51.0", default-features = false, features = ["borsh","schema"] }
+ibc-core              = { version = "0.51.0", default-features = false, features = [ "borsh", "schema" ] }
 ibc-core-client       = { version = "0.51.0", default-features = false }
 ibc-core-host-cosmos  = { version = "0.51.0", default-features = false }
 ibc-client-tendermint = { version = "0.51.0", default-features = false }
@@ -75,29 +75,29 @@ ibc-client-wasm-types = { version = "0.51.0", default-features = false }
 ibc-client-cw         = { version = "0.51.0", default-features = false }
 ibc-app-transfer      = { version = "0.51.0", default-features = false }
 ibc-primitives        = { version = "0.51.0", default-features = false }
-ibc-query             = { version = "0.51.0", default-features = false, features = ["schema"] }
+ibc-query             = { version = "0.51.0", default-features = false, features = [ "schema" ] }
 ibc-testkit           = { version = "0.51.0", default-features = false }
 
 # NOTE: `ibc-proto` is solely required by `sov-ibc-proto`. When needing Protobuf
 # Rust types from `ibc-proto` in the project, importing from respective `ibc`
 # crates is a more efficient approach.
-ibc-proto             = { version = "0.42.2", default-features = false }
+ibc-proto = { version = "0.42.2", default-features = false }
 
-basecoin              = { version = "0.1.0" }
+basecoin = { version = "0.1.0" }
 
 # cosmos dependencies
-tendermint            = { version = "0.34", default-features = false }
-tendermint-proto      = { version = "0.34", default-features = false }
-tendermint-testgen    = { version = "0.34", default-features = false }
+tendermint                       = { version = "0.34", default-features = false }
+tendermint-proto                 = { version = "0.34", default-features = false }
+tendermint-testgen               = { version = "0.34", default-features = false }
 tendermint-light-client-verifier = { version = "0.34", default-features = false }
 
 # sovereign dependencies
-sov-bank                   = { version = "0.3.0" }
-sov-celestia-adapter       = { version = "0.3.0" }
-sov-mock-da                = { version = "0.3.0" }
-sov-modules-api            = { version = "0.3.0" }
-sov-state                  = { version = "0.3.0" }
-sov-rollup-interface       = { version = "0.3.0" }
+sov-bank             = { version = "0.3.0" }
+sov-celestia-adapter = { version = "0.3.0" }
+sov-mock-da          = { version = "0.3.0" }
+sov-modules-api      = { version = "0.3.0" }
+sov-state            = { version = "0.3.0" }
+sov-rollup-interface = { version = "0.3.0" }
 
 ### utilized only by `sov-ibc-mocks`
 sov-chain-state            = { version = "0.3.0" }
