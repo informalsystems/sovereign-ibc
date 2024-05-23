@@ -1,11 +1,10 @@
 ---
 name: Process Improvement
 about: Create a proposal to suggest an improvement!
-
 ---
 
 <!-- < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < ☺
-v                ✰  Thanks for opening an issue! ✰    
+v                ✰  Thanks for opening an issue! ✰
 v    Before smashing the submit button please review the template.
 v    Please also ensure that this is not a duplicate issue :)
 ☺ > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >  -->

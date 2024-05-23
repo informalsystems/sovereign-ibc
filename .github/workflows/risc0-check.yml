@@ -4,15 +4,15 @@ on:
     paths:
       - .github/workflows/risc0-check.yml
       - ci/risc0-check/**
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
   push:
     branches: main
     paths:
       - .github/workflows/risc0-check.yml
       - ci/risc0-check/**
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
 
 env:
   CARGO_INCREMENTAL: 0
