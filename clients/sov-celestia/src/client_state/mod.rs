@@ -41,13 +41,13 @@ pub enum ClientState {
 
 impl ClientState {
     pub fn inner(&self) -> &SovTmClientState {
-        match { self } {
+        match self {
             Self::Native { state } | Self::Wasm { state, .. } => state,
         }
     }
 
     pub fn into_inner(self) -> SovTmClientState {
-        match { self } {
+        match self {
             Self::Native { state } | Self::Wasm { state, .. } => state,
         }
     }
