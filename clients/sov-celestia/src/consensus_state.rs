@@ -15,6 +15,12 @@ use tendermint::{Hash, Time};
 #[derive(Clone, Debug, PartialEq, derive_more::From)]
 pub struct ConsensusState(SovTmConsensusState);
 
+impl From<ConsensusState> for SovTmConsensusState {
+    fn from(value: ConsensusState) -> Self {
+        value.0
+    }
+}
+
 impl ConsensusState {
     pub fn inner(&self) -> &SovTmConsensusState {
         &self.0
