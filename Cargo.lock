@@ -654,11 +654,11 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=3b45f48#3b45f484ed6193b170166f368416f4752a20b0cf"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=6b0bae1#6b0bae1adcb47ec34051b053990491a30d1aaa25"
 dependencies = [
  "basecoin-app",
  "basecoin-modules",
- "basecoin-store 0.1.0 (git+https://github.com/informalsystems/basecoin-rs.git?rev=3b45f48)",
+ "basecoin-store 0.1.0 (git+https://github.com/informalsystems/basecoin-rs.git?rev=6b0bae1)",
  "bech32 0.11.0",
  "bitcoin",
  "clap",
@@ -687,10 +687,10 @@ dependencies = [
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=3b45f48#3b45f484ed6193b170166f368416f4752a20b0cf"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=6b0bae1#6b0bae1adcb47ec34051b053990491a30d1aaa25"
 dependencies = [
  "basecoin-modules",
- "basecoin-store 0.1.0 (git+https://github.com/informalsystems/basecoin-rs.git?rev=3b45f48)",
+ "basecoin-store 0.1.0 (git+https://github.com/informalsystems/basecoin-rs.git?rev=6b0bae1)",
  "cosmrs",
  "ibc-proto",
  "prost",
@@ -706,10 +706,10 @@ dependencies = [
 [[package]]
 name = "basecoin-modules"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=3b45f48#3b45f484ed6193b170166f368416f4752a20b0cf"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=6b0bae1#6b0bae1adcb47ec34051b053990491a30d1aaa25"
 dependencies = [
  "base64 0.21.7",
- "basecoin-store 0.1.0 (git+https://github.com/informalsystems/basecoin-rs.git?rev=3b45f48)",
+ "basecoin-store 0.1.0 (git+https://github.com/informalsystems/basecoin-rs.git?rev=6b0bae1)",
  "cosmrs",
  "derive_more",
  "displaydoc",
@@ -723,6 +723,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.10.8",
+ "sov-celestia-client",
  "tendermint 0.36.0",
  "tendermint-rpc",
  "tonic",
@@ -748,7 +749,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=3b45f48#3b45f484ed6193b170166f368416f4752a20b0cf"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=6b0bae1#6b0bae1adcb47ec34051b053990491a30d1aaa25"
 dependencies = [
  "displaydoc",
  "ics23",
@@ -1372,20 +1373,18 @@ dependencies = [
 
 [[package]]
 name = "cosmos-sdk-proto"
-version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82e23f6ab56d5f031cde05b8b82a5fefd3a1a223595c79e32317a97189e612bc"
+version = "0.22.0-pre"
+source = "git+https://github.com/cosmos/cosmos-rust.git?rev=4f2e3bb#4f2e3bbf9c67c8ffef44ef1e485a327fd66f060a"
 dependencies = [
  "prost",
  "prost-types",
- "tendermint-proto 0.35.0",
+ "tendermint-proto 0.36.0",
 ]
 
 [[package]]
 name = "cosmrs"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d184abb7b0039cc64f282dfa5b34165e4c5a7410ab46804636d53f4d09aee44"
+version = "0.17.0-pre"
+source = "git+https://github.com/cosmos/cosmos-rust.git?rev=4f2e3bb#4f2e3bbf9c67c8ffef44ef1e485a327fd66f060a"
 dependencies = [
  "bip32",
  "cosmos-sdk-proto",
@@ -1397,7 +1396,7 @@ dependencies = [
  "serde_json",
  "signature",
  "subtle-encoding",
- "tendermint 0.35.0",
+ "tendermint 0.36.0",
  "thiserror",
 ]
 
@@ -5512,9 +5511,9 @@ dependencies = [
 
 [[package]]
 name = "schemars"
-version = "0.8.20"
+version = "0.8.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0218ceea14babe24a4a5836f86ade86c1effbc198164e619194cb5069187e29"
+checksum = "09c024468a378b7e36765cd36702b7a90cc3cba11654f6685c8f233408e89e92"
 dependencies = [
  "dyn-clone",
  "schemars_derive",
@@ -5524,9 +5523,9 @@ dependencies = [
 
 [[package]]
 name = "schemars_derive"
-version = "0.8.20"
+version = "0.8.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ed5a1ccce8ff962e31a165d41f6e2a2dd1245099dc4d594f5574a86cd90f4d3"
+checksum = "b1eee588578aff73f856ab961cd2f79e36bc45d7ded33a7562adba4667aecc0e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6680,20 +6679,16 @@ dependencies = [
  "bytes",
  "digest 0.10.7",
  "ed25519",
- "ed25519-consensus",
  "flex-error",
  "futures",
- "k256",
  "num-traits",
  "once_cell",
  "prost",
  "prost-types",
- "ripemd",
  "serde",
  "serde_bytes",
  "serde_json",
  "serde_repr",
- "sha2 0.10.8",
  "signature",
  "subtle",
  "subtle-encoding",
@@ -6714,10 +6709,12 @@ dependencies = [
  "ed25519-consensus",
  "flex-error",
  "futures",
+ "k256",
  "num-traits",
  "once_cell",
  "prost",
  "prost-types",
+ "ripemd",
  "serde",
  "serde_bytes",
  "serde_json",
