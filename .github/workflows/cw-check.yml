@@ -40,11 +40,6 @@ jobs:
         with:
           toolchain: stable
           target: wasm32-unknown-unknown
-      - name: Set up Git credentials for private repo
-        run: |
-          git config --global --replace-all \
-          "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
-          ssh://git@github.com
       - name: Build sov-celestia CosmWasm contract
         run: |
           make build-sov-celestia-cw
