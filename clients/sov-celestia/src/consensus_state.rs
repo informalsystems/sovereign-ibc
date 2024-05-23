@@ -12,7 +12,7 @@ use tendermint::{Hash, Time};
 /// Rust's orphan rules and implement traits from `ibc::core::client::context`
 /// on the `ConsensusState` type.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, derive_more::From)]
+#[derive(Clone, Debug, PartialEq, derive_more::From, derive_more::Into)]
 pub struct ConsensusState(SovTmConsensusState);
 
 impl ConsensusState {
@@ -73,9 +73,5 @@ impl ConsensusStateTrait for ConsensusState {
     fn timestamp(&self) -> Timestamp {
         let time = self.0.da_params.timestamp.unix_timestamp_nanos();
         Timestamp::from_nanoseconds(time as u64).expect("invalid timestamp")
-    }
-
-    fn encode_vec(self) -> Vec<u8> {
-        <Self as Protobuf<Any>>::encode_vec(self)
     }
 }

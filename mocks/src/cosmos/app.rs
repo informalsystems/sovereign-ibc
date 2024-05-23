@@ -11,7 +11,6 @@ use basecoin::modules::bank::{Bank, BankReader, Denom};
 use basecoin::modules::context::{prefix, Identifiable};
 use basecoin::modules::ibc::{Ibc, IbcContext};
 use basecoin::store::context::{ProvableStore, Store};
-use basecoin::store::impls::RevertibleStore;
 use ibc_core::client::types::Height;
 use ibc_core::commitment_types::commitment::CommitmentProofBytes;
 use ibc_core::host::types::identifiers::ChainId;
@@ -63,7 +62,7 @@ impl<S: ProvableStore + Default + Debug> MockCosmosChain<S> {
         self.core.chain_id()
     }
 
-    pub fn ibc_ctx(&self) -> IbcContext<RevertibleStore<S>> {
+    pub fn ibc_ctx(&self) -> IbcContext<S> {
         ibc(self.app.clone()).ctx()
     }
 

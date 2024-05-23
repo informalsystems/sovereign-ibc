@@ -24,7 +24,8 @@ use crate::client_state::{check_da_misbehaviour_on_update, verify_header, verify
 impl<V> ClientStateValidation<V> for ClientState
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<V::ConsensusStateRef>>::Error>,
 {
     fn verify_client_message(
         &self,
@@ -70,7 +71,8 @@ pub fn verify_client_message<V, H>(
 ) -> Result<(), ClientError>
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<V::ConsensusStateRef>>::Error>,
     H: MerkleHash + Sha256 + Default,
 {
     match client_message.type_url.as_str() {
@@ -96,7 +98,8 @@ pub fn check_for_misbehaviour<V>(
 ) -> Result<bool, ClientError>
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<V::ConsensusStateRef>>::Error>,
 {
     match client_message.type_url.as_str() {
         SOV_TENDERMINT_HEADER_TYPE_URL => {
@@ -131,7 +134,8 @@ pub fn status<V>(
 ) -> Result<Status, ClientError>
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<V::ConsensusStateRef>>::Error>,
 {
     if client_state.is_frozen() {
         return Ok(Status::Frozen);
@@ -143,7 +147,7 @@ where
             client_state.latest_height_in_sov().revision_number(),
             client_state.latest_height_in_sov().revision_height(),
         )) {
-            Ok(cs) => cs.try_into()?,
+            Ok(cs) => SovTmConsensusState::try_from(cs)?,
             // if the client state does not have an associated consensus state for its latest height
             // then it must be expired
             Err(_) => return Ok(Status::Expired),
@@ -176,7 +180,7 @@ pub fn check_substitute<V>(
 ) -> Result<(), ClientError>
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
 {
     let substitute_client_state = SovTmClientState::try_from(substitute_client_state)?;
 

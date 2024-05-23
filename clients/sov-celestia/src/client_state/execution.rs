@@ -24,7 +24,8 @@ impl<E> ClientStateExecution<E> for ClientState
 where
     E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<E::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<E::ConsensusStateRef>>::Error>,
 {
     fn initialise(
         &self,
@@ -75,12 +76,14 @@ where
         ctx: &mut E,
         subject_client_id: &ClientId,
         substitute_client_state: Any,
+        substitute_consensus_state: Any,
     ) -> Result<(), ClientError> {
         update_on_recovery(
             self.inner().clone(),
             ctx,
             subject_client_id,
             substitute_client_state,
+            substitute_consensus_state,
         )
     }
 }
@@ -94,12 +97,12 @@ pub fn initialise<E>(
 where
     E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<E::ConsensusStateRef>,
 {
     let host_timestamp = ExtClientValidationContext::host_timestamp(ctx)?;
     let host_height = ExtClientValidationContext::host_height(ctx)?;
 
-    let sov_consensus_state = SovTmConsensusState::try_from(consensus_state)?;
+    let sov_consensus_state: SovTmConsensusState = consensus_state.try_into()?;
 
     let latest_height = client_state.latest_height_in_sov();
 
@@ -134,7 +137,8 @@ pub fn update_state<E>(
 where
     E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<E::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<E::ConsensusStateRef>>::Error>,
 {
     let header = Header::try_from(header)?;
     let header_height = header.height();
@@ -195,7 +199,7 @@ pub fn update_state_on_misbehaviour<E>(
 where
     E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<E::ConsensusStateRef>,
 {
     let frozen_client_state = client_state.clone().with_frozen_height(Height::min(0));
 
@@ -217,7 +221,7 @@ pub fn update_state_on_upgrade<E>(
 where
     E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<E::ConsensusStateRef>,
 {
     let mut upgraded_client_state = SovTmClientState::try_from(upgraded_client_state)?;
     let upgraded_consensus_state = ConsensusState::try_from(upgraded_consensus_state)?;
@@ -299,11 +303,12 @@ pub fn update_on_recovery<E>(
     ctx: &mut E,
     subject_client_id: &ClientId,
     substitute_client_state: Any,
+    _substitute_consensus_state: Any,
 ) -> Result<(), ClientError>
 where
     E: ExtClientExecutionContext,
     E::ClientStateRef: From<SovTmClientState>,
-    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<E::ConsensusStateRef>,
 {
     let substitute_client_state = ClientState::try_from(substitute_client_state)?.into_inner();
 
@@ -327,6 +332,8 @@ where
         new_client_state.into(),
     )?;
 
+    // TODO(rano): add consensus state update
+
     ctx.store_update_meta(
         subject_client_id.clone(),
         latest_height,
@@ -347,7 +354,8 @@ pub fn prune_oldest_consensus_state<E>(
 ) -> Result<(), ClientError>
 where
     E: ExtClientExecutionContext,
-    E::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<E::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<E::ConsensusStateRef>>::Error>,
 {
     let mut heights = ctx.consensus_state_heights(client_id)?;
 
@@ -360,7 +368,7 @@ where
             height.revision_height(),
         );
         let consensus_state = ctx.consensus_state(&client_consensus_state_path)?;
-        let sov_consensus_state = consensus_state.try_into()?;
+        let sov_consensus_state: SovTmConsensusState = consensus_state.try_into()?;
 
         let host_timestamp =
             ctx.host_timestamp()?
