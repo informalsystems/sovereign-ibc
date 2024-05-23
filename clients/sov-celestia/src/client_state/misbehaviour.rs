@@ -21,7 +21,8 @@ pub fn verify_misbehaviour<V, H>(
 ) -> Result<(), ClientError>
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<V::ConsensusStateRef>>::Error>,
     H: MerkleHash + Sha256 + Default,
 {
     misbehaviour.validate_basic::<H>()?;
@@ -35,7 +36,7 @@ where
         );
         let consensus_state = ctx.consensus_state(&consensus_state_path)?;
 
-        consensus_state.try_into()?
+        SovTmConsensusState::try_from(consensus_state)?
     };
 
     let header_2 = misbehaviour.header_2();
@@ -47,7 +48,7 @@ where
         );
         let consensus_state = ctx.consensus_state(&consensus_state_path)?;
 
-        consensus_state.try_into()?
+        SovTmConsensusState::try_from(consensus_state)?
     };
 
     let current_timestamp = ctx.host_timestamp()?;

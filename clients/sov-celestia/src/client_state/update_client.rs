@@ -25,7 +25,8 @@ pub fn verify_header<V, H>(
 ) -> Result<(), ClientError>
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<V::ConsensusStateRef>>::Error>,
     H: MerkleHash + Sha256 + Default,
 {
     // Checks the sanity of the fields in the header.
@@ -59,7 +60,8 @@ pub fn verify_da_header<V, H>(
 ) -> Result<(), ClientError>
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<V::ConsensusStateRef>>::Error>,
     H: MerkleHash + Sha256 + Default,
 {
     let chain_id = client_state.chain_id();
@@ -80,9 +82,8 @@ where
             trusted_height.revision_number(),
             trusted_height.revision_height(),
         );
-        let trusted_consensus_state = ctx
-            .consensus_state(&trusted_client_cons_state_path)?
-            .try_into()?;
+        let trusted_consensus_state =
+            SovTmConsensusState::try_from(ctx.consensus_state(&trusted_client_cons_state_path)?)?;
 
         da_header.check_trusted_next_validator_set::<H>(
             &trusted_consensus_state.da_params.next_validators_hash,
@@ -143,7 +144,7 @@ pub fn verify_aggregated_proof<V>(
 ) -> Result<(), ClientError>
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
 {
     if !genesis_state_root.matches(aggregated_proof.genesis_state_root()) {
         return Err(ClientError::Other {
@@ -173,7 +174,8 @@ pub fn check_da_misbehaviour_on_update<V>(
 ) -> Result<bool, ClientError>
 where
     V: ExtClientValidationContext,
-    V::ConsensusStateRef: Convertible<SovTmConsensusState, ClientError>,
+    SovTmConsensusState: Convertible<V::ConsensusStateRef>,
+    ClientError: From<<SovTmConsensusState as TryFrom<V::ConsensusStateRef>>::Error>,
 {
     let maybe_existing_consensus_state = {
         let path_at_header_height = ClientConsensusStatePath::new(
@@ -185,7 +187,7 @@ where
         ctx.consensus_state(&path_at_header_height).ok()
     };
     if let Some(existing_consensus_state) = maybe_existing_consensus_state {
-        let existing_consensus_state = existing_consensus_state.try_into()?;
+        let existing_consensus_state = SovTmConsensusState::try_from(existing_consensus_state)?;
 
         let header_consensus_state = SovTmConsensusState::from(header);
 
@@ -203,7 +205,7 @@ where
             if let Some(prev_cs) = maybe_prev_cs {
                 // New header timestamp cannot occur *before* the
                 // previous consensus state's height
-                let prev_cs = prev_cs.try_into()?;
+                let prev_cs = SovTmConsensusState::try_from(prev_cs)?;
 
                 if header.da_header.signed_header.header().time <= prev_cs.timestamp() {
                     return Ok(true);
@@ -219,7 +221,7 @@ where
             if let Some(next_cs) = maybe_next_cs {
                 // New (untrusted) header timestamp cannot occur *after* next
                 // consensus state's height
-                let next_cs = next_cs.try_into()?;
+                let next_cs = SovTmConsensusState::try_from(next_cs)?;
 
                 if header.da_header.signed_header.header().time >= next_cs.timestamp() {
                     return Ok(true);
