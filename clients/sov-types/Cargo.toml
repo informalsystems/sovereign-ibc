@@ -11,7 +11,7 @@ readme       = "./../README.md"
 description  = """
     Encapsulates essential data structures of Sovereign SDK light clients, shared among all Sovereign SDK rollups,
 	regardless of the underlying Data Availability (DA) layer, designed for universal applicability to facilitate
-	developement and integration across diverse IBC-enabled projects.
+	development and integration across diverse IBC-enabled projects.
 """
 
 [lints]

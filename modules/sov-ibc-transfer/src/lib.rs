@@ -31,7 +31,7 @@ pub struct IbcTransfer<S: Spec> {
 
     /// Maps the token name to its corresponding token ID for tokens minted
     /// through IBC. This mapping is used during mint/burn processes to validate
-    /// if the token exists and gives out needed ID for the minting/burning
+    /// if the token exists and gives out the needed ID for the minting/burning
     /// process.
     #[state]
     minted_token_name_to_id: StateMap<String, TokenId>,
@@ -45,7 +45,7 @@ pub struct IbcTransfer<S: Spec> {
 
     /// Keeps track of escrow addresses associated with a specific port and
     /// channel pair, offering an efficient means to access these addresses
-    /// without the need for recomputation during every packet processing.
+    /// without the need for re-computation during every packet processing.
     #[state]
     escrow_address_cache: StateMap<(PortId, ChannelId), ModuleId>,
 }

@@ -336,7 +336,7 @@ where
     /// This is called in a `recv_packet()` in the case where we are the token
     /// source.
     ///
-    /// Note: ibc-rs strips the first prefix upon receival. That is, if token
+    /// Note: ibc-rs strips the first prefix upon receipt. That is, if token
     /// with denom `my_token` was previously sent on channel `channel-1` and
     /// port `transfer` (on the counterparty), it will be received in
     /// `recv_packet` as `transfer/channel-1/my_token`. However, ibc-rs strips

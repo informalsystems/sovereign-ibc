@@ -10,7 +10,7 @@ use tendermint::crypto::Sha256;
 use tendermint::merkle::MerkleHash;
 use tendermint_light_client_verifier::Verifier as TmVerifier;
 
-/// Determines whether or not two conflicting headers at the same height would
+/// Determines whether two conflicting headers at the same height would
 /// have convinced the light client.
 pub fn verify_misbehaviour<V, H>(
     ctx: &V,

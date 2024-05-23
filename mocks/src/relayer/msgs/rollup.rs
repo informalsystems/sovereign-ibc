@@ -101,8 +101,7 @@ where
 
     /// Builds a `MsgTransfer` with the given configuration
     ///
-    /// Note: keep the amount value lower than the initial balance of the sender
-    /// address
+    /// Note: keep the amount lower than the initial balance of the sender address
     pub fn build_msg_transfer_for_sov(&self, config: &TransferTestConfig) -> MsgTransfer {
         let packet_data = PacketData {
             token: Coin {
