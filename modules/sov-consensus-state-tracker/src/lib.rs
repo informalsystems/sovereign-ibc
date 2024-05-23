@@ -10,10 +10,10 @@ use ibc_core::client::types::Height;
 pub use mock_da::*;
 use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_ibc::context::HOST_REVISION_NUMBER;
+use sov_modules_api::kernel_state::BootstrapWorkingSet;
 use sov_modules_api::runtime::capabilities::{BatchSelector, Kernel, KernelSlotHooks};
 use sov_modules_api::{DaSpec, Gas, KernelModule, KernelWorkingSet, Spec, StateCheckpoint};
-use sov_modules_core::kernel_state::BootstrapWorkingSet;
-use sov_modules_core::Storage;
+use sov_state::Storage;
 
 /// Implement HasConsensusState for all DaSpecs that you wish to support, and
 /// extract the consensus state from the header.

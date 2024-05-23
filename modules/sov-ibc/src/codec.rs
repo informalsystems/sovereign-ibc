@@ -6,7 +6,7 @@ use ibc_core::channel::types::commitment::{AcknowledgementCommitment, PacketComm
 use ibc_core::primitives::proto::Protobuf;
 use prost::Message;
 use sov_state::codec::BorshCodec;
-use sov_state::storage::{StateCodec, StateItemDecoder, StateItemEncoder};
+use sov_state::{StateCodec, StateItemDecoder, StateItemEncoder};
 
 #[derive(Default, Clone)]
 pub struct ProtobufCodec<Raw> {
@@ -43,7 +43,10 @@ where
     }
 }
 
-impl<Raw> StateCodec for ProtobufCodec<Raw> {
+impl<Raw> StateCodec for ProtobufCodec<Raw>
+where
+    Raw: Default + Clone + Send + Sync + 'static,
+{
     type KeyCodec = BorshCodec;
 
     type ValueCodec = Self;

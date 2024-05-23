@@ -7,20 +7,20 @@ use ibc_core::router::module::Module;
 use ibc_core::router::router::Router;
 use ibc_core::router::types::module::ModuleId;
 use sov_ibc_transfer::context::IbcTransferContext;
-use sov_modules_api::{Context, Spec, WorkingSet};
+use sov_modules_api::{Context, Spec, TxState};
 
 use crate::Ibc;
 
-pub struct IbcRouter<'ws, S: Spec> {
-    pub transfer_ctx: IbcTransferContext<'ws, S>,
+pub struct IbcRouter<'ws, S: Spec, TS: TxState<S>> {
+    pub transfer_ctx: IbcTransferContext<'ws, S, TS>,
 }
 
-impl<'ws, S: Spec> IbcRouter<'ws, S> {
+impl<'ws, S: Spec, TS: TxState<S>> IbcRouter<'ws, S, TS> {
     pub fn new(
         ibc_mod: &Ibc<S>,
         sdk_context: Context<S>,
-        working_set: Rc<RefCell<&'ws mut WorkingSet<S>>>,
-    ) -> IbcRouter<'ws, S> {
+        working_set: Rc<RefCell<&'ws mut TS>>,
+    ) -> IbcRouter<'ws, S, TS> {
         IbcRouter {
             transfer_ctx: IbcTransferContext::new(
                 ibc_mod.transfer.clone(),
@@ -31,7 +31,7 @@ impl<'ws, S: Spec> IbcRouter<'ws, S> {
     }
 }
 
-impl<'ws, S: Spec> Router for IbcRouter<'ws, S> {
+impl<'ws, S: Spec, TS: TxState<S>> Router for IbcRouter<'ws, S, TS> {
     fn get_route(&self, module_id: &ModuleId) -> Option<&dyn Module> {
         if *module_id == ModuleId::new(MODULE_ID_STR.to_string()) {
             Some(&self.transfer_ctx)

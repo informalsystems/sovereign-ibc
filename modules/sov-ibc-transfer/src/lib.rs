@@ -7,7 +7,9 @@ use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{ChannelId, PortId};
 use serde::{Deserialize, Serialize};
 use sov_bank::TokenId;
-use sov_modules_api::{Context, Error, Module, ModuleId, ModuleInfo, Spec, StateMap, WorkingSet};
+use sov_modules_api::{
+    Context, Error, GenesisState, Module, ModuleId, ModuleInfo, Spec, StateMap, TxState,
+};
 
 #[cfg(feature = "native")]
 mod rpc;
@@ -17,7 +19,6 @@ pub use rpc::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct TransferConfig {}
 
-#[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
 #[derive(ModuleInfo, Clone)]
 pub struct IbcTransfer<S: Spec> {
     /// Id of the module.
@@ -30,7 +31,7 @@ pub struct IbcTransfer<S: Spec> {
 
     /// Maps the token name to its corresponding token ID for tokens minted
     /// through IBC. This mapping is used during mint/burn processes to validate
-    /// if the token exists and gives out needed ID for the minting/burning
+    /// if the token exists and gives out the needed ID for the minting/burning
     /// process.
     #[state]
     minted_token_name_to_id: StateMap<String, TokenId>,
@@ -44,9 +45,9 @@ pub struct IbcTransfer<S: Spec> {
 
     /// Keeps track of escrow addresses associated with a specific port and
     /// channel pair, offering an efficient means to access these addresses
-    /// without the need for recomputation during every packet processing.
+    /// without the need for re-computation during every packet processing.
     #[state]
-    escrow_address_cache: StateMap<(PortId, ChannelId), S::Address>,
+    escrow_address_cache: StateMap<(PortId, ChannelId), ModuleId>,
 }
 
 impl<S: Spec> Module for IbcTransfer<S> {
@@ -58,7 +59,11 @@ impl<S: Spec> Module for IbcTransfer<S> {
 
     type Event = IbcEvent;
 
-    fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<S>) -> Result<(), Error> {
+    fn genesis(
+        &self,
+        config: &Self::Config,
+        working_set: &mut impl GenesisState<Self::Spec>,
+    ) -> Result<(), Error> {
         Ok(self.init_module(config, working_set)?)
     }
 
@@ -66,7 +71,7 @@ impl<S: Spec> Module for IbcTransfer<S> {
         &self,
         _msg: Self::CallMessage,
         _context: &Context<Self::Spec>,
-        _working_set: &mut WorkingSet<S>,
+        _working_set: &mut impl TxState<Self::Spec>,
     ) -> Result<sov_modules_api::CallResponse, Error> {
         Err(Error::ModuleError(anyhow!(
             "Cannot call sov-ibc-transfer; use sov-ibc instead"

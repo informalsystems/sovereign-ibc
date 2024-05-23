@@ -57,7 +57,7 @@ where
     }
 }
 
-/// Creates an jsonrpsee error object
+/// Creates a jsonrpsee error object
 pub fn to_jsonrpsee_error(err: impl ToString) -> ErrorObjectOwned {
     ErrorObjectOwned::owned(
         jsonrpsee::types::error::UNKNOWN_ERROR_CODE,

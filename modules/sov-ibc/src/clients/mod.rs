@@ -25,7 +25,7 @@ use sov_celestia_client::types::client_state::{
 use sov_celestia_client::types::consensus_state::{
     SovTmConsensusState, SOV_TENDERMINT_CONSENSUS_STATE_TYPE_URL,
 };
-use sov_modules_api::Spec;
+use sov_modules_api::{Spec, TxState};
 
 use crate::context::IbcContext;
 
@@ -166,13 +166,14 @@ impl ClientStateCommon for AnyClientState {
     }
 }
 
-impl<'a, S> ClientStateExecution<IbcContext<'a, S>> for AnyClientState
+impl<'a, S, TS> ClientStateExecution<IbcContext<'a, S, TS>> for AnyClientState
 where
     S: Spec,
+    TS: TxState<S>,
 {
     fn initialise(
         &self,
-        ctx: &mut IbcContext<'a, S>,
+        ctx: &mut IbcContext<'a, S, TS>,
         client_id: &ClientId,
         consensus_state: Any,
     ) -> Result<(), ClientError> {
@@ -184,7 +185,7 @@ where
 
     fn update_state(
         &self,
-        ctx: &mut IbcContext<'a, S>,
+        ctx: &mut IbcContext<'a, S, TS>,
         client_id: &ClientId,
         header: Any,
     ) -> Result<Vec<Height>, ClientError> {
@@ -196,7 +197,7 @@ where
 
     fn update_state_on_misbehaviour(
         &self,
-        ctx: &mut IbcContext<'a, S>,
+        ctx: &mut IbcContext<'a, S, TS>,
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<(), ClientError> {
@@ -212,7 +213,7 @@ where
 
     fn update_state_on_upgrade(
         &self,
-        ctx: &mut IbcContext<'a, S>,
+        ctx: &mut IbcContext<'a, S, TS>,
         client_id: &ClientId,
         upgraded_client_state: Any,
         upgraded_consensus_state: Any,
@@ -235,7 +236,7 @@ where
 
     fn update_on_recovery(
         &self,
-        ctx: &mut IbcContext<'a, S>,
+        ctx: &mut IbcContext<'a, S, TS>,
         subject_client_id: &ClientId,
         substitute_client_state: Any,
     ) -> Result<(), ClientError> {
@@ -250,13 +251,14 @@ where
     }
 }
 
-impl<'a, S> ClientStateValidation<IbcContext<'a, S>> for AnyClientState
+impl<'a, S, TS> ClientStateValidation<IbcContext<'a, S, TS>> for AnyClientState
 where
     S: Spec,
+    TS: TxState<S>,
 {
     fn verify_client_message(
         &self,
-        ctx: &IbcContext<'a, S>,
+        ctx: &IbcContext<'a, S, TS>,
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<(), ClientError> {
@@ -272,7 +274,7 @@ where
 
     fn check_for_misbehaviour(
         &self,
-        ctx: &IbcContext<'a, S>,
+        ctx: &IbcContext<'a, S, TS>,
         client_id: &ClientId,
         client_message: Any,
     ) -> Result<bool, ClientError> {
@@ -286,7 +288,11 @@ where
         }
     }
 
-    fn status(&self, ctx: &IbcContext<'a, S>, client_id: &ClientId) -> Result<Status, ClientError> {
+    fn status(
+        &self,
+        ctx: &IbcContext<'a, S, TS>,
+        client_id: &ClientId,
+    ) -> Result<Status, ClientError> {
         match self {
             AnyClientState::Tendermint(cs) => cs.status(ctx, client_id),
             AnyClientState::Sovereign(cs) => cs.status(ctx, client_id),
@@ -295,7 +301,7 @@ where
 
     fn check_substitute(
         &self,
-        ctx: &IbcContext<'a, S>,
+        ctx: &IbcContext<'a, S, TS>,
         substitute_client_state: Any,
     ) -> Result<(), ClientError> {
         match self {

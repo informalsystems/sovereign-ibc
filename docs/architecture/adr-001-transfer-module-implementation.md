@@ -193,7 +193,7 @@ this route:
 `sovA` -> `sovB` -> `sovC` -> `sovA` -> `sovC` -> `sovB` -> `sovA`
 
 That is, we do a round trip of `tokA` starting and ending at `sovA` via `sovB`
-and `sovC`; and then we unwind the round trip.
+and `sovC`, and then we unwind the round trip.
 
 The following table shows the mappings between Sovereign native tokens and IBC
 denom traces for each scenario:
@@ -223,7 +223,7 @@ _escrow_ and _unescrow_ methods take a native token.
 
 ## References
 
-Here are a list of relevant issues and PRs:
+Here is a list of relevant issues and PRs:
 
 - Review `sov-ibc-transfer` implementation and apply fixes
   [#133](https://github.com/informalsystems/sovereign-ibc/pull/133)

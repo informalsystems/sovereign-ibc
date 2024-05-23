@@ -22,28 +22,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Set up Git credentials for private repo
-        run: |
-          git config --global --replace-all \
-          "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
-          ssh://git@github.com
-      - uses: cachix/install-nix-action@v26
+      - uses: cachix/install-nix-action@V27
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
-      - uses: cachix/cachix-action@v14
+      - uses: cachix/cachix-action@v15
         with:
           name: hermes-sdk
           extraPullNames: informal-sovereign
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
           target: wasm32-unknown-unknown
-          profile: minimal
-          override: true
-      - name: Cache Cargo registry
-        uses: Swatinem/rust-cache@v2
       - name: Set up Git credentials for private repo
         run: |
           git config --global --replace-all \

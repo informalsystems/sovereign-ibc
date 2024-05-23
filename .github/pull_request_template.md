@@ -12,11 +12,11 @@ Closes: #XXX
 are the most critical to review.
 -->
 
-______
+---
 
 ### PR author checklist
 
 - [ ] Linked to GitHub issue.
 - [ ] Added tests.
 - [ ] Updated code comments and documentation (e.g., `docs/`).
-- [ ] Tagged *one* reviewer who will be the one responsible for shepherding this PR.
+- [ ] Tagged _one_ reviewer who will be the one responsible for shepherding this PR.

@@ -6,11 +6,12 @@ license      = { workspace = true }
 repository   = { workspace = true }
 rust-version = { workspace = true }
 version      = { workspace = true }
-keywords     = ["rollup", "sovereign", "ibc", "light-client"]
+keywords     = [ "rollup", "sovereign", "ibc", "light-client" ]
 readme       = "./../README.md"
-description  = """
+
+description = """
     Contains the implementation of `sov-celestia` light client, and re-exports
-	essential data structures and domain types from `ibc-core-client-types` crate.
+    essential data structures and domain types from `ibc-core-client-types` crate.
 """
 
 [lints]
@@ -24,7 +25,7 @@ prost         = { workspace = true }
 jmt           = { workspace = true }
 sha2          = { workspace = true }
 schemars      = { workspace = true, optional = true }
-serde         = { workspace = true, features = ["derive"], optional = true }
+serde         = { workspace = true, features = [ "derive" ], optional = true }
 typed-builder = { version = "0.18.0", optional = true }
 
 # ibc dependencies
@@ -40,23 +41,23 @@ tendermint-proto                 = { workspace = true }
 tendermint-light-client-verifier = { workspace = true }
 
 [features]
-default = ["std"]
+default = [ "std" ]
 std = [
-    "ibc-core/std",
-    "ibc-client-tendermint/std",
-    "sov-celestia-client-types/std",
-    "prost/std",
-    "serde/std",
-    "tendermint/std"
+  "ibc-core/std",
+  "ibc-client-tendermint/std",
+  "sov-celestia-client-types/std",
+  "prost/std",
+  "serde/std",
+  "tendermint/std",
 ]
 serde = [
-    "ibc-core/serde",
-    "ibc-client-tendermint/serde",
-    "sov-celestia-client-types/serde",
-    "dep:serde",
+  "ibc-core/serde",
+  "ibc-client-tendermint/serde",
+  "sov-celestia-client-types/serde",
+  "dep:serde",
 ]
 json-schema = [
-    "ibc-core/schema",
-    "dep:schemars",
+  "ibc-core/schema",
+  "dep:schemars",
 ]
-test-util = ["sov-celestia-client-types/test-util"]
+test-util = [ "sov-celestia-client-types/test-util" ]

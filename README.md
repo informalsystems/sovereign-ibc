@@ -6,7 +6,7 @@
 
 [![Build Status][build-image]][build-link]
 [![Apache 2.0 Licensed][license-image]][license-link]
-![Rust 1.75+][rustc-image]
+![Rust 1.77+][rustc-image]
 
 </div>
 
@@ -33,4 +33,4 @@ git submodule update --init
 [build-link]: https://github.com/informalsystems/sovereign-ibc/actions?query=workflow%3ARust
 [license-image]: https://img.shields.io/badge/license-Apache2.0-blue.svg
 [license-link]: https://github.com/informalsystems/sovereign-ibc/blob/main/LICENSE
-[rustc-image]: https://img.shields.io/badge/rustc-1.75+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.77+-blue.svg

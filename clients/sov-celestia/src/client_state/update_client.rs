@@ -163,7 +163,7 @@ where
     Ok(())
 }
 
-/// Checks for DA misbehaviour upon receiving a new consensus state as part of a
+/// Checks for DA misbehavior upon receiving a new consensus state as part of a
 /// client update.
 pub fn check_da_misbehaviour_on_update<V>(
     ctx: &V,

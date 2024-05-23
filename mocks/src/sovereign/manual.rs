@@ -21,6 +21,7 @@ use ibc_core::host::types::path::{
 use ibc_core::host::{ExecutionContext, ValidationContext};
 use sov_consensus_state_tracker::HasConsensusState;
 use sov_ibc::context::IbcContext;
+use sov_mock_da::MockFee;
 use sov_modules_api::{Spec, StateCheckpoint};
 use sov_rollup_interface::services::da::DaService;
 use sov_state::{MerkleProofSpec, ProverStorage};
@@ -31,7 +32,7 @@ use crate::cosmos::{dummy_tm_client_state, dummy_tm_consensus_state};
 impl<S, Da, P> MockRollup<S, Da, P>
 where
     S: Spec<Storage = ProverStorage<P>> + Send + Sync,
-    Da: DaService<Error = anyhow::Error> + Clone,
+    Da: DaService<Error = anyhow::Error, Fee = MockFee> + Clone,
     Da::Spec: HasConsensusState,
     P: MerkleProofSpec + Clone + 'static,
     <P as MerkleProofSpec>::Hasher: Send,
@@ -42,9 +43,9 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
-        let mut ibc_ctx: IbcContext<'_, S> = self.ibc_ctx(&mut working_set);
+        let mut ibc_ctx: IbcContext<'_, S, _> = self.ibc_ctx(&mut working_set);
 
         let client_counter = ibc_ctx.client_counter().unwrap();
 
@@ -77,7 +78,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -109,7 +110,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -148,7 +149,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -172,7 +173,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 
@@ -196,7 +197,7 @@ where
             .begin_slot(StateCheckpoint::new(self.prover_storage()))
             .await;
 
-        let mut working_set = checkpoint.to_revertable(Default::default());
+        let mut working_set = checkpoint.to_revertable_unmetered();
 
         let mut ibc_ctx = self.ibc_ctx(&mut working_set);
 

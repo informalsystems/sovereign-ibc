@@ -22,7 +22,7 @@ use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::{Signer, Timestamp};
 use sov_celestia_client::client_state::ClientState;
 use sov_celestia_client::consensus_state::ConsensusState;
-use sov_modules_api::{EventEmitter, ModuleInfo, Spec, WorkingSet};
+use sov_modules_api::{EventEmitter, ModuleInfo, Spec, TxState};
 use sov_state::Prefix;
 
 use crate::event::auxiliary_packet_events;
@@ -32,22 +32,21 @@ use crate::Ibc;
 pub const HOST_REVISION_NUMBER: u64 = 0;
 
 #[derive(Clone)]
-pub struct IbcContext<'a, S>
+pub struct IbcContext<'a, S, TS>
 where
     S: Spec,
+    TS: TxState<S>,
 {
     pub ibc: &'a Ibc<S>,
-    pub working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
+    pub working_set: Rc<RefCell<&'a mut TS>>,
 }
 
-impl<'a, S> IbcContext<'a, S>
+impl<'a, S, TS> IbcContext<'a, S, TS>
 where
     S: Spec,
+    TS: TxState<S>,
 {
-    pub fn new(
-        ibc: &'a Ibc<S>,
-        working_set: Rc<RefCell<&'a mut WorkingSet<S>>>,
-    ) -> IbcContext<'a, S> {
+    pub fn new(ibc: &'a Ibc<S>, working_set: Rc<RefCell<&'a mut TS>>) -> IbcContext<'a, S, TS> {
         IbcContext { ibc, working_set }
     }
 
@@ -99,9 +98,10 @@ where
     }
 }
 
-impl<'a, S> ValidationContext for IbcContext<'a, S>
+impl<'a, S, TS> ValidationContext for IbcContext<'a, S, TS>
 where
     S: Spec,
+    TS: TxState<S>,
 {
     type V = Self;
     type HostClientState = ClientState;
@@ -190,7 +190,7 @@ where
     fn commitment_prefix(&self) -> CommitmentPrefix {
         let module_prefix: Prefix = self.ibc.prefix().into();
 
-        let module_prefix_vec = module_prefix.as_aligned_vec().clone().into_inner();
+        let module_prefix_vec = module_prefix.as_ref().to_vec();
 
         CommitmentPrefix::try_from(module_prefix_vec).expect("never fails as prefix is not empty")
     }
@@ -332,9 +332,10 @@ where
     }
 }
 
-impl<'a, S> ExecutionContext for IbcContext<'a, S>
+impl<'a, S, TS> ExecutionContext for IbcContext<'a, S, TS>
 where
     S: Spec,
+    TS: TxState<S>,
 {
     type E = Self;
 
@@ -579,7 +580,7 @@ where
         Ok(())
     }
 
-    /// FIXME: To implement this method there should be a way for IBC module to
+    /// FIXME: To implement this method, there should be a way for IBC module to
     /// insert logs into the transaction receipts upon execution
     fn log_message(&mut self, _message: String) -> Result<(), ContextError> {
         Ok(())

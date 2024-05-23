@@ -6,7 +6,7 @@ use ibc_core::handler::types::error::ContextError;
 use ibc_core::handler::types::events::IbcEvent;
 use ibc_core::host::types::identifiers::{ChannelId, PortId, Sequence};
 
-/// Processes an IBC event and generates additional packet event with a hashed
+/// Processes an IBC event and generates an additional packet event with a hashed
 /// key if the event is of `SendPacket` or `ReceivePacket` type.
 /// These events are indexed by the relayer to process pending packets.
 pub(crate) fn auxiliary_packet_events(

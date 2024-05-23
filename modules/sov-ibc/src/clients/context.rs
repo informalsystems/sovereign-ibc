@@ -6,12 +6,12 @@ use ibc_core::host::types::identifiers::ClientId;
 use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc_core::host::ValidationContext;
 use ibc_core::primitives::Timestamp;
-use sov_modules_api::Spec;
+use sov_modules_api::{Spec, TxState};
 
 use super::{AnyClientState, AnyConsensusState};
 use crate::context::IbcContext;
 
-impl<'a, S: Spec> ClientValidationContext for IbcContext<'a, S> {
+impl<'a, S: Spec, TS: TxState<S>> ClientValidationContext for IbcContext<'a, S, TS> {
     type ClientStateRef = AnyClientState;
     type ConsensusStateRef = AnyConsensusState;
 
@@ -70,7 +70,7 @@ impl<'a, S: Spec> ClientValidationContext for IbcContext<'a, S> {
     }
 }
 
-impl<'a, S: Spec> ClientExecutionContext for IbcContext<'a, S> {
+impl<'a, S: Spec, TS: TxState<S>> ClientExecutionContext for IbcContext<'a, S, TS> {
     type ClientStateMut = AnyClientState;
 
     fn store_client_state(
@@ -144,7 +144,7 @@ impl<'a, S: Spec> ClientExecutionContext for IbcContext<'a, S> {
     }
 }
 
-impl<'a, S: Spec> ExtClientValidationContext for IbcContext<'a, S> {
+impl<'a, S: Spec, TS: TxState<S>> ExtClientValidationContext for IbcContext<'a, S, TS> {
     fn host_timestamp(&self) -> Result<Timestamp, ContextError> {
         <Self as ValidationContext>::host_timestamp(self)
     }
@@ -179,8 +179,8 @@ impl<'a, S: Spec> ExtClientValidationContext for IbcContext<'a, S> {
     }
 }
 
-fn next_consensus_state<S: Spec>(
-    ctx: &IbcContext<'_, S>,
+fn next_consensus_state<S: Spec, TS: TxState<S>>(
+    ctx: &IbcContext<'_, S, TS>,
     client_id: &ClientId,
     height: &Height,
 ) -> Result<Option<AnyConsensusState>, ContextError> {
@@ -238,8 +238,8 @@ fn next_consensus_state<S: Spec>(
     Ok(None)
 }
 
-fn prev_consensus_state<S: Spec>(
-    ctx: &IbcContext<'_, S>,
+fn prev_consensus_state<S: Spec, TS: TxState<S>>(
+    ctx: &IbcContext<'_, S, TS>,
     client_id: &ClientId,
     height: &Height,
 ) -> Result<Option<AnyConsensusState>, ContextError> {

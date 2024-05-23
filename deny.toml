@@ -2,16 +2,16 @@
 # Deny crates that do not have a license.
 unlicensed = "deny"
 allow = [
-	"Apache-2.0",
-	"MIT",
-	"Unlicense",
-	"Unicode-DFS-2016",
-	"MPL-2.0",
-	"ISC",
-	"CC0-1.0",
-	"BSD-2-Clause",
-	"BSD-3-Clause",
-	"OpenSSL",
+  "Apache-2.0",
+  "MIT",
+  "Unlicense",
+  "Unicode-DFS-2016",
+  "MPL-2.0",
+  "ISC",
+  "CC0-1.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "OpenSSL",
 ]
 
 [[licenses.clarify]]
@@ -20,5 +20,5 @@ name = "ring"
 # but we can effectively treat is as OpenSSL-like licensing.
 expression = "OpenSSL"
 license-files = [
-    { path = "LICENSE", hash = 0xbd0eed23 }
+  { path = "LICENSE", hash = 0xbd0eed23 },
 ]

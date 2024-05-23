@@ -7,7 +7,7 @@ use ibc_core::host::ValidationContext;
 use jsonrpsee::core::RpcResult;
 use sov_ibc_transfer::to_jsonrpsee_error;
 use sov_modules_api::{Spec, StateMap, WorkingSet};
-use sov_state::storage::{StateCodec, StateItemCodec, StateItemDecoder};
+use sov_state::{StateCodec, StateItemCodec, StateItemDecoder};
 
 use crate::context::IbcContext;
 use crate::Ibc;
@@ -40,7 +40,7 @@ impl<S: Spec> Ibc<S> {
 /// that fetch values with and without proofs -
 /// [`WithProof`] and [`WithoutProof`] respectively.
 ///
-/// This trait allows to have a single query methods for both cases, e.g.:
+/// This trait allows having a single query methods for both cases, e.g.:
 /// ```ignore
 /// let (client_state, proof) = ibc_ctx.query_client_state::<WithProof>(client_id)?;
 /// let client_state = ibc_ctx.query_client_state::<WithoutProof>(client_id)?;

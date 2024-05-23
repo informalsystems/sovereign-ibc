@@ -8,7 +8,7 @@
 
     sovereign-sdk-src = {
         flake = false;
-        url = git+ssh://git@github.com/informalsystems/sovereign-sdk-wip?rev=63fa5f110ebb323100ff740e6b152ba42a6ae84c;
+        url = git+ssh://git@github.com/informalsystems/sovereign-sdk-wip?rev=fc1552b44acddc2674a783cd11f301a8b79cc4f3;
     };
   };
 
