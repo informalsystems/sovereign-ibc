@@ -80,8 +80,4 @@ impl ConsensusStateTrait for ConsensusState {
         let time = self.0.da_params.timestamp.unix_timestamp_nanos();
         Timestamp::from_nanoseconds(time as u64).expect("invalid timestamp")
     }
-
-    fn encode_vec(self) -> Vec<u8> {
-        <Self as Protobuf<Any>>::encode_vec(self)
-    }
 }
