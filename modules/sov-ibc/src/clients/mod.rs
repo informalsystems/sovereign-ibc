@@ -85,8 +85,8 @@ impl TryFrom<AnyConsensusState> for TmConsensusStateType {
     fn try_from(cs: AnyConsensusState) -> Result<TmConsensusStateType, Self::Error> {
         match cs {
             AnyConsensusState::Tendermint(cs) => Ok(cs.into_inner()),
-            _ => Err(ClientError::UnknownConsensusStateType {
-                consensus_state_type: "".to_string(),
+            AnyConsensusState::Sovereign(_) => Err(ClientError::UnknownConsensusStateType {
+                consensus_state_type: "sovereign".to_string(),
             }),
         }
     }
@@ -97,10 +97,10 @@ impl TryFrom<AnyConsensusState> for SovTmConsensusState {
 
     fn try_from(cs: AnyConsensusState) -> Result<SovTmConsensusState, Self::Error> {
         match cs {
-            AnyConsensusState::Sovereign(cs) => Ok(cs.into_inner()),
-            _ => Err(ClientError::UnknownConsensusStateType {
-                consensus_state_type: "".to_string(),
+            AnyConsensusState::Tendermint(_) => Err(ClientError::UnknownConsensusStateType {
+                consensus_state_type: "tendermint".to_string(),
             }),
+            AnyConsensusState::Sovereign(cs) => Ok(cs.into_inner()),
         }
     }
 }
