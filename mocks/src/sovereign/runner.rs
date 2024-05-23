@@ -106,15 +106,14 @@ where
 
         let mut working_set = checkpoint.to_revertable_unmetered();
 
+        // create the Rollup context dynamically
+        // using the relayer address and the visible slot
         let rollup_ctx = Context::new(
             self.relayer_address.clone(),
             Default::default(),
             self.relayer_address.clone(),
             visible_slot,
         );
-
-        // Resets the sender address to the address of the relayer
-        // self.resolve_ctx(rollup_ctx.sender().clone(), visible_slot);
 
         for m in self.consume_mempool() {
             // NOTE: on failures, we silently ignore the message and continue as

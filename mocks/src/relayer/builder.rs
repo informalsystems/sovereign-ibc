@@ -84,25 +84,14 @@ where
     {
         let runtime = Runtime::default();
 
-        let sender_address = self.setup_cfg.get_relayer_address();
-
-        // let rollup_ctx = Context::new(
-        //     sender_address.clone(),
-        //     Default::default(),
-        //     sender_address,
-        //     DEFAULT_INIT_HEIGHT,
-        // );
-
         let tmpdir = tempfile::tempdir().unwrap();
-
-        // let prover_storage = new_orphan_storage(tmpdir.path()).unwrap();
 
         let storage_manager = SimpleStorageManager::new(tmpdir.path());
 
         let mut rollup = MockRollup::new(
             runtime,
             storage_manager,
-            sender_address,
+            self.setup_cfg.get_relayer_address(),
             MockTendermint::builder()
                 .chain_id(self.setup_cfg.da_chain_id.clone())
                 .build(),
