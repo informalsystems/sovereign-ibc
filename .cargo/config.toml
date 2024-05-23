@@ -17,9 +17,10 @@ ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "2
 ibc-query             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "2378cd4" }
 ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "2378cd4" }
 
-cosmrs   = { git = "https://github.com/cosmos/cosmos-rust.git", rev = "4f2e3bb" }
-basecoin = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "6b0bae1" }
-jmt      = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
+cosmrs         = { git = "https://github.com/cosmos/cosmos-rust.git", rev = "4f2e3bb" }
+basecoin       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "6b0bae1" }
+basecoin-store = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "6b0bae1" }
+jmt            = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }
 
 
 # The sovereign-sdk patches are specified in two modes.
