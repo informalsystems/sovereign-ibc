@@ -1,5 +1,3 @@
-include = [ "taplo.toml", "**/Cargo.toml" ]
-
 [formatting]
 align_entries       = true
 compact_arrays      = false
