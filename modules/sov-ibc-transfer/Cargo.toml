@@ -1,5 +1,5 @@
 [package]
-name = "sov-ibc-transfer"
+name         = "sov-ibc-transfer"
 license      = { workspace = true }
 edition      = { workspace = true }
 rust-version = { workspace = true }
@@ -26,7 +26,7 @@ thiserror   = { workspace = true }
 uint        = "0.9"
 
 # ibc dependencies
-ibc-app-transfer = { workspace = true, features = ["borsh", "schema"] }
+ibc-app-transfer = { workspace = true, features = [ "borsh", "schema" ] }
 ibc-core         = { workspace = true }
 
 # sovereign dependencies
@@ -35,11 +35,11 @@ sov-modules-api      = { workspace = true }
 sov-rollup-interface = { workspace = true }
 
 [features]
-default = []
+default = [  ]
 native = [
-    "sov-bank/native",
-    "sov-modules-api/native",
-    "sov-rollup-interface/native",
-    "schemars",
-    "jsonrpsee",
+  "sov-bank/native",
+  "sov-modules-api/native",
+  "sov-rollup-interface/native",
+  "schemars",
+  "jsonrpsee",
 ]

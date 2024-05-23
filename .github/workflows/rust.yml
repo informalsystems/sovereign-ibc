@@ -27,25 +27,19 @@ env:
   RUSTUP_MAX_RETRIES: 10
   MSRV: 1.77
 
-jobs:
-  cleanup-runs:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: rokroskar/workflow-run-cleanup-action@master
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    if: ${{ !startsWith(github.ref, 'refs/tags/') && github.ref != 'refs/heads/main' }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') && github.ref != 'refs/heads/main' }}
 
+jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: nightly # Since fmt uses unstable features for organizing imports
           components: rustfmt
-          override: true
-      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -61,11 +55,9 @@ jobs:
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
       - uses: arduino/setup-protoc@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ env.MSRV }}
-          override: true
-      - uses: Swatinem/rust-cache@v2
       - name: Build with MSRV
         uses: actions-rs/cargo@v1
         with:
@@ -83,11 +75,9 @@ jobs:
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
       - uses: arduino/setup-protoc@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
-          override: true
-      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: doc
@@ -103,12 +93,10 @@ jobs:
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
       - uses: arduino/setup-protoc@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
           components: clippy
-          override: true
-      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -124,12 +112,10 @@ jobs:
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
       - uses: arduino/setup-protoc@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
           components: clippy
-          override: true
-      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -146,11 +132,9 @@ jobs:
           "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
           ssh://git@github.com
       - uses: arduino/setup-protoc@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
-          override: true
-      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -159,4 +143,3 @@ jobs:
         with:
           command: test
           args: --all-features --no-fail-fast --workspace -- --nocapture
-

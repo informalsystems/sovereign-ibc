@@ -86,7 +86,7 @@ where
     }
 }
 
-/// Check for misbehaviour on the client state as part of the client state
+/// Check for misbehavior on the client state as part of the client state
 /// validation process.
 pub fn check_for_misbehaviour<V>(
     client_state: &SovTmClientState,

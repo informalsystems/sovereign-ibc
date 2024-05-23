@@ -580,7 +580,7 @@ where
         Ok(())
     }
 
-    /// FIXME: To implement this method there should be a way for IBC module to
+    /// FIXME: To implement this method, there should be a way for IBC module to
     /// insert logs into the transaction receipts upon execution
     fn log_message(&mut self, _message: String) -> Result<(), ContextError> {
         Ok(())

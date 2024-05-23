@@ -23,7 +23,7 @@ use crate::proto::types::v1::{
     SerializedValidityCondition as RawSerializedValidityCondition, SlotNumber as RawSlotNumber,
 };
 
-/// The code commitment can have variable size but for the security purpose it
+/// The code commitment can have variable size, but for the security purpose it
 /// is upper bounded by 10kb.
 const MAX_CODE_COMMITMENT_LENGTH: usize = 10 * 1024;
 
@@ -427,7 +427,7 @@ impl From<SerializedAggregatedProof> for RawSerializedAggregatedProof {
     }
 }
 
-/// Defines the slot number for rollups which is equivalent to the height in the
+/// Defines the slot number for rollups, which is equivalent to the height in the
 /// Sovereign SDK system.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, derive_more::Display, derive_more::From)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

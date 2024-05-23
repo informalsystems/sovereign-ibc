@@ -40,7 +40,7 @@ impl<S: Spec> Ibc<S> {
 /// that fetch values with and without proofs -
 /// [`WithProof`] and [`WithoutProof`] respectively.
 ///
-/// This trait allows to have a single query methods for both cases, e.g.:
+/// This trait allows having a single query methods for both cases, e.g.:
 /// ```ignore
 /// let (client_state, proof) = ibc_ctx.query_client_state::<WithProof>(client_id)?;
 /// let client_state = ibc_ctx.query_client_state::<WithoutProof>(client_id)?;

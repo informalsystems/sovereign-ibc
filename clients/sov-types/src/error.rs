@@ -46,7 +46,7 @@ impl Error {
         Self::new(Code::Invalid, origin)
     }
 
-    /// Constructs a `MisMatch` error with the given message.
+    /// Constructs a `Mismatch` error with the given message.
     pub fn mismatch(origin: impl Into<String>) -> Self {
         Self::new(Code::Mismatch, origin)
     }

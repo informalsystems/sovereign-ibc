@@ -13,7 +13,7 @@ The following endpoints (or equivalent) are necessary for operating the relayer.
 An optimal approach involves exposing these endpoints as methods on the unified
 client designed to manage requests and responses by various RPC or WebSocket
 connections. For each section, we provide a comprehensive list of the endpoints,
-**their priority for the initial phase of implementation** and latest
+**their priority for the initial phase of implementation** and the latest
 availability status, as far as we could investigate in the Sovereign SDK
 codebase. They are ordered from highest to lowest impact roughly, i.e., the last
 endpoint in the list is the least important and least frequently required.
@@ -84,7 +84,7 @@ endpoint in the list is the least important and least frequently required.
 
 - Objective:
   - Needed for basic check to assess the health of sequencer node.
-  - Only used once, at relayer startup during health check.
+  - Only used once, at relayer startup during a health check.
 
 - Priority: Low
 
@@ -99,7 +99,7 @@ endpoint in the list is the least important and least frequently required.
 - Objective:
   1. To obtain packet events that occurred during a range of heights at or
      before a specified height. Required because rollup state does not store the
-     full packet data which is needed to build and relay the packet messages.
+     full packet data that is needed to build and relay the packet messages.
      This endpoint is used to build and relay packet messages, especially for
      indexing pending packets, where we intend to rely on a `packet_key`. This
      `packet_key` will be a commitment hash, derived from the IBC `send_packet`
@@ -131,10 +131,10 @@ endpoint in the list is the least important and least frequently required.
 - Remark:
   - For a portion of our indexing needs, this endpoint works as an interim
     solution. For now, `sov-ibc` will introduce a few custom-crafted event
-    variants, where the key of these newly defined events being a commitment
-    hash (`packet_key`) for distinctiveness. But, ideally the endpoint should
-    support a query language, enabling the inclusion of ANDed conditions to
-    facilitate various type of event searches for cases like:
+    variants, where the key of these newly defined events is a commitment
+    hash (`packet_key`) for distinctiveness. But, ideally, the endpoint should
+    support a query language, enabling the inclusion of AND-ed conditions to
+    facilitate various types of event searches for cases like:
     - `send_packet.packet_src_channel == X && send_packet.packet_src_port == X
        && send_packet.packet_dst_channel == X && send_packet.packet_dst_port ==
        X && send_packet.packet_sequence == X`

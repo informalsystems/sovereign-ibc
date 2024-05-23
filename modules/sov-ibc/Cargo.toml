@@ -1,5 +1,5 @@
 [package]
-name = "sov-ibc"
+name         = "sov-ibc"
 authors      = { workspace = true }
 edition      = { workspace = true }
 license      = { workspace = true }
@@ -39,7 +39,7 @@ sov-celestia-client   = { path = "../../clients/sov-celestia" }
 
 # enforce version so that Risc0 compiles
 ahash = "=0.8.6"
-time = "=0.3.29"
+time  = "=0.3.29"
 
 # sovereign dependencies
 sov-modules-api      = { workspace = true }
@@ -47,16 +47,15 @@ sov-state            = { workspace = true }
 sov-rollup-interface = { workspace = true }
 
 [features]
-default = []
-serde = ["serde_json"]
+default = [  ]
+serde = [ "serde_json" ]
 native = [
-    "serde",
-    "sov-ibc-transfer/native",
-    "sov-modules-api/native",
-    "sov-rollup-interface/native",
-    "sov-state/native",
-    "schemars",
-    "jsonrpsee",
-    "ibc-query",
+  "serde",
+  "sov-ibc-transfer/native",
+  "sov-modules-api/native",
+  "sov-rollup-interface/native",
+  "sov-state/native",
+  "schemars",
+  "jsonrpsee",
+  "ibc-query",
 ]
-

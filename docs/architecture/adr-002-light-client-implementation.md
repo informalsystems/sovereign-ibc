@@ -35,11 +35,11 @@ Implemented (v1)
 
 ## Overview
 
-This ADR describes our approach for implementing the Sovereign IBC light client.
+This ADR describes our approach to implementing the Sovereign IBC light client.
 It reflects the latest work done in collaboration with the Sovereign Labs team,
 and describes the current state of the Sovereign IBC light client, serving as
 its first version. The primary objective here is to share knowledge, explain
-design choices, and provides insights into the reasoning behind our verification
+design choices, and provide insights into the reasoning behind our verification
 logic.
 
 The Sovereign IBC light client aims to establish IBC interoperability between
@@ -104,7 +104,7 @@ Here is the list of crates:
 
 ## Top-level Structs
 
-In this section we go over the data structure definitions utilized in the
+In this section, we go over the data structure definitions utilized in the
 Sovereign IBC light clients. We are focusing here on the top-level structs, each
 containing two fields: one for rollup-specific parameters and the other for DA.
 
@@ -232,7 +232,7 @@ pub struct SovereignClientParams {
     layer block 1050. This height difference is expected to remain constant over
     time.
 
-    As a result, the `genesis_da_height` field has been added into the struct,
+    As a result, the `genesis_da_height` field has been added to the struct,
     which is initialized during client creation. It can only be modified through
     a client upgrade process. This is permitted because in Cosmos chains, the
     `revision_height` resets during upgrades, although it remains unchanged
@@ -249,10 +249,10 @@ pub struct SovereignClientParams {
 2. **genesis_state_root**
 
     Rollups do not have validator sets, which means we cannot perform signature
-    verification like we do for Tendermint headers. This presents a challenge as
+    verification as we do for Tendermint headers. This presents a challenge as
     we need a method to distinguish between different rollups. Otherwise, a
     valid aggregated proof from rollup (A) could be used to update the client of
-    rollup (B). In the case of Tendermint clients, verifying signatures of
+    rollup (B). In the case of Tendermint clients, verifying the signatures of
     validators is the step ensuring us that a header belongs to the correct
     chain, thereby preventing updates from headers of other chains. Furthermore,
     Sovereign rollups currently lack any form of identifiers. While there might
@@ -277,7 +277,7 @@ pub struct SovereignClientParams {
     commitments. Alongside the `genesis_state_root`, the `code_commitment`
     serves as the second parameter that helps link an incoming aggregated proof
     to a specific rollup, ensuring uniqueness and integrity. Similarly, this
-    field should also be initialized during client creation, and is only
+    field should also be initialized during client creation; and is only
     permitted to change with a client upgrade. And not during recoveries.
 
 4. **trusting_period**
@@ -291,7 +291,7 @@ pub struct SovereignClientParams {
     aggregated proof simultaneously during each update, having separate trusting
     periods for each doesn't align logically. Instead, when configuring this
     period, we must account for both the DA layer and the rollup, ensuring that
-    the client's trusting duration is maximum acceptable amount. If, for
+    the client's trusting duration is the maximum acceptable amount. If, for
     instance, the rollup requires a shorter trusting window, it dictates when
     the client expires. This parameter is determined by relayers/users and can
     be updated during both client recoveries and upgrades.
@@ -330,7 +330,7 @@ pub struct SovereignClientParams {
 
 7. **upgrade_path**
 
-    This field should be set during client creation and remains unchanged
+    This field should be set during client creation and remain unchanged
     throughout the client's lifecycle.
 
     One notable distinction from Tendermint light clients is that we don't
@@ -431,7 +431,7 @@ the `AggregatedProofPublicData` struct within an aggregated proof.
 ### TendermintConsensusParams
 
 Under the `TendermintConsensusParams` we have parameters similar to Tendermint
-`ConsensusState` expect the root as described above, which should come from the
+`ConsensusState` except the root as described above, which should come from the
 execution layer. Particularly we care about the `next_validators_hash` by
 capturing the hash of the upcoming validators set to detect potential DA forks.
 It ensures smooth DA consensus transitions and validates the Celestia core
@@ -462,7 +462,7 @@ exist.
   empty. (Same as ICS-07)
 - `client_type()`: Constructs the `ClientType` using the prefix
   `100-sov-celestia`. The name choice aligns with naming conventions across
-  different light clients. Though, the number prefix is an arbitrary value
+  different light clients. However, the number prefix is an arbitrary value
   adjustable in the future.
 - `latest_height()`: Returns the `latest_height` from the `sovereign_params` of
   the `ClientState`.
@@ -556,7 +556,7 @@ exist.
 - [`verify_client_message()`](https://github.com/informalsystems/sovereign-ibc/blob/09a818d57fed253a500f731eec93c4945df243ad/clients/sov-celestia/src/client_state/validation.rs#L64):
   Contains the verification steps akin to ICS-07 for the `da_header` field
   contained in the [`Header`](#header) struct. The brief overview of the primary
-  steps involved in the `SovTmHeader` verification are as follows:
+  steps involved in the `SovTmHeader` verification is as follows:
 
   ```rust
   /// Verifies the IBC header type for the Sovereign SDK rollups, which consists
@@ -595,7 +595,7 @@ exist.
   ```
 
   - This notably includes a check for the occurrence of DA height offsets. This
-    consists of the confirming the presence of offsets for both the target and
+    consists of confirming the presence of offsets for both the target and
     trusted heights as follows:
 
   ```rust
@@ -641,9 +641,9 @@ exist.
     can vary in size but can be capped at 10KB.
 
   - As for the `verify_aggregated_proof()` it already contains a few checks
-    ensures that the receiving aggregated proof has the same
+    to ensure that the receiving aggregated proof has the same
     `genesis_state_root` and `code_commitment` as the installed `ClientState`.
-    However the core `AggregatedProof` verifier yet to be implemented, but
+    However the core `AggregatedProof` verifier is yet to be implemented, but
     assuming the verifier will be imported from `sovereign-sdk`, we should end
     up with a function call like this:
 
@@ -660,7 +660,7 @@ exist.
   The logic for the Tendermint-specific parameters remains the same as ICS-07.
   For the rollup-wide fields, we ensure that the `genesis_da_height`,
   `genesis_state_root`, `code_commitment`, and `upgrade_path` match the existing
-  client state, as the rollup software supposed to be the same. However, the
+  client state, as the rollup software is supposed to be the same. However, the
   `trusting_period`, `frozen_height`, and `latest_height` are allowed to be
   updated.
 
@@ -675,11 +675,11 @@ exist.
   Updates the client state on misbehavior, which has the same logic as ICS-07.
 - [`update_state_on_upgrade()`](https://github.com/informalsystems/sovereign-ibc/blob/09a818d57fed253a500f731eec93c4945df243ad/clients/sov-celestia/src/client_state/execution.rs#L210):
   The logic for the Tendermint-specific parameters remains the same as ICS-07.
-  All chain-chosen parameters come from committed (upgraded) client, all
-  relayer-chosen parameters come from current client. For the rollup-wide
+  All chain-chosen parameters come from the committed (upgraded) client, all
+  relayer-chosen parameters come from the current client. For the rollup-wide
   fields, the `genesis_state_root` are considered immutable properties of the
   client. Changing them implies creating a client that could potentially be
-  compatible with other rollups. Though the `code_commitment` can be updated
+  compatible with other rollups. However, the `code_commitment` can be updated
   which implies that the rollup software has been updated.
 - [`update_on_recovery()`](https://github.com/informalsystems/sovereign-ibc/blob/09a818d57fed253a500f731eec93c4945df243ad/clients/sov-celestia/src/client_state/execution.rs#L297):
   Permitted parameters as specified in the `check_substitute()`, comes from the

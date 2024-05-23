@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["host", "methods"]
+members  = [ "host", "methods" ]
 
 # Always optimize; building and running the guest takes much longer without optimization.
 [profile.dev]
@@ -11,7 +11,7 @@ opt-level = 3
 
 [profile.release]
 debug = 1
-lto = true
+lto   = true
 
 [profile.release.build-override]
 opt-level = 3
