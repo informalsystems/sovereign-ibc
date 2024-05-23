@@ -12,14 +12,8 @@ use tendermint::{Hash, Time};
 /// Rust's orphan rules and implement traits from `ibc::core::client::context`
 /// on the `ConsensusState` type.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, derive_more::From)]
+#[derive(Clone, Debug, PartialEq, derive_more::From, derive_more::Into)]
 pub struct ConsensusState(SovTmConsensusState);
-
-impl From<ConsensusState> for SovTmConsensusState {
-    fn from(value: ConsensusState) -> Self {
-        value.0
-    }
-}
 
 impl ConsensusState {
     pub fn inner(&self) -> &SovTmConsensusState {
