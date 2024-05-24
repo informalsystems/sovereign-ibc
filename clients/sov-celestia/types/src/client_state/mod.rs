@@ -1,8 +1,10 @@
+mod at_counterparty;
 mod da_params;
 mod definition;
 
 use alloc::str::FromStr;
 
+pub use at_counterparty::ClientStateAtCounterParty;
 pub use da_params::*;
 pub use definition::*;
 use ibc_core::host::types::identifiers::ClientType;
