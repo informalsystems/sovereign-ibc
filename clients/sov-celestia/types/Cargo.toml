@@ -30,7 +30,7 @@ typed-builder = { version = "0.18.0", optional = true }
 # ibc dependencies
 ibc-core              = { workspace = true }
 ibc-client-tendermint = { workspace = true }
-ibc-client-wasm-types = { workspace = true, features = [ "cosmwasm" ], optional = true }
+ibc-client-wasm-types = { workspace = true }
 sov-client-types      = { path = "./../../sov-types" }
 sov-ibc-proto         = { path = "./../../../proto" }
 
@@ -64,5 +64,5 @@ test-util = [
   "hex",
   "typed-builder",
   "sov-client-types/test-util",
-  "ibc-client-wasm-types",
+  "ibc-client-wasm-types/cosmwasm",
 ]
