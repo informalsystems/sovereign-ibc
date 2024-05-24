@@ -22,6 +22,7 @@ use ibc_core::host::{ExecutionContext, ValidationContext};
 use ibc_core::primitives::{Signer, Timestamp};
 use sov_celestia_client::client_state::{ClientState as HostClientState, ClientState};
 use sov_celestia_client::consensus_state::{ConsensusState as HostConsensusState, ConsensusState};
+use sov_celestia_client::types::client_state::ClientStateAtCounterParty;
 use sov_modules_api::{EventEmitter, ModuleInfo, Spec, TxState};
 use sov_state::Prefix;
 
@@ -106,6 +107,7 @@ where
     type V = Self;
     type HostClientState = ClientState;
     type HostConsensusState = ConsensusState;
+    type ClientStateWrapperAtAnyCounterParty<CS> = ClientStateAtCounterParty<CS>;
 
     fn get_client_validation_context(&self) -> &Self::V {
         self
@@ -179,7 +181,9 @@ where
 
     fn validate_self_client(
         &self,
-        _client_state_of_host_on_counterparty: Self::HostClientState,
+        _client_state_of_host_on_counterparty: Self::ClientStateWrapperAtAnyCounterParty<
+            Self::HostClientState,
+        >,
     ) -> Result<(), ContextError> {
         // Note: We can optionally implement this.
         // It would require having a Protobuf definition of the chain's `ClientState` that other chains would use.
