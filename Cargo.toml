@@ -81,7 +81,7 @@ ibc-testkit           = { version = "0.53.0", default-features = false }
 # NOTE: `ibc-proto` is solely required by `sov-ibc-proto`. When needing Protobuf
 # Rust types from `ibc-proto` in the project, importing from respective `ibc`
 # crates is a more efficient approach.
-ibc-proto = { version = "0.45.0", default-features = false }
+ibc-proto = { version = "0.44.0", default-features = false }
 
 basecoin = { version = "0.1.0" }
 
