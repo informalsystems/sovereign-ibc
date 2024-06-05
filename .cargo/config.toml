@@ -5,17 +5,17 @@ sov-ibc-transfer            = { path = "modules/sov-ibc-transfer" }
 sov-consensus-state-tracker = { path = "modules/sov-consensus-state-tracker" }
 sov-celestia-client         = { path = "clients/sov-celestia" }
 
-ibc                   = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-core              = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-core-client       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-core-host-cosmos  = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-client-tendermint = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-client-wasm-types = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-client-cw         = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-app-transfer      = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-query             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
-ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e3" }
+ibc                   = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-core              = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-core-client       = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-core-host-cosmos  = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-client-tendermint = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-client-wasm-types = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-client-cw         = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-app-transfer      = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-query             = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
+ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", rev = "d90295e" }
 
 cosmrs         = { git = "https://github.com/cosmos/cosmos-rust.git", rev = "ced74a7" }
 basecoin       = { git = "https://github.com/informalsystems/basecoin-rs.git", rev = "b72e13f" }

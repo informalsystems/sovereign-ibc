@@ -663,7 +663,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 [[package]]
 name = "basecoin"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=b85d5e5#b85d5e5adc20b655e0d0440e7346498038584fbe"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=b72e13f#b72e13fdf23399e8575e19bfb6ca6f1bf6441fc9"
 dependencies = [
  "basecoin-app",
  "basecoin-modules",
@@ -696,7 +696,7 @@ dependencies = [
 [[package]]
 name = "basecoin-app"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=b85d5e5#b85d5e5adc20b655e0d0440e7346498038584fbe"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=b72e13f#b72e13fdf23399e8575e19bfb6ca6f1bf6441fc9"
 dependencies = [
  "basecoin-modules",
  "basecoin-store",
@@ -715,7 +715,7 @@ dependencies = [
 [[package]]
 name = "basecoin-modules"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=b85d5e5#b85d5e5adc20b655e0d0440e7346498038584fbe"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=b72e13f#b72e13fdf23399e8575e19bfb6ca6f1bf6441fc9"
 dependencies = [
  "base64 0.21.7",
  "basecoin-store",
@@ -742,7 +742,7 @@ dependencies = [
 [[package]]
 name = "basecoin-store"
 version = "0.1.0"
-source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=b85d5e5#b85d5e5adc20b655e0d0440e7346498038584fbe"
+source = "git+https://github.com/informalsystems/basecoin-rs.git?rev=b72e13f#b72e13fdf23399e8575e19bfb6ca6f1bf6441fc9"
 dependencies = [
  "displaydoc",
  "ics23",
@@ -1367,17 +1367,17 @@ dependencies = [
 [[package]]
 name = "cosmos-sdk-proto"
 version = "0.22.0-pre"
-source = "git+https://github.com/cosmos/cosmos-rust.git?rev=4f2e3bb#4f2e3bbf9c67c8ffef44ef1e485a327fd66f060a"
+source = "git+https://github.com/cosmos/cosmos-rust.git?rev=ced74a7#ced74a754669ebf698decdae33ceeb2cc9a0839b"
 dependencies = [
  "prost",
  "prost-types",
- "tendermint-proto 0.36.0",
+ "tendermint-proto 0.37.0",
 ]
 
 [[package]]
 name = "cosmrs"
 version = "0.17.0-pre"
-source = "git+https://github.com/cosmos/cosmos-rust.git?rev=4f2e3bb#4f2e3bbf9c67c8ffef44ef1e485a327fd66f060a"
+source = "git+https://github.com/cosmos/cosmos-rust.git?rev=ced74a7#ced74a754669ebf698decdae33ceeb2cc9a0839b"
 dependencies = [
  "bip32",
  "cosmos-sdk-proto",
@@ -1389,7 +1389,7 @@ dependencies = [
  "serde_json",
  "signature",
  "subtle-encoding",
- "tendermint 0.36.0",
+ "tendermint 0.37.0",
  "thiserror",
 ]
 
@@ -2817,7 +2817,7 @@ dependencies = [
 [[package]]
 name = "ibc"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-apps",
  "ibc-clients",
@@ -2830,7 +2830,7 @@ dependencies = [
 [[package]]
 name = "ibc-app-nft-transfer"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-app-nft-transfer-types",
  "ibc-core",
@@ -2840,7 +2840,7 @@ dependencies = [
 [[package]]
 name = "ibc-app-nft-transfer-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "base64 0.21.7",
  "borsh",
@@ -2861,7 +2861,7 @@ dependencies = [
 [[package]]
 name = "ibc-app-transfer"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-app-transfer-types",
  "ibc-core",
@@ -2871,7 +2871,7 @@ dependencies = [
 [[package]]
 name = "ibc-app-transfer-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "borsh",
  "derive_more",
@@ -2889,7 +2889,7 @@ dependencies = [
 [[package]]
 name = "ibc-apps"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-app-nft-transfer",
  "ibc-app-transfer",
@@ -2898,7 +2898,7 @@ dependencies = [
 [[package]]
 name = "ibc-client-cw"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -2913,7 +2913,7 @@ dependencies = [
 [[package]]
 name = "ibc-client-tendermint"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "derive_more",
  "ibc-client-tendermint-types",
@@ -2930,7 +2930,7 @@ dependencies = [
 [[package]]
 name = "ibc-client-tendermint-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "displaydoc",
  "ibc-core-client-types",
@@ -2947,7 +2947,7 @@ dependencies = [
 [[package]]
 name = "ibc-client-wasm-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "base64 0.21.7",
  "cosmwasm-schema",
@@ -2962,7 +2962,7 @@ dependencies = [
 [[package]]
 name = "ibc-clients"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-client-tendermint",
  "ibc-client-wasm-types",
@@ -2971,7 +2971,7 @@ dependencies = [
 [[package]]
 name = "ibc-core"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-core-channel",
  "ibc-core-client",
@@ -2987,7 +2987,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-channel"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-core-channel-types",
  "ibc-core-client",
@@ -3002,7 +3002,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-channel-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "borsh",
  "derive_more",
@@ -3025,7 +3025,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-client"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-core-client-context",
  "ibc-core-client-types",
@@ -3038,7 +3038,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-client-context"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "derive_more",
  "displaydoc",
@@ -3054,7 +3054,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-client-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "borsh",
  "derive_more",
@@ -3074,7 +3074,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-commitment-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "borsh",
  "derive_more",
@@ -3092,7 +3092,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-connection"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-client-wasm-types",
  "ibc-core-client",
@@ -3106,7 +3106,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-connection-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "borsh",
  "derive_more",
@@ -3127,7 +3127,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-handler"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "ibc-core-channel",
  "ibc-core-client",
@@ -3142,7 +3142,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-handler-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "borsh",
  "derive_more",
@@ -3166,7 +3166,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-host"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "derive_more",
  "displaydoc",
@@ -3184,7 +3184,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-host-cosmos"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "derive_more",
  "displaydoc",
@@ -3207,7 +3207,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-host-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "borsh",
  "derive_more",
@@ -3222,7 +3222,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-router"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "derive_more",
  "displaydoc",
@@ -3236,7 +3236,7 @@ dependencies = [
 [[package]]
 name = "ibc-core-router-types"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "borsh",
  "derive_more",
@@ -3255,7 +3255,7 @@ dependencies = [
 [[package]]
 name = "ibc-derive"
 version = "0.7.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3265,7 +3265,7 @@ dependencies = [
 [[package]]
 name = "ibc-primitives"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "borsh",
  "derive_more",
@@ -3305,7 +3305,7 @@ dependencies = [
 [[package]]
 name = "ibc-query"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "displaydoc",
  "ibc",
@@ -3318,7 +3318,7 @@ dependencies = [
 [[package]]
 name = "ibc-testkit"
 version = "0.53.0"
-source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e3#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
+source = "git+https://github.com/cosmos/ibc-rs.git?rev=d90295e#d90295e3ff386d786c996d8ff3a42e79d4c4dcea"
 dependencies = [
  "basecoin-store",
  "derive_more",
@@ -6692,6 +6692,35 @@ dependencies = [
  "ed25519-consensus",
  "flex-error",
  "futures",
+ "num-traits",
+ "once_cell",
+ "prost",
+ "prost-types",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_repr",
+ "sha2 0.10.8",
+ "signature",
+ "subtle",
+ "subtle-encoding",
+ "tendermint-proto 0.36.0",
+ "time",
+ "zeroize",
+]
+
+[[package]]
+name = "tendermint"
+version = "0.37.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "954496fbc9716eb4446cdd6d00c071a3e2f22578d62aa03b40c7e5b4fda3ed42"
+dependencies = [
+ "bytes",
+ "digest 0.10.7",
+ "ed25519",
+ "ed25519-consensus",
+ "flex-error",
+ "futures",
  "k256",
  "num-traits",
  "once_cell",
@@ -6706,7 +6735,7 @@ dependencies = [
  "signature",
  "subtle",
  "subtle-encoding",
- "tendermint-proto 0.36.0",
+ "tendermint-proto 0.37.0",
  "time",
  "zeroize",
 ]
@@ -6778,6 +6807,22 @@ name = "tendermint-proto"
 version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46f193d04afde6592c20fd70788a10b8cb3823091c07456db70d8a93f5fb99c1"
+dependencies = [
+ "bytes",
+ "flex-error",
+ "prost",
+ "prost-types",
+ "serde",
+ "serde_bytes",
+ "subtle-encoding",
+ "time",
+]
+
+[[package]]
+name = "tendermint-proto"
+version = "0.37.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc87024548c7f3da479885201e3da20ef29e85a3b13d04606b380ac4c7120d87"
 dependencies = [
  "bytes",
  "flex-error",
