@@ -711,4 +711,15 @@ impl<S: Spec> Ibc<S> {
             proof_height,
         ))
     }
+
+    #[rpc_method(name = "commitmentPrefix")]
+    pub fn commitment_prefix(&self, working_set: &mut WorkingSet<S>) -> RpcResult<String> {
+        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(working_set)));
+
+        let commitment_prefix = ibc_ctx.commitment_prefix();
+
+        let base64_commitment_prefix = hex::encode(commitment_prefix.as_bytes());
+
+        Ok(base64_commitment_prefix)
+    }
 }
