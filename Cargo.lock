@@ -6150,6 +6150,7 @@ dependencies = [
  "base64 0.21.7",
  "borsh",
  "derive_more",
+ "hex",
  "ibc-app-transfer",
  "ibc-client-tendermint",
  "ibc-core",
