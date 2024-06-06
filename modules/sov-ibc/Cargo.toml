@@ -26,7 +26,6 @@ serde       = { workspace = true }
 serde_json  = { workspace = true, optional = true }
 thiserror   = { workspace = true }
 tracing     = { workspace = true }
-hex         = { workspace = true }
 
 # internal dependencies
 sov-ibc-transfer = { path = "../sov-ibc-transfer" }

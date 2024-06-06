@@ -713,13 +713,9 @@ impl<S: Spec> Ibc<S> {
     }
 
     #[rpc_method(name = "commitmentPrefix")]
-    pub fn commitment_prefix(&self, working_set: &mut WorkingSet<S>) -> RpcResult<String> {
+    pub fn commitment_prefix(&self, working_set: &mut WorkingSet<S>) -> RpcResult<Vec<u8>> {
         let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(working_set)));
 
-        let commitment_prefix = ibc_ctx.commitment_prefix();
-
-        let base64_commitment_prefix = hex::encode(commitment_prefix.as_bytes());
-
-        Ok(base64_commitment_prefix)
+        Ok(ibc_ctx.commitment_prefix().into_vec())
     }
 }
