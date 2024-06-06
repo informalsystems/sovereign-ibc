@@ -711,4 +711,11 @@ impl<S: Spec> Ibc<S> {
             proof_height,
         ))
     }
+
+    #[rpc_method(name = "commitmentPrefix")]
+    pub fn commitment_prefix(&self, working_set: &mut WorkingSet<S>) -> RpcResult<Vec<u8>> {
+        let ibc_ctx = IbcContext::new(self, Rc::new(RefCell::new(working_set)));
+
+        Ok(ibc_ctx.commitment_prefix().into_vec())
+    }
 }
