@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Spell Check with Typos
-        uses: crate-ci/typos@v1.22.3
+        uses: crate-ci/typos@v1.22.4
         with:
           config: ./.github/typos.toml
 
