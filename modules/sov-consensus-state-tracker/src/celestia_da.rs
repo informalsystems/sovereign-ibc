@@ -19,7 +19,7 @@ impl HasConsensusState for CelestiaSpec {
         let da_params = TmConsensusParams::new(
             tendermint::Time::from_unix_timestamp(
                 protobuf_time.unix_timestamp(),
-                u32::try_from(protobuf_time.unix_timestamp_nanos() / 1_000_000_000)
+                u32::try_from(protobuf_time.unix_timestamp_nanos() % 1_000_000_000)
                     .expect("no overflow"),
             )
             .expect("Could not obtain timestamp from header"),
