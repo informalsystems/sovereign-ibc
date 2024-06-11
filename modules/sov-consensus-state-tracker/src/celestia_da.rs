@@ -11,8 +11,8 @@ use sov_rollup_interface::da::BlockHeaderTrait;
 use crate::HasConsensusState;
 
 impl HasConsensusState for CelestiaSpec {
-    fn consensus_state(header: &CelestiaHeader) -> HostConsensusState {
-        let sovereign_params = CommitmentRoot::from_bytes(header.hash().as_ref()).into();
+    fn consensus_state(header: &CelestiaHeader, user_hash: [u8; 32]) -> HostConsensusState {
+        let sovereign_params = CommitmentRoot::from_bytes(&user_hash).into();
 
         let da_params = TmConsensusParams::new(
             tendermint::Time::from_unix_timestamp(

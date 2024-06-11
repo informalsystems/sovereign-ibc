@@ -18,7 +18,7 @@ use sov_state::Storage;
 /// Implement HasConsensusState for all DaSpecs that you wish to support, and
 /// extract the consensus state from the header.
 pub trait HasConsensusState: DaSpec {
-    fn consensus_state(header: &Self::BlockHeader) -> HostConsensusState;
+    fn consensus_state(header: &Self::BlockHeader, user_hash: [u8; 32]) -> HostConsensusState;
 }
 
 #[derive(Clone)]
@@ -137,7 +137,7 @@ where
                 .host_height_map
                 .set(&height, kernel_working_set.inner);
 
-            let consensus_state = Da::consensus_state(slot_header);
+            let consensus_state = Da::consensus_state(slot_header, pre_state_root.clone().into());
 
             self.ibc.host_timestamp_map.set(
                 &consensus_state.timestamp().into(),
