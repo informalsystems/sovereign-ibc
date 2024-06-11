@@ -14,6 +14,7 @@ use sov_modules_api::kernel_state::BootstrapWorkingSet;
 use sov_modules_api::runtime::capabilities::{BatchSelector, Kernel, KernelSlotHooks};
 use sov_modules_api::{DaSpec, Gas, KernelModule, KernelWorkingSet, Spec, StateCheckpoint};
 use sov_state::Storage;
+use tracing::info;
 
 /// Implement HasConsensusState for all DaSpecs that you wish to support, and
 /// extract the consensus state from the header.
@@ -137,9 +138,6 @@ where
                 .host_height_map
                 .set(&height, kernel_working_set.inner);
 
-            println!("visible_slot_number: {visible_slot_number}");
-            println!("pre_state_root: {pre_state_root:?}");
-
             let consensus_state = Da::consensus_state(slot_header, pre_state_root.clone().into());
 
             self.ibc.host_timestamp_map.set(
@@ -152,6 +150,8 @@ where
                 &consensus_state,
                 kernel_working_set.inner,
             );
+
+            info!("Host ConsensusState is stored at {height}: {consensus_state:?}");
         }
 
         gas_price

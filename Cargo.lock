@@ -6145,6 +6145,7 @@ dependencies = [
  "sov-state",
  "tendermint 0.36.0",
  "thiserror",
+ "tracing",
  "uint",
 ]
 
