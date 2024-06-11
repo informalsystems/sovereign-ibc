@@ -138,7 +138,9 @@ where
                 .host_height_map
                 .set(&height, kernel_working_set.inner);
 
-            let consensus_state = Da::consensus_state(slot_header, pre_state_root.clone().into());
+            let visible_hash = S::VisibleHash::from(pre_state_root.clone());
+
+            let consensus_state = Da::consensus_state(slot_header, visible_hash.into());
 
             self.ibc.host_timestamp_map.set(
                 &consensus_state.timestamp().into(),
