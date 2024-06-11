@@ -23,6 +23,7 @@ serde      = { workspace = true }
 serde_json = { workspace = true, optional = true }
 thiserror  = { workspace = true }
 uint       = "0.9"
+tracing    = { workspace = true }
 
 # ibc dependencies
 ibc-app-transfer = { workspace = true, features = [ "borsh", "schema" ] }
