@@ -137,6 +137,9 @@ where
                 .host_height_map
                 .set(&height, kernel_working_set.inner);
 
+            println!("visible_slot_number: {visible_slot_number}");
+            println!("pre_state_root: {pre_state_root:?}");
+
             let consensus_state = Da::consensus_state(slot_header, pre_state_root.clone().into());
 
             self.ibc.host_timestamp_map.set(
