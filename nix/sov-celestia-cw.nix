@@ -69,7 +69,7 @@ let
             outputHashes = {
                 "basecoin-0.1.0" = "sha256-CY1U6z18oAv9iFDXeS5YNgK3cOMGrkChJSJ2iMFLXvg=";
                 "celestia-proto-0.1.0" = "sha256-iUgrctxdJUyhfrEQ0zoVj5AKIqgj/jQVNli5/K2nxK0=";
-                "ibc-0.53.0" = "sha256-n1JjjHZlkmyxQ/LPEF1hCCKnz8Yrje3erXsMW9uGqL0=";
+                "ibc-0.53.0" = "sha256-sKgQB+tKKnIBDqBCf+OdRv72JCdFBB3r7LKNLLQVQS0=";
                 "jmt-0.9.0" = "sha256-pq1v6FXS//6Dh+fdysQIVp+RVLHdXrW5aDx3263O1rs=";
                 "nmt-rs-0.1.0" = "sha256-jcHbqyIKk8ZDDjSz+ot5YDxROOnrpM4TRmNFVfNniwU=";
                 "risc0-cycle-utils-0.3.0" = "sha256-5dA62v1eqfyZBny4s3YlC2Tty7Yfd/OAVGfTlLBgypk=";
