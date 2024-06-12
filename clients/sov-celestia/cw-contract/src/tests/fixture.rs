@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub};
 use std::time::Duration;
 
-use cosmwasm_std::testing::{mock_env, mock_info};
+use cosmwasm_std::testing::{message_info, mock_dependencies, mock_env};
 use cosmwasm_std::{coins, from_json, Deps, DepsMut, Empty, MessageInfo, StdError};
 use ibc_client_cw::types::{
     CheckForMisbehaviourMsgRaw, ExportMetadataMsg, GenesisMetadata, InstantiateMsg, QueryMsg,
@@ -209,5 +209,8 @@ impl Fixture {
 }
 
 pub fn dummy_msg_info() -> MessageInfo {
-    mock_info("creator", &coins(1000, "ibc"))
+    let deps = mock_dependencies();
+    let creator = deps.api.addr_make("creator");
+
+    message_info(&creator, &coins(1000, "ibc"))
 }
