@@ -10,6 +10,7 @@ use ibc_core::client::types::Height;
 pub use mock_da::*;
 use sov_celestia_client::consensus_state::ConsensusState as HostConsensusState;
 use sov_ibc::context::HOST_REVISION_NUMBER;
+use sov_modules_api::da::BlockHeaderTrait;
 use sov_modules_api::kernel_state::BootstrapWorkingSet;
 use sov_modules_api::runtime::capabilities::{BatchSelector, Kernel, KernelSlotHooks};
 use sov_modules_api::{DaSpec, Gas, KernelModule, KernelWorkingSet, Spec, StateCheckpoint};
@@ -138,7 +139,9 @@ where
                 .host_height_map
                 .set(&height, kernel_working_set.inner);
 
-            let consensus_state = Da::consensus_state(slot_header, pre_state_root.clone().into());
+            let visible_hash = S::VisibleHash::from(pre_state_root.clone());
+
+            let consensus_state = Da::consensus_state(slot_header, visible_hash.into());
 
             self.ibc.host_timestamp_map.set(
                 &consensus_state.timestamp().into(),
@@ -151,7 +154,9 @@ where
                 kernel_working_set.inner,
             );
 
-            info!("Host ConsensusState is stored at {height}: {consensus_state:?}");
+            let da_height = slot_header.height();
+
+            info!("Host ConsensusState is stored at rollup {height} and DA {da_height}: {consensus_state:?}");
         }
 
         gas_price
