@@ -15,9 +15,8 @@ use hermes_relayer_components::components::default::relay::{
     DefaultRelayComponents, IsDefaultRelayComponent,
 };
 use hermes_relayer_components::relay::impls::packet_filters::allow_all::AllowAll;
-use hermes_relayer_components::relay::impls::packet_lock::PacketMutex;
 use hermes_relayer_components::relay::impls::packet_lock::{
-    PacketMutexGetter, ProvidePacketLockWithMutex,
+    PacketMutex, PacketMutexGetter, ProvidePacketLockWithMutex,
 };
 use hermes_relayer_components::relay::impls::packet_relayers::general::full_relay::FullCycleRelayer;
 use hermes_relayer_components::relay::traits::chains::{
