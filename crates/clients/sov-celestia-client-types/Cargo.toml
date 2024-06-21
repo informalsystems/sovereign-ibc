@@ -1,17 +1,18 @@
 [package]
-name         = "sov-celestia-client"
+name         = "sov-celestia-client-types"
 authors      = { workspace = true }
 edition      = { workspace = true }
 license      = { workspace = true }
-repository   = { workspace = true }
 rust-version = { workspace = true }
 version      = { workspace = true }
-keywords     = [ "rollup", "sovereign", "ibc", "light-client" ]
-readme       = "./../README.md"
+repository   = { workspace = true }
+keywords     = [ "sovereign-sdk", "rollup", "ibc", "light-client" ]
+readme       = "./../../README.md"
 
 description = """
-    Contains the implementation of `sov-celestia` light client, and re-exports
-    essential data structures and domain types from `ibc-core-client-types` crate.
+    Encapsulates essential `sov-celestia` light client data structures and domain types,
+    as specified in the Inter-Blockchain Communication (IBC) protocol. Designed for universal
+    applicability to facilitate development and integration across diverse IBC-enabled projects.
 """
 
 [lints]
@@ -19,19 +20,19 @@ workspace = true
 
 [dependencies]
 # external dependencies
-borsh         = { workspace = true }
+hex           = { version = "0.4.3", optional = true }
 derive_more   = { workspace = true }
 prost         = { workspace = true }
-jmt           = { workspace = true }
-sha2          = { workspace = true }
 schemars      = { workspace = true, optional = true }
 serde         = { workspace = true, features = [ "derive" ], optional = true }
 typed-builder = { version = "0.18.0", optional = true }
 
 # ibc dependencies
-ibc-core                  = { workspace = true }
-ibc-client-tendermint     = { workspace = true }
-sov-celestia-client-types = { path = "./types", default-features = false }
+ibc-core              = { workspace = true }
+ibc-client-tendermint = { workspace = true }
+ibc-client-wasm-types = { workspace = true, features = [ "cosmwasm" ], optional = true }
+sov-client-types      = { workspace = true }
+sov-ibc-proto         = { workspace = true }
 
 # DA layer dependencies
 tendermint                       = { workspace = true }
@@ -43,7 +44,7 @@ default = [ "std" ]
 std = [
   "ibc-core/std",
   "ibc-client-tendermint/std",
-  "sov-celestia-client-types/std",
+  "sov-ibc-proto/std",
   "prost/std",
   "serde/std",
   "tendermint/std",
@@ -51,11 +52,17 @@ std = [
 serde = [
   "ibc-core/serde",
   "ibc-client-tendermint/serde",
-  "sov-celestia-client-types/serde",
+  "sov-ibc-proto/serde",
   "dep:serde",
 ]
 json-schema = [
   "ibc-core/schema",
+  "ibc-client-tendermint/schema",
   "dep:schemars",
 ]
-test-util = [ "sov-celestia-client-types/test-util" ]
+test-util = [
+  "hex",
+  "typed-builder",
+  "sov-client-types/test-util",
+  "ibc-client-wasm-types",
+]

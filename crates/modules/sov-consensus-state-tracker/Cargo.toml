@@ -36,8 +36,8 @@ sov-celestia-adapter = { workspace = true, features = [ "native" ], optional = t
 sov-modules-api      = { workspace = true }
 sov-state            = { workspace = true }
 sov-rollup-interface = { workspace = true }
-sov-ibc              = { path = "../sov-ibc" }
-sov-celestia-client  = { path = "../../clients/sov-celestia" }
+sov-ibc              = { workspace = true }
+sov-celestia-client  = { workspace = true }
 
 [features]
 default = [ "mock-da" ]
