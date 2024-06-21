@@ -73,6 +73,9 @@ let
                 "rockbound-1.0.0" = "sha256-aDrNegRfsSwiNw4XLsE4rpUYDZn2N59UJbGZ6mpY180=";
                 "tendermint-0.32.0" = "sha256-FtY7a+hBvQryATrs3mykCWFRe8ABTT6cuf5oh9IBElQ=";
                 "cosmos-sdk-proto-0.22.0-pre" = "sha256-nRfcAbjFcvAqool+6heYK8joiU5YaSWITnO6S5MRM1E=";
+                "cgp-async-0.1.0" = "sha256-we0ABBhDJZiB6+6mguZlqn1aflzrMxiY0S62m55VV4I=";
+                "hermes-async-runtime-components-0.1.0" = "sha256-LS93S4p9IwdTx4cL7ZqcfnIA6l4kk5B9dOQ2+dtJuDs=";
+                "ibc-relayer-0.27.3" = "sha256-iVyZEgcMC5ZL5gmA8lW3MzLz4DDPVroi0f8r98aQo9s=";
             };
         };
 

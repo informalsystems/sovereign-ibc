@@ -23,18 +23,9 @@ dependencies = [
  "fallible-iterator 0.3.0",
  "gimli 0.28.1",
  "memmap2 0.5.10",
- "object 0.32.2",
+ "object",
  "rustc-demangle",
  "smallvec",
-]
-
-[[package]]
-name = "addr2line"
-version = "0.22.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e4503c46a5c0c7844e948c9a4d6acd9f50cccb4de1c48eb9e291ea17470c678"
-dependencies = [
- "gimli 0.29.0",
 ]
 
 [[package]]
@@ -452,7 +443,18 @@ version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "287272293e9d8c41773cec55e365490fe034813a2f172f502d6ddcf75b2f582b"
 dependencies = [
- "event-listener",
+ "event-listener 2.5.3",
+]
+
+[[package]]
+name = "async-lock"
+version = "3.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff6e472cdea888a4bd64f342f09b3f50e1886d32afe8df3d663c01140b811b18"
+dependencies = [
+ "event-listener 5.3.1",
+ "event-listener-strategy",
+ "pin-project-lite",
 ]
 
 [[package]]
@@ -486,6 +488,23 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.66",
+]
+
+[[package]]
+name = "async-tungstenite"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3609af4bbf701ddaf1f6bb4e6257dff4ff8932327d0e685d3f653724c258b1ac"
+dependencies = [
+ "futures-io",
+ "futures-util",
+ "log",
+ "pin-project-lite",
+ "rustls-native-certs 0.7.0",
+ "rustls-pki-types",
+ "tokio",
+ "tokio-rustls 0.25.0",
+ "tungstenite",
 ]
 
 [[package]]
@@ -536,7 +555,11 @@ dependencies = [
  "pin-project-lite",
  "rustversion",
  "serde",
+ "serde_json",
+ "serde_path_to_error",
+ "serde_urlencoded",
  "sync_wrapper 0.1.2",
+ "tokio",
  "tower",
  "tower-layer",
  "tower-service",
@@ -611,16 +634,16 @@ dependencies = [
 
 [[package]]
 name = "backtrace"
-version = "0.3.73"
+version = "0.3.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cc23269a4f8976d0a4d2e7109211a419fe30e8d88d677cd60b6bc79c5732e0a"
+checksum = "26b05800d2e817c8b3b4b54abd461726265fa9789ae34330622f2db9ee696f9d"
 dependencies = [
- "addr2line 0.22.0",
+ "addr2line",
  "cc",
  "cfg-if",
  "libc",
  "miniz_oxide",
- "object 0.36.0",
+ "object",
  "rustc-demangle",
 ]
 
@@ -864,6 +887,7 @@ dependencies = [
  "hex-conservative",
  "hex_lit",
  "secp256k1",
+ "serde",
 ]
 
 [[package]]
@@ -871,6 +895,9 @@ name = "bitcoin-internals"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9425c3bf7089c983facbae04de54513cce73b41c7f9ff8c845b54e7bc64ebbfb"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "bitcoin_hashes"
@@ -880,6 +907,7 @@ checksum = "1930a4dabfebb8d7d9992db18ebe3ae2876f0a305fab206fd168df931ede293b"
 dependencies = [
  "bitcoin-internals",
  "hex-conservative",
+ "serde",
 ]
 
 [[package]]
@@ -1016,6 +1044,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4"
 dependencies = [
  "sha2 0.10.8",
+ "tinyvec",
 ]
 
 [[package]]
@@ -1029,6 +1058,16 @@ name = "byte-slice-cast"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3ac9f8b63eca6fd385229b3675f6cc0dc5c8a5c8a54a59d4f52ffd670d87b0c"
+
+[[package]]
+name = "byte-unit"
+version = "4.0.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da78b32057b8fdfc352504708feeba7216dcd65a2c9ab02978cbd288d1279b6c"
+dependencies = [
+ "serde",
+ "utf8-width",
+]
 
 [[package]]
 name = "bytecheck"
@@ -1175,6 +1214,93 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "cgp-async"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/cgp.git?branch=main#9c323af08b5076397005fd0e8912687c71ebacd4"
+dependencies = [
+ "cgp-async-macro",
+]
+
+[[package]]
+name = "cgp-async-macro"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/cgp.git?branch=main#9c323af08b5076397005fd0e8912687c71ebacd4"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.66",
+]
+
+[[package]]
+name = "cgp-component"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/cgp.git?branch=main#9c323af08b5076397005fd0e8912687c71ebacd4"
+dependencies = [
+ "cgp-async",
+ "cgp-component-macro",
+]
+
+[[package]]
+name = "cgp-component-macro"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/cgp.git?branch=main#9c323af08b5076397005fd0e8912687c71ebacd4"
+dependencies = [
+ "itertools 0.11.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.66",
+]
+
+[[package]]
+name = "cgp-core"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/cgp.git?branch=main#9c323af08b5076397005fd0e8912687c71ebacd4"
+dependencies = [
+ "cgp-async",
+ "cgp-component",
+ "cgp-error",
+ "cgp-inner",
+ "cgp-run",
+]
+
+[[package]]
+name = "cgp-error"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/cgp.git?branch=main#9c323af08b5076397005fd0e8912687c71ebacd4"
+dependencies = [
+ "cgp-async",
+ "cgp-component",
+]
+
+[[package]]
+name = "cgp-error-eyre"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/cgp.git?branch=main#9c323af08b5076397005fd0e8912687c71ebacd4"
+dependencies = [
+ "cgp-core",
+ "eyre",
+]
+
+[[package]]
+name = "cgp-inner"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/cgp.git?branch=main#9c323af08b5076397005fd0e8912687c71ebacd4"
+dependencies = [
+ "cgp-async",
+ "cgp-component",
+]
+
+[[package]]
+name = "cgp-run"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/cgp.git?branch=main#9c323af08b5076397005fd0e8912687c71ebacd4"
+dependencies = [
+ "cgp-async",
+ "cgp-component",
+ "cgp-error",
+]
+
+[[package]]
 name = "chrono"
 version = "0.4.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1265,6 +1391,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b6a852b24ab71dffc585bcb46eaf7959d175cb865a7152e35b348d1b2960422"
 
 [[package]]
+name = "concurrent-queue"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ca0197aee26d1ae37445ee532fefce43251d24cc7c166799f4d46817f1d3973"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
 name = "console_error_panic_hook"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1310,6 +1445,17 @@ name = "constant_time_eq"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7144d30dcf0fafbce74250a3963025d8d52177934239851c917d29f1df280c2"
+
+[[package]]
+name = "contracts"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1d1429e3bd78171c65aa010eabcdf8f863ba3254728dbfb0ad4b1545beac15c"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
 
 [[package]]
 name = "convert_case"
@@ -1598,6 +1744,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-channel"
+version = "0.5.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33480d6946193aa8033910124896ca395333cae7e2d1113d1fef6c3272217df2"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
 name = "crossbeam-deque"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1796,6 +1951,16 @@ dependencies = [
 
 [[package]]
 name = "dashmap"
+version = "4.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e77a43b28d0668df09411cb0bc9a8c2adc40f9a048afe863e05fd43251e8e39c"
+dependencies = [
+ "cfg-if",
+ "num_cpus",
+]
+
+[[package]]
+name = "dashmap"
 version = "5.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "978747c1d849a7d2ee5e8adc0159961c48fb7e5db2f06af6723b80123bb53856"
@@ -1853,6 +2018,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "derivation-path"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e5c37193a1db1d8ed868c03ec7b152175f26160a5b740e5e484143877e0adf0"
+
+[[package]]
 name = "derivative"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1907,6 +2078,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "dirs-next"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b98cf8ebf19c3d1b223e151f99a4f9f0690dca41414773390fc824184ac833e1"
+dependencies = [
+ "cfg-if",
+ "dirs-sys-next",
+]
+
+[[package]]
 name = "dirs-sys"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1916,6 +2097,17 @@ dependencies = [
  "option-ext",
  "redox_users",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "dirs-sys-next"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ebda144c4fe02d1f7ea1a7d9641b6fc6b580adcfa024ae48797ecdeb6825b4d"
+dependencies = [
+ "libc",
+ "redox_users",
+ "winapi",
 ]
 
 [[package]]
@@ -2032,6 +2224,18 @@ dependencies = [
  "sha2 0.10.8",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "ed25519-dalek-bip32"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b49a684b133c4980d7ee783936af771516011c8cd15f429dbda77245e282f03"
+dependencies = [
+ "derivation-path",
+ "ed25519-dalek",
+ "hmac",
+ "sha2 0.10.8",
 ]
 
 [[package]]
@@ -2173,6 +2377,27 @@ name = "event-listener"
 version = "2.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
+
+[[package]]
+name = "event-listener"
+version = "5.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6032be9bd27023a771701cc49f9f053c751055f71efb2e0ae5c15809093675ba"
+dependencies = [
+ "concurrent-queue",
+ "parking",
+ "pin-project-lite",
+]
+
+[[package]]
+name = "event-listener-strategy"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f214dc438f977e6d4e3500aaa277f5ad94ca83fbbd9b1a15713ce2344ccc5a1"
+dependencies = [
+ "event-listener 5.3.1",
+ "pin-project-lite",
+]
 
 [[package]]
 name = "eyre"
@@ -2467,12 +2692,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gimli"
-version = "0.29.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
-
-[[package]]
 name = "glob"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2575,6 +2794,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "half"
+version = "1.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b43ede17f21864e81be2fa654110bf1e793774238d86ef8555c37e6519c0403"
+
+[[package]]
 name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2628,6 +2853,554 @@ name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
+
+[[package]]
+name = "hermes-async-runtime-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "async-trait",
+ "cgp-core",
+ "futures-channel",
+ "futures-core",
+ "futures-util",
+ "hermes-runtime-components",
+]
+
+[[package]]
+name = "hermes-celestia-chain"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hermes-cosmos-relayer",
+ "hermes-relayer-components",
+ "hermes-runtime",
+ "ibc-relayer",
+ "ibc-relayer-types",
+]
+
+[[package]]
+name = "hermes-celestia-integration-tests"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "cgp-error-eyre",
+ "eyre",
+ "hermes-async-runtime-components",
+ "hermes-celestia-test-components",
+ "hermes-cosmos-chain-components",
+ "hermes-cosmos-integration-tests",
+ "hermes-cosmos-relayer",
+ "hermes-cosmos-test-components",
+ "hermes-ibc-test-suite",
+ "hermes-relayer-components",
+ "hermes-relayer-components-extra",
+ "hermes-runtime",
+ "hermes-runtime-components",
+ "hermes-test-components",
+ "ibc-proto",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "prost",
+ "serde_json",
+ "sha2 0.10.8",
+ "stable-eyre",
+ "subtle-encoding",
+ "tendermint-rpc",
+ "tokio",
+ "toml 0.8.14",
+]
+
+[[package]]
+name = "hermes-celestia-test-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hermes-cosmos-test-components",
+ "hermes-relayer-components",
+ "hermes-runtime",
+ "hermes-runtime-components",
+ "hermes-test-components",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "tendermint 0.36.0",
+ "tokio",
+ "toml 0.8.14",
+]
+
+[[package]]
+name = "hermes-cli-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "cgp-error-eyre",
+ "hermes-cosmos-chain-components",
+ "hermes-encoding-components",
+ "hermes-protobuf-encoding-components",
+ "hermes-relayer-components",
+ "ibc-proto",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "prost",
+ "serde",
+ "tendermint-proto 0.36.0",
+ "tracing",
+]
+
+[[package]]
+name = "hermes-cosmos-chain-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "bech32 0.9.1",
+ "cgp-core",
+ "eyre",
+ "futures",
+ "hermes-encoding-components",
+ "hermes-protobuf-encoding-components",
+ "hermes-relayer-components",
+ "hermes-relayer-components-extra",
+ "hermes-runtime",
+ "http 0.2.12",
+ "ibc",
+ "ibc-proto",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "ics23",
+ "itertools 0.12.1",
+ "prost",
+ "prost-types",
+ "serde_json",
+ "tendermint 0.36.0",
+ "tendermint-proto 0.36.0",
+ "tendermint-rpc",
+ "tokio",
+ "tonic",
+ "tracing",
+]
+
+[[package]]
+name = "hermes-cosmos-integration-tests"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "eyre",
+ "hermes-async-runtime-components",
+ "hermes-cosmos-chain-components",
+ "hermes-cosmos-relayer",
+ "hermes-cosmos-test-components",
+ "hermes-ibc-test-suite",
+ "hermes-logging-components",
+ "hermes-relayer-components",
+ "hermes-relayer-components-extra",
+ "hermes-runtime",
+ "hermes-runtime-components",
+ "hermes-test-components",
+ "hermes-wasm-test-components",
+ "ibc-proto",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "prost",
+ "serde_json",
+ "stable-eyre",
+ "tendermint-rpc",
+ "tokio",
+ "toml 0.8.14",
+ "tracing",
+ "tracing-subscriber 0.3.18",
+]
+
+[[package]]
+name = "hermes-cosmos-relayer"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "eyre",
+ "futures",
+ "hermes-async-runtime-components",
+ "hermes-cli-components",
+ "hermes-cosmos-chain-components",
+ "hermes-cosmos-test-components",
+ "hermes-encoding-components",
+ "hermes-logging-components",
+ "hermes-protobuf-encoding-components",
+ "hermes-relayer-components",
+ "hermes-relayer-components-extra",
+ "hermes-runtime",
+ "hermes-runtime-components",
+ "hermes-test-components",
+ "hermes-tracing-logging-components",
+ "hermes-wasm-client-components",
+ "http 0.2.12",
+ "ibc",
+ "ibc-proto",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "ibc-telemetry",
+ "itertools 0.12.1",
+ "moka",
+ "opentelemetry 0.17.0",
+ "prost",
+ "prost-types",
+ "serde",
+ "serde_derive",
+ "tendermint 0.36.0",
+ "tendermint-proto 0.36.0",
+ "tendermint-rpc",
+ "tokio",
+ "tonic",
+ "tracing",
+]
+
+[[package]]
+name = "hermes-cosmos-test-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hdpath",
+ "hermes-cosmos-chain-components",
+ "hermes-relayer-components",
+ "hermes-runtime",
+ "hermes-runtime-components",
+ "hermes-test-components",
+ "ibc-proto",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "itertools 0.12.1",
+ "prost",
+ "serde",
+ "serde_json",
+ "sha2 0.10.8",
+ "subtle-encoding",
+ "toml 0.8.14",
+]
+
+[[package]]
+name = "hermes-encoding-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+]
+
+[[package]]
+name = "hermes-ibc-test-suite"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hermes-logging-components",
+ "hermes-relayer-components",
+ "hermes-test-components",
+]
+
+[[package]]
+name = "hermes-logging-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+]
+
+[[package]]
+name = "hermes-protobuf-encoding-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hermes-encoding-components",
+ "prost",
+ "prost-types",
+]
+
+[[package]]
+name = "hermes-relayer-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hermes-encoding-components",
+ "hermes-logging-components",
+ "hermes-runtime-components",
+]
+
+[[package]]
+name = "hermes-relayer-components-extra"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hermes-logging-components",
+ "hermes-relayer-components",
+ "hermes-runtime-components",
+]
+
+[[package]]
+name = "hermes-runtime"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hermes-async-runtime-components",
+ "hermes-runtime-components",
+ "hermes-tokio-runtime-components",
+ "tokio",
+]
+
+[[package]]
+name = "hermes-runtime-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+]
+
+[[package]]
+name = "hermes-sovereign-chain-components"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "bech32 0.9.1",
+ "borsh",
+ "cgp-core",
+ "cgp-error-eyre",
+ "ed25519-dalek",
+ "eyre",
+ "hermes-cosmos-chain-components",
+ "hermes-encoding-components",
+ "hermes-protobuf-encoding-components",
+ "hermes-relayer-components",
+ "hermes-runtime",
+ "hermes-runtime-components",
+ "hermes-sovereign-rollup-components",
+ "hermes-wasm-client-components",
+ "hex",
+ "ibc",
+ "ibc-proto",
+ "ibc-query",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "jsonrpsee 0.22.5",
+ "prost",
+ "serde",
+ "serde-json-wasm",
+ "serde_json",
+ "sha2 0.10.8",
+ "sov-celestia-client",
+ "tokio",
+ "tonic",
+]
+
+[[package]]
+name = "hermes-sovereign-integration-tests"
+version = "0.1.0"
+dependencies = [
+ "borsh",
+ "cgp-core",
+ "eyre",
+ "futures",
+ "hermes-celestia-integration-tests",
+ "hermes-celestia-test-components",
+ "hermes-cosmos-chain-components",
+ "hermes-cosmos-integration-tests",
+ "hermes-cosmos-relayer",
+ "hermes-cosmos-test-components",
+ "hermes-relayer-components",
+ "hermes-runtime",
+ "hermes-runtime-components",
+ "hermes-sovereign-chain-components",
+ "hermes-sovereign-relayer",
+ "hermes-sovereign-rollup-components",
+ "hermes-sovereign-test-components",
+ "hermes-test-components",
+ "hermes-wasm-client-components",
+ "hermes-wasm-test-components",
+ "hex",
+ "ibc",
+ "ibc-proto",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "jsonrpsee 0.22.5",
+ "rand",
+ "serde",
+ "serde_json",
+ "sha2 0.10.8",
+ "sov-celestia-client",
+ "stable-eyre",
+ "tokio",
+ "toml 0.8.14",
+ "tracing",
+ "tracing-subscriber 0.3.18",
+]
+
+[[package]]
+name = "hermes-sovereign-relayer"
+version = "0.1.0"
+dependencies = [
+ "cgp-core",
+ "cgp-error-eyre",
+ "ed25519-dalek",
+ "eyre",
+ "futures",
+ "hermes-celestia-chain",
+ "hermes-cosmos-chain-components",
+ "hermes-cosmos-relayer",
+ "hermes-encoding-components",
+ "hermes-logging-components",
+ "hermes-protobuf-encoding-components",
+ "hermes-relayer-components",
+ "hermes-runtime",
+ "hermes-runtime-components",
+ "hermes-sovereign-chain-components",
+ "hermes-sovereign-rollup-components",
+ "hermes-sovereign-test-components",
+ "hermes-test-components",
+ "hermes-wasm-client-components",
+ "ibc",
+ "ibc-proto",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "jsonrpsee 0.22.5",
+ "sov-celestia-client",
+]
+
+[[package]]
+name = "hermes-sovereign-rollup-components"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "bech32 0.9.1",
+ "borsh",
+ "cgp-core",
+ "ed25519-dalek",
+ "eyre",
+ "futures",
+ "hermes-cosmos-chain-components",
+ "hermes-encoding-components",
+ "hermes-protobuf-encoding-components",
+ "hermes-relayer-components",
+ "hermes-runtime-components",
+ "hermes-wasm-client-components",
+ "hex",
+ "ibc",
+ "ibc-proto",
+ "ibc-query",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "jmt",
+ "jsonrpsee 0.22.5",
+ "prost",
+ "serde",
+ "serde-json-wasm",
+ "serde_json",
+ "sha2 0.10.8",
+ "sov-celestia-client",
+ "tokio",
+]
+
+[[package]]
+name = "hermes-sovereign-test-components"
+version = "0.1.0"
+dependencies = [
+ "bech32 0.9.1",
+ "cgp-core",
+ "ed25519-dalek",
+ "hermes-celestia-test-components",
+ "hermes-cosmos-test-components",
+ "hermes-relayer-components",
+ "hermes-runtime",
+ "hermes-runtime-components",
+ "hermes-sovereign-chain-components",
+ "hermes-sovereign-rollup-components",
+ "hermes-test-components",
+ "hex",
+ "ibc",
+ "ibc-relayer",
+ "ibc-relayer-types",
+ "jsonrpsee 0.22.5",
+ "rand",
+ "serde",
+ "serde_json",
+ "sha2 0.10.8",
+ "toml 0.8.14",
+]
+
+[[package]]
+name = "hermes-test-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hermes-relayer-components",
+ "hermes-relayer-components-extra",
+ "hermes-runtime-components",
+]
+
+[[package]]
+name = "hermes-tokio-runtime-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "futures",
+ "hermes-async-runtime-components",
+ "hermes-runtime-components",
+ "rand",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
+name = "hermes-tracing-logging-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "hermes-logging-components",
+ "hermes-relayer-components",
+ "hermes-relayer-components-extra",
+ "tracing",
+]
+
+[[package]]
+name = "hermes-wasm-client-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "cgp-error-eyre",
+ "hermes-cosmos-chain-components",
+ "hermes-encoding-components",
+ "hermes-protobuf-encoding-components",
+ "hermes-relayer-components",
+ "ibc",
+ "ibc-proto",
+ "ibc-relayer-types",
+ "prost",
+ "tendermint-proto 0.36.0",
+]
+
+[[package]]
+name = "hermes-wasm-test-components"
+version = "0.1.0"
+source = "git+https://github.com/informalsystems/hermes-sdk.git?branch=main#d330d914694be60408800925a763ba9799d98a45"
+dependencies = [
+ "cgp-core",
+ "cgp-error-eyre",
+ "hermes-cosmos-test-components",
+ "hermes-relayer-components",
+ "hermes-runtime-components",
+ "hermes-test-components",
+ "serde_json",
+ "toml 0.8.14",
+]
 
 [[package]]
 name = "hermit-abi"
@@ -2738,6 +3511,22 @@ name = "human-repr"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f58b778a5761513caf593693f8951c97a5b610841e754788400f32102eefdff1"
+
+[[package]]
+name = "humantime"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
+
+[[package]]
+name = "humantime-serde"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57a3db5ea5923d99402c94e9feb261dc5ee9b4efa158b0315f788cf549cc200c"
+dependencies = [
+ "humantime",
+ "serde",
+]
 
 [[package]]
 name = "hyper"
@@ -2932,6 +3721,7 @@ name = "ibc-client-tendermint-types"
 version = "0.53.0"
 source = "git+https://github.com/cosmos/ibc-rs.git?branch=rano/downgrade-borsh#ee4a9c306b8910098dd89d3749592fe91c35bddb"
 dependencies = [
+ "borsh",
  "displaydoc",
  "ibc-core-client-types",
  "ibc-core-commitment-types",
@@ -3186,6 +3976,7 @@ name = "ibc-core-host-cosmos"
 version = "0.53.0"
 source = "git+https://github.com/cosmos/ibc-rs.git?branch=rano/downgrade-borsh#ee4a9c306b8910098dd89d3749592fe91c35bddb"
 dependencies = [
+ "borsh",
  "derive_more",
  "displaydoc",
  "ibc-app-transfer-types",
@@ -3313,6 +4104,118 @@ dependencies = [
  "schemars",
  "serde",
  "tonic",
+]
+
+[[package]]
+name = "ibc-relayer"
+version = "0.27.3"
+source = "git+https://github.com/informalsystems/hermes.git?rev=d60057f8#d60057f8d54e9d288d23977626133fb48ee7da7d"
+dependencies = [
+ "anyhow",
+ "async-stream",
+ "bech32 0.9.1",
+ "bitcoin",
+ "bs58",
+ "byte-unit",
+ "bytes",
+ "crossbeam-channel",
+ "digest 0.10.7",
+ "dirs-next",
+ "ed25519",
+ "ed25519-dalek",
+ "ed25519-dalek-bip32",
+ "flex-error",
+ "futures",
+ "generic-array",
+ "hdpath",
+ "hex",
+ "http 0.2.12",
+ "humantime",
+ "humantime-serde",
+ "ibc-proto",
+ "ibc-relayer-types",
+ "ibc-telemetry",
+ "itertools 0.12.1",
+ "moka",
+ "num-bigint 0.4.5",
+ "num-rational",
+ "once_cell",
+ "prost",
+ "regex",
+ "reqwest",
+ "retry",
+ "ripemd",
+ "secp256k1",
+ "semver 1.0.23",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha2 0.10.8",
+ "signature",
+ "strum",
+ "subtle-encoding",
+ "tendermint 0.36.0",
+ "tendermint-light-client",
+ "tendermint-light-client-detector",
+ "tendermint-light-client-verifier",
+ "tendermint-proto 0.36.0",
+ "tendermint-rpc",
+ "thiserror",
+ "tiny-bip39",
+ "tiny-keccak",
+ "tokio",
+ "tokio-stream",
+ "toml 0.8.14",
+ "tonic",
+ "tracing",
+ "tracing-subscriber 0.3.18",
+ "uuid",
+]
+
+[[package]]
+name = "ibc-relayer-types"
+version = "0.27.3"
+source = "git+https://github.com/informalsystems/hermes.git?rev=d60057f8#d60057f8d54e9d288d23977626133fb48ee7da7d"
+dependencies = [
+ "bytes",
+ "derive_more",
+ "flex-error",
+ "ibc-proto",
+ "ics23",
+ "itertools 0.12.1",
+ "num-rational",
+ "primitive-types",
+ "prost",
+ "regex",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "subtle-encoding",
+ "tendermint 0.36.0",
+ "tendermint-light-client-verifier",
+ "tendermint-proto 0.36.0",
+ "time",
+ "uint",
+]
+
+[[package]]
+name = "ibc-telemetry"
+version = "0.27.3"
+source = "git+https://github.com/informalsystems/hermes.git?rev=d60057f8#d60057f8d54e9d288d23977626133fb48ee7da7d"
+dependencies = [
+ "axum 0.6.20",
+ "dashmap 5.5.3",
+ "ibc-relayer-types",
+ "moka",
+ "once_cell",
+ "opentelemetry 0.19.0",
+ "opentelemetry-prometheus",
+ "prometheus",
+ "serde",
+ "serde_json",
+ "tendermint 0.36.0",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -3608,6 +4511,15 @@ dependencies = [
 
 [[package]]
 name = "itertools"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
@@ -3743,7 +4655,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da2327ba8df2fdbd5e897e2b5ed25ce7f299d345b9736b6828814c3dbd1fd47b"
 dependencies = [
  "anyhow",
- "async-lock",
+ "async-lock 2.8.0",
  "async-trait",
  "beef",
  "futures-timer",
@@ -4214,6 +5126,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9be0862c1b3f26a88803c4a49de6889c10e608b3ee9344e6ef5b45fb37ad3d1"
 
 [[package]]
+name = "moka"
+version = "0.12.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e0d88686dc561d743b40de8269b26eaf0dc58781bde087b0984646602021d08"
+dependencies = [
+ "async-lock 3.4.0",
+ "async-trait",
+ "crossbeam-channel",
+ "crossbeam-epoch",
+ "crossbeam-utils",
+ "event-listener 5.3.1",
+ "futures-util",
+ "once_cell",
+ "parking_lot",
+ "quanta",
+ "rustc_version 0.4.0",
+ "smallvec",
+ "tagptr",
+ "thiserror",
+ "triomphe",
+ "uuid",
+]
+
+[[package]]
 name = "more-asserts"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4325,6 +5261,7 @@ checksum = "c165a9ab64cf766f73521c0dd2cfdff64f488b8f0b3e621face3462d3db536d7"
 dependencies = [
  "num-integer",
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -4368,6 +5305,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-rational"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f83d14da390562dca69fc84082e73e548e1ad308d24accdedd2720017cb37824"
+dependencies = [
+ "num-bigint 0.4.5",
+ "num-integer",
+ "num-traits",
+ "serde",
+]
+
+[[package]]
 name = "num-traits"
 version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4399,15 +5348,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "object"
-version = "0.36.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "576dfe1fc8f9df304abb159d767a29d0476f7750fbf8aa7ad07816004a207434"
-dependencies = [
- "memchr",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4424,6 +5364,84 @@ name = "openssl-probe"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
+
+[[package]]
+name = "opentelemetry"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6105e89802af13fdf48c49d7646d3b533a70e536d818aae7e78ba0433d01acb8"
+dependencies = [
+ "async-trait",
+ "crossbeam-channel",
+ "dashmap 4.0.2",
+ "fnv",
+ "futures-channel",
+ "futures-executor",
+ "futures-util",
+ "js-sys",
+ "lazy_static",
+ "percent-encoding",
+ "pin-project",
+ "rand",
+ "thiserror",
+]
+
+[[package]]
+name = "opentelemetry"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f4b8347cc26099d3aeee044065ecc3ae11469796b4d65d065a23a584ed92a6f"
+dependencies = [
+ "opentelemetry_api",
+ "opentelemetry_sdk",
+]
+
+[[package]]
+name = "opentelemetry-prometheus"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a9f186f6293ebb693caddd0595e66b74a6068fa51048e26e0bf9c95478c639c"
+dependencies = [
+ "opentelemetry 0.19.0",
+ "prometheus",
+ "protobuf",
+]
+
+[[package]]
+name = "opentelemetry_api"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed41783a5bf567688eb38372f2b7a8530f5a607a4b49d38dd7573236c23ca7e2"
+dependencies = [
+ "fnv",
+ "futures-channel",
+ "futures-util",
+ "indexmap 1.9.3",
+ "once_cell",
+ "pin-project-lite",
+ "thiserror",
+ "urlencoding",
+]
+
+[[package]]
+name = "opentelemetry_sdk"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b3a2a91fdbfdd4d212c0dcc2ab540de2c2bcbbd90be17de7a7daf8822d010c1"
+dependencies = [
+ "async-trait",
+ "crossbeam-channel",
+ "dashmap 5.5.3",
+ "fnv",
+ "futures-channel",
+ "futures-executor",
+ "futures-util",
+ "once_cell",
+ "opentelemetry_api",
+ "percent-encoding",
+ "rand",
+ "thiserror",
+]
 
 [[package]]
 name = "option-ext"
@@ -4462,6 +5480,12 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
+
+[[package]]
+name = "parking"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb813b8af86854136c6922af0598d719255ecb2179515e6e7730d468f05c9cae"
 
 [[package]]
 name = "parking_lot"
@@ -4849,6 +5873,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "quanta"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e5167a477619228a0b284fac2674e3c388cba90631d7b7de620e6f1fcd08da5"
+dependencies = [
+ "crossbeam-utils",
+ "libc",
+ "once_cell",
+ "raw-cpuid",
+ "wasi",
+ "web-sys",
+ "winapi",
+]
+
+[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4912,6 +5951,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d25bf25ec5ae4a3f1b92f929810509a2f53d7dca2f50b794ff57e3face536c8f"
 dependencies = [
  "rand_core 0.6.4",
+]
+
+[[package]]
+name = "raw-cpuid"
+version = "11.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e29830cbb1290e404f24c73af91c5d8d631ce7e128691e9477556b540cd01ecd"
+dependencies = [
+ "bitflags 2.5.0",
 ]
 
 [[package]]
@@ -5078,6 +6126,12 @@ dependencies = [
  "webpki-roots 0.25.4",
  "winreg",
 ]
+
+[[package]]
+name = "retry"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9166d72162de3575f950507683fac47e30f6f2c3836b71b7fbc61aa517c9c5f4"
 
 [[package]]
 name = "rfc6979"
@@ -5260,7 +6314,7 @@ version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "922588cb4b884b3951316a65581ccdfd1174af93c54093190878366812073329"
 dependencies = [
- "addr2line 0.21.0",
+ "addr2line",
  "anyhow",
  "ark-bn254",
  "ark-groth16",
@@ -5839,6 +6893,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_cbor"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2bef2ebfde456fb76bbcf9f59315333decc4fda0b2b44b420243c11e0f5ec1f5"
+dependencies = [
+ "half",
+ "serde",
+]
+
+[[package]]
 name = "serde_derive"
 version = "1.0.203"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5955,6 +7019,17 @@ dependencies = [
  "cpufeatures",
  "digest 0.9.0",
  "opaque-debug",
+]
+
+[[package]]
+name = "sha1"
+version = "0.10.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "digest 0.10.7",
 ]
 
 [[package]]
@@ -6605,6 +7680,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "stable-eyre"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "556fec8c2da34c70b75f16d88df8a8cd7e652e567ff097b7e9df0022c8695cc4"
+dependencies = [
+ "backtrace",
+ "eyre",
+ "indenter",
+]
+
+[[package]]
 name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6750,6 +7836,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "tagptr"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b2093cf4c8eb1e67749a6762251bc9cd836b6fc171623bd0a9d324d37af2417"
+
+[[package]]
 name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6843,10 +7935,12 @@ dependencies = [
  "ed25519-consensus",
  "flex-error",
  "futures",
+ "k256",
  "num-traits",
  "once_cell",
  "prost",
  "prost-types",
+ "ripemd",
  "serde",
  "serde_bytes",
  "serde_json",
@@ -6903,6 +7997,54 @@ dependencies = [
  "tendermint 0.36.0",
  "toml 0.8.14",
  "url",
+]
+
+[[package]]
+name = "tendermint-light-client"
+version = "0.36.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "331544139bbcf353acb5f56e733093d8e4bf2522cda0491b4bba7039ef0b944e"
+dependencies = [
+ "contracts",
+ "crossbeam-channel",
+ "derive_more",
+ "flex-error",
+ "futures",
+ "regex",
+ "serde",
+ "serde_cbor",
+ "serde_derive",
+ "serde_json",
+ "static_assertions",
+ "tendermint 0.36.0",
+ "tendermint-light-client-verifier",
+ "tendermint-rpc",
+ "time",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "tendermint-light-client-detector"
+version = "0.36.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73d0ffaf614bd2db605c4762e3a31a536b73cd45488fa5bace050135ca348f28"
+dependencies = [
+ "crossbeam-channel",
+ "derive_more",
+ "flex-error",
+ "futures",
+ "serde",
+ "serde_cbor",
+ "serde_derive",
+ "serde_json",
+ "static_assertions",
+ "tendermint 0.36.0",
+ "tendermint-light-client",
+ "tendermint-proto 0.36.0",
+ "tendermint-rpc",
+ "time",
+ "tracing",
 ]
 
 [[package]]
@@ -6992,6 +8134,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "21e3c231a3632cab53f92ad4161c730c468c08cfe4f0aa5a6735b53b390aecbd"
 dependencies = [
  "async-trait",
+ "async-tungstenite",
  "bytes",
  "flex-error",
  "futures",
@@ -7140,6 +8283,15 @@ dependencies = [
  "unicode-normalization",
  "wasm-bindgen",
  "zeroize",
+]
+
+[[package]]
+name = "tiny-keccak"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c9d3793400a45f954c52e73d068316d76b6f4e36977e3fcebb13a2721e80237"
+dependencies = [
+ "crunchy",
 ]
 
 [[package]]
@@ -7341,7 +8493,11 @@ dependencies = [
  "percent-encoding",
  "pin-project",
  "prost",
+ "rustls-native-certs 0.7.0",
+ "rustls-pemfile 2.1.2",
+ "rustls-pki-types",
  "tokio",
+ "tokio-rustls 0.25.0",
  "tokio-stream",
  "tower",
  "tower-layer",
@@ -7524,6 +8680,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing-serde"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc6b213177105856957181934e4920de57730fc69bf42c37ee5bb664d406d9e1"
+dependencies = [
+ "serde",
+ "tracing-core",
+]
+
+[[package]]
 name = "tracing-subscriber"
 version = "0.2.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7542,19 +8708,49 @@ dependencies = [
  "nu-ansi-term",
  "once_cell",
  "regex",
+ "serde",
+ "serde_json",
  "sharded-slab",
  "smallvec",
  "thread_local",
  "tracing",
  "tracing-core",
  "tracing-log",
+ "tracing-serde",
 ]
+
+[[package]]
+name = "triomphe"
+version = "0.1.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6631e42e10b40c0690bf92f404ebcfe6e1fdb480391d15f17cc8e96eeed5369"
 
 [[package]]
 name = "try-lock"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
+
+[[package]]
+name = "tungstenite"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ef1a641ea34f399a848dea702823bbecfb4c486f911735368f1f137cb8257e1"
+dependencies = [
+ "byteorder",
+ "bytes",
+ "data-encoding",
+ "http 1.1.0",
+ "httparse",
+ "log",
+ "rand",
+ "rustls 0.22.4",
+ "rustls-pki-types",
+ "sha1",
+ "thiserror",
+ "url",
+ "utf-8",
+]
 
 [[package]]
 name = "twox-hash"
@@ -7708,10 +8904,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "urlencoding"
+version = "2.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
+
+[[package]]
+name = "utf-8"
+version = "0.7.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09cc8ee72d2a9becf2f2febe0205bbed8fc6615b7cb429ad062dc7b7ddd036a9"
+
+[[package]]
 name = "utf16_iter"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8232dd3cdaed5356e0f716d285e4b40b932ac434100fe9b7e0e8e935b9e6246"
+
+[[package]]
+name = "utf8-width"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86bd8d4e895da8537e5315b8254664e6b769c4ff3db18321b297a1e7004392e3"
 
 [[package]]
 name = "utf8_iter"
@@ -7730,6 +8944,9 @@ name = "uuid"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a183cf7feeba97b4dd1c0d46788634f6221d87fa961b305bed08c851829efcc0"
+dependencies = [
+ "getrandom",
+]
 
 [[package]]
 name = "valuable"
@@ -8018,7 +9235,7 @@ dependencies = [
  "cfg-if",
  "corosensei",
  "crossbeam-queue",
- "dashmap",
+ "dashmap 5.5.3",
  "derivative",
  "enum-iterator",
  "fnv",
