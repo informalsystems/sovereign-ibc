@@ -41,7 +41,7 @@ pub fn public_key_to_hash_bytes(public_key: &VerifyingKey) -> [u8; 32] {
    The encoding is based on the `to_address` function at
    <https://github.com/Sovereign-Labs/sovereign-sdk/blob/c9f56b479c6ea17893e282099fcb8ab804c2feb1/module-system/sov-modules-api/src/default_context.rs#L107>.
 
-   Essentiall, we hash the public key raw bytes, and then convert the raw hash bytes
+   Essentially, we hash the public key raw bytes, and then convert the raw hash bytes
    using bech32.
 */
 pub fn public_key_to_sovereign_address(

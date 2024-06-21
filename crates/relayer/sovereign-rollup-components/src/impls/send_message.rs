@@ -17,7 +17,7 @@ use hermes_relayer_components::chain::traits::types::message::HasMessageType;
    per transaction. In particular, it is very challenging to recover from
    faiures, in case only some of the transactions succeed. There are all kinds
    of corner cases and race conditions that we would have to deal with, to ensure
-   that subsequent transactions do not conflict with the supposingly failed
+   that subsequent transactions do not conflict with the supposedly failed
    transaction, which could in fact succeeded later without the relayer knowing.
 
    Because of this, we are deferring in handling such complexity, and opt for the
