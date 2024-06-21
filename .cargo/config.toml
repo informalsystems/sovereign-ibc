@@ -8,6 +8,12 @@ sov-ibc                     = { path = "crates/modules/sov-ibc" }
 sov-ibc-transfer            = { path = "crates/modules/sov-ibc-transfer" }
 sov-consensus-state-tracker = { path = "crates/modules/sov-consensus-state-tracker" }
 
+hermes-sovereign-chain-components   = { path = "./crates/relayer/sovereign-chain-components" }
+hermes-sovereign-rollup-components  = { path = "./crates/relayer/sovereign-rollup-components" }
+hermes-sovereign-relayer            = { path = "./crates/relayer/sovereign-relayer" }
+hermes-sovereign-test-components    = { path = "./crates/relayer/sovereign-test-components" }
+hermes-sovereign-integration-tests  = { path = "./crates/relayer/sovereign-integration-tests" }
+
 ibc                   = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
 ibc-core              = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
 ibc-core-client       = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
@@ -19,6 +25,51 @@ ibc-app-transfer      = { git = "https://github.com/cosmos/ibc-rs.git", branch =
 ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
 ibc-query             = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
 ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
+
+hermes-relayer-components           = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-relayer-components-extra     = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+
+hermes-runtime-components           = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-async-runtime-components     = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-tokio-runtime-components     = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-runtime                      = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+
+hermes-encoding-components          = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-protobuf-encoding-components = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+
+hermes-logging-components           = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-tracing-logging-components   = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+
+hermes-test-components              = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-ibc-test-suite               = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+
+hermes-cli-components               = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+
+hermes-cosmos-chain-components      = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-cosmos-relayer               = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-cosmos-test-components       = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-cosmos-integration-tests     = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+
+hermes-celestia-chain               = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-celestia-test-components     = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-celestia-integration-tests   = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+
+hermes-wasm-client-components       = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+hermes-wasm-test-components         = { git = "https://github.com/informalsystems/hermes-sdk.git", branch = "main" }
+
+cgp-core                = { git = "https://github.com/informalsystems/cgp.git", branch = "main" }
+cgp-component           = { git = "https://github.com/informalsystems/cgp.git", branch = "main" }
+cgp-component-macro     = { git = "https://github.com/informalsystems/cgp.git", branch = "main" }
+cgp-error               = { git = "https://github.com/informalsystems/cgp.git", branch = "main" }
+cgp-error-eyre          = { git = "https://github.com/informalsystems/cgp.git", branch = "main" }
+cgp-async               = { git = "https://github.com/informalsystems/cgp.git", branch = "main" }
+cgp-async-macro         = { git = "https://github.com/informalsystems/cgp.git", branch = "main" }
+cgp-run                 = { git = "https://github.com/informalsystems/cgp.git", branch = "main" }
+cgp-inner               = { git = "https://github.com/informalsystems/cgp.git", branch = "main" }
+
+ibc-relayer             = { git = "https://github.com/informalsystems/hermes.git", rev = "d60057f8" }
+ibc-telemetry           = { git = "https://github.com/informalsystems/hermes.git", rev = "d60057f8" }
+ibc-relayer-types       = { git = "https://github.com/informalsystems/hermes.git", rev = "d60057f8" }
 
 cosmrs         = { git = "https://github.com/cosmos/cosmos-rust.git", rev = "4b1332e" }
 basecoin       = { git = "https://github.com/informalsystems/basecoin-rs.git", branch = "rano/sov-support" }

@@ -11,6 +11,11 @@ members = [
   "crates/modules/sov-ibc-transfer",
   "crates/modules/sov-consensus-state-tracker",
   "crates/test/sov-ibc-mocks",
+  "crates/relayer/sovereign-chain-components",
+  "crates/relayer/sovereign-rollup-components",
+  "crates/relayer/sovereign-relayer",
+  "crates/relayer/sovereign-test-components",
+  "crates/relayer/sovereign-integration-tests",
 ]
 
 exclude = [
@@ -22,7 +27,7 @@ exclude = [
 version      = "0.1.0"
 license      = "MIT OR Apache-2.0"
 edition      = "2021"
-rust-version = "1.77"
+rust-version = "1.79"
 publish      = false
 authors      = [ "Informal Systems <hello@informal.systems>" ]
 repository   = "https://github.com/informalsystems/sovereign-ibc"
@@ -55,27 +60,8 @@ sov-ibc                     = { version = "0.1.0" }
 sov-ibc-transfer            = { version = "0.1.0" }
 sov-consensus-state-tracker = { version = "0.1.0" }
 
-# external dependencies
-anyhow      = "1.0.68"
-base64      = { version = "0.21", default-features = false }
-borsh       = { version = "0.10.3", features = [ "rc", "bytes" ] }
-bytes       = { version = "1.2.1", default-features = false }
-derive_more = { version = "0.99.11", features = [ "from", "try_into" ] }
-digest      = "0.10.6"
-hex         = "0.4.3"
-jmt         = { version = "0.9.0" }
-jsonrpsee   = { version = "0.22.5", features = [ "jsonrpsee-types", "macros", "client", "server" ] }
-prost       = { version = "0.12", default-features = false }
-prost-build = { version = "0.12", default-features = false }
-sha2        = { version = "0.10.6", default-features = false }
-serde       = { version = "1.0", default-features = false, features = [ "derive", "rc" ] }
-serde_json  = "1.0"
-schemars    = { version = "0.8.12", features = [ "derive" ] }
-tempfile    = "3.5"
-thiserror   = "1.0.38"
-tracing     = { version = "0.1.40", default-features = false }
-
 # ibc depedenencies
+ibc                   = { version = "0.53.0", default-features = false }
 ibc-core              = { version = "0.53.0", default-features = false, features = [ "borsh", "schema" ] }
 ibc-core-client       = { version = "0.53.0", default-features = false }
 ibc-core-host-cosmos  = { version = "0.53.0", default-features = false }
@@ -114,5 +100,76 @@ sov-kernels                = { version = "0.3.0" }
 sov-mock-zkvm              = { version = "0.3.0" }
 sov-prover-storage-manager = { version = "0.3.0" }
 const-rollup-config        = { version = "0.3.0" }
+
+# Hermes SDK relayer dependencies
+
+hermes-runtime-components               = { version = "0.1.0" }
+hermes-async-runtime-components         = { version = "0.1.0" }
+hermes-tokio-runtime-components         = { version = "0.1.0" }
+hermes-runtime                          = { version = "0.1.0" }
+
+hermes-encoding-components              = { version = "0.1.0" }
+hermes-protobuf-encoding-components     = { version = "0.1.0" }
+
+hermes-logging-components               = { version = "0.1.0" }
+
+hermes-relayer-components               = { version = "0.1.0" }
+hermes-relayer-components-extra         = { version = "0.1.0" }
+
+hermes-test-components                  = { version = "0.1.0" }
+
+hermes-cosmos-chain-components          = { version = "0.1.0" }
+hermes-cosmos-relayer                   = { version = "0.1.0" }
+hermes-cosmos-test-components           = { version = "0.1.0" }
+hermes-cosmos-integration-tests         = { version = "0.1.0" }
+
+hermes-wasm-client-components           = { version = "0.1.0" }
+hermes-wasm-test-components             = { version = "0.1.0" }
+
+hermes-celestia-chain                   = { version = "0.1.0" }
+hermes-celestia-test-components         = { version = "0.1.0" }
+hermes-celestia-integration-tests       = { version = "0.1.0" }
+
+hermes-sovereign-chain-components       = { version = "0.1.0" }
+hermes-sovereign-rollup-components      = { version = "0.1.0" }
+hermes-sovereign-relayer                = { version = "0.1.0" }
+hermes-sovereign-test-components        = { version = "0.1.0" }
+hermes-sovereign-integration-tests      = { version = "0.1.0" }
+
+ibc-relayer                             = { version = "0.27.3" }
+ibc-relayer-types                       = { version = "0.27.3" }
+ibc-telemetry                           = { version = "0.27.3" }
+
+cgp-core                                = { version = "0.1.0" }
+cgp-error-eyre                          = { version = "0.1.0" }
+
+# external dependencies
+anyhow      = "1.0.68"
+base64      = { version = "0.21", default-features = false }
+borsh       = { version = "0.10.3", features = [ "rc", "bytes" ] }
+bytes       = { version = "1.2.1", default-features = false }
+derive_more = { version = "0.99.11", features = [ "from", "try_into" ] }
+digest      = "0.10.6"
+hex         = "0.4.3"
+jmt         = { version = "0.9.0" }
+jsonrpsee   = { version = "0.22.5", features = [ "jsonrpsee-types", "macros", "client", "server" ] }
+prost       = { version = "0.12", default-features = false }
+prost-build = { version = "0.12", default-features = false }
+sha2        = { version = "0.10.6", default-features = false }
+serde       = { version = "1.0", default-features = false, features = [ "derive", "rc" ] }
+serde_json  = "1.0"
+schemars    = { version = "0.8.12", features = [ "derive" ] }
+tempfile    = "3.5"
+thiserror   = "1.0.38"
+tracing     = { version = "0.1.40", default-features = false }
+bech32      = { version = "0.9.1" }
+eyre        = { version = "0.6.12" }
+tokio       = { version = "1.36" }
+tonic       = { version = "0.11" }
+ed25519-dalek   = { version = "2.1.1" }
+futures                         = { version = "0.3.30", default-features = false }
+rand                            = { version = "0.8.5" }
+toml                            = { version = "0.8.12" }
+tracing-subscriber              = { version = "0.3.18" }
 
 # Note: the `[patch.crates-io]` section is placed at `./cargo/config.toml`
