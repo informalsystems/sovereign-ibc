@@ -48,15 +48,12 @@ uninlined_format_args         = "deny"
 [workspace.dependencies]
 
 sov-ibc-proto                 = { version = "0.1.0" }
-sov-ibc-proto-compiler        = { version = "0.1.0" }
 sov-client-types              = { version = "0.1.0" }
 sov-celestia-client           = { version = "0.1.0", default-features = false }
 sov-celestia-client-types     = { version = "0.1.0", default-features = false }
-sov-celestia-client-cw        = { version = "0.1.0", default-features = false }
 sov-ibc                       = { version = "0.1.0" }
 sov-ibc-transfer              = { version = "0.1.0" }
 sov-consensus-state-tracker   = { version = "0.1.0" }
-sov-ibc-mocks                 = { version = "0.1.0" }
 
 # external dependencies
 anyhow      = "1.0.68"
@@ -117,3 +114,5 @@ sov-kernels                = { version = "0.3.0" }
 sov-mock-zkvm              = { version = "0.3.0" }
 sov-prover-storage-manager = { version = "0.3.0" }
 const-rollup-config        = { version = "0.3.0" }
+
+# Note: the `[patch.crates-io]` section is placed at `./cargo/config.toml`

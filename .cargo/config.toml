@@ -1,15 +1,12 @@
 [patch.crates-io]
 
 sov-ibc-proto                 = { path = "crates/proto/sov-ibc-proto" }
-sov-ibc-proto-compiler        = { path = "crates/proto/sov-ibc-proto-compiler" }
 sov-client-types              = { path = "crates/clients/sov-client-types" }
 sov-celestia-client           = { path = "crates/clients/sov-celestia-client" }
 sov-celestia-client-types     = { path = "crates/clients/sov-celestia-client-types" }
-sov-celestia-client-cw        = { path = "crates/clients/sov-celestia-client-cw" }
 sov-ibc                       = { path = "crates/modules/sov-ibc" }
 sov-ibc-transfer              = { path = "crates/modules/sov-ibc-transfer" }
 sov-consensus-state-tracker   = { path = "crates/modules/sov-consensus-state-tracker" }
-sov-ibc-mocks                 = { path = "crates/test/sov-ibc-mocks" }
 
 ibc                   = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
 ibc-core              = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
