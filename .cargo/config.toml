@@ -1,9 +1,12 @@
 [patch.crates-io]
 
-sov-ibc                     = { path = "modules/sov-ibc" }
-sov-ibc-transfer            = { path = "modules/sov-ibc-transfer" }
-sov-consensus-state-tracker = { path = "modules/sov-consensus-state-tracker" }
-sov-celestia-client         = { path = "clients/sov-celestia" }
+sov-ibc-proto               = { path = "crates/proto/sov-ibc-proto" }
+sov-client-types            = { path = "crates/clients/sov-client-types" }
+sov-celestia-client         = { path = "crates/clients/sov-celestia-client" }
+sov-celestia-client-types   = { path = "crates/clients/sov-celestia-client-types" }
+sov-ibc                     = { path = "crates/modules/sov-ibc" }
+sov-ibc-transfer            = { path = "crates/modules/sov-ibc-transfer" }
+sov-consensus-state-tracker = { path = "crates/modules/sov-consensus-state-tracker" }
 
 ibc                   = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
 ibc-core              = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
@@ -17,7 +20,7 @@ ibc-primitives        = { git = "https://github.com/cosmos/ibc-rs.git", branch =
 ibc-query             = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
 ibc-testkit           = { git = "https://github.com/cosmos/ibc-rs.git", branch = "rano/downgrade-borsh" }
 
-cosmrs         = { git = "https://github.com/cosmos/cosmos-rust.git", rev = "ced74a7" }
+cosmrs         = { git = "https://github.com/cosmos/cosmos-rust.git", rev = "4b1332e" }
 basecoin       = { git = "https://github.com/informalsystems/basecoin-rs.git", branch = "rano/sov-support" }
 basecoin-store = { git = "https://github.com/informalsystems/basecoin-rs.git", branch = "rano/sov-support" }
 jmt            = { git = "https://github.com/penumbra-zone/jmt.git", rev = "1d007e11cb68aa5ca13e9a5af4a12e6439d5f7b6" }

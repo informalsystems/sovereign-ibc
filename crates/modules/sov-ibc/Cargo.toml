@@ -28,14 +28,14 @@ thiserror   = { workspace = true }
 tracing     = { workspace = true }
 
 # internal dependencies
-sov-ibc-transfer = { path = "../sov-ibc-transfer" }
+sov-ibc-transfer = { workspace = true }
 
 # ibc dependencies
 ibc-core              = { workspace = true }
 ibc-app-transfer      = { workspace = true }
 ibc-client-tendermint = { workspace = true }
 ibc-query             = { workspace = true, optional = true }
-sov-celestia-client   = { path = "../../clients/sov-celestia" }
+sov-celestia-client   = { workspace = true }
 
 # enforce version so that Risc0 compiles
 ahash = "=0.8.6"

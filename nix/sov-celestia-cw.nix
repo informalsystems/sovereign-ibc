@@ -48,10 +48,7 @@ let
         installPhase = ''
             mkdir -p $out $out/vendor
 
-            cp -r ${../clients} $out/clients
-            cp -r ${../modules} $out/modules
-            cp -r ${../mocks} $out/mocks
-            cp -r ${../proto} $out/proto
+            cp -r ${../crates} $out/crates
 
             cp -r ${sovereign-sdk-src} $out/vendor/sovereign-sdk
 
@@ -75,7 +72,7 @@ let
                 "risc0-cycle-utils-0.3.0" = "sha256-5dA62v1eqfyZBny4s3YlC2Tty7Yfd/OAVGfTlLBgypk=";
                 "rockbound-1.0.0" = "sha256-aDrNegRfsSwiNw4XLsE4rpUYDZn2N59UJbGZ6mpY180=";
                 "tendermint-0.32.0" = "sha256-FtY7a+hBvQryATrs3mykCWFRe8ABTT6cuf5oh9IBElQ=";
-                "cosmos-sdk-proto-0.22.0-pre" = "sha256-r7zoHmk12iTdsyJ/4rRgD5HDeDSiNcs/HlS7eGi+NbE=";
+                "cosmos-sdk-proto-0.22.0-pre" = "sha256-nRfcAbjFcvAqool+6heYK8joiU5YaSWITnO6S5MRM1E=";
             };
         };
 

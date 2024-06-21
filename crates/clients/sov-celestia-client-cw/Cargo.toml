@@ -20,7 +20,7 @@ crate-type = [ "cdylib", "rlib" ]
 # ibc dependencies
 ibc-core            = { workspace = true }
 ibc-client-cw       = { workspace = true }
-sov-celestia-client = { path = "./../", default-features = false, features = [ "serde" ] }
+sov-celestia-client = { workspace = true, default-features = false, features = [ "serde" ] }
 
 # cosmwasm dependencies
 ### Note: Kept at the following version to match the CosmWasm module version
@@ -32,7 +32,7 @@ cosmwasm-std    = "2.0.4"
 [dev-dependencies]
 cosmwasm-vm           = "2.0.4"
 ibc-client-tendermint = { workspace = true }
-sov-celestia-client   = { path = "./../", default-features = false, features = [ "test-util" ] }
+sov-celestia-client   = { workspace = true, default-features = false, features = [ "test-util" ] }
 tendermint-testgen    = { workspace = true }
 
 [features]

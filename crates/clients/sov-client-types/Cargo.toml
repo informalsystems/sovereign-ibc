@@ -30,7 +30,7 @@ typed-builder = { version = "0.18.0", optional = true }
 
 # ibc dependencies
 ibc-core      = { workspace = true }
-sov-ibc-proto = { path = "./../../proto" }
+sov-ibc-proto = { workspace = true }
 
 [features]
 default = [ "std" ]

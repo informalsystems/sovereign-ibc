@@ -1,16 +1,16 @@
 [workspace]
 resolver = "2"
 members = [
-  "proto",
-  "proto/compiler",
-  "clients/sov-types",
-  "clients/sov-celestia/types",
-  "clients/sov-celestia",
-  "clients/sov-celestia/cw-contract",
-  "modules/sov-ibc-transfer",
-  "modules/sov-ibc",
-  "modules/sov-consensus-state-tracker",
-  "mocks",
+  "crates/proto/sov-ibc-proto",
+  "crates/proto/sov-ibc-proto-compiler",
+  "crates/clients/sov-client-types",
+  "crates/clients/sov-celestia-client",
+  "crates/clients/sov-celestia-client-types",
+  "crates/clients/sov-celestia-client-cw",
+  "crates/modules/sov-ibc",
+  "crates/modules/sov-ibc-transfer",
+  "crates/modules/sov-consensus-state-tracker",
+  "crates/test/sov-ibc-mocks",
 ]
 
 exclude = [
@@ -46,6 +46,15 @@ semicolon_if_nothing_returned = "deny"
 uninlined_format_args         = "deny"
 
 [workspace.dependencies]
+
+sov-ibc-proto               = { version = "0.1.0" }
+sov-client-types            = { version = "0.1.0" }
+sov-celestia-client         = { version = "0.1.0", default-features = false }
+sov-celestia-client-types   = { version = "0.1.0", default-features = false }
+sov-ibc                     = { version = "0.1.0" }
+sov-ibc-transfer            = { version = "0.1.0" }
+sov-consensus-state-tracker = { version = "0.1.0" }
+
 # external dependencies
 anyhow      = "1.0.68"
 base64      = { version = "0.21", default-features = false }
@@ -105,3 +114,5 @@ sov-kernels                = { version = "0.3.0" }
 sov-mock-zkvm              = { version = "0.3.0" }
 sov-prover-storage-manager = { version = "0.3.0" }
 const-rollup-config        = { version = "0.3.0" }
+
+# Note: the `[patch.crates-io]` section is placed at `./cargo/config.toml`
